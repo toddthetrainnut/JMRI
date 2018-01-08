@@ -34,7 +34,6 @@ import jmri.InstanceManager;
 import jmri.UserPreferencesManager;
 import jmri.swing.RowSorterUtil;
 import jmri.util.AlphanumComparator;
-import jmri.util.SystemNameComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +153,7 @@ public class ListedTableFrame extends BeanTableFrame {
         cardHolder.addPropertyChangeListener((PropertyChangeEvent e) -> {
             if (e.getPropertyName().equals("dividerLocation")) {
                 InstanceManager.getDefault(UserPreferencesManager.class)
-                        .setProperty(ListedTableFrame.class.getName(), "dividerLocation", (Integer) e.getNewValue());
+                        .setProperty(ListedTableFrame.class.getName(), "dividerLocation", e.getNewValue());
             }
         });
 
@@ -261,7 +260,7 @@ public class ListedTableFrame extends BeanTableFrame {
             item.getAAClass().setMenuBar(this);
             this.addHelpMenu(item.getAAClass().helpTarget(), true);
         } catch (Exception ex) {
-            log.error("Error when trying to set menu bar for {}\n{}", item.getClassAsString(), ex);
+            log.error("Error when trying to set menu bar for {}", item.getClassAsString(), ex);
         }
         this.revalidate();
     }
@@ -369,7 +368,7 @@ public class ListedTableFrame extends BeanTableFrame {
             dataTable = dataModel.makeJTable(dataModel.getMasterClassName() + ":" + getItemString(), dataModel, sorter);
             dataScroll = new JScrollPane(dataTable);
 
-            sorter.setComparator(BeanTableDataModel.SYSNAMECOL, new SystemNameComparator());
+            // use NamedBean's built-in Comparator interface for sorting the system name column
             RowSorterUtil.setSortOrder(sorter, BeanTableDataModel.SYSNAMECOL, SortOrder.ASCENDING);
 
             sorter.setComparator(BeanTableDataModel.USERNAMECOL, new AlphanumComparator());

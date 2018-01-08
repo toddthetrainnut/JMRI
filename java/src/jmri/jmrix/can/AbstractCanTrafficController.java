@@ -285,8 +285,7 @@ abstract public class AbstractCanTrafficController
                                     + mCurrentState + " was " + msg.toString());
                         }
                     } else {
-                        log.error("reply complete in unexpected state: "
-                                + mCurrentState + " was " + msg.toString());
+                        unexpectedReplyStateError(mCurrentState,msg.toString());
                     }
                 }
             }
@@ -299,14 +298,8 @@ abstract public class AbstractCanTrafficController
     public void distributeOneReply(CanReply msg, AbstractMRListener mLastSender) {
         // forward the message to the registered recipients,
         // which includes the communications monitor
-        // return a notification via the Swing event queue to ensure proper thread
         Runnable r = newRcvNotifier(msg, mLastSender, this);
-        try {
-            javax.swing.SwingUtilities.invokeAndWait(r);
-        } catch (java.lang.reflect.InvocationTargetException | InterruptedException | RuntimeException e) {
-            log.error("Unexpected exception in invokeAndWait:" + e);
-            e.printStackTrace();
-        }
+        distributeReply(r);
     }
 
     private final static Logger log = LoggerFactory.getLogger(AbstractCanTrafficController.class);

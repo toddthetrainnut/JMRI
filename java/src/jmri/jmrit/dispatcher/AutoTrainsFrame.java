@@ -154,7 +154,7 @@ public class AutoTrainsFrame extends jmri.util.JmriJFrame {
         if (index == -1) {
             jmri.Throttle waThrottle1 =  (Throttle) e.getSource();
             int DDCAddress =  waThrottle1.getLocoAddress().getNumber() ;
-            log.warn("handleThrottleChange - using locoaddress [" + DDCAddress + "]");
+            log.debug("handleThrottleChange - using locoaddress [" + DDCAddress + "]");
             for (jmri.Throttle waThrottle  : _throttles ) {
                 if (waThrottle != null) {
                     if ( DDCAddress == waThrottle.getLocoAddress().getNumber()) {
@@ -217,7 +217,7 @@ public class AutoTrainsFrame extends jmri.util.JmriJFrame {
             return;
         }
         if (_throttles.get(index) != null) {
-            jmri.InstanceManager.throttleManagerInstance().removeListener((jmri.DccLocoAddress) _throttles.get(index).getLocoAddress(), _throttleListeners.get(index));
+            jmri.InstanceManager.throttleManagerInstance().removeListener(_throttles.get(index).getLocoAddress(), _throttleListeners.get(index));
         }
     }
 

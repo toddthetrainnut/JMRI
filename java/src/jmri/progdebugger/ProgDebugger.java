@@ -11,7 +11,6 @@ import jmri.ProgListener;
 import jmri.Programmer;
 import jmri.ProgrammerException;
 import jmri.ProgrammingMode;
-import jmri.managers.DefaultProgrammerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,7 +134,7 @@ public class ProgDebugger implements AddressedProgrammer {
             public void run() {
                 log.debug("write CV reply");
                 if (l != null) {
-                    l.programmingOpReply(-1, 0);
+                    l.programmingOpReply(val, 0);
                 }
             }  // 0 is OK status
         };

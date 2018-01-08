@@ -1,6 +1,5 @@
 package jmri.util.zeroconf;
 
-import apps.tests.Log4JFixture;
 import java.util.HashMap;
 import javax.jmdns.ServiceInfo;
 import jmri.util.JUnitUtil;
@@ -33,8 +32,12 @@ public class ZeroConfServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        Log4JFixture.setUp();
+        JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
+        ZeroConfService.stopAll();
+        JUnitUtil.waitFor(() -> {
+            return (ZeroConfService.allServices().isEmpty());
+        }, "Stopping all ZeroConf Services");
     }
 
     @After
@@ -43,7 +46,7 @@ public class ZeroConfServiceTest {
         JUnitUtil.waitFor(() -> {
             return (ZeroConfService.allServices().isEmpty());
         }, "Stopping all ZeroConf Services");
-        Log4JFixture.tearDown();
+        JUnitUtil.tearDown();
     }
 
     /**

@@ -1,7 +1,5 @@
 package jmri.jmrit.display.layoutEditor;
 
-import static jmri.jmrit.display.layoutEditor.LayoutTrack.TRACK;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -232,7 +230,7 @@ public class TrackSegment extends LayoutTrack {
         }
         return result;
     }
-    
+
     /**
      * @return true if track segment should be drawn dashed
      * @deprecated since 4.9.4; use {@link #isDashed()} instead
@@ -420,7 +418,7 @@ public class TrackSegment extends LayoutTrack {
     private String getConnectName(@Nullable LayoutTrack layoutTrack, int type) {
         String result = null;
         if (layoutTrack != null) {
-            result = ((LayoutTrack) layoutTrack).getName();
+            result = layoutTrack.getName();
         }
         return result;
     }
@@ -431,7 +429,7 @@ public class TrackSegment extends LayoutTrack {
      * This implementation returns null because {@link #getConnect1} and
      * {@link #getConnect2} should be used instead.
      */
-    // only implemented here to supress "does not override abstract method " error in compiler
+    // only implemented here to suppress "does not override abstract method " error in compiler
     public LayoutTrack getConnection(int connectionType) throws jmri.JmriException {
         // nothing to see here, move along
         return null;
@@ -443,7 +441,7 @@ public class TrackSegment extends LayoutTrack {
      * This implementation does nothing because {@link #setNewConnect1} and
      * {@link #setNewConnect2} should be used instead.
      */
-    // only implemented here to supress "does not override abstract method " error in compiler
+    // only implemented here to suppress "does not override abstract method " error in compiler
     public void setConnection(int connectionType, @Nullable LayoutTrack o, int type) throws jmri.JmriException {
         // nothing to see here, move along
     }
@@ -567,12 +565,12 @@ public class TrackSegment extends LayoutTrack {
         connect1 = p.getFinder().findObjectByName(tConnect1Name);
         if (null == connect1) { // findObjectByName failed... try findObjectByTypeAndName
             log.warn("Unknown connect1 object prefix: '" + tConnect1Name + "' of type " + type1 + ".");
-            connect1 = (LayoutTrack) p.getFinder().findObjectByTypeAndName(type1, tConnect1Name);
+            connect1 = p.getFinder().findObjectByTypeAndName(type1, tConnect1Name);
         }
         connect2 = p.getFinder().findObjectByName(tConnect2Name);
         if (null == connect2) { // findObjectByName failed; try findObjectByTypeAndName
             log.warn("Unknown connect2 object prefix: '" + tConnect2Name + "' of type " + type2 + ".");
-            connect2 = (LayoutTrack) p.getFinder().findObjectByTypeAndName(type2, tConnect2Name);
+            connect2 = p.getFinder().findObjectByTypeAndName(type2, tConnect2Name);
         }
     }
 
@@ -1807,7 +1805,7 @@ public class TrackSegment extends LayoutTrack {
                     }
                 }
             } else {    // (#3)
-                log.info("•New block ('{}') trackNameSets", blockName);
+                log.info("-New block ('{}') trackNameSets", blockName);
                 TrackNameSets = new ArrayList<>();
                 blockNamesToTrackNameSetsMap.put(blockName, TrackNameSets);
             }
@@ -1816,7 +1814,7 @@ public class TrackSegment extends LayoutTrack {
                 TrackNameSets.add(TrackNameSet);
             }
             if (TrackNameSet.add(getName())) {
-                log.info("•    Add track '{}' to TrackNameSets for block '{}'", getName(), blockName);
+                log.info("-    Add track '{}' to TrackNameSets for block '{}'", getName(), blockName);
             }
             // (#4)
             if (connect1 != null) {
@@ -1838,7 +1836,7 @@ public class TrackSegment extends LayoutTrack {
             if (this.blockName.equals(blockName)) {
                 // if we are added to the TrackNameSet
                 if (TrackNameSet.add(getName())) {
-                    log.info("•    Add track '{}'for block '{}'", getName(), blockName);
+                    log.info("-    Add track '{}'for block '{}'", getName(), blockName);
                 }
                 // these should never be null... but just in case...
                 // it's time to play... flood your neighbours!
@@ -1859,6 +1857,6 @@ public class TrackSegment extends LayoutTrack {
         setLayoutBlock(layoutBlock);
     }
 
-    private final static Logger log = LoggerFactory.getLogger(TrackSegment.class
-    );
+    private final static Logger log = LoggerFactory.getLogger(TrackSegment.class);
+
 }

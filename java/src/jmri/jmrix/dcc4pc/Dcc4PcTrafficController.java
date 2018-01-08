@@ -20,7 +20,7 @@ import purejavacomm.SerialPort;
  * then carry sequences of characters for transmission. Note that this
  * processing is handled in an independent thread.
  * <P>
- * This handles the state transistions, based on the necessary state in each
+ * This handles the state transitions, based on the necessary state in each
  * message.
  *
  * @author Bob Jacobsen Copyright (C) 2001
@@ -490,8 +490,7 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                 }
                 default: {
                     replyInDispatch = false;
-                    log.error("reply complete in unexpected state: "
-                            + mCurrentState + " was " + msg.toString());
+                    unexpectedReplyStateError(mCurrentState,msg.toString());
                 }
             }
             // Unsolicited message

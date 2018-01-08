@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.TooManyListenersException;
 import jmri.jmrix.maple.MapleSystemConnectionMemo;
 import jmri.jmrix.maple.SerialPortController;
-import jmri.jmrix.maple.SerialSensorManager;
-import jmri.jmrix.maple.SerialTrafficController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import purejavacomm.CommPortIdentifier;
@@ -190,15 +188,8 @@ public class SerialDriverAdapter extends SerialPortController implements jmri.jm
     @Override
     public void configure() {
         // connect to the traffic controller
-        SerialTrafficController.instance().connectPort(this);
-
-        jmri.InstanceManager.setTurnoutManager(jmri.jmrix.maple.SerialTurnoutManager.instance());
-        jmri.InstanceManager.setLightManager(jmri.jmrix.maple.SerialLightManager.instance());
-
-        SerialSensorManager s;
-        jmri.InstanceManager.setSensorManager(s = jmri.jmrix.maple.SerialSensorManager.instance());
-        SerialTrafficController.instance().setSensorManager(s);
-        jmri.jmrix.maple.ActiveFlag.setActive();
+        ((MapleSystemConnectionMemo) getSystemConnectionMemo()).getTrafficController().connectPort(this);
+        ((MapleSystemConnectionMemo) getSystemConnectionMemo()).configureManagers();
     }
 
     // base class methods for the SerialPortController interface

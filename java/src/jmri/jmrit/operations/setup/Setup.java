@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import javax.swing.JColorChooser;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.JComboBox;
 import jmri.Disposable;
 import jmri.InstanceManager;
@@ -16,7 +14,6 @@ import jmri.jmrit.operations.rollingstock.RollingStockLogger;
 import jmri.jmrit.operations.trains.TrainLogger;
 import jmri.jmrit.operations.trains.TrainManagerXml;
 import jmri.util.ColorUtil;
-import jmri.util.swing.ButtonSwatchColorChooserPanel;
 import jmri.web.server.WebServerPreferences;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -570,8 +567,8 @@ public class Setup implements InstanceManagerAutoDefault, Disposable {
     }
 
     public static String getRailroadName() {
-        if (getDefault().railroadName == null) {
-            return WebServerPreferences.getDefault().getRailroadName();
+        if (getDefault().railroadName.isEmpty()) {
+            return InstanceManager.getDefault(WebServerPreferences.class).getRailroadName();
         }
         return getDefault().railroadName;
     }
@@ -1771,10 +1768,10 @@ public class Setup implements InstanceManagerAutoDefault, Disposable {
     public static Element store() {
         Element values;
         Element e = new Element(Xml.OPERATIONS);
-        e.addContent(values = new Element(Xml.RAIL_ROAD));
-        if (Setup.getRailroadName().equals(WebServerPreferences.getDefault().getRailroadName())) {
-            values.setAttribute(Xml.NAME, Xml.USE_JMRI_RAILROAD_NAME);
-        } else {
+ 
+        // only store railroad name if it doesn't match the preferences railroad name
+        if (!InstanceManager.getDefault(WebServerPreferences.class).getRailroadName().equals(getRailroadName())) {
+            e.addContent(values = new Element(Xml.RAIL_ROAD));
             values.setAttribute(Xml.NAME, getRailroadName());
         }
 
@@ -2018,9 +2015,9 @@ public class Setup implements InstanceManagerAutoDefault, Disposable {
                 && (a = operations.getChild(Xml.RAIL_ROAD).getAttribute(Xml.NAME)) != null) {
             String name = a.getValue();
             log.debug("railroadName: {}", name);
-            if (name.equals(Xml.USE_JMRI_RAILROAD_NAME)) {
-                getDefault().railroadName = null;
-            } else {
+            // code before 4.11 "useJmriRailroadName" when using the preferences railroad name.
+            // here for backwards compatibility
+            if (!name.equals(Xml.USE_JMRI_RAILROAD_NAME)) {
                 getDefault().railroadName = name; // don't set the dirty bit
             }
         }

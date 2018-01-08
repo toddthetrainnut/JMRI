@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.TooManyListenersException;
 import jmri.jmrix.secsi.SecsiSystemConnectionMemo;
 import jmri.jmrix.secsi.SerialPortController;
-import jmri.jmrix.secsi.SerialSensorManager;
-import jmri.jmrix.secsi.SerialTrafficController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import purejavacomm.CommPortIdentifier;
@@ -190,15 +188,9 @@ public class SerialDriverAdapter extends SerialPortController implements jmri.jm
     @Override
     public void configure() {
         // connect to the traffic controller
-        SerialTrafficController.instance().connectPort(this);
+        ((SecsiSystemConnectionMemo) getSystemConnectionMemo()).getTrafficController().connectPort(this);
+        ((SecsiSystemConnectionMemo) getSystemConnectionMemo()).configureManagers();
 
-        jmri.InstanceManager.setTurnoutManager(jmri.jmrix.secsi.SerialTurnoutManager.instance());
-        jmri.InstanceManager.setLightManager(jmri.jmrix.secsi.SerialLightManager.instance());
-
-        SerialSensorManager s;
-        jmri.InstanceManager.setSensorManager(s = jmri.jmrix.secsi.SerialSensorManager.instance());
-        SerialTrafficController.instance().setSensorManager(s);
-        jmri.jmrix.secsi.ActiveFlag.setActive();
     }
 
     // base class methods for the SerialPortController interface

@@ -190,7 +190,7 @@ public class TransitTableAction extends AbstractTableAction {
 
                         @Override
                         public void run() {
-                            String sName = (String) getValueAt(row, SYSNAMECOL);
+                            String sName = ((Transit) getValueAt(row, SYSNAMECOL)).getSystemName();
                             editPressed(sName);
                         }
                     }
@@ -208,7 +208,7 @@ public class TransitTableAction extends AbstractTableAction {
 
                         @Override
                         public void run() {
-                            String sName = (String) getValueAt(row, SYSNAMECOL);
+                            String sName = ((Transit) getValueAt(row, SYSNAMECOL)).getSystemName();
                             duplicatePressed(sName);
                         }
                     }
@@ -770,12 +770,19 @@ public class TransitTableAction extends AbstractTableAction {
                 curSequenceNum--;
                 curSection = sectionList.get(j - 1);
                 curSectionDirection = direction[j - 1];
+                // delete alternate if present
                 int k = j - 2;
                 while ((k >= 0) && alternate[k]) {
                     k--;
                 }
-                prevSection = sectionList.get(k);
-                prevSectionDirection = direction[k];
+                // After this delete we need the new previous section, if there is one.
+                if (k < 0) {
+                    // There is no previous section
+                    prevSection = null;
+                } else {
+                    prevSection = sectionList.get(k);
+                    prevSectionDirection = direction[k];
+                }
             }
             sectionList.remove(j);
             initializeSectionCombos();
@@ -2235,7 +2242,7 @@ public class TransitTableAction extends AbstractTableAction {
                 whatStringField.setText(tWhatString); // re-enter normalized value in display field
                 break;
             case TransitSectionAction.LOCOFUNCTION:
-                tWhatData1 = (Integer) whatMinuteSpinner1.getValue();
+                tWhatData1 = (Integer) locoFunctionSpinner.getValue();
                 tWhatString = "On"; // NOI18N
                 if (offButton.isSelected()) {
                     tWhatString = "Off"; // NOI18N

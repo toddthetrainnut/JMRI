@@ -8,6 +8,7 @@ import jmri.AddressedProgrammer;
 import jmri.AddressedProgrammerManager;
 import jmri.Consist;
 import jmri.ConsistManager;
+import jmri.LocoAddress;
 import jmri.DccLocoAddress;
 import jmri.InstanceManager;
 import jmri.ProgListener;
@@ -29,9 +30,14 @@ public class ConsistController extends AbstractController implements ProgListene
     public ConsistController() {
         //  writeFile needs to be separate method
         if (InstanceManager.getDefault(WiThrottlePreferences.class).isUseWiFiConsist()) {
-            manager = new WiFiConsistManager();
-            InstanceManager.store(manager, ConsistManager.class);
-            log.debug("Using WiFiConsisting");
+            try {
+               manager = new WiFiConsistManager();
+               InstanceManager.store(manager, ConsistManager.class);
+               log.debug("Using WiFiConsisting");
+            } catch (NullPointerException npe) {
+               log.error("Attempting to use WiFiConsisting, but no Command Station available");
+               manager = null;
+            }
         } else {
             manager = InstanceManager.getNullableDefault(ConsistManager.class);
             log.debug("Using JMRIConsisting");
@@ -84,7 +90,7 @@ public class ConsistController extends AbstractController implements ProgListene
 
     public void sendAllConsistData() {
         // Loop thru JMRI consists and send consist detail for each
-        for (DccLocoAddress conAddr : manager.getConsistList()) {
+        for (LocoAddress conAddr : manager.getConsistList()) {
             sendDataForConsist(manager.getConsist(conAddr));
         }
     }
@@ -367,7 +373,8 @@ public class ConsistController extends AbstractController implements ProgListene
 
     }
 
-    public DccLocoAddress stringToDcc(String s) {
+    // this method may belong somewhere else.
+    static public DccLocoAddress stringToDcc(String s) {
         int num = Integer.parseInt(s.substring(1));
         boolean isLong = (s.charAt(0) == 'L');
         return (new DccLocoAddress(num, isLong));

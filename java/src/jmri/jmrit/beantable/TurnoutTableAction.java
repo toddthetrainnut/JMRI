@@ -50,6 +50,7 @@ import jmri.InstanceManager;
 import jmri.Manager;
 import jmri.NamedBean;
 import jmri.Turnout;
+import jmri.Sensor;
 import jmri.TurnoutManager;
 import jmri.TurnoutOperation;
 import jmri.TurnoutOperationManager;
@@ -58,7 +59,6 @@ import jmri.jmrit.turnoutoperations.TurnoutOperationConfig;
 import jmri.jmrit.turnoutoperations.TurnoutOperationFrame;
 import jmri.util.ConnectionNameFromSystemName;
 import jmri.util.JmriJFrame;
-import jmri.util.com.sun.TableSorter;
 import jmri.util.swing.JmriBeanComboBox;
 import jmri.util.swing.XTableColumnModel;
 import org.slf4j.Logger;
@@ -700,26 +700,7 @@ public class TurnoutTableAction extends AbstractTableAction {
 
             @Override
             public JTable makeJTable(@Nonnull String name, @Nonnull TableModel model, @Nullable RowSorter<? extends TableModel> sorter) {
-                JTable table = this.makeJTable(model);
-                table.setName(name);
-                table.setRowSorter(sorter);
-                table.getTableHeader().setReorderingAllowed(true);
-                table.setColumnModel(new XTableColumnModel());
-                table.createDefaultColumnsFromModel();
-
-                addMouseListenerToHeader(table);
-                return table;
-            }
-
-            @Override
-            public JTable makeJTable(TableSorter sorter) {
-                JTable table = this.makeJTable((TableModel) sorter);
-                table.getTableHeader().setReorderingAllowed(true);
-                table.setColumnModel(new XTableColumnModel());
-                table.createDefaultColumnsFromModel();
-
-                addMouseListenerToHeader(table);
-                return table;
+                return this.configureJTable(name, this.makeJTable(model), sorter);
             }
 
             private JTable makeJTable(TableModel model) {
@@ -749,66 +730,75 @@ public class TurnoutTableAction extends AbstractTableAction {
 
                     TableCellRenderer getRenderer(int row, int column) {
                         TableCellRenderer retval = null;
+                        Turnout t = (Turnout) getModel().getValueAt(row, SYSNAMECOL);
+                        java.util.Objects.requireNonNull(t, "SYSNAMECOL column content must be nonnull");
                         if (column == SENSOR1COL) {
-                            retval = rendererMapSensor1.get(getModel().getValueAt(row, SYSNAMECOL));
+                            retval = rendererMapSensor1.get(t);
                         } else if (column == SENSOR2COL) {
-                            retval = rendererMapSensor2.get(getModel().getValueAt(row, SYSNAMECOL));
+                            retval = rendererMapSensor2.get(t);
                         } else {
                             return null;
                         }
 
-                        if (retval == null) {
-                            Turnout t = turnManager.getBySystemName((String) getModel().getValueAt(row, SYSNAMECOL));
-                            if (t == null) {
-                                return null;
-                            }
-                            retval = new BeanBoxRenderer();
+                        if (retval == null) {                                                        
                             if (column == SENSOR1COL) {
-                                ((JmriBeanComboBox) retval).setSelectedBean(t.getFirstSensor());
-                                rendererMapSensor1.put(getModel().getValueAt(row, SYSNAMECOL), retval);
+                                loadRenderEditMaps(rendererMapSensor1, editorMapSensor1, t, t.getFirstSensor());
+                                retval = rendererMapSensor1.get(t);
                             } else {
-                                ((JmriBeanComboBox) retval).setSelectedBean(t.getSecondSensor());
-                                rendererMapSensor2.put(getModel().getValueAt(row, SYSNAMECOL), retval);
+                                loadRenderEditMaps(rendererMapSensor2, editorMapSensor2, t, t.getSecondSensor());
+                                retval = rendererMapSensor1.get(t);
                             }
                         }
+                        log.debug("fetched for Turnout \"{}\" renderer", t, retval);
                         return retval;
                     }
-                    Hashtable<Object, TableCellRenderer> rendererMapSensor1 = new Hashtable<>();
-                    Hashtable<Object, TableCellRenderer> rendererMapSensor2 = new Hashtable<>();
 
                     TableCellEditor getEditor(int row, int column) {
                         TableCellEditor retval = null;
+                        Turnout t = (Turnout) getModel().getValueAt(row, SYSNAMECOL);
+                        java.util.Objects.requireNonNull(t, "SYSNAMECOL column content must be nonnull");
                         switch (column) {
                             case SENSOR1COL:
-                                retval = editorMapSensor1.get(getModel().getValueAt(row, SYSNAMECOL));
+                                retval = editorMapSensor1.get(t);
                                 break;
                             case SENSOR2COL:
-                                retval = editorMapSensor2.get(getModel().getValueAt(row, SYSNAMECOL));
+                                retval = editorMapSensor2.get(t);
                                 break;
                             default:
                                 return null;
                         }
                         if (retval == null) {
-                            Turnout t = turnManager.getBySystemName((String) getModel().getValueAt(row, SYSNAMECOL));
-                            if (t == null) {
-                                return null;
-                            }
-                            JmriBeanComboBox c;
                             if (column == SENSOR1COL) {
-                                c = new JmriBeanComboBox(InstanceManager.sensorManagerInstance(), t.getFirstSensor(), JmriBeanComboBox.DisplayOptions.DISPLAYNAME);
-                                retval = new BeanComboBoxEditor(c);
-                                editorMapSensor1.put(getModel().getValueAt(row, SYSNAMECOL), retval);
+                                loadRenderEditMaps(rendererMapSensor1, editorMapSensor1, t, t.getFirstSensor());
+                                retval = editorMapSensor1.get(t);
                             } else { //Must be two
-                                c = new JmriBeanComboBox(InstanceManager.sensorManagerInstance(), t.getSecondSensor(), JmriBeanComboBox.DisplayOptions.DISPLAYNAME);
-                                retval = new BeanComboBoxEditor(c);
-                                editorMapSensor2.put(getModel().getValueAt(row, SYSNAMECOL), retval);
+                                loadRenderEditMaps(rendererMapSensor2, editorMapSensor2, t, t.getSecondSensor());
+                                retval = editorMapSensor2.get(t);
                             }
-                            c.setFirstItemBlank(true);
                         }
+                        log.debug("fetched for Turnout \"{}\" editor", t, retval);
                         return retval;
                     }
-                    Hashtable<Object, TableCellEditor> editorMapSensor1 = new Hashtable<>();
-                    Hashtable<Object, TableCellEditor> editorMapSensor2 = new Hashtable<>();
+
+                    protected void loadRenderEditMaps(Hashtable<Turnout, TableCellRenderer> r, Hashtable<Turnout, TableCellEditor> e,
+                                                        Turnout t, Sensor s) {
+                            JmriBeanComboBox c = new JmriBeanComboBox(InstanceManager.sensorManagerInstance(), s, JmriBeanComboBox.DisplayOptions.DISPLAYNAME);            
+                            c.setFirstItemBlank(true);
+                            
+                            TableCellRenderer renderer = new BeanBoxRenderer();
+                            ((JmriBeanComboBox)renderer).setSelectedBean(s);
+                            r.put(t, renderer);
+                            
+                            TableCellEditor editor = new BeanComboBoxEditor(c);
+                            e.put(t, editor);
+                            log.error("initialize for Turnout \"{}\" Sensor \"{}\"", t, s);
+                    }
+                                                        
+                    Hashtable<Turnout, TableCellRenderer> rendererMapSensor1 = new Hashtable<>();
+                    Hashtable<Turnout, TableCellEditor> editorMapSensor1 = new Hashtable<>();
+
+                    Hashtable<Turnout, TableCellRenderer> rendererMapSensor2 = new Hashtable<>();
+                    Hashtable<Turnout, TableCellEditor> editorMapSensor2 = new Hashtable<>();
                 };
             }
 
@@ -1940,11 +1930,11 @@ public class TurnoutTableAction extends AbstractTableAction {
                 return true;
             } else {
                 boolean validFormat = false;
-                    // try {
-                    validFormat = (InstanceManager.getDefault(TurnoutManager.class).validSystemNameFormat(prefix + "T" + value) == Manager.NameValidity.VALID);
-                    // } catch (jmri.JmriException e) {
-                    // use it for the status bar?
-                    // }
+                // try {
+                validFormat = (InstanceManager.getDefault(TurnoutManager.class).validSystemNameFormat(prefix + "T" + value) == Manager.NameValidity.VALID);
+                // } catch (jmri.JmriException e) {
+                // use it for the status bar?
+                // }
                 if (validFormat) {
                     addButton.setEnabled(true); // directly update Create button
                     return true;

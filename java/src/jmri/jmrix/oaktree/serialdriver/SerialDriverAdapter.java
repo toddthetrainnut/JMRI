@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.TooManyListenersException;
 import jmri.jmrix.oaktree.OakTreeSystemConnectionMemo;
 import jmri.jmrix.oaktree.SerialPortController;
-import jmri.jmrix.oaktree.SerialSensorManager;
-import jmri.jmrix.oaktree.SerialTrafficController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import purejavacomm.CommPortIdentifier;
@@ -190,15 +188,9 @@ public class SerialDriverAdapter extends SerialPortController implements jmri.jm
     @Override
     public void configure() {
         // connect to the traffic controller
-        SerialTrafficController.instance().connectPort(this);
+        ((OakTreeSystemConnectionMemo) getSystemConnectionMemo()).getTrafficController().connectPort(this);
+        ((OakTreeSystemConnectionMemo) getSystemConnectionMemo()).configureManagers();
 
-        jmri.InstanceManager.setTurnoutManager(jmri.jmrix.oaktree.SerialTurnoutManager.instance());
-        jmri.InstanceManager.setLightManager(jmri.jmrix.oaktree.SerialLightManager.instance());
-
-        SerialSensorManager s;
-        jmri.InstanceManager.setSensorManager(s = jmri.jmrix.oaktree.SerialSensorManager.instance());
-        SerialTrafficController.instance().setSensorManager(s);
-        jmri.jmrix.oaktree.ActiveFlag.setActive();
     }
 
     // base class methods for the SerialPortController interface
@@ -271,13 +263,10 @@ public class SerialDriverAdapter extends SerialPortController implements jmri.jm
     private boolean opened = false;
     InputStream serialStream = null;
 
+    @Deprecated
     static public SerialDriverAdapter instance() {
-        if (mInstance == null) {
-            mInstance = new SerialDriverAdapter();
-        }
-        return mInstance;
+        return null;
     }
-    static SerialDriverAdapter mInstance = null;
 
     private final static Logger log = LoggerFactory.getLogger(SerialDriverAdapter.class);
 

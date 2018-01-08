@@ -179,6 +179,13 @@ public class DispatcherFrame extends jmri.util.JmriJFrame implements InstanceMan
                     } else {
                         log.warn("failed to create create Active Train {}", info.getTrainName());
                     }
+                    // give time for throttles to be allocated.
+                    try {
+                        Thread.sleep(500);
+                    }
+                    catch (InterruptedException e) {
+                        log.warn("Sleep Interupted in loading trains, likely being stopped",e);
+                    }
                 }
 
             }
@@ -651,7 +658,7 @@ public class DispatcherFrame extends jmri.util.JmriJFrame implements InstanceMan
         ActiveTrain at = activeTrainsList.get(atSelectedIndex);
         //Transit t = at.getTransit();
         List<AllocatedSection> allocatedSectionList = at.getAllocatedSectionList();
-        List<String> allSections = (List<String>) InstanceManager.getDefault(jmri.SectionManager.class).getSystemNameList();
+        List<String> allSections = InstanceManager.getDefault(jmri.SectionManager.class).getSystemNameList();
         for (int j = 0; j < allSections.size(); j++) {
             Section s = InstanceManager.getDefault(jmri.SectionManager.class).getSection(allSections.get(j));
             if (s.getState() == Section.FREE) {
@@ -676,8 +683,8 @@ public class DispatcherFrame extends jmri.util.JmriJFrame implements InstanceMan
 
     private boolean connected(Section s1, Section s2) {
         if ((s1 != null) && (s2 != null)) {
-            List<EntryPoint> s1Entries = (List<EntryPoint>) s1.getEntryPointList();
-            List<EntryPoint> s2Entries = (List<EntryPoint>) s2.getEntryPointList();
+            List<EntryPoint> s1Entries = s1.getEntryPointList();
+            List<EntryPoint> s2Entries = s2.getEntryPointList();
             for (int i = 0; i < s1Entries.size(); i++) {
                 Block b = s1Entries.get(i).getFromBlock();
                 for (int j = 0; j < s2Entries.size(); j++) {
