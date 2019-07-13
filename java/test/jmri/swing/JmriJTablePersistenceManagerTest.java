@@ -19,7 +19,15 @@ import jmri.util.FileUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.node.NodeIdentity;
 import jmri.util.prefs.InitializationException;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -359,10 +367,10 @@ public class JmriJTablePersistenceManagerTest {
         String name1 = "Test1";
         String name2 = "Test2";
         Profile profile = ProfileManager.getDefault().getActiveProfile();
-        Assume.assumeNotNull(profile);
+        Assert.assertNotNull(profile); // test requires non-null profile
         // copy preferences into profile
         File source = new File(ClassLoader.getSystemResource("jmri/swing/JmriJTablePersistenceManagerTest-user-interface.xml").toURI());
-        File target = new File(new File(new File(profile.getPath(), Profile.PROFILE), NodeIdentity.identity()), Profile.UI_CONFIG);
+        File target = new File(new File(new File(profile.getPath(), Profile.PROFILE), NodeIdentity.storageIdentity()), Profile.UI_CONFIG);
         FileUtil.createDirectory(target.getParentFile());
         FileUtil.copy(source, target);
         JmriJTablePersistenceManagerSpy instance = new JmriJTablePersistenceManagerSpy();

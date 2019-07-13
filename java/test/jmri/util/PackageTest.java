@@ -6,11 +6,12 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         BundleTest.class,
+        CvUtilTest.class,
         FileUtilTest.class,
         JUnitAppenderTest.class,
         IntlUtilitiesTest.class,
         Log4JUtilTest.class,
-        OrderedHashtableTest.class,
+        MockShutDownManagerTest.class,
         PreferNumericComparatorTest.class,
         StringUtilTest.class,
         ThreadingUtilTest.class,
@@ -19,6 +20,7 @@ import org.junit.runners.Suite;
         AlphanumComparatorTest.class,
         ColorUtilTest.class,
         MathUtilTest.class,
+        JUnitSwingUtilTest.class,
         SwingTestCaseTest.class,
         
         jmri.util.docbook.PackageTest.class,
@@ -47,7 +49,6 @@ import org.junit.runners.Suite;
         DnDTableExportHandlerTest.class,
         DnDTableImportExportHandlerTest.class,
         FileUtilSupportTest.class,
-        FontUtilTest.class,
         GetArgumentListTest.class,
         GetClassPathTest.class,
         GetJavaPropertyTest.class,
@@ -60,6 +61,7 @@ import org.junit.runners.Suite;
         LocoAddressComparatorTest.class,
         MouseInputAdapterInstallerTest.class,
         NamedBeanComparatorTest.class,
+        NamedBeanUserNameComparatorTest.class,
         NonNullArrayListTest.class,
         NoArchiveFileFilterTest.class,
         OrderedPropertiesTest.class,
@@ -68,7 +70,6 @@ import org.junit.runners.Suite;
         PortNameMapperTest.class,
         ResizableImagePanelTest.class,
         SerialUtilTest.class,
-        SocketUtilTest.class,
         SystemNameComparatorTest.class,
         SystemTypeTest.class,
         TimerUtilTest.class,
@@ -89,6 +90,7 @@ import org.junit.runners.Suite;
         QuickPromptUtilTest.class,
         UnzipFileClassTest.class,
         AbstractFrameActionTest.class,
+        ValidatingInputPaneTest.class,
 
         // deliberately at end
         jmri.util.Log4JErrorIsErrorTest.class,

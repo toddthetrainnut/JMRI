@@ -16,6 +16,7 @@ abstract public class AbstractMultiMeter extends Bean implements MultiMeter {
 
     protected float current_float = 0.0f;
     protected float voltage_float = 0.0f;
+    protected CurrentUnits currentUnits = CurrentUnits.CURRENT_UNITS_PERCENTAGE;
 
     //private boolean is_enabled = false;
     private UpdateTask intervalTask = null;
@@ -92,15 +93,13 @@ abstract public class AbstractMultiMeter extends Bean implements MultiMeter {
     }
 
     @Override
-    @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
-    public void updateCurrent(float c) {
-        setCurrent(c);
-    }
-
-    @Override
     public float getCurrent() {
         return current_float;
+    }
+
+    // @Override
+    public CurrentUnits getCurrentUnits() {
+        return currentUnits;
     }
 
     @Override
@@ -111,47 +110,8 @@ abstract public class AbstractMultiMeter extends Bean implements MultiMeter {
     }
 
     @Override
-    @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
-    public void updateVoltage(float v) {
-        setVoltage(v);
-    }
-
-    @Override
     public float getVoltage() {
         return voltage_float;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
-    public synchronized void addDataUpdateListener(PropertyChangeListener l) {
-        this.addPropertyChangeListener(CURRENT, l);
-        this.addPropertyChangeListener(VOLTAGE, l);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
-    public synchronized void removeDataUpdateListener(PropertyChangeListener l) {
-        this.removePropertyChangeListener(CURRENT, l);
-        this.removePropertyChangeListener(VOLTAGE, l);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
-    public PropertyChangeListener[] getDataUpdateListeners() {
-        return this.getPropertyChangeListeners(CURRENT);
     }
 
     /**

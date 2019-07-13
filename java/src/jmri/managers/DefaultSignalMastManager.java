@@ -3,7 +3,8 @@ package jmri.managers;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import jmri.JmriException;
 import jmri.Manager;
 import jmri.SignalMast;
@@ -12,18 +13,16 @@ import jmri.implementation.SignalMastRepeater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-
 /**
  * Default implementation of a SignalMastManager.
- * <P>
+ * <p>
  * Note that this does not enforce any particular system naming convention at
  * the present time. They're just names...
  *
  * @author Bob Jacobsen Copyright (C) 2009
  */
 public class DefaultSignalMastManager extends AbstractManager<SignalMast>
-        implements SignalMastManager, java.beans.PropertyChangeListener {
+        implements SignalMastManager {
 
     public DefaultSignalMastManager() {
         super();
@@ -48,7 +47,7 @@ public class DefaultSignalMastManager extends AbstractManager<SignalMast>
 
     @Override
     public SignalMast getSignalMast(String name) {
-        if (name == null || name.length() == 0) {
+        if (Objects.isNull(name) || name.length() == 0) {
             return null;
         }
         SignalMast t = getByUserName(name);
@@ -121,11 +120,11 @@ public class DefaultSignalMastManager extends AbstractManager<SignalMast>
     }
 
     @Override
-    public String getBeanTypeHandled() {
-        return Bundle.getMessage("BeanNameSignalMast");
+    public String getBeanTypeHandled(boolean plural) {
+        return Bundle.getMessage(plural ? "BeanNameSignalMasts" : "BeanNameSignalMast");
     }
 
-    ArrayList<SignalMastRepeater> repeaterList = new ArrayList<SignalMastRepeater>();
+    ArrayList<SignalMastRepeater> repeaterList = new ArrayList<>();
 
     /**
      * Creates or retrieves a signal mast repeater.
@@ -184,6 +183,11 @@ public class DefaultSignalMastManager extends AbstractManager<SignalMast>
         for (SignalMastRepeater smr : repeaterList) {
             smr.initialise();
         }
+    }
+
+    @Override
+    public SignalMast provide(String name) throws IllegalArgumentException {
+        return provideSignalMast(name);
     }
 
     private final static Logger log = LoggerFactory.getLogger(DefaultSignalMastManager.class);

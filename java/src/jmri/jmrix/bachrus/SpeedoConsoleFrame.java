@@ -155,7 +155,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     protected javax.swing.JLabel readerLabel = new javax.swing.JLabel();
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="General Member Variables">
-    protected static final int defaultScale = 8;
+    protected static final int DEFAULT_SCALE = 8;
 
     protected float selectedScale = 0;
     protected int series = 0;
@@ -188,7 +188,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     protected static final int RANGE3HI = 62;
     protected static final int RANGE4LO = 58;
     protected static final int RANGE4HI = 9999;
-    static final int[] filterLength = {0, 3, 6, 10, 20};
+    static final int[] FILTER_LENGTH = {0, 3, 6, 10, 20};
 
     String selectedScalePref = this.getClass().getName() + ".SelectedScale"; // NOI18N
     String customScalePref = this.getClass().getName() + ".CustomScale"; // NOI18N
@@ -274,8 +274,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Address Selector Member Variables">
     private final boolean disableRosterBoxActions = false;
-    private int locomotiveAddress = 0;
-    private boolean locomotiveAddressIsLong = false;
+    private DccLocoAddress locomotiveAddress = new DccLocoAddress(0, false);
 
     //protected int profileAddress = 0;
     protected int readAddress = 0;
@@ -340,7 +339,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     //</editor-fold>
     //</editor-fold>
     // For testing only, must be 1 for normal use
-    protected static final int speedTestScaleFactor = 1;
+    protected static final int SPEED_TEST_SCALE_FACTOR = 1;
 
     /**
      * Constructor for the SpeedoConsoleFrame
@@ -372,7 +371,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         today = new Date();
         result = formatter.format(today);
         String annotate = "Bachrus MTS-DCC " + Bundle.getMessage("ProfileFor") + " "
-                + locomotiveAddress + " " + Bundle.getMessage("CreatedOn")
+                + locomotiveAddress.getNumber() + " " + Bundle.getMessage("CreatedOn")
                 + " " + result;
         printTitleText.setText(annotate);
     }
@@ -382,10 +381,12 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
      */
     @Override
     public void dispose() {
-        prefs.setComboBoxLastSelection(selectedScalePref, (String) scaleList.getSelectedItem());
-        prefs.setProperty(customScalePref, "customScale", customScale);
-        prefs.setSimplePreferenceState(speedUnitsKphPref, kphButton.isSelected());
-        prefs.setSimplePreferenceState(dialTypePref, dialButton.isSelected());
+        if(prefs!=null) {
+           prefs.setComboBoxLastSelection(selectedScalePref, (String)scaleList.getSelectedItem());
+           prefs.setProperty(customScalePref, "customScale", customScale);
+           prefs.setSimplePreferenceState(speedUnitsKphPref, kphButton.isSelected());
+           prefs.setSimplePreferenceState(dialTypePref, dialButton.isSelected());
+        }
         _memo.getTrafficController().removeSpeedoListener(this);
         super.dispose();
     }
@@ -411,7 +412,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         }
         if (InstanceManager.getNullableDefault(jmri.ThrottleManager.class) != null) {
             // otherwise we'll send speed commands
-            log.info("Using Throttle interface for profiling");
+            LOG.info("Using Throttle interface for profiling");
             dccServices |= THROTTLE;
         }
 
@@ -440,10 +441,10 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             try {
                 scaleList.setSelectedItem(lastSelectedScale);
             } catch (ArrayIndexOutOfBoundsException e) {
-                scaleList.setSelectedIndex(defaultScale);
+                scaleList.setSelectedIndex(DEFAULT_SCALE);
             }
         } else {
-            scaleList.setSelectedIndex(defaultScale);
+            scaleList.setSelectedIndex(DEFAULT_SCALE);
         }
 
         if (scaleList.getSelectedIndex() > -1) {
@@ -757,11 +758,11 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         exportProfileButton.addActionListener(e -> {
             if (dirFwdButton.isSelected() && dirRevButton.isSelected()) {
                 DccSpeedProfile[] sp = {spFwd, spRev};
-                DccSpeedProfile.export(sp, locomotiveAddress, profileGraphPane.getUnits());
+                DccSpeedProfile.export(sp, locomotiveAddress.getNumber(), profileGraphPane.getUnits());
             } else if (dirFwdButton.isSelected()) {
-                DccSpeedProfile.export(spFwd, locomotiveAddress, "fwd", profileGraphPane.getUnits());
+                DccSpeedProfile.export(spFwd, locomotiveAddress.getNumber(), "fwd", profileGraphPane.getUnits());
             } else if (dirRevButton.isSelected()) {
-                DccSpeedProfile.export(spRev, locomotiveAddress, "rev", profileGraphPane.getUnits());
+                DccSpeedProfile.export(spRev, locomotiveAddress.getNumber(), "rev", profileGraphPane.getUnits());
             }
         });
 
@@ -793,9 +794,9 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="Basic Speed Matching Panel">
         // pane for speed matching
-        // TODO: Add momentum setting
-        // TODO: Add reverse toggle
-        // TODO: Add description of limitations
+        // TODO: Add momentum setting - TRW
+        // TODO: Add reverse toggle - TRW
+        // TODO: Add description of limitations - TRW
         speedStep1TargetField.setHorizontalAlignment(JTextField.RIGHT);
         speedStep1TargetUnit.setPreferredSize(new Dimension(35, 16));
         speedStep28TargetField.setHorizontalAlignment(JTextField.RIGHT);
@@ -818,7 +819,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
         //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="Advanced Speed Matching Panel">
-        // TODO: Add complex speed table based speed matching
+        // TODO: Add complex speed table based speed matching - TRW
         //</editor-fold>
         // pane to hold the title
         JPanel titlePane = new JPanel();
@@ -841,14 +842,14 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         // make basic panel
         mainPane.add(basicPane);
 
-        //TODO: removed for testing
-        //if (((dccServices & THROTTLE) == THROTTLE)
-        //        || ((dccServices & COMMAND) == COMMAND)) {
-        mainPane.add(profileAndSpeedMatchingPane);
-        //} else {
-        //    log.info(Bundle.getMessage("StatNoDCC"));
-        //    statusLabel.setText(Bundle.getMessage("StatNoDCC"));
-        //}
+        //TODO: remove to test without DCC system - TRW
+        if (((dccServices & THROTTLE) == THROTTLE)
+                || ((dccServices & COMMAND) == COMMAND)) {
+            mainPane.add(profileAndSpeedMatchingPane);
+        } else {
+            LOG.info(Bundle.getMessage("StatNoDCC"));
+            statusLabel.setText(Bundle.getMessage("StatNoDCC"));
+        }
 
         // add help menu to window
         addHelpMenu("package.jmri.jmrix.bachrus.SpeedoConsoleFrame", true);
@@ -908,7 +909,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                     break;
                 default:
                     speedTextField.setText(Bundle.getMessage("ReaderErr"));
-                    log.error("Invalid reader type");
+                    LOG.error("Invalid reader type");
                     break;
             }
 
@@ -936,13 +937,13 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             // Scale the data and calculate kph
             try {
                 freq = 1500000 / count;
-                sampleSpeed = (freq / 24) * circ * thisScale * 3600 / 1000000 * speedTestScaleFactor;
+                sampleSpeed = (freq / 24) * circ * thisScale * 3600 / 1000000 * SPEED_TEST_SCALE_FACTOR;
             } catch (ArithmeticException ae) {
-                log.error("Exception calculating sampleSpeed " + ae);
+                LOG.error("Exception calculating sampleSpeed " + ae);
             }
             avFn(sampleSpeed);
-            log.debug("New sample: " + sampleSpeed + " Average: " + avSpeed);
-            log.debug("Acc: " + acc + " range: " + range);
+            LOG.debug("New sample: " + sampleSpeed + " Average: " + avSpeed);
+            LOG.debug("Acc: " + acc + " range: " + range);
             switchRange();
         }
     }
@@ -965,7 +966,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         // S(t) = S(t-1) - A(t-1) + speed
         // A(t) = S(t)/N
         acc = acc - avSpeed + speed;
-        avSpeed = acc / filterLength[range];
+        avSpeed = acc / FILTER_LENGTH[range];
     }
 
     /**
@@ -986,35 +987,35 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             case 1:
                 if (sampleSpeed > RANGE1HI) {
                     range++;
-                    acc = acc * filterLength[2] / filterLength[1];
+                    acc = acc * FILTER_LENGTH[2] / FILTER_LENGTH[1];
                 }
                 break;
             case 2:
                 if (sampleSpeed < RANGE2LO) {
                     range--;
-                    acc = acc * filterLength[1] / filterLength[2];
+                    acc = acc * FILTER_LENGTH[1] / FILTER_LENGTH[2];
                 } else if (sampleSpeed > RANGE2HI) {
                     range++;
-                    acc = acc * filterLength[3] / filterLength[2];
+                    acc = acc * FILTER_LENGTH[3] / FILTER_LENGTH[2];
                 }
                 break;
             case 3:
                 if (sampleSpeed < RANGE3LO) {
                     range--;
-                    acc = acc * filterLength[2] / filterLength[3];
+                    acc = acc * FILTER_LENGTH[2] / FILTER_LENGTH[3];
                 } else if (sampleSpeed > RANGE3HI) {
                     range++;
-                    acc = acc * filterLength[4] / filterLength[3];
+                    acc = acc * FILTER_LENGTH[4] / FILTER_LENGTH[3];
                 }
                 break;
             case 4:
                 if (sampleSpeed < RANGE4LO) {
                     range--;
-                    acc = acc * filterLength[3] / filterLength[4];
+                    acc = acc * FILTER_LENGTH[3] / FILTER_LENGTH[4];
                 }
                 break;
             default:
-                log.debug("range {} unsupported, range unchanged.", range);
+                LOG.debug("range {} unsupported, range unchanged.", range);
         }
     }
 
@@ -1028,7 +1029,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         }
         if (series > 0) {
             if ((currentSpeed < 0) || (currentSpeed > 999)) {
-                log.error("Calculated speed out of range: " + currentSpeed);
+                LOG.error("Calculated speed out of range: " + currentSpeed);
                 speedTextField.setText("999");
             } else {
                 // Final smoothing as applied by Bachrus Console. Don't update display
@@ -1114,12 +1115,11 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
      */
     private synchronized void changeOfAddress() {
         if (addrSelector.getAddress() != null) {
-            locomotiveAddress = addrSelector.getAddress().getNumber();
-            locomotiveAddressIsLong = addrSelector.getAddress().isLongAddress();
+            locomotiveAddress = addrSelector.getAddress();
             setTitle();
         } else {
-            locomotiveAddress = 0;
-            locomotiveAddressIsLong = true;
+            locomotiveAddress = new DccLocoAddress(0, false);
+            setTitle();
         }
     }
 
@@ -1189,7 +1189,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                 pm.setPower(PowerManager.OFF);
             }
         } catch (JmriException e) {
-            log.error("Exception during power on: " + e.toString());
+            LOG.error("Exception during power on: " + e.toString());
         }
     }
     //</editor-fold>
@@ -1252,17 +1252,17 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         //Validate require variables
         if (speedStep1Target < 1) {
             statusLabel.setText(Bundle.getMessage("StatInvalidSpeedStep1"));
-            log.error("Attempt to speed match to invalid speed step 1 target speed");
+            LOG.error("Attempt to speed match to invalid speed step 1 target speed");
             return;
         }
         if (speedStep28Target <= speedStep1Target) {
             statusLabel.setText(Bundle.getMessage("StatInvalidSpeedStep28"));
-            log.error("Attempt to speed match to invalid speed step 28 target speed");
+            LOG.error("Attempt to speed match to invalid speed step 28 target speed");
             return;
         }
-        if (locomotiveAddress <= 0) {
+        if (locomotiveAddress.getNumber() <= 0) {
             statusLabel.setText(Bundle.getMessage("StatInvalidDCCAddress"));
-            log.error("Attempt to speed match loco address 0");
+            LOG.error("Attempt to speed match loco address 0");
             return;
         }
 
@@ -1293,10 +1293,10 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             //request a throttle
             statusLabel.setText(Bundle.getMessage("StatReqThrottle"));
             speedMatchTimer.start();
-            log.info("Requesting Throttle");
-            boolean requestOK = InstanceManager.throttleManagerInstance().requestThrottle(locomotiveAddress, locomotiveAddressIsLong, this);
+            LOG.info("Requesting Throttle");
+            boolean requestOK = InstanceManager.throttleManagerInstance().requestThrottle(locomotiveAddress, this, true);
             if (!requestOK) {
-                log.error("Loco Address in use, throttle request failed.");
+                LOG.error("Loco Address in use, throttle request failed.");
                 statusLabel.setText(Bundle.getMessage("StatAddressInUse"));
             }
         }
@@ -1309,7 +1309,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         switch (speedMatchState) {
             case WAIT_FOR_THROTTLE:
                 tidyUp();
-                log.error("Timeout waiting for throttle");
+                LOG.error("Timeout waiting for throttle");
                 statusLabel.setText(Bundle.getMessage("StatusTimeout"));
                 break;
 
@@ -1397,7 +1397,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                         break;
 
                     default:
-                        log.warn("Unhandled speed match setup state: {}", speedMatchSetupState);
+                        LOG.warn("Unhandled speed match setup state: {}", speedMatchSetupState);
                         break;
                 }
                 break;
@@ -1436,7 +1436,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
                             if (((lastVStart == 1) || (lastVStart == 255)) && (vStart == lastVStart)) {
                                 statusLabel.setText(Bundle.getMessage("StatSetSpeedStep1Fail"));
-                                log.debug("Unable to achieve desired speed at Speed Step 1");
+                                LOG.debug("Unable to achieve desired speed at Speed Step 1");
                                 tidyUp();
                             } else {
                                 lastVStart = vStart;
@@ -1471,7 +1471,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
                             if (((lastVHigh == 1) || (lastVHigh == 255)) && (vHigh == lastVHigh)) {
                                 statusLabel.setText(Bundle.getMessage("StatSetSpeedStep28Fail"));
-                                log.debug("Unable to achieve desired speed at Speed Step 28");
+                                LOG.debug("Unable to achieve desired speed at Speed Step 28");
                                 tidyUp();
                             } else {
                                 lastVHigh = vHigh;
@@ -1515,7 +1515,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
                             if (((lastReverseTrim == 1) || (lastReverseTrim == 255)) && (reverseTrim == lastReverseTrim)) {
                                 statusLabel.setText(Bundle.getMessage("StatSetReverseTripFail"));
-                                log.debug("Unable to trim reverse to match forward");
+                                LOG.debug("Unable to trim reverse to match forward");
                                 tidyUp();
                             } else {
                                 lastReverseTrim = reverseTrim;
@@ -1555,13 +1555,13 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                         break;
 
                     default:
-                        log.warn("Unhandled speed match cleanup state: {}", speedMatchSetupState);
+                        LOG.warn("Unhandled speed match cleanup state: {}", speedMatchSetupState);
                 }
                 break;
 
             default:
                 tidyUp();
-                log.error("Unexpected speed match timeout");
+                LOG.error("Unexpected speed match timeout");
                 break;
         }
 
@@ -1577,7 +1577,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
      * Start the speed profiling process
      */
     protected synchronized void startProfile() {
-        if (locomotiveAddress > 0) {
+        if (locomotiveAddress.getNumber() > 0) {
             if (dirFwdButton.isSelected() || dirRevButton.isSelected()) {
                 if ((speedMatchState == SpeedMatchState.IDLE) && (profileState == ProfileState.IDLE)) {
                     profileTimer = new javax.swing.Timer(4000, e -> profileTimeout());
@@ -1596,64 +1596,68 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                     resetGraphButton.setEnabled(false);
                     profileGraphPane.repaint();
                     profileTimer.start();
-                    log.info("Requesting throttle");
-                    boolean requestOK = jmri.InstanceManager.throttleManagerInstance().requestThrottle(locomotiveAddress, locomotiveAddressIsLong, this);
+                    LOG.info("Requesting throttle");
+                    boolean requestOK = jmri.InstanceManager.throttleManagerInstance().requestThrottle(locomotiveAddress, this, true);
                     if (!requestOK) {
-                        log.error("Loco Address in use, throttle request failed.");
+                        LOG.error("Loco Address in use, throttle request failed.");
                     }
                 }
             }
         } else {
             // Must have a non-zero address
             //profileAddressField.setBackground(Color.RED);
-            log.error("Attempt to profile loco address 0");
+            LOG.error("Attempt to profile loco address 0");
         }
     }
 
     /**
-     * Profile timer timeout handler
+     * Time to change to next speed increment.
      */
     protected synchronized void profileTimeout() {
-        if (profileState == ProfileState.WAIT_FOR_THROTTLE) {
-            tidyUp();
-            log.error("Timeout waiting for throttle");
-            statusLabel.setText(Bundle.getMessage("StatusTimeout"));
-        } else if (profileState == ProfileState.RUNNING) {
-            if (profileDir == ProfileDirection.FORWARD) {
-                spFwd.setPoint(profileStep, avSpeed);
-                statusLabel.setText(Bundle.getMessage("Fwd", profileStep));
-            } else {
-                spRev.setPoint(profileStep, avSpeed);
-                statusLabel.setText(Bundle.getMessage("Rev", profileStep));
-            }
-            profileGraphPane.repaint();
-            if (profileStep == 29) {
-                if ((profileDir == ProfileDirection.FORWARD)
-                        && dirRevButton.isSelected()) {
-                    // Start reverse profile
-                    profileDir = ProfileDirection.REVERSE;
-                    throttle.setIsForward(false);
-                    profileStep = 0;
-                    avClr();
-                    statusLabel.setText(Bundle.getMessage("StatCreateRev"));
+        switch (profileState) {
+            case WAIT_FOR_THROTTLE:
+                tidyUp();
+                LOG.error("Timeout waiting for throttle");
+                statusLabel.setText(Bundle.getMessage("StatusTimeout"));
+                break;
+            case RUNNING:
+                if (profileDir == ProfileDirection.FORWARD) {
+                    spFwd.setPoint(profileStep, avSpeed);
+                    statusLabel.setText(Bundle.getMessage("Fwd", profileStep));
                 } else {
-                    tidyUp();
-                    statusLabel.setText(Bundle.getMessage("StatDone"));
+                    spRev.setPoint(profileStep, avSpeed);
+                    statusLabel.setText(Bundle.getMessage("Rev", profileStep));
                 }
-            } else {
-                if (profileStep == 28) {
-                    profileSpeed = 0.0F;
+                profileGraphPane.repaint();
+                if (profileStep == 29) {
+                    if ((profileDir == ProfileDirection.FORWARD)
+                            && dirRevButton.isSelected()) {
+                        // Start reverse profile
+                        profileDir = ProfileDirection.REVERSE;
+                        throttle.setIsForward(false);
+                        profileStep = 0;
+                        avClr();
+                        statusLabel.setText(Bundle.getMessage("StatCreateRev"));
+                    } else {
+                        tidyUp();
+                        statusLabel.setText(Bundle.getMessage("StatDone"));
+                    }
                 } else {
-                    profileSpeed += throttleIncrement;
+                    if (profileStep == 28) {
+                        profileSpeed = 0.0F;
+                    } else {
+                        profileSpeed += throttleIncrement;
+                    }
+                    throttle.setSpeedSetting(profileSpeed);
+                    profileStep += 1;
+                    // adjust delay as we get faster and averaging is quicker
+                    profileTimer.setDelay(7000 - range * 1000);
                 }
-                throttle.setSpeedSetting(profileSpeed);
-                profileStep += 1;
-                // adjust delay as we get faster and averaging is quicker
-                profileTimer.setDelay(7000 - range * 1000);
-            }
-        } else {
-            log.error("Unexpected profile timeout");
-            profileTimer.stop();
+                break;
+            default:
+                LOG.error("Unexpected profile timeout");
+                profileTimer.stop();
+                break;
         }
     }
 
@@ -1679,9 +1683,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         //release throttle
         if (throttle != null) {
             throttle.setSpeedSetting(0.0F);
-            //jmri.InstanceManager.throttleManagerInstance().cancelThrottleRequest(profileAddress, this);
             InstanceManager.throttleManagerInstance().releaseThrottle(throttle, this);
-            //throttle.release();
             throttle = null;
         }
 
@@ -1707,14 +1709,14 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         if (profileState != ProfileState.IDLE) {
             tidyUp();
             profileState = ProfileState.IDLE;
-            log.info("Profiling stopped by user");
+            LOG.info("Profiling stopped by user");
         }
 
         if (speedMatchState != SpeedMatchState.IDLE) {
             tidyUp();
             speedMatchState = SpeedMatchState.IDLE;
             statusLabel.setText(" ");
-            log.info("Speed matching stopped by user");
+            LOG.info("Speed matching stopped by user");
         }
     }
 
@@ -1742,10 +1744,10 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         stopTimers();
 
         throttle = t;
-        log.info("Throttle acquired");
+        LOG.info("Throttle acquired");
         throttle.setSpeedStepMode(DccThrottle.SpeedStepMode28);
         if (throttle.getSpeedStepMode() != DccThrottle.SpeedStepMode28) {
-            log.error("Failed to set 28 step mode");
+            LOG.error("Failed to set 28 step mode");
             statusLabel.setText(Bundle.getMessage("ThrottleError28"));
             InstanceManager.throttleManagerInstance().releaseThrottle(throttle, this);
             //throttle.release();
@@ -1756,13 +1758,13 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         try {
             pm.setPower(PowerManager.ON);
         } catch (JmriException e) {
-            log.error("Exception during power on: " + e.toString());
+            LOG.error("Exception during power on: " + e.toString());
         }
 
         throttleIncrement = throttle.getSpeedIncrement();
 
         if (profileState == ProfileState.WAIT_FOR_THROTTLE) {
-            log.info("Starting profiling");
+            LOG.info("Starting profiling");
             profileState = ProfileState.RUNNING;
             // Start at step 0 with 28 step packets
             profileSpeed = 0.0F;
@@ -1779,7 +1781,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             profileTimer.setRepeats(true);
             profileTimer.start();
         } else if (speedMatchState == SpeedMatchState.WAIT_FOR_THROTTLE) {
-            log.info("Starting speed matching");
+            LOG.info("Starting speed matching");
 
             // using speed matching timer to trigger each phase of speed matching
             speedMatchState = SpeedMatchState.SETUP;
@@ -1800,17 +1802,27 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     @Override
     public void notifyFailedThrottleRequest(jmri.LocoAddress address, String reason) {
     }
-
+    
     /**
-     * Called when a throttle must be stolen for the requested address. The
-     * throttle will be automatically stolen
+     * @deprecated since 4.15.7; use
+     * #notifyDecisionRequired(LocoAddress, DecisionType) instead
+     * 
+     * @param addressm the requested address
+     */
+    @Deprecated
+    @Override
+    public void notifyStealThrottleRequired(jmri.LocoAddress address) {
+    }
+    
+    /**
+     * Called when we must decide whether to steal the throttle for the requested address. 
+     * This is an automatically stealing implementation, so the throttle will be automatically stolen
      *
      * @param address the requested address
      */
     @Override
-    public void notifyStealThrottleRequired(jmri.LocoAddress address) {
-        // this is an automatically stealing impelementation.
-        InstanceManager.throttleManagerInstance().stealThrottleRequest(address, this, true);
+    public void notifyDecisionRequired(jmri.LocoAddress address, DecisionType question) {
+        InstanceManager.throttleManagerInstance().responseThrottleDecision(address, this, DecisionType.STEAL);
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Other Timers">
@@ -1889,10 +1901,10 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
      * Timeout requesting a throttle.
      */
     protected synchronized void throttleTimeout() {
-        jmri.InstanceManager.throttleManagerInstance().cancelThrottleRequest(locomotiveAddress, locomotiveAddressIsLong, this);
+        jmri.InstanceManager.throttleManagerInstance().cancelThrottleRequest(locomotiveAddress, this);
         profileState = ProfileState.IDLE;
         speedMatchState = SpeedMatchState.IDLE;
-        log.error("Timeout waiting for throttle");
+        LOG.error("Timeout waiting for throttle");
     }
 
     //</editor-fold>
@@ -2011,7 +2023,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         try {
             ops_mode_prog.writeCV(cv, value, this);
         } catch (ProgrammerException e) {
-            log.error("Exception writing CV " + cv + " " + e);
+            LOG.error("Exception writing CV " + cv + " " + e);
         }
     }
 
@@ -2024,7 +2036,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         try {
             prog.readCV(String.valueOf(cv), this);
         } catch (ProgrammerException e) {
-            log.error("Exception reading CV " + cv + " " + e);
+            LOG.error("Exception reading CV " + cv + " " + e);
         }
     }
 
@@ -2042,7 +2054,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         if (status == 0) {
             switch (progState) {
                 case IDLE:
-                    log.debug("unexpected reply in IDLE state");
+                    LOG.debug("unexpected reply in IDLE state");
                     break;
 
                 case READ29:
@@ -2113,12 +2125,12 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
                 default:
                     progState = ProgState.IDLE;
-                    log.warn("Unhandled read state: {}", progState);
+                    LOG.warn("Unhandled read state: {}", progState);
                     break;
             }
         } else {
             // Error during programming
-            log.error("Status not OK during " + progState.toString() + ": " + status);
+            LOG.error("Status not OK during " + progState.toString() + ": " + status);
             //profileAddressField.setText("Error");
             statusLabel.setText(Bundle.getMessage("ProgError"));
             progState = ProgState.IDLE;
@@ -2127,6 +2139,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     }
     //</editor-fold>
     //debugging logger
-    private final static Logger log = LoggerFactory.getLogger(SpeedoConsoleFrame.class);
+    private final static Logger LOG = LoggerFactory.getLogger(SpeedoConsoleFrame.class);
 
 }

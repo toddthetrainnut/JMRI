@@ -1,9 +1,13 @@
 package jmri.managers;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.*;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import jmri.Manager;
 import jmri.NamedBean;
@@ -21,13 +25,15 @@ import org.slf4j.LoggerFactory;
  * Automatically includes an Internal system, which need not be separately added
  * any more.
  * <p>
- * Encapsulates access to the "Primary" manager, used by default, which is the first one
- * provided.
+ * Encapsulates access to the "Primary" manager, used by default, which is the
+ * first one provided.
  * <p>
- * Internally, this is done by using an ordered list of all non-Internal managers, plus a
- * separate reference to the internal manager and default manager.
+ * Internally, this is done by using an ordered list of all non-Internal
+ * managers, plus a separate reference to the internal manager and default
+ * manager.
  *
- * @author	Bob Jacobsen Copyright (C) 2003, 2010, 2018
+ * @param <E> the supported type of NamedBean
+ * @author Bob Jacobsen Copyright (C) 2003, 2010, 2018
  */
 abstract public class AbstractProxyManager<E extends NamedBean> implements ProvidingManager<E>, Manager.ManagerDataListener<E> {
 
@@ -96,7 +102,10 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
     }
 
     /**
-     * Returns the set default or, if not present, the internal manager as defacto default
+     * Returns the set default or, if not present, the internal manager as
+     * defacto default
+     * 
+     * @return the default manager or the internal manager if no default set
      */
     public Manager<E> getDefaultManager() {
         if (defaultManager != null) return defaultManager;
@@ -123,6 +132,16 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
         });
         propertyListenerList.stream().forEach((l) -> {
             m.addPropertyChangeListener(l);
+        });
+        namedPropertyVetoListenerMap.entrySet().forEach((e) -> {
+            e.getValue().forEach((l) -> {
+                m.addVetoableChangeListener(e.getKey(), l);
+            });
+        });
+        namedPropertyListenerMap.entrySet().forEach((e) -> {
+            e.getValue().forEach((l) -> {
+                m.addPropertyChangeListener(e.getKey(), l);
+            });
         });
 
         m.addDataListener(this);
@@ -166,18 +185,6 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
         return getBeanBySystemName(name);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @CheckReturnValue
-    public @Nonnull String normalizeSystemName(@Nonnull String inputName) throws NamedBean.BadSystemNameException {
-        int index = matchTentative(inputName);
-        if (index >= 0) {
-            return getMgr(index).normalizeSystemName(inputName);
-        }
-        log.debug("normalizeSystemName did not find manager for name {}, defer to default", inputName); // NOI18N
-        return getDefaultManager().normalizeSystemName(inputName);
-    }
-
     /**
      * Locate via user name, then system name if needed. If that fails, create a
      * new NamedBean: If the name is a valid system name, it will be used for
@@ -187,6 +194,7 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
      *
      * @param name the user name or system name of the bean
      * @return an existing or new NamedBean
+     * @throws IllegalArgumentException if name is not usable in a bean
      */
     protected E provideNamedBean(String name) throws IllegalArgumentException {
         // make sure internal present
@@ -222,10 +230,10 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
         int index = matchTentative(systemName);
         if (index >= 0) {
             Manager<E> m = getMgr(index);
-            return m.getBeanBySystemName(m.normalizeSystemName(systemName));
+            return m.getBeanBySystemName(systemName);
         }
         log.debug("getBeanBySystemName did not find manager from name {}, defer to default manager", systemName); // NOI18N
-        return getDefaultManager().getBeanBySystemName(getDefaultManager().normalizeSystemName(systemName));
+        return getDefaultManager().getBeanBySystemName(systemName);
     }
 
     /** {@inheritDoc} */
@@ -245,21 +253,21 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
      * two calls with the same arguments will get the same instance; there is
      * i.e. only one Sensor object representing a given physical sensor and
      * therefore only one with a specific system or user name.
-     * <P>
+     * <p>
      * This will always return a valid object reference for a valid request; a
      * new object will be created if necessary. In that case:
-     * <UL>
-     * <LI>If a null reference is given for user name, no user name will be
+     * <ul>
+     * <li>If a null reference is given for user name, no user name will be
      * associated with the NamedBean object created; a valid system name must be
      * provided
-     * <LI>If a null reference is given for the system name, a system name will
+     * <li>If a null reference is given for the system name, a system name will
      * _somehow_ be inferred from the user name. How this is done is system
      * specific. Note: a future extension of this interface will add an
      * exception to signal that this was not possible.
-     * <LI>If both names are provided, the system name defines the hardware
+     * <li>If both names are provided, the system name defines the hardware
      * access of the desired turnout, and the user address is associated with
      * it.
-     * </UL>
+     * </ul>
      * Note that it is possible to make an inconsistent request if both
      * addresses are provided, but the given values are associated with
      * different objects. This is a problem, and we don't have a good solution
@@ -333,18 +341,18 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
 
     /** {@inheritDoc} */
     @Override
-    public void deleteBean(E s, String property) throws java.beans.PropertyVetoException {
+    public void deleteBean(E s, String property) throws PropertyVetoException {
         String systemName = s.getSystemName();
         try {
             getMgr(match(systemName)).deleteBean(s, property);
-        } catch (java.beans.PropertyVetoException e) {
+        } catch (PropertyVetoException e) {
             throw e;
         }
     }
 
     /**
      * {@inheritDoc}
-     * <P>
+     * <p>
      * Forwards the register request to the matching system
      */
     @Override
@@ -355,7 +363,7 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
 
     /**
      * {@inheritDoc}
-     * <P>
+     * <p>
      * Forwards the deregister request to the matching system
      *
      * @param s the name
@@ -379,7 +387,7 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
         if (!propertyListenerList.contains(l)) {
             propertyListenerList.add(l);
         }
@@ -390,7 +398,7 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
         if (propertyListenerList.contains(l)) {
             propertyListenerList.remove(l);
         }
@@ -401,7 +409,57 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
+    @OverridingMethodsMustInvokeSuper
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        if (!namedPropertyListenerMap.containsKey(propertyName)) {
+            namedPropertyListenerMap.put(propertyName, new ArrayList<>());
+        }
+        if (!namedPropertyListenerMap.get(propertyName).contains(listener)) {
+            namedPropertyListenerMap.get(propertyName).add(listener);
+        }
+        for (Manager<E> m : mgrs) {
+            m.addPropertyChangeListener(propertyName, listener);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @OverridingMethodsMustInvokeSuper
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        ArrayList<PropertyChangeListener> listeners = new ArrayList<>(propertyListenerList);
+        for (ArrayList<PropertyChangeListener> list : namedPropertyListenerMap.values()) {
+            listeners.addAll(list);
+        }
+        return listeners.toArray(new PropertyChangeListener[listeners.size()]);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @OverridingMethodsMustInvokeSuper
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        if (!namedPropertyListenerMap.containsKey(propertyName)) {
+            namedPropertyListenerMap.put(propertyName, new ArrayList<>());
+        }
+        ArrayList<PropertyChangeListener> listeners = namedPropertyListenerMap.get(propertyName);
+        return listeners.toArray(new PropertyChangeListener[listeners.size()]);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @OverridingMethodsMustInvokeSuper
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        if (!namedPropertyListenerMap.containsKey(propertyName)) {
+            namedPropertyListenerMap.put(propertyName, new ArrayList<>());
+        }
+        namedPropertyListenerMap.get(propertyName).remove(listener);
+        for (Manager<E> m : mgrs) {
+            m.removePropertyChangeListener(propertyName, listener);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public synchronized void addVetoableChangeListener(VetoableChangeListener l) {
         if (!propertyVetoListenerList.contains(l)) {
             propertyVetoListenerList.add(l);
         }
@@ -412,7 +470,7 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
+    public synchronized void removeVetoableChangeListener(VetoableChangeListener l) {
         if (propertyVetoListenerList.contains(l)) {
             propertyVetoListenerList.remove(l);
         }
@@ -421,8 +479,60 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
         }
     }
 
-    ArrayList<java.beans.PropertyChangeListener> propertyListenerList = new ArrayList<>(5);
-    ArrayList<java.beans.VetoableChangeListener> propertyVetoListenerList = new ArrayList<>(5);
+    /** {@inheritDoc} */
+    @Override
+    @OverridingMethodsMustInvokeSuper
+    public void addVetoableChangeListener(String propertyName, VetoableChangeListener listener) {
+        if (!namedPropertyVetoListenerMap.containsKey(propertyName)) {
+            namedPropertyVetoListenerMap.put(propertyName, new ArrayList<>());
+        }
+        if (!namedPropertyVetoListenerMap.get(propertyName).contains(listener)) {
+            namedPropertyVetoListenerMap.get(propertyName).add(listener);
+        }
+        for (Manager<E> m : mgrs) {
+            m.addVetoableChangeListener(propertyName, listener);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @OverridingMethodsMustInvokeSuper
+    public VetoableChangeListener[] getVetoableChangeListeners() {
+        ArrayList<VetoableChangeListener> listeners = new ArrayList<>(propertyVetoListenerList);
+        for (ArrayList<VetoableChangeListener> list : namedPropertyVetoListenerMap.values()) {
+            listeners.addAll(list);
+        }
+        return listeners.toArray(new VetoableChangeListener[listeners.size()]);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @OverridingMethodsMustInvokeSuper
+    public VetoableChangeListener[] getVetoableChangeListeners(String propertyName) {
+        if (!namedPropertyVetoListenerMap.containsKey(propertyName)) {
+            namedPropertyVetoListenerMap.put(propertyName, new ArrayList<>());
+        }
+        ArrayList<VetoableChangeListener> listeners = namedPropertyVetoListenerMap.get(propertyName);
+        return listeners.toArray(new VetoableChangeListener[listeners.size()]);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @OverridingMethodsMustInvokeSuper
+    public void removeVetoableChangeListener(String propertyName, VetoableChangeListener listener) {
+        if (!namedPropertyVetoListenerMap.containsKey(propertyName)) {
+            namedPropertyVetoListenerMap.put(propertyName, new ArrayList<>());
+        }
+        namedPropertyVetoListenerMap.get(propertyName).remove(listener);
+        for (Manager<E> m : mgrs) {
+            m.removeVetoableChangeListener(propertyName, listener);
+        }
+    }
+
+    ArrayList<PropertyChangeListener> propertyListenerList = new ArrayList<>();
+    HashMap<String, ArrayList<PropertyChangeListener>> namedPropertyListenerMap = new HashMap<>();
+    ArrayList<VetoableChangeListener> propertyVetoListenerList = new ArrayList<>();
+    HashMap<String, ArrayList<VetoableChangeListener>> namedPropertyVetoListenerMap = new HashMap<>();
 
     /**
      * @return The system-specific prefix letter for the primary implementation
@@ -465,7 +575,6 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
     @Nonnull
     @Override
     @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
     public String[] getSystemNameArray() {
         jmri.util.Log4JUtil.deprecationWarning(log, "getSystemNameArray");        
         if (log.isTraceEnabled()) log.trace("Manager#getSystemNameArray() called", new Exception("traceback"));
@@ -481,7 +590,6 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
     @Nonnull
     @Override
     @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
     public List<String> getSystemNameList() {
         // jmri.util.Log4JUtil.deprecationWarning(log, "getSystemNameList"); // used by configureXML
         List<E> list = getNamedBeanList();
@@ -505,7 +613,6 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
     /** {@inheritDoc} */
     @Override
     @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
     public List<String> getSystemNameAddedOrderList() {
         // jmri.util.Log4JUtil.deprecationWarning(log, "getSystemNameAddedOrderList"); // used by configureXML
         addedOrderList = new ArrayList<>();  // need to start maintaining it
@@ -516,7 +623,6 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
     /** {@inheritDoc} */
     @Override
     @Deprecated  // will be removed when superclass method is removed due to @Override
-    @SuppressWarnings("deprecation")  // temporary implementation of method with @Override
     @Nonnull
     public List<E> getNamedBeanList() {
         // jmri.util.Log4JUtil.deprecationWarning(log, "getNamedBeanList"); // used by getSystemNameList
@@ -542,7 +648,7 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
     @Nonnull
     public SortedSet<E> getNamedBeanSet() {
         if (namedBeanSet == null) {
-            namedBeanSet = new TreeSet<>(new NamedBeanComparator());
+            namedBeanSet = new TreeSet<>(new NamedBeanComparator<>());
             recomputeNamedBeanSet();
         }
         return Collections.unmodifiableSortedSet(namedBeanSet);
@@ -566,7 +672,7 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
      * managers.
      */
     @Override
-    public void contentsChanged(Manager.ManagerDataEvent e) {
+    public void contentsChanged(Manager.ManagerDataEvent<E> e) {
     }
 
     /**
@@ -640,5 +746,4 @@ abstract public class AbstractProxyManager<E extends NamedBean> implements Provi
 
     // initialize logging
     private final static Logger log = LoggerFactory.getLogger(AbstractProxyManager.class);
-
 }

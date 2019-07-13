@@ -122,13 +122,14 @@ abstract public class AbstractMRTrafficController {
     protected void setSynchronizeRx(boolean val) {
         synchronizeRx = val;
     }
+
     protected boolean getSynchronizeRx() {
         return synchronizeRx;
     }
 
     // The methods to implement the abstract Interface
 
-    protected Vector<AbstractMRListener> cmdListeners = new Vector<AbstractMRListener>();
+    protected final Vector<AbstractMRListener> cmdListeners = new Vector<AbstractMRListener>();
 
     protected synchronized void addListener(AbstractMRListener l) {
         // add only if not already registered
@@ -158,6 +159,7 @@ abstract public class AbstractMRTrafficController {
         // make a copy of the listener vector to synchronized not needed for transmit
         Vector<AbstractMRListener> v;
         synchronized (this) {
+            // FIXME: unnecessary synchronized; the Vector IS already thread-safe.
             v = (Vector<AbstractMRListener>) cmdListeners.clone();
         }
         // forward to all listeners
@@ -271,6 +273,7 @@ abstract public class AbstractMRTrafficController {
         // make a copy of the listener vector to synchronized (not needed for transmit?)
         Vector<AbstractMRListener> v;
         synchronized (this) {
+            // FIXME: unnecessary synchronized; the Vector IS already thread-safe.
             v = (Vector<AbstractMRListener>) cmdListeners.clone();
         }
         // forward to all listeners
@@ -330,7 +333,7 @@ abstract public class AbstractMRTrafficController {
      * Permanent loop for the transmit thread.
      */
     protected void transmitLoop() {
-        log.debug("transmitLoop starts");
+        log.debug("transmitLoop starts in {}", this);
 
         // loop forever
         while (!connectionError && !threadStopRequest) {
@@ -861,7 +864,7 @@ abstract public class AbstractMRTrafficController {
      * Each turn of the loop is the receipt of a single message.
      */
     public void receiveLoop() {
-        log.debug("receiveLoop starts");
+        log.debug("receiveLoop starts in {}", this);
         int errorCount = 0;
         while (errorCount < maxRcvExceptionCount && !threadStopRequest) { // stream close will exit via exception
             try {
@@ -936,6 +939,9 @@ abstract public class AbstractMRTrafficController {
      * @throws java.io.IOException if unable to read
      */
     protected byte readByteProtected(DataInputStream istream) throws IOException {
+	if(istream == null) {
+                throw new IOException("Input Stream NULL when reading");
+	}
         while (true) { // loop will repeat until character found
             int nchars;
             nchars = istream.read(rcvBuffer, 0, 1);

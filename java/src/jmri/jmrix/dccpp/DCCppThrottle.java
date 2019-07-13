@@ -49,14 +49,17 @@ public class DCCppThrottle extends AbstractThrottle implements DCCppListener {
     public DCCppThrottle(DCCppSystemConnectionMemo memo, LocoAddress address, DCCppTrafficController controller) {
         super(memo);
         this.tc = controller;
-        this.setDccAddress(((DccLocoAddress) address).getNumber());
+        if (address instanceof DccLocoAddress) {
+            this.setDccAddress(((DccLocoAddress) address).getNumber());
+        }
+        else {
+            log.error("LocoAddress {} is not a DccLocoAddress",address);
+        }
         this.speedIncrement = SPEED_STEP_128_INCREMENT;
         this.speedStepMode = DccThrottle.SpeedStepMode128;
 
         requestList = new LinkedBlockingQueue<RequestMessage>();
-        if (log.isDebugEnabled()) {
-            log.debug("DCCppThrottle constructor called for address " + address);
-        }
+        log.debug("DCCppThrottle constructor called for address {}", address);
     }
 
     /*
@@ -173,7 +176,7 @@ public class DCCppThrottle extends AbstractThrottle implements DCCppListener {
         }
     }
 
-    /* Since xpressnet has a seperate Opcode for emergency stop,
+    /* Since DCC++ has a seperate Opcode for emergency stop,
      * We're setting this up as a seperate protected function
      */
     protected void sendEmergencyStop() {
@@ -196,8 +199,8 @@ public class DCCppThrottle extends AbstractThrottle implements DCCppListener {
     /*
      * setSpeedStepMode - set the speed step value and the related
      *                    speedIncrement value.
-     * <p>
-     * @param Mode - the current speed step mode - default should be 128
+     *
+     * @param Mode  the current speed step mode - default should be 128
      *              speed step mode in most cases
      *
      * NOTE: DCC++ only supports 128-step mode.  So we ignore the speed

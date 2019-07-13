@@ -1,11 +1,10 @@
 package jmri;
 
-import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Interface for obtaining Routes
+ * Interface for obtaining Routes.
  * <p>
  * This doesn't have a "new" method, since Routes are separately implemented,
  * instead of being system-specific.
@@ -23,7 +22,7 @@ import javax.annotation.Nonnull;
  *
  * @author Dave Duchamp Copyright (C) 2004
  */
-public interface RouteManager extends Manager<Route> {
+public interface RouteManager extends ProvidingManager<Route> {
 
     // to free resources when no longer used
     @Override

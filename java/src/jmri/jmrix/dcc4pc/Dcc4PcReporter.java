@@ -1,6 +1,7 @@
 package jmri.jmrix.dcc4pc;
 
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jmri.DccLocoAddress;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The reporter will decode the rail com packets and add the information to the
  * rail com tag.
- * <P>
+ *
  * @author Kevin Dickerson Copyright (C) 2012
  */
 public class Dcc4PcReporter extends AbstractRailComReporter {
@@ -384,24 +385,10 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
 
     RailCom decodeAddress() {
         RailCom rcTag;
-        if ((address_part_1 & 0x80) == 0x80) {
-            addr_type = Dcc4PcSensorManager.LONG_ADDRESS;
-            addr = (address_part_1 & 0x3f) << 8;
-            addr |= address_part_2;
-        } else if ((address_part_1 & 0x20) == 0x20) {
-            addr_type = Dcc4PcSensorManager.CONSIST_ADDRESS;
-            addr = address_part_2;
-        } else {
-            addr_type = Dcc4PcSensorManager.SHORT_ADDRESS;
-            addr = address_part_2 & 0x7F;
-        }
         if (log.isDebugEnabled()) {
-            log.debug(this.getDisplayName() + " Address part 2 " + addr_type + " " + addr);
             log.debug(this.getDisplayName() + " Create/Get id tag for " + addr);
         }
         rcTag = (RailCom)jmri.InstanceManager.getDefault(jmri.RailComManager.class).provideIdTag("" + addr);
-
-        rcTag.setAddressType(addr_type);
 
         if ((fuelLevel != -1)) {
             rcTag.setFuelLevel(fuelLevel);
@@ -424,8 +411,8 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
         if ((actual_speed != -1)) {
             rcTag.setActualSpeed(actual_speed);
         }
-        for (Integer cv : cvValues.keySet()) {
-            rcTag.setCV(cv, cvValues.get(cv));
+        for (Map.Entry<Integer, Integer> entry : cvValues.entrySet()) {
+            rcTag.setCV(entry.getKey(), entry.getValue());
             if (cvvalue != -1) {
                 rcTag.setCvValue(cvvalue);
             }

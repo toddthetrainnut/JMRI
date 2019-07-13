@@ -2,6 +2,11 @@ package jmri.jmrix.internal;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import jmri.NamedBean;
 import jmri.Turnout;
 import jmri.managers.AbstractTurnoutManager;
 import jmri.implementation.AbstractTurnout;
@@ -52,6 +57,11 @@ public class InternalTurnoutManager extends AbstractTurnoutManager {
         return prefix + typeLetter() + curAddress;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return always 'VALID' because we can take anything
+     */
     @Override
     public NameValidity validSystemNameFormat(String systemName) {
         return NameValidity.VALID;
@@ -62,8 +72,7 @@ public class InternalTurnoutManager extends AbstractTurnoutManager {
      */
     @Override
     public String getEntryToolTip() {
-        String entryToolTip = Bundle.getMessage("AddOutputEntryToolTip");
-        return entryToolTip;
+        return Bundle.getMessage("AddOutputEntryToolTip");
     }
 
     /**

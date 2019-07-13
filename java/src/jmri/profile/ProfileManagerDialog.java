@@ -63,8 +63,8 @@ public class ProfileManagerDialog extends JDialog {
     /**
      * Creates new form ProfileManagerDialog
      *
-     * @param parent {@inheritDoc}
-     * @param modal  {@inheritDoc}
+     * @param parent The frame containing this dialog
+     * @param modal The modal parameter for parent JDialog
      */
     public ProfileManagerDialog(Frame parent, boolean modal) {
         this(parent, modal, false);
@@ -73,8 +73,8 @@ public class ProfileManagerDialog extends JDialog {
     /**
      * Creates new form ProfileManagerDialog
      *
-     * @param parent {@inheritDoc}
-     * @param modal  {@inheritDoc}
+     * @param parent The frame containing this dialog
+     * @param modal The modal parameter for parent JDialog
      * @param disableTimer true if the timer should be disabled
      */
     public ProfileManagerDialog(Frame parent, boolean modal, boolean disableTimer) {
@@ -282,8 +282,13 @@ public class ProfileManagerDialog extends JDialog {
                 countDownLbl.setText(Integer.toString(countDown));
             } else {
                 setVisible(false);
-                ProfileManager.getDefault().setActiveProfile(profiles.getSelectedValue());
-                log.info("Automatically starting with profile " + ProfileManager.getDefault().getActiveProfile().getId() + " after timeout.");
+                Profile profile = profiles.getSelectedValue();
+                ProfileManager.getDefault().setActiveProfile(profile);
+                if (profile != null) {
+                    log.info("Automatically starting with profile " + profile.getId() + " after timeout.");
+                } else {
+                    log.info("Automatically starting without a profile");
+                }
                 timer.stop();
                 countDown = -1;
                 dispose();
@@ -303,7 +308,7 @@ public class ProfileManagerDialog extends JDialog {
     /**
      * Get the active profile or display a dialog to prompt the user for it.
      *
-     * @param f - The {@link java.awt.Frame} to display the dialog over
+     * @param f  The {@link java.awt.Frame} to display the dialog over
      * @return the active or selected {@link Profile}
      * @throws java.io.IOException if unable to read or set the starting Profile
      * @see ProfileManager#getStartingProfile()

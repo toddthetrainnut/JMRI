@@ -15,6 +15,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -228,8 +229,9 @@ public class PanelEditor extends Editor implements ItemListener {
                                 JOptionPane.ERROR_MESSAGE);
                         return;
                     }
-                    if (getTargetPanel().getTopLevelAncestor() != null) {
-                        ((JFrame) getTargetPanel().getTopLevelAncestor()).setTitle(newName);
+                    Component ancestor = getTargetPanel().getTopLevelAncestor(); // could be null
+                    if (ancestor instanceof JFrame) {
+                        ((JFrame) ancestor).setTitle(newName);
                     }
                     editor.setTitle();
                     InstanceManager.getDefault(PanelMenu.class).renameEditorPanel(editor);
@@ -1137,7 +1139,7 @@ public class PanelEditor extends Editor implements ItemListener {
         }
         if (!removed) {
             _selectionGroup.add(p);
-        } else if (removed && _selectionGroup.isEmpty()) {
+        } else if (_selectionGroup.isEmpty()) {
             _selectionGroup = null;
         }
         _targetPanel.repaint();
@@ -1181,10 +1183,10 @@ public class PanelEditor extends Editor implements ItemListener {
                 className = ConfigXmlManager.adapterName(copied);
                 copied.setLocation(x, y);
                 try {
-                    adapter = (XmlAdapter) Class.forName(className).newInstance();
+                    adapter = (XmlAdapter) Class.forName(className).getDeclaredConstructor().newInstance();
                     Element el = adapter.store(copied);
                     adapter.load(el, this);
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException
                     | jmri.configurexml.JmriConfigureXmlException
                     | RuntimeException ex) {
                         log.debug(ex.getLocalizedMessage(), ex);

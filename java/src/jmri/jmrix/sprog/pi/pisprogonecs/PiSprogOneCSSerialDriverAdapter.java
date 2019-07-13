@@ -27,7 +27,8 @@ public class PiSprogOneCSSerialDriverAdapter
     }
 
     /**
-     * Get an array of valid baud rates. This is currently only 115,200 bps
+     * {@inheritDoc}
+     * Currently only 115,200 bps
      */
     @Override
     public String[] validBaudRates() {
@@ -35,10 +36,17 @@ public class PiSprogOneCSSerialDriverAdapter
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int[] validBaudNumbers() {
+        return new int[]{115200};
+    }
+
+    /**
      * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
      */
     @Deprecated  // will be removed when class converted to multi-system
-    @SuppressWarnings("deprecation")  // temporary implementation
     static public PiSprogOneCSSerialDriverAdapter instance() {
         return null;
     }

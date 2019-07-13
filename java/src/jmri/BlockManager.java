@@ -1,12 +1,10 @@
 package jmri;
 
-import java.beans.PropertyChangeListener;
-import java.beans.VetoableChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.Instant;
 import javax.annotation.CheckForNull;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -35,9 +33,9 @@ import jmri.managers.AbstractManager;
  *
  * @author Bob Jacobsen Copyright (C) 2006
  */
-public class BlockManager extends AbstractManager<Block> implements PropertyChangeListener, VetoableChangeListener, InstanceManagerAutoDefault {
+public class BlockManager extends AbstractManager<Block> implements ProvidingManager<Block>, InstanceManagerAutoDefault {
 
-    private String powerManagerChangeName;
+    private final String powerManagerChangeName;
 
     public BlockManager() {
         super();
@@ -196,8 +194,7 @@ public class BlockManager extends AbstractManager<Block> implements PropertyChan
 
     @CheckReturnValue
     @CheckForNull
-    public Block getBySystemName(@Nonnull String name) {
-        String key = name.toUpperCase();
+    public Block getBySystemName(@Nonnull String key) {
         return _tsys.get(key);
     }
 
@@ -218,22 +215,6 @@ public class BlockManager extends AbstractManager<Block> implements PropertyChan
         }
         // If it's not in the system list, go ahead and return null
         return (retv);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Forces upper case and trims leading and trailing whitespace.
-     * The IB prefix is added if necessary.
-     */
-    @CheckReturnValue
-    @Override
-    public @Nonnull
-    String normalizeSystemName(@Nonnull String inputName) {
-        if (inputName.length() < 3 || !inputName.startsWith("IB")) {
-            inputName = "IB" + inputName;
-        }
-        return inputName.toUpperCase().trim();
     }
 
     /**
@@ -282,8 +263,8 @@ public class BlockManager extends AbstractManager<Block> implements PropertyChan
     @Override
     @CheckReturnValue
     @Nonnull
-    public String getBeanTypeHandled() {
-        return Bundle.getMessage("BeanNameBlock");
+    public String getBeanTypeHandled(boolean plural) {
+        return Bundle.getMessage(plural ? "BeanNameBlocks" : "BeanNameBlock");
     }
 
     /**
@@ -325,7 +306,7 @@ public class BlockManager extends AbstractManager<Block> implements PropertyChan
      *
      * Also listen for additions/removals or PowerManagers
      *
-     * @param e - the change event
+     * @param e the change event
      */
 
     @Override
@@ -366,6 +347,11 @@ public class BlockManager extends AbstractManager<Block> implements PropertyChan
             return Long.MAX_VALUE;
         }
         return Instant.now().toEpochMilli() - lastTimeLayoutPowerOn.toEpochMilli();
+    }
+
+    @Override
+    public Block provide(String name) throws IllegalArgumentException {
+        return provideBlock(name);
     }
 
     private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BlockManager.class);

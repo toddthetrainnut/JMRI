@@ -13,6 +13,7 @@ import org.junit.*;
 public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
 
     private Z21InterfaceScaffold znis;
+    private Z21SystemConnectionMemo memo; 
 
     @Override
     public String getSystemName(int i) {
@@ -25,7 +26,7 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
         // create
         Sensor t = l.provideSensor("ZSABCD:5");
         // check
-        Assert.assertTrue("real object returned ", t != null);
+        Assert.assertNotNull("real object returned ", t);
         Assert.assertEquals("system name correct ", t,l.getBySystemName(getSystemName(5)));
     }
 
@@ -68,14 +69,16 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
 
     @Test
     public void testZ21CanBusMessages() {
-        // send messages for feedbak encoder abcd:1
+        // send messages for feedback encoder abcd:1
         // notify the Z21 that somebody else changed it...
         byte msg[]={(byte)0x0E,(byte)0x00,(byte)0xC4,(byte)0x00,(byte)0xcd,(byte)0xab,(byte)0x01,(byte)0x00,(byte)0x01,(byte)0x01,(byte)0x00,(byte)0x01,(byte)0x00,(byte)0x00};
         Z21Reply reply = new Z21Reply(msg,14);
         znis.sendTestMessage(reply);
 
         // see if sensor exists
-        Assert.assertTrue(null != l.getBySystemName("ZSABCD:1"));
+        // note that name matches case of name sent
+        Assert.assertNotNull(l.getBySystemName("ZSabcd:1"));
+        Assert.assertNull(l.getBySystemName("ZSABCD:1"));
     }
 
     @Test
@@ -109,7 +112,7 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
         JUnitUtil.setUp();
         // prepare an interface
         znis = new Z21InterfaceScaffold();
-        Z21SystemConnectionMemo memo = new Z21SystemConnectionMemo();
+        memo = new Z21SystemConnectionMemo();
         memo.setTrafficController(znis);
         memo.setRocoZ21CommandStation(new RocoZ21CommandStation());
         // create and register the manager object
@@ -119,6 +122,9 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
     @After
     public void tearDown() {
         l.dispose();
+        znis.terminateThreads();
+        znis = null;
+        memo = null;
         JUnitUtil.tearDown();
     }
 

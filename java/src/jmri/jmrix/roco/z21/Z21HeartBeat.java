@@ -48,7 +48,9 @@ public class Z21HeartBeat implements Z21Listener {
     }
 
     public void dispose(){
-       keepAliveTimer.stop();
+       if (keepAliveTimer != null) {
+           keepAliveTimer.stop();
+       }
        keepAliveTimer = null;
     }
 
@@ -67,8 +69,10 @@ public class Z21HeartBeat implements Z21Listener {
      */
     @Override
     public void message(Z21Message msg){
-       // if we see any outgoing message, restart the timer
-       keepAliveTimer.restart();
+       if(keepAliveTimer!=null) { 
+          // if we see any outgoing message, restart the timer
+          keepAliveTimer.restart();
+       }
     }
 
 }

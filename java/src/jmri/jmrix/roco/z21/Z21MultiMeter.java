@@ -54,7 +54,7 @@ public class Z21MultiMeter extends jmri.implementation.AbstractMultiMeter implem
     public void reply(Z21Reply r) {
         log.debug("Z21MultiMeter received reply: {}", r.toString());
         if (r.isSystemDataChangedReply()) {
-            setCurrent(r.getSystemDataMainCurrent() / 3000.0f);
+            setCurrent(r.getSystemDataMainCurrent() * 1.0f);
             setVoltage(r.getSystemDataVCCVoltage() * 1.0f);
         }
 
@@ -85,6 +85,11 @@ public class Z21MultiMeter extends jmri.implementation.AbstractMultiMeter implem
     @Override
     public boolean hasVoltage() {
         return true;
+    }
+
+    @Override
+    public CurrentUnits getCurrentUnits() {
+        return  CurrentUnits.CURRENT_UNITS_MILLIAMPS;
     }
 
     private final static Logger log = LoggerFactory.getLogger(Z21MultiMeter.class);

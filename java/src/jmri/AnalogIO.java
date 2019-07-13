@@ -34,54 +34,63 @@ public interface AnalogIO extends NamedBean {
      * 
      * @return true if the analog value is stable
      */
-    default public boolean isConsistentState() {
+    default public boolean isConsistentValue() {
         return true;
     }
-
+    
     /**
-     * Change the commanded state, which results in the relevant command(s)
+     * Change the commanded value, which results in the relevant command(s)
      * being sent to the hardware. The exception is thrown if there are problems
      * communicating with the layout hardware.
+     * <p>
+     * The value must be a valid number, not a NaN or infinity number.
      *
      * @param value the desired analog value
-     * @throws jmri.JmriException general error when setting the state fails
+     * @throws jmri.JmriException general error when setting the value fails
+     * @throws IllegalArgumentException if the value is Float.NaN,
+     *                                  Float.NEGATIVE_INFINITY or
+     *                                  Float.POSITIVE_INFINITY
      */
-    public void setCommandedAnalogValue(float value) throws JmriException;
+    public void setCommandedAnalogValue(double value) throws JmriException;
 
     /**
-     * Query the commanded state. This is a bound parameter, so you can also
+     * Query the commanded value. This is a bound parameter, so you can also
      * register a listener to be informed of changes.
+     * <p>
+     * The result must be a valid number, not a NaN or infinity number.
      *
      * @return the analog value
      */
-    public float getCommandedAnalogValue();
+    public double getCommandedAnalogValue();
     
     /**
      * Query the known analog value. This is a bound parameter, so you can also
      * register a listener to be informed of changes. A result is always
-     * returned; if no other feedback method is available, the commanded state
+     * returned; if no other feedback method is available, the commanded value
      * will be used.
+     * <p>
+     * The result must be a valid number, not a NaN or infinity number.
      *
      * @return the known analog value
      */
-    default public float getKnownAnalogValue() {
+    default public double getKnownAnalogValue() {
         return getCommandedAnalogValue();
     }
     
     /**
      * Get the minimum value of this AnalogIO.
      */
-    public float getMin();
+    public double getMin();
     
     /**
      * Get the maximum value of this AnalogIO.
      */
-    public float getMax();
+    public double getMax();
     
     /**
      * Get the resloution of this AnalogIO.
      */
-    public float getResolution();
+    public double getResolution();
 
     /**
      * Is this AnalogIO absolute or relative?

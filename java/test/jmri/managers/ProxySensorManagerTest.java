@@ -5,26 +5,29 @@ import java.util.*;
 
 import jmri.*;
 import jmri.jmrix.internal.InternalSensorManager;
+import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the ProxySensorManager
  *
  * @author	Bob Jacobsen 2003, 2006, 2008, 2014
-  */
-public class ProxySensorManagerTest extends TestCase implements Manager.ManagerDataListener<Sensor>, PropertyChangeListener {
+ */
+public class ProxySensorManagerTest implements Manager.ManagerDataListener<Sensor>, PropertyChangeListener {
 
     protected ProxySensorManager l = null;	// holds objects under test
 
+    @Test
     public void testDispose() {
         l.dispose();  // all we're really doing here is making sure the method exists
     }
 
+    @Test
     public void testPutGetJ() {
         // create
         Sensor tj = l.newSensor("JS1", "mine");
@@ -34,23 +37,25 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertTrue("system name correct ", tj == l.getBySystemName("JS1"));
     }
 
+    @Test
     public void testSensorNameCase() {
         Assert.assertEquals(0, l.getObjectCount());
         // create
         Sensor t = l.provideSensor("IS:XYZ");
-        t = l.provideSensor("IS:xyz");  // upper canse and lower case are the same object
+        Assert.assertNotEquals(t, l.provideSensor("IS:xyz"));  // upper case and lower case are different objects
         // check
         Assert.assertTrue("real object returned ", t != null);
         Assert.assertEquals("IS:XYZ", t.getSystemName());  // we force upper
         Assert.assertTrue("system name correct ", t == l.getBySystemName("IS:XYZ"));
-        Assert.assertEquals(1, l.getObjectCount());
-        Assert.assertEquals(1, l.getSystemNameAddedOrderList().size());
-
-        t = l.provideSensor("IS:XYZ");
-        Assert.assertEquals(1, l.getObjectCount());
-        Assert.assertEquals(1, l.getSystemNameAddedOrderList().size());
+        Assert.assertEquals(2, l.getObjectCount());
+        Assert.assertEquals(2, l.getNamedBeanSet().size());
+        // test providing same name as existing sensor does not create new sensor
+        l.provideSensor("IS:XYZ");
+        Assert.assertEquals(2, l.getObjectCount());
+        Assert.assertEquals(2, l.getNamedBeanSet().size());
     }
 
+    @Test
     public void testPutGetI() {
         // create
         Sensor ti = l.newSensor("IS1", "mine");
@@ -60,6 +65,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertTrue("system name correct ", ti == l.getBySystemName("IS1"));
     }
 
+    @Test
     public void testPutGetK() {
         // create
         Sensor tk = l.newSensor("KS1", "mine");
@@ -69,6 +75,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertTrue("system name correct ", tk == l.getBySystemName("KS1"));
     }
 
+    @Test
     public void testDefaultSystemName() {
         // create
         Sensor t = l.provideSensor("9");
@@ -78,13 +85,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertEquals("can find by name", t, l.getBySystemName("JS9"));
     }
 
-    public void testNormalizeName() {
-        // create
-        String name = l.provideSensor("1").getSystemName();
-        // check
-        Assert.assertEquals(name, l.normalizeSystemName(name));
-    }
-
+    @Test
     public void testProvideFailure() {
         boolean correct = false;
         try {
@@ -93,9 +94,11 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         } catch (IllegalArgumentException ex) {
             correct = true;
         }
+        JUnitAppender.assertErrorMessage("Invalid system name for Sensor: \"\" needed non-empty suffix to follow " + l.getSystemNamePrefix());
         Assert.assertTrue("Exception thrown properly", correct);
-
     }
+
+    @Test
     public void testSingleObject() {
         // test that you always get the same representation
         Sensor t1 = l.newSensor("JS1", "mine");
@@ -109,22 +112,25 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertTrue("same new ", t1 == t2);
     }
 
+    @Test
     public void testMisses() {
         // try to get nonexistant objects
         Assert.assertTrue(null == l.getByUserName("foo"));
         Assert.assertTrue(null == l.getBySystemName("bar"));
     }
 
-    public void testUpperLower() {  // this is part of testing of (default) normalization
+    @Test
+    public void testUpperLower() {  // verify that names are case sensitive
         Sensor t = l.provideSensor("JS1ABC");  // internal will always accept that name
         String name = t.getSystemName();
         
         int prefixLength = l.getSystemPrefix().length()+1;     // 1 for type letter
         String lowerName = name.substring(0,prefixLength)+name.substring(prefixLength, name.length()).toLowerCase();
         
-        Assert.assertEquals(t, l.getSensor(lowerName));
+        Assert.assertNotEquals(t, l.getSensor(lowerName));
     }
 
+    @Test
     public void testRename() {
         // get
         Sensor t1 = l.newSensor("JS1", "before");
@@ -135,6 +141,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertEquals("no old object", null, l.getByUserName("before"));
     }
 
+    @Test
     public void testTwoNames() {
         Sensor jl212 = l.provideSensor("JS212");
         Sensor jl211 = l.provideSensor("JS211");
@@ -144,6 +151,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertTrue(jl212 != jl211);
     }
 
+    @Test
     public void testDefaultNotInternal() {
         Sensor lut = l.provideSensor("211");
 
@@ -151,6 +159,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertEquals("JS211", lut.getSystemName());
     }
 
+    @Test
     public void testProvideUser() {
         Sensor l1 = l.provideSensor("211");
         l1.setUserName("user 1");
@@ -171,12 +180,14 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
     // the following methods test code in Manager and AbstractManager,
     // but they need a concrete implementation to do it, hence are here.
     
+    @Test
     public void testAddTracking() {
         Sensor s1 = l.provideSensor("IS1");
         s1.setUserName("Sensor 1");
         
         l.addDataListener(this);
-        l.addPropertyChangeListener(this);
+        l.addPropertyChangeListener("length", this);
+        l.addPropertyChangeListener("DisplayListName", this);
         
         // add an item
         Sensor s2 = l.provideSensor("IS2");
@@ -232,6 +243,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         
     }
 
+    @Test
     public void testRemoveTrackingI() {
         
         Sensor s1 = l.provideSensor("IS1");
@@ -253,6 +265,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertEquals("content at index", s2, tlist.get(lastEvent0));       
     }
 
+    @Test
     public void testRemoveTrackingJ() {
         
         l.provideSensor("IS10");
@@ -277,6 +290,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertEquals("content at index", s2, tlist.get(lastEvent0));       
     }
 
+    @Test
     public void testGetObjectCount() {
         Assert.assertEquals(0, l.getObjectCount());
 
@@ -297,6 +311,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertEquals(4, l.getObjectCount());
     }
 
+    @Test
     public void testRemoveTrackingJMute() {
         
         l.setDataListenerMute(true);
@@ -325,6 +340,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         Assert.assertEquals("index1", 3, lastEvent1); // originally five items, deleted 1, so 4, and last index is then 3
     }
 
+    @Test
     public void testOrderVsSorted() {
         Sensor s4 = l.provideSensor("IS4");
         Sensor s2 = l.provideSensor("IS2");
@@ -427,6 +443,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
 
     }
 
+    @Test
     public void testUnmodifiable() {
         Sensor s1 = l.provideSensor("IS1");
         l.provideSensor("IS2");
@@ -453,7 +470,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
     }
 
     // check how proxy is integrated with defaults
-        
+    @Test
     public void testInstanceManagerIntegration() {
         jmri.util.JUnitUtil.resetInstanceManager();
         Assert.assertNotNull(InstanceManager.getDefault(SensorManager.class));
@@ -495,7 +512,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
     String lastCall;
     
     @Override
-    public void intervalAdded(Manager.ManagerDataEvent e) {
+    public void intervalAdded(Manager.ManagerDataEvent<Sensor> e) {
         events++;
         lastEvent0 = e.getIndex0();
         lastEvent1 = e.getIndex1();
@@ -503,7 +520,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         lastCall = "Added";
     }
     @Override
-    public void intervalRemoved(Manager.ManagerDataEvent e) {
+    public void intervalRemoved(Manager.ManagerDataEvent<Sensor> e) {
         events++;
         lastEvent0 = e.getIndex0();
         lastEvent1 = e.getIndex1();
@@ -511,7 +528,7 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         lastCall = "Removed";
     }
     @Override
-    public void contentsChanged(Manager.ManagerDataEvent e) {
+    public void contentsChanged(Manager.ManagerDataEvent<Sensor> e) {
         events++;
         lastEvent0 = e.getIndex0();
         lastEvent1 = e.getIndex1();
@@ -519,27 +536,8 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         lastCall = "Changed";
     }
 
-
-    // from here down is testing infrastructure
-    public ProxySensorManagerTest(String s) {
-        super(s);
-    }
-
-    // Main entry point
-    static public void main(String[] args) {
-        String[] testCaseName = {"-noloading", ProxySensorManagerTest.class.getName()};
-        junit.textui.TestRunner.main(testCaseName);
-    }
-
-    // test suite from all defined tests
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ProxySensorManagerTest.class);
-        return suite;
-    }
-
-    // The minimal setup for log4J
-    @Override
-    protected void setUp() {
+    @Before
+    public void setUp() {
         JUnitUtil.setUp();
         // create and register the manager object
         l = new ProxySensorManager();
@@ -560,8 +558,8 @@ public class ProxySensorManagerTest extends TestCase implements Manager.ManagerD
         lastCall = null;
     }
 
-    @Override
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         JUnitUtil.tearDown();
     }
 

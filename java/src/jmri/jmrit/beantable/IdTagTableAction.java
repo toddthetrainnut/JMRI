@@ -33,7 +33,7 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> {
 
     /**
      * Create an action with a specific title.
-     * <P>
+     * <p>
      * Note that the argument is the Action title, not the title of the
      * resulting frame. Perhaps this should be changed?
      *
@@ -41,14 +41,9 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> {
      */
     public IdTagTableAction(String actionName) {
         super(actionName);
-
-        // disable ourself if there is no primary IdTag manager available
-        if (tagManager == null) {
-            setEnabled(false);
-        }
-
     }
-
+    
+    @Nonnull
     protected IdTagManager tagManager = InstanceManager.getDefault(jmri.IdTagManager.class);
 
     /**
@@ -56,9 +51,11 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> {
      */
     @Override
     public void setManager(@Nonnull Manager<IdTag> t) {
-        tagManager = (IdTagManager) t;
-        if (m != null) {
-            m.setManager(tagManager);
+        if (t instanceof IdTagManager) {
+            tagManager = (IdTagManager) t;
+            if (m != null) {
+                m.setManager(tagManager);
+            }
         }
     }
 

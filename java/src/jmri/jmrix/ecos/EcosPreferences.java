@@ -29,9 +29,7 @@ public class EcosPreferences /*implements java.beans.PropertyChangeListener*/ {
                 return true;
             }
         };
-        InstanceManager.getOptionalDefault(jmri.ShutDownManager.class).ifPresent(sdm -> {
-            sdm.register(ecosPreferencesShutDownTask);
-        });
+        InstanceManager.getDefault(jmri.ShutDownManager.class).register(ecosPreferencesShutDownTask);
 
         adaptermemo = memo;
         InstanceManager.store(new PreferencesPane(this),jmri.swing.PreferencesPanel.class);
@@ -138,7 +136,7 @@ public class EcosPreferences /*implements java.beans.PropertyChangeListener*/ {
      * Determine system description from GUI string for how to solve
      * conflicts between rosters in JMRI and ECoS and store in _locomaster.
      * <p>
-     * Keep identical to {@link jmri.jmrix.ecos.swing.preferences.PreferencesPane#initializeMasterControlCombo(JComboBox)}
+     * Keep identical to {@link jmri.jmrix.ecos.swing.preferences.PreferencesPane}#initializeMasterControlCombo(javax.swing.JComboBox)
      *
      * @param master setting for conflict syncing
      */
@@ -161,7 +159,7 @@ public class EcosPreferences /*implements java.beans.PropertyChangeListener*/ {
      * Determine GUI string from system description for how to solve
      * conflicts between rosters in JMRI and ECoS.
      * <p>
-     * Keep identical to {@link jmri.jmrix.ecos.swing.preferences.PreferencesPane#initializeMasterControlCombo(JComboBox)}
+     * Keep identical to {@link jmri.jmrix.ecos.swing.preferences.PreferencesPane}#initializeMasterControlCombo(javax.swing.JComboBox)
      *
      * @return GUI string
      */
