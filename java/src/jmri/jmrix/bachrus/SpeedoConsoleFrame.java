@@ -301,7 +301,15 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
     protected ProfileState profileState = ProfileState.IDLE;
     //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Speed Matching GUI Elements">
+    //<editor-fold defaultstate="collapsed" desc="Basic Speed Matching GUI Elements">
+    
+    protected JLabel speedMatchForwardMomentumLabel = new JLabel("Forward Momentum");
+    protected JTextField speedMatchForwardMomentumField = new JTextField(3);
+    protected JLabel speedMatchReverseMomentumLabel = new JLabel("Reverse Momentum");
+    protected JTextField speedMatchReverseMomentumField = new JTextField(3);
+    protected JCheckBox speedMatchForwardCheckbox = new JCheckBox("Forward");
+    protected JCheckBox speedMatchReverseCheckbox = new JCheckBox("Reverse");
+    
     protected JLabel speedStep1TargetLabel = new JLabel(Bundle.getMessage("lblSpeedStep1"));
     protected JTextField speedStep1TargetField = new JTextField("3", 3);
     protected JLabel speedStep1TargetUnit = new JLabel(Bundle.getMessage("lblMPH"));
@@ -792,28 +800,56 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
         profileAndSpeedMatchingTabs.addTab("Speed Profile", profilePane);
         //</editor-fold>
+        
         //<editor-fold defaultstate="collapsed" desc="Basic Speed Matching Panel">
         // pane for speed matching
         // TODO: Add momentum setting - TRW
         // TODO: Add reverse toggle - TRW
+        // TODO: Add basic vs advanced speed table - TRW
         // TODO: Add description of limitations - TRW
+        // TODO: Add ability to set options based on decoder manufacturer - TRW
+        speedMatchForwardMomentumField.setHorizontalAlignment(JTextField.LEFT);
+        speedMatchReverseMomentumField.setHorizontalAlignment(JTextField.LEFT);
+        speedMatchForwardCheckbox.setSelected(true);
+        speedMatchReverseCheckbox.setSelected(true);
+        
         speedStep1TargetField.setHorizontalAlignment(JTextField.RIGHT);
         speedStep1TargetUnit.setPreferredSize(new Dimension(35, 16));
         speedStep28TargetField.setHorizontalAlignment(JTextField.RIGHT);
         speedStep28TargetUnit.setPreferredSize(new Dimension(35, 16));
         speedMatchWarmUpCheckBox.setSelected(true);
-        JPanel speedMatchPane = new JPanel();
-        speedMatchPane.setLayout(new GridBagLayout());
+        
         GridBagConstraints gbc = new GridBagConstraints();
-        speedMatchPane.add(speedStep1TargetLabel, gbc);
-        speedMatchPane.add(speedStep1TargetField, gbc);
-        speedMatchPane.add(speedStep1TargetUnit, gbc);
-        speedMatchPane.add(speedStep28TargetLabel, gbc);
-        speedMatchPane.add(speedStep28TargetField, gbc);
-        speedMatchPane.add(speedStep28TargetUnit, gbc);
-        speedMatchPane.add(speedMatchWarmUpCheckBox, gbc);
-        speedMatchPane.add(speedMatchButton, gbc);
-        profileAndSpeedMatchingTabs.addTab("Basic Speed Matching", speedMatchPane);
+        
+        JPanel speedMatchOptionsPane = new JPanel();
+        speedMatchOptionsPane.setLayout(new GridBagLayout());
+        speedMatchOptionsPane.add(speedMatchForwardMomentumLabel, gbc);
+        speedMatchOptionsPane.add(speedMatchForwardMomentumField, gbc);
+        speedMatchOptionsPane.add(speedMatchReverseMomentumLabel, gbc);
+        speedMatchOptionsPane.add(speedMatchReverseMomentumField, gbc);
+        speedMatchOptionsPane.add(speedMatchWarmUpCheckBox, gbc);
+        JPanel speedMatchDirectionPane = new JPanel();
+        speedMatchDirectionPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Speed Match Directions"));
+        speedMatchDirectionPane.setLayout(new GridBagLayout());
+        speedMatchDirectionPane.add(speedMatchForwardCheckbox, gbc);
+        speedMatchDirectionPane.add(speedMatchReverseCheckbox, gbc);
+        speedMatchOptionsPane.add(speedMatchDirectionPane);        
+        
+        JPanel speedMatchControlsPane = new JPanel();
+        speedMatchControlsPane.setLayout(new GridBagLayout());
+        speedMatchControlsPane.add(speedStep1TargetLabel, gbc);
+        speedMatchControlsPane.add(speedStep1TargetField, gbc);
+        speedMatchControlsPane.add(speedStep1TargetUnit, gbc);
+        speedMatchControlsPane.add(speedStep28TargetLabel, gbc);
+        speedMatchControlsPane.add(speedStep28TargetField, gbc);
+        speedMatchControlsPane.add(speedStep28TargetUnit, gbc);
+        speedMatchControlsPane.add(speedMatchButton, gbc);
+                
+        JPanel basicSpeedMatchPane = new JPanel();
+        basicSpeedMatchPane.setLayout(new BoxLayout(basicSpeedMatchPane, BoxLayout.Y_AXIS));
+        basicSpeedMatchPane.add(speedMatchOptionsPane);
+        basicSpeedMatchPane.add(speedMatchControlsPane);
+        profileAndSpeedMatchingTabs.addTab("Basic Speed Matching", basicSpeedMatchPane);
 
         profileAndSpeedMatchingPane.add(profileAndSpeedMatchingTabs, BorderLayout.CENTER);
 
