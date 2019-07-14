@@ -1,7 +1,9 @@
 package jmri.jmrix.bachrus;
 
 import apps.startup.AbstractStartupActionFactory;
+import apps.startup.StartupActionFactory;
 import java.util.Locale;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * {@link apps.startup.StartupActionFactory} for the
@@ -9,6 +11,7 @@ import java.util.Locale;
  * 
  * @author Todd Wegter Copyright (C) 2019
  */
+@ServiceProvider(service = StartupActionFactory.class)
 public class SpeedoStartupActionFactory extends AbstractStartupActionFactory{
 
     @Override
