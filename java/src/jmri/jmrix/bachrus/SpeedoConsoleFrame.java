@@ -53,6 +53,8 @@ import jmri.jmrit.roster.swing.GlobalRosterEntryComboBox;
 import jmri.jmrix.bachrus.speedmatcher.BasicSpeedMatcher;
 import jmri.jmrix.bachrus.speedmatcher.ISpeedMatcher;
 import jmri.jmrix.bachrus.speedmatcher.SimpleBasicSpeedMatcher;
+import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
+import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherFactory;
 import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -315,9 +317,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Speed Matching Member Variables">
     protected ISpeedMatcher speedMatcher;
-
-    protected SpeedMatchState speedMatchState = SpeedMatchState.IDLE;
-    protected SpeedMatchSetupState speedMatchSetupState = SpeedMatchSetupState.IDLE;
     //</editor-fold>
     //</editor-fold>
     // For testing only, must be 1 for normal use
@@ -734,10 +733,21 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                 
                 speedMatchReverse = speedMatchReverseCheckbox.isSelected();
                 warmUpLoco = speedMatchWarmUpCheckBox.isSelected();
+                
+                speedMatcher = SpeedMatcherFactory.getSpeedMatcher(
+                        new SpeedMatcherConfig(
+                                SpeedMatcherConfig.SpeedMatcherType.BASIC, 
+                                SpeedMatcherConfig.SpeedTable.BASIC, 
+                                locomotiveAddress, 
+                                targetStartSpeedKPH, 
+                                targetHighSpeedKPH, 
+                                Speed.Unit.KPH, 
+                                warmUpLoco, 
+                                speedMatchReverse
+                        )
+                );
 
-                speedMatcher = new SimpleBasicSpeedMatcher();
-                if (((SimpleBasicSpeedMatcher) speedMatcher).Initialize(locomotiveAddress, targetStartSpeedKPH, targetHighSpeedKPH, warmUpLoco, speedMatchReverse, error)) {
-                    speedMatcher.StartSpeedMatch();
+                if (speedMatcher.StartSpeedMatch(error)) {
                     speedMatchButton.setText(Bundle.getMessage("btnStopSpeedMatch"));
                 } else {
                     statusLabel.setText(error);

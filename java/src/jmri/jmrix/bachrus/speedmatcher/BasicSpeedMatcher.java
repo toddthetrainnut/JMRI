@@ -32,7 +32,7 @@ public class BasicSpeedMatcher implements ISpeedMatcher{
         
     }
     
-    public boolean Initialize(DccLocoAddress dccLocoAddress, float targetStartSpeedKPH, float targetTopSpeedKPH, boolean trimReverseSpeed, boolean warmUpLoco, String error) {
+    public boolean Validate(String error) {
         if (dccLocoAddress.getNumber() <= 0) {
             error = "Please enter a valid DCC address";
             return false;
@@ -48,16 +48,8 @@ public class BasicSpeedMatcher implements ISpeedMatcher{
             return false;
         }
         
-        this.dccLocoAddress = dccLocoAddress;
-        this.targetStartSpeedKPH = targetStartSpeedKPH;
-        this.targetTopSpeedKPH = targetTopSpeedKPH;
-        this.trimReverseSpeed = trimReverseSpeed;
-        this.warmUpLocomotive = warmUpLoco;
-        
         return true;
     }
-    
-    public abstract boolean StartSpeedMatch(DccLocoAddress dccLocoAddress, float targetStartSpeedKPH, float targetTopSpeedKPH, boolean warmUpLoco, boolean trimReverse, String error);
     
     @Override
     public int GetSpeedMatcherStepElapsedSeconds() {

@@ -109,11 +109,11 @@ public class DccSpeedProfile {
     }
 
     // Save data as CSV
-    public static void export(DccSpeedProfile sp, int address, String dirString, int units) {
+    public static void export(DccSpeedProfile sp, int address, String dirString, Speed.Unit unit) {
         openExportFile();
 
-        String unitsString;
-        if (units == Speed.MPH) {
+            String unitsString;
+        if (unit == Speed.Unit.MPH) {
             unitsString = "MPH";
         } else {
             unitsString = "KPH";
@@ -127,7 +127,7 @@ public class DccSpeedProfile {
             for (int i = 0; i < sp.getLength(); i++) {
                 p.print(i);
                 p.print(",");
-                if (units == Speed.MPH) {
+                if (unit == Speed.Unit.MPH) {
                     p.println(Speed.kphToMph(sp.getPoint(i)));
                 } else {
                     p.println(sp.getPoint(i));
@@ -137,11 +137,11 @@ public class DccSpeedProfile {
         closeExportFile();
     }
 
-    public static void export(DccSpeedProfile[] sp, int address, int units) {
+    public static void export(DccSpeedProfile[] sp, int address, Speed.Unit unit) {
         openExportFile();
 
         String unitsString;
-        if (units == Speed.MPH) {
+        if (unit == Speed.Unit.MPH) {
             unitsString = "MPH";
         } else {
             unitsString = "KPH";
@@ -157,7 +157,7 @@ public class DccSpeedProfile {
                 // for each profile
                 for (int j = 0; j < sp.length; j++) {
                     p.print(",");
-                    if (units == Speed.MPH) {
+                    if (unit == Speed.Unit.MPH) {
                         p.print(Speed.kphToMph(sp[j].getPoint(i)));
                     } else {
                         p.print(sp[j].getPoint(i));

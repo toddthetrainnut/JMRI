@@ -4,10 +4,11 @@ import jmri.AddressedProgrammer;
 import jmri.AddressedProgrammerManager;
 import jmri.DccLocoAddress;
 import jmri.InstanceManager;
+import jmri.jmrix.bachrus.Speed;
 
 /**
  *
- * @author toddt
+ * @author Todd Wegter
  */
 public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
     protected final int VSTART = 1;
@@ -25,13 +26,28 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
     
     protected State state = State.IDLE;
     
-    public SimpleBasicSpeedMatcher() {
+    //Do not use
+    private SimpleBasicSpeedMatcher() {
         
     }
     
+    public SimpleBasicSpeedMatcher(SpeedMatcherConfig config) {
+        this.dccLocoAddress = config.dccLocoAddress;
+        if (config.speedUnit == Speed.Unit.MPH) {
+            this.targetStartSpeedKPH = Speed.mphToKph(config.targetStartSpeed);
+            this.targetTopSpeedKPH = Speed.mphToKph(config.targetTopSpeed);
+        }
+        else {
+            this.targetStartSpeedKPH = config.targetStartSpeed;
+            this.targetTopSpeedKPH = config.targetTopSpeed;
+        }
+        this.trimReverseSpeed = config.trimReverseSpeed;
+        this.warmUpLocomotive = config.warmUpLoco;
+    }
+    
     @Override
-    public boolean StartSpeedMatch(DccLocoAddress dccLocoAddress, float targetStartSpeedKPH, float targetTopSpeedKPH, boolean warmUpLoco, boolean trimReverseSpeed, String error) {
-        if (!super.Initialize(dccLocoAddress, targetStartSpeedKPH, targetTopSpeedKPH, trimReverseSpeed, warmUpLoco, error)) {
+    public boolean StartSpeedMatch(String error) {
+        if (!super.Validate(error)) {
             return false;
         }
         
@@ -52,7 +68,7 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
             }
         }
         
-        
+        return true;
     }
     
     @Override
