@@ -215,7 +215,7 @@ public class DccSpeedProfile {
         }
     }
 
-    public int importDccProfile(int units) {
+    public int importDccProfile(Speed.Unit unit) {
         openImportFile();
         if (dccProfileData.size() < 31) {
             log.error("Not enough lines in reference speed profile file");
