@@ -24,7 +24,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class Bundle extends jmri.jmrix.bachrus.Bundle {
 
     @Nullable
-    private static final String name = null; // No local resources
+    private static final String name = "jmri.jmrix.bachrus.speedmatcher.SpeedMatcherBundle";
 
     //
     // below here is boilerplate to be copied exactly

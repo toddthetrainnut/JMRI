@@ -5,8 +5,11 @@
  */
 package jmri.jmrix.bachrus.speedmatcher;
 
+import javax.swing.JLabel;
 import jmri.DccLocoAddress;
+import jmri.PowerManager;
 import jmri.jmrix.bachrus.Speed;
+import org.slf4j.Logger;
 
 /**
  *
@@ -26,6 +29,10 @@ public class SpeedMatcherConfig {
     protected SpeedTable speedTable; 
     
     protected DccLocoAddress dccLocoAddress;
+    protected Logger logger;
+    protected PowerManager powerManager;
+    
+    protected JLabel statusLabel;
     protected float targetStartSpeed;
     protected float targetTopSpeed;
     protected Speed.Unit speedUnit;
@@ -37,15 +44,20 @@ public class SpeedMatcherConfig {
         
     }
     
-    public SpeedMatcherConfig(SpeedMatcherType type, SpeedTable speedTable, DccLocoAddress address, float targetStartSpeed, float targetTopSpeed, Speed.Unit speedUnit, boolean warmUpLoco, boolean trimReverseSpeed) {
+    public SpeedMatcherConfig(SpeedMatcherType type, SpeedTable speedTable, DccLocoAddress address, float targetStartSpeed, float targetTopSpeed, Speed.Unit speedUnit, boolean warmUpLoco, boolean trimReverseSpeed, PowerManager powerManager, Logger logger, JLabel statusLabel) {
         this.type = type;
         this.speedTable = speedTable;
-        this.dccLocoAddress = address;
         this.targetStartSpeed = targetStartSpeed;
         this.targetTopSpeed = targetTopSpeed;
         this.speedUnit = speedUnit;
         this.warmUpLoco = warmUpLoco;
         this.trimReverseSpeed = trimReverseSpeed;
+        
+        this.dccLocoAddress = address;
+        this.powerManager = powerManager;
+        
+        this.logger = logger;
+        this.statusLabel = statusLabel;
     }
     
 }

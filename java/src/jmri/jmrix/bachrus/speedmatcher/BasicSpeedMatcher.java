@@ -1,12 +1,18 @@
 package jmri.jmrix.bachrus.speedmatcher;
 
+import javax.swing.JLabel;
+import jmri.AddressedProgrammer;
 import jmri.DccLocoAddress;
+import jmri.DccThrottle;
+import jmri.PowerManager;
+import jmri.jmrix.bachrus.speedmatcher.ISpeedMatcher;
+import org.slf4j.Logger;
 
 /**
  *
  * @author toddt
  */
-public class BasicSpeedMatcher implements ISpeedMatcher{
+public abstract class BasicSpeedMatcher implements ISpeedMatcher{
     
     //PID Coontroller Values
     protected final float kP = 0.75f;
@@ -28,23 +34,27 @@ public class BasicSpeedMatcher implements ISpeedMatcher{
     
     protected DccLocoAddress dccLocoAddress;
     
-    protected BasicSpeedMatcher() {
-        
-    }
+    protected DccThrottle throttle = null;
+    protected float throttleIncrement;
+    protected AddressedProgrammer opsModeProgrammer = null;
+    protected PowerManager powerManager = null;
     
-    public boolean Validate(String error) {
+    protected Logger logger;
+    protected JLabel statusLabel;
+        
+    public boolean Validate() {
         if (dccLocoAddress.getNumber() <= 0) {
-            error = "Please enter a valid DCC address";
+            statusLabel.setText("Please enter a valid DCC address");
             return false;
         }
         
         if (targetStartSpeedKPH < 1) {
-            error = "Please enter a valid start speed";
+            statusLabel.setText("Please enter a valid start speed");
             return false;
         }
         
         if (targetTopSpeedKPH <= targetStartSpeedKPH) {
-            error = "Please enter a valid top speed";
+            statusLabel.setText("Please enter a valid top speed");
             return false;
         }
         
@@ -58,7 +68,7 @@ public class BasicSpeedMatcher implements ISpeedMatcher{
     
   
     
-        /**
+    /**
      * Sets the PID controller's speed match error for speed matching
      *
      * @param speedTarget - target speed in KPH
