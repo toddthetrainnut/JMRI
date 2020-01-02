@@ -11,9 +11,10 @@ public interface ISpeedMatcher extends ThrottleListener{
     public boolean StartSpeedMatch();
     public void StopSpeedMatch();
     
+    public void UpdateCurrentSpeed(float currentSpeed);
+    
     public void CleanUp();
     
-    public int GetSpeedMatcherStepElapsedSeconds();
     public boolean IsIdle();
 }
 

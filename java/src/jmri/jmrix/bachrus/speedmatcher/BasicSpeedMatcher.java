@@ -5,7 +5,6 @@ import jmri.AddressedProgrammer;
 import jmri.DccLocoAddress;
 import jmri.DccThrottle;
 import jmri.PowerManager;
-import jmri.jmrix.bachrus.speedmatcher.ISpeedMatcher;
 import org.slf4j.Logger;
 
 /**
@@ -23,13 +22,13 @@ public abstract class BasicSpeedMatcher implements ISpeedMatcher{
     protected float speedMatchDerivative = 0;
     protected float lastSpeedMatchError = 0;
     protected float speedMatchError = 0;
-    
+        
     protected float targetStartSpeedKPH;
     protected float targetTopSpeedKPH;
     protected boolean trimReverseSpeed;
     protected boolean warmUpLocomotive;
     
-    protected int stepElapsedSeconds = 0;
+    protected int stepDuration = 0;
     protected float currentSpeed = 0;
     
     protected DccLocoAddress dccLocoAddress;
@@ -59,14 +58,12 @@ public abstract class BasicSpeedMatcher implements ISpeedMatcher{
         }
         
         return true;
-    }
+    } 
     
     @Override
-    public int GetSpeedMatcherStepElapsedSeconds() {
-        return stepElapsedSeconds;
+    public void UpdateCurrentSpeed(float currentSpeed) {
+        this.currentSpeed = currentSpeed;
     }
-    
-  
     
     /**
      * Sets the PID controller's speed match error for speed matching

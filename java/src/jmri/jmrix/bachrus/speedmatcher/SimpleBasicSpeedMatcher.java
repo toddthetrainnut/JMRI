@@ -20,72 +20,80 @@ import org.slf4j.Logger;
  *
  * @author Todd Wegter
  */
-public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
-    
+public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher {
+
     private final int VSTART = 1;
     private final int VHIGH = 255;
-    private final int VMID = 127;
+    private final int VMID = 1;
     private final int TRIM = 128;
-    
+
+    //TODO: Clean up to single pair of variables
     private int vStart = VSTART;
     private int lastVStart = VSTART;
     private int vHigh = VHIGH;
     private int lastVHigh = VHIGH;
+    private int vMid = 128;
+    private int lastVMid = vMid;
     private int reverseTrimValue = TRIM;
     private int lastReverseTrimValue = TRIM;
     
+    private float targetMidSpeedKPH;
+
     private Timer speedMatchStateTimer;
     private SpeedMatcherState speedMatcherState = SpeedMatcherState.IDLE;
     private ProgrammerState programmerState = ProgrammerState.IDLE;
-    
+
     public SimpleBasicSpeedMatcher(SpeedMatcherConfig config) {
         this.dccLocoAddress = config.dccLocoAddress;
         this.powerManager = config.powerManager;
-        
+
         if (config.speedUnit == Speed.Unit.MPH) {
             this.targetStartSpeedKPH = Speed.mphToKph(config.targetStartSpeed);
             this.targetTopSpeedKPH = Speed.mphToKph(config.targetTopSpeed);
-        }
-        else {
+        } else {
             this.targetStartSpeedKPH = config.targetStartSpeed;
             this.targetTopSpeedKPH = config.targetTopSpeed;
         }
+        this.targetMidSpeedKPH = this.targetStartSpeedKPH + ((this.targetTopSpeedKPH - this.targetStartSpeedKPH) / 2);
+        
         this.trimReverseSpeed = config.trimReverseSpeed;
         this.warmUpLocomotive = config.warmUpLoco;
-        
+
         this.logger = config.logger;
         this.statusLabel = config.statusLabel;
     }
-    
+
     @Override
     public boolean StartSpeedMatch() {
         String error = "";
-        
+
         if (!super.Validate()) {
             return false;
         }
-        
+
         //reset instance variables
         vStart = VSTART;
         lastVStart = VSTART;
         vHigh = VHIGH;
         lastVHigh = VHIGH;
+        vMid = 128;
+        lastVMid = vMid;
         reverseTrimValue = TRIM;
         lastReverseTrimValue = TRIM;
-        
+
         speedMatcherState = SpeedMatcherState.WAIT_FOR_THROTTLE;
-        
+
         //get OPS MODE Programmer
         if (InstanceManager.getNullableDefault(AddressedProgrammerManager.class) != null) {
             if (InstanceManager.getDefault(AddressedProgrammerManager.class).isAddressedModePossible(dccLocoAddress)) {
                 opsModeProgrammer = InstanceManager.getDefault(AddressedProgrammerManager.class).getAddressedProgrammer(dccLocoAddress);
             }
         }
-        
-         //start speed match timer
+
+        //start speed match timer
         speedMatchStateTimer = new javax.swing.Timer(4000, e -> speedMatchTimeout());
         speedMatchStateTimer.setRepeats(false); //timer is used without repeats to improve time accuracy when changing the delay
-        
+
         //request a throttle
         statusLabel.setText(Bundle.getMessage("StatReqThrottle"));
         speedMatchStateTimer.start();
@@ -95,31 +103,31 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
             logger.error("Loco Address in use, throttle request failed.");
             statusLabel.setText(Bundle.getMessage("StatAddressInUse"));
             CleanUp();
-        }       
-       
+        }
+
         return throttleRequestOK;
     }
-    
+
     @Override
     public void StopSpeedMatch() {
         CleanUp();
-        
+
         logger.info("Speed matching manually stopped");
     }
-    
+
     @Override
     public boolean IsIdle() {
         return speedMatcherState == SpeedMatcherState.IDLE;
     }
-    
+
     @Override
     public void CleanUp() {
         speedMatcherState = SpeedMatcherState.IDLE;
-        
+
         if (speedMatchStateTimer != null) {
             speedMatchStateTimer.stop();
         }
-        
+
         //release throttle
         if (throttle != null) {
             throttle.setSpeedSetting(0.0F);
@@ -132,17 +140,17 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
             InstanceManager.getDefault(AddressedProgrammerManager.class).releaseAddressedProgrammer(opsModeProgrammer);
             opsModeProgrammer = null;
         }
-        
+
         statusLabel.setText(" ");
     }
-    
+
     /**
      * Sets up the speed match state by setting the throttle direction and
      * speed, clearing the speed match error, clearing the step elapsed seconds,
-     * and setting the timer initial delay 
+     * and setting the timer initial delay
      *
      * @param isForward    - throttle direction - true for forward, false for
-     *                       reverse
+     *                     reverse
      * @param speedStep    - throttle speed step
      * @param initialDelay - initial delay for the timer in milliseconds
      */
@@ -150,16 +158,16 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
         throttle.setIsForward(isForward);
         throttle.setSpeedSetting(speedStep * throttleIncrement);
         speedMatchError = 0;
-        stepElapsedSeconds = 0;
+        stepDuration = 0;
         speedMatchStateTimer.setInitialDelay(initialDelay);
     }
-    
+
     private void stopStateTimer() {
         if (speedMatchStateTimer != null) {
             speedMatchStateTimer.stop();
         }
     }
-    
+
     /**
      * Timer timeout handler for the speed match timer
      */
@@ -177,7 +185,6 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
                     writeMomentumAccel(0);
                     speedMatcherState = speedMatcherState.nextState(this);
                     setupSpeedMatchState(true, 0, 1500);
-                    speedMatchStateTimer.start();
                 }
                 break;
 
@@ -187,7 +194,6 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
                     writeMomentumDecel(0);
                     speedMatcherState = speedMatcherState.nextState(this);
                     setupSpeedMatchState(true, 0, 1500);
-                    speedMatchStateTimer.start();
                 }
                 break;
 
@@ -197,17 +203,15 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
                     writeVStart(VSTART);
                     speedMatcherState = speedMatcherState.nextState(this);
                     setupSpeedMatchState(true, 0, 1500);
-                    speedMatchStateTimer.start();
                 }
                 break;
-                
+
             case INIT_VMID:
                 //set vHigh to 255 (CV 6)
                 if (programmerState == ProgrammerState.IDLE) {
                     writeVMid(VMID);
                     speedMatcherState = speedMatcherState.nextState(this);
                     setupSpeedMatchState(true, 0, 1500);
-                    speedMatchStateTimer.start();
                 }
                 break;
 
@@ -217,7 +221,6 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
                     writeVHigh(VHIGH);
                     speedMatcherState = speedMatcherState.nextState(this);
                     setupSpeedMatchState(true, 0, 1500);
-                    speedMatchStateTimer.start();
                 }
                 break;
 
@@ -227,7 +230,6 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
                     writeForwardTrim(TRIM);
                     speedMatcherState = speedMatcherState.nextState(this);
                     setupSpeedMatchState(true, 0, 1500);
-                    speedMatchStateTimer.start();
                 }
                 break;
 
@@ -237,92 +239,119 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
                     writeReverseTrim(TRIM);
                     speedMatcherState = speedMatcherState.nextState(this);
                     setupSpeedMatchState(true, 0, 1500);
-                    speedMatchStateTimer.start();
                 }
                 break;
-  
+
             case FORWARD_WARM_UP:
                 //Run 4 minutes at high speed forward
-                statusLabel.setText(Bundle.getMessage("StatForwardWarmUp", 240 - stepElapsedSeconds));
+                statusLabel.setText(Bundle.getMessage("StatForwardWarmUp", 240 - stepDuration));
 
-                if (stepElapsedSeconds <= 0) {
+                if (stepDuration <= 0) {
                     setupSpeedMatchState(true, 28, 5000);
-                } else if (stepElapsedSeconds >= 240) {
+                } else if (stepDuration >= 240) {
                     speedMatcherState = speedMatcherState.nextState(this);
-                    setupSpeedMatchState(true, 0, 2000);
+                    setupSpeedMatchState(true, 28, 2000);
                 } else {
-                    stepElapsedSeconds += 5;
+                    stepDuration += 5;
                 }
-                
-                speedMatchStateTimer.start();
-                
+
+                break;
+
+            case FORWARD_SPEED_MATCH_VHIGH:
+                //Use PID Controller logic to adjust vHigh to achieve desired speed
+                if (programmerState == ProgrammerState.IDLE) {
+                    if (stepDuration == 0) {
+                        statusLabel.setText(Bundle.getMessage("StatSettingSpeedStep28"));
+                        setupSpeedMatchState(true, 28, 15000);
+                        stepDuration = 1;
+                    } else {
+                        setSpeedMatchError(targetTopSpeedKPH);
+
+                        if ((speedMatchError < 0.5) && (speedMatchError > -0.5)) {
+                            speedMatcherState = speedMatcherState.nextState(this);
+                            setupSpeedMatchState(true, 0, 8000);
+                        } else {
+                            vHigh = getNextSpeedMatchValue(lastVHigh);
+
+                            if (((lastVHigh == 1) || (lastVHigh == 255)) && (vHigh == lastVHigh)) {
+                                statusLabel.setText(Bundle.getMessage("StatSetSpeedStep28Fail"));
+                                logger.debug("Unable to achieve desired speed at Speed Step 28");
+                                CleanUp();
+                            } else {
+                                lastVHigh = vHigh;
+                                writeVHigh();
+                            }
+                            speedMatchStateTimer.setInitialDelay(8000);
+                        }
+                    }
+                }
+                break;
+
+            case FORWARD_SPEED_MATCH_VMID:
+                //Use PID Controller logic to adjust vMid to achieve desired speed
+                if (programmerState == ProgrammerState.IDLE) {
+                    if (stepDuration == 0) {
+                        statusLabel.setText("Setting VMid");
+                        setupSpeedMatchState(true, 14, 15000);
+                        stepDuration = 1;
+                        
+                        vMid = vStart + ((vHigh - vStart) / 2);
+                        lastVMid = vMid;
+                        
+                        writeVMid();                        
+                    } else {
+                        setSpeedMatchError(targetMidSpeedKPH);
+
+                        if ((speedMatchError < 0.5) && (speedMatchError > -0.5)) {
+                            speedMatcherState = speedMatcherState.nextState(this);
+                            setupSpeedMatchState(true, 0, 8000);
+                        } else {
+                            vMid = getNextSpeedMatchValue(lastVMid);
+                            
+                            if (((lastVMid == 1) || (lastVMid == 255)) && (vMid == lastVMid)) {
+                                statusLabel.setText(Bundle.getMessage("StatSetSpeedStep28Fail"));
+                                logger.debug("Unable to achieve desired speed vMid");
+                                CleanUp();
+                            } else {
+                                lastVMid = vMid;
+                                writeVMid();
+                            }
+                            speedMatchStateTimer.setInitialDelay(8000);
+                        }
+                    }
+                }
+
+            case FORWARD_SPEED_MATCH_VSTART:
+                //Use PID Controller to adjust vStart to achieve desired speed
+                if (programmerState == ProgrammerState.IDLE) {
+                    if (stepDuration == 0) {
+                        statusLabel.setText(Bundle.getMessage("StatSettingSpeedStep1"));
+                        setupSpeedMatchState(true, 1, 15000);
+                        stepDuration = 1;
+                    } else {
+                        setSpeedMatchError(targetStartSpeedKPH);
+
+                        if ((speedMatchError < 0.5) && (speedMatchError > -0.5)) {
+                            speedMatcherState = speedMatcherState.nextState(this);
+                            setupSpeedMatchState(true, 0, 8000);
+                        } else {
+                            vStart = getNextSpeedMatchValue(lastVStart);
+
+                            if (((lastVStart == 1) || (lastVStart == 255)) && (vStart == lastVStart)) {
+                                statusLabel.setText(Bundle.getMessage("StatSetSpeedStep1Fail"));
+                                logger.debug("Unable to achieve desired speed at Speed Step 1");
+                                CleanUp();
+                            } else {
+                                lastVStart = vStart;
+                                writeVStart();
+                            }
+                            speedMatchStateTimer.setInitialDelay(8000);
+                        }
+                    }
+                }
                 break;
 //
-//            case FORWARD_SPEED_MATCH_STEP_1:
-//                //Use PID Controller to adjust vStart (and VMid) to achieve desired speed
-//                if (programmerState == ProgrammerState.IDLE) {
-//                    if (speedMatchDuration == 0) {
-//                        statusLabel.setText(Bundle.getMessage("StatSettingSpeedStep1"));
-//                        setupSpeedMatchTimer(true, 1, 15000);
-//                        speedMatchDuration = 1;
-//                    } else {
-//                        setSpeedMatchError(speedStep1Target);
-//
-//                        if ((speedMatchError < 0.5) && (speedMatchError > -0.5)) {
-//                            state = SpeedMatchState.FORWARD_SPEED_MATCH_STEP_28;
-//                            setupSpeedMatchTimer(true, 0, 8000);
-//                            speedMatchDuration = 0;
-//                        } else {
-//                            vStart = getNextSpeedMatchValue(lastVStart);
-//
-//                            if (((lastVStart == 1) || (lastVStart == 255)) && (vStart == lastVStart)) {
-//                                statusLabel.setText(Bundle.getMessage("StatSetSpeedStep1Fail"));
-//                                logger.debug("Unable to achieve desired speed at Speed Step 1");
-//                                CleanUp();
-//                            } else {
-//                                lastVStart = vStart;
-//                                writeVStart();
-//                            }
-//                            speedMatchTimer.setInitialDelay(8000);
-//                        }
-//                    }
-//                }
-//                break;
-//
-//            case FORWARD_SPEED_MATCH_STEP_28:
-//                //Use PID Controller llogic to adjust vHigh (and vMid) to achieve desired speed
-//                if (programmerState == ProgrammerState.IDLE) {
-//                    if (speedMatchDuration == 0) {
-//                        statusLabel.setText(Bundle.getMessage("StatSettingSpeedStep28"));
-//                        setupSpeedMatchTimer(true, 28, 15000);
-//                        speedMatchDuration = 1;
-//                    } else {
-//                        setSpeedMatchError(speedStep28Target);
-//
-//                        if ((speedMatchError < 0.5) && (speedMatchError > -0.5)) {
-//                            if (basicSpeedMatchWarmUpCheckBox.isSelected()) {
-//                                state = SpeedMatchState.REVERSE_WARM_UP;
-//                            } else {
-//                                state = SpeedMatchState.REVERSE_SPEED_MATCH_TRIM;
-//                            }
-//                            setupSpeedMatchTimer(false, 0, 5000);
-//                            speedMatchDuration = 0;
-//                        } else {
-//                            vHigh = getNextSpeedMatchValue(lastVHigh);
-//
-//                            if (((lastVHigh == 1) || (lastVHigh == 255)) && (vHigh == lastVHigh)) {
-//                                statusLabel.setText(Bundle.getMessage("StatSetSpeedStep28Fail"));
-//                                logger.debug("Unable to achieve desired speed at Speed Step 28");
-//                                CleanUp();
-//                            } else {
-//                                lastVHigh = vHigh;
-//                                writeVHigh();
-//                            }
-//                            speedMatchTimer.setInitialDelay(8000);
-//                        }
-//                    }
-//                }
-//                break;
+
 //
 //            case REVERSE_WARM_UP:
 //                //Run 2 minutes at high speed reverse
@@ -399,7 +428,6 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
 //                        logger.warn("Unhandled speed match cleanup state: {}", speedMatchSetupState);
 //                }
 //                break;
-
             default:
                 CleanUp();
                 logger.error("Unexpected speed match timeout");
@@ -410,7 +438,7 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
             speedMatchTimer.start();
         }
     }
-    
+
     //<editor-fold defaultstate="collapsed" desc="ThrottleListener Overrides">
     /**
      * Called when a throttle is found
@@ -420,10 +448,10 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
     @Override
     public void notifyThrottleFound(DccThrottle t) {
         stopStateTimer();
-        
+
         throttle = t;
         logger.info("Throttle acquired");
-                throttle.setSpeedStepMode(DccThrottle.SpeedStepMode28);
+        throttle.setSpeedStepMode(DccThrottle.SpeedStepMode28);
         if (throttle.getSpeedStepMode() != DccThrottle.SpeedStepMode28) {
             logger.error("Failed to set 28 step mode");
             statusLabel.setText(Bundle.getMessage("ThrottleError28"));
@@ -452,22 +480,24 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
             CleanUp();
         }
     }
-    
+
     /**
-     * Called when we must decide whether to steal the throttle for the requested address.
-     * This is an automatically stealing implementation, so the throttle will be automatically stolen
+     * Called when we must decide whether to steal the throttle for the
+     * requested address. This is an automatically stealing implementation, so
+     * the throttle will be automatically stolen
      *
-     * @param address the requested address
-     * @param question the question being asked, steal / cancel, share / cancel, steal / share / cancel
+     * @param address  the requested address
+     * @param question the question being asked, steal / cancel, share / cancel,
+     *                 steal / share / cancel
      */
     @Override
     public void notifyDecisionRequired(LocoAddress address, DecisionType question) {
         InstanceManager.throttleManagerInstance().responseThrottleDecision(address, this, DecisionType.STEAL);
     }
-    
+
     /**
-     * @deprecated since 4.15.7; use
-     * #notifyDecisionRequired(LocoAddress, DecisionType) instead
+     * @deprecated since 4.15.7; use #notifyDecisionRequired(LocoAddress,
+     * DecisionType) instead
      *
      * @param address the requested address
      */
@@ -475,7 +505,7 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
     @Override
     public void notifyStealThrottleRequired(jmri.LocoAddress address) {
     }
-    
+
     /**
      * Called when a throttle could not be obtained
      *
@@ -486,132 +516,129 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
     public void notifyFailedThrottleRequest(jmri.LocoAddress address, String reason) {
     }
     //</editor-fold>
-    
+
     protected enum SpeedMatcherState {
         IDLE {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return this;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return this;
+            }
         },
         WAIT_FOR_THROTTLE {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.IDLE;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.IDLE;
+            }
         },
         INIT_ACCEL {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.INIT_DECEL;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.INIT_DECEL;
+            }
         },
         INIT_DECEL {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.INIT_VSTART;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.INIT_VSTART;
+            }
         },
         INIT_VSTART {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.INIT_VMID;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.INIT_VMID;
+            }
         },
         INIT_VMID {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.INIT_VHIGH;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.INIT_VHIGH;
+            }
         },
         INIT_VHIGH {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.INIT_FORWARD_TRIM;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.INIT_FORWARD_TRIM;
+            }
         },
         INIT_FORWARD_TRIM {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.INIT_REVERSE_TRIM;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.INIT_REVERSE_TRIM;
+            }
         },
         INIT_REVERSE_TRIM {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               if (speedMatcher.warmUpLocomotive) {
-                   return SpeedMatcherState.FORWARD_WARM_UP;
-               } else {
-                   return SpeedMatcherState.FORWARD_SPEED_MATCH_VHIGH;
-               }
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                if (speedMatcher.warmUpLocomotive) {
+                    return SpeedMatcherState.FORWARD_WARM_UP;
+                } else {
+                    return SpeedMatcherState.FORWARD_SPEED_MATCH_VHIGH;
+                }
+            }
         },
         FORWARD_WARM_UP {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               if (speedMatcher.trimReverseSpeed) {
-                   return SpeedMatcherState.REVERSE_WARM_UP;
-               } else {
-                   return SpeedMatcherState.FORWARD_SPEED_MATCH_VHIGH;
-               }
-           } 
-        },
-        REVERSE_WARM_UP {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.FORWARD_SPEED_MATCH_VHIGH;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.FORWARD_SPEED_MATCH_VHIGH;
+            }
         },
         FORWARD_SPEED_MATCH_VHIGH {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.FORWARD_SPEED_MATCH_VSTART;
-           } 
-        },
-        FORWARD_SPEED_MATCH_VSTART {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.FORWARD_SPEED_MATCH_VMID;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.FORWARD_SPEED_MATCH_VMID;
+            }
         },
         FORWARD_SPEED_MATCH_VMID {
             @Override
             protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.FORWARD_SPEED_MATCH_VSTART;
+            }
+        },
+        FORWARD_SPEED_MATCH_VSTART {
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+
                 if (speedMatcher.trimReverseSpeed) {
-                    return SpeedMatcherState.REVERSE_SPEED_MATCH_TRIM;
+                    return SpeedMatcherState.REVERSE_WARM_UP;
                 } else {
                     return SpeedMatcherState.SET_ACCEL;
                 }
             }
         },
+        REVERSE_WARM_UP {
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.FORWARD_SPEED_MATCH_VHIGH;
+            }
+        },
         REVERSE_SPEED_MATCH_TRIM {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.SET_ACCEL;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.SET_ACCEL;
+            }
         },
         SET_ACCEL {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.SET_DECEL;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.SET_DECEL;
+            }
         },
         SET_DECEL {
-           @Override
-           protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-               return SpeedMatcherState.CLEAN_UP;
-           } 
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.CLEAN_UP;
+            }
         },
         CLEAN_UP {
-          @Override
-          protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
-              return SpeedMatcherState.IDLE;
-          }
+            @Override
+            protected SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher) {
+                return SpeedMatcherState.IDLE;
+            }
         };
-        
+
         protected abstract SpeedMatcherState nextState(SimpleBasicSpeedMatcher speedMatcher);
     }
-    
+
     private enum ProgrammerState {
         IDLE {
             @Override
@@ -619,7 +646,7 @@ public class SimpleBasicSpeedMatcher extends BasicSpeedMatcher{
                 return this;
             }
         };
-        
+
         protected abstract ProgrammerState nextState();
     }
 }
