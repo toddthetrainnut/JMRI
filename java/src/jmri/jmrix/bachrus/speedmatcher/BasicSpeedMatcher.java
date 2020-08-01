@@ -5,6 +5,7 @@ import jmri.AddressedProgrammer;
 import jmri.DccLocoAddress;
 import jmri.DccThrottle;
 import jmri.PowerManager;
+import jmri.jmrix.bachrus.speedmatcher.ISpeedMatcher;
 import org.slf4j.Logger;
 
 /**
@@ -25,8 +26,11 @@ public abstract class BasicSpeedMatcher implements ISpeedMatcher{
         
     protected float targetStartSpeedKPH;
     protected float targetTopSpeedKPH;
+    
     protected boolean trimReverseSpeed;
     protected boolean warmUpLocomotive;
+    protected int acceleration;
+    protected int deceleration;
     
     protected int stepDuration = 0;
     protected float currentSpeed = 0;

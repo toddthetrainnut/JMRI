@@ -52,7 +52,7 @@ import jmri.jmrit.roster.RosterEntrySelector;
 import jmri.jmrit.roster.swing.GlobalRosterEntryComboBox;
 import jmri.jmrix.bachrus.speedmatcher.BasicSpeedMatcher;
 import jmri.jmrix.bachrus.speedmatcher.ISpeedMatcher;
-import jmri.jmrix.bachrus.speedmatcher.SimpleBasicSpeedMatcher;
+import jmri.jmrix.bachrus.speedmatcher.BasicStartMidHighSpeedMatcher;
 import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherFactory;
 import jmri.util.JmriJFrame;
@@ -287,23 +287,23 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             "You may need to adjust some of the provided settings since different decoder manufacturers interpret the NMRA standards differently." +
             "<br/><br/>Settings for some common manufactures:" +
             "<br/><ul>" +
-            "<li>NCE - simple or complex speed table, disable Trim Reverse Speed</li>" +
-            "<li>Digitrax - complex speed table only, enable or disable Trim Reverse Speed</li>" +
-            "<li>ESU - simple speed table only, enable Trim Reverse Speed</li>" +
-            "<li>SoundTraxx - simple or complex speed table, enable or disable Trim Reverse Speed</li>" +
+            "<li>NCE - VStart/Mid/High or speed table, disable Trim Reverse Speed</li>" +
+            "<li>Digitrax - speed table only, Trim Reverse Speed can be enabled</li>" +
+            "<li>ESU - VStart/Mid/High only, Trim Reverse Speed can be enabled</li>" +
+            "<li>SoundTraxx - VStart/Mid/High or speed table, Trim Reverse Speed can be enabled</li>" +
             "</ul>" +
             "It is recommended to enable Warm Up Locomotive if your locomotive isn't already warmed up to help achieve a more accurate result." +
             "<br/><br/></p></html>");
     
     //TODO: I18N
-    protected JLabel basicSpeedMatchForwardMomentumLabel = new JLabel("Forward Momentum: ");
-    protected JTextField basicSpeedMatchForwardMomentumField = new JTextField(3);
-    protected JLabel basicSpeedMatchReverseMomentumLabel = new JLabel("Reverse Momentum: ");
-    protected JTextField basicSpeedMatchReverseMomentumField = new JTextField(3);
+    protected JLabel basicSpeedMatchAccelerationLabel = new JLabel("Acceleration: ");
+    protected JTextField basicSpeedMatchAccelerationField = new JTextField(3);
+    protected JLabel basicSpeedMatchDecelerationLabel = new JLabel("Deceleration: ");
+    protected JTextField basicSpeedMatchDecelerationField = new JTextField(3);
     protected JCheckBox basicSpeedMatchReverseCheckbox = new JCheckBox("Trim Reverse Speed");
-    protected ButtonGroup basicSpeedMatchTableTypeGroup = new ButtonGroup();
-    protected JRadioButton basicSpeedMatchSimpleTableButton = new JRadioButton("Simple (CV 2, CV 6, and CV 5)");
-    protected JRadioButton basicSpeedMatchComplexTableButton = new JRadioButton("Complex Speed Table");
+    protected ButtonGroup basicSpeedMatcherTypeGroup = new ButtonGroup();
+    protected JRadioButton basicStartMidHighSpeedMatchButton = new JRadioButton("Simple CVs (CV 2, CV 6, and CV 5)");
+    protected JRadioButton basicSpeedTableSpeedMatchButton = new JRadioButton("Speed Table");
     
     protected JLabel speedStep1TargetLabel = new JLabel(Bundle.getMessage("lblStartSpeed"));
     protected JTextField basicSpeedMatchTargetStartSpeedField = new JTextField("3", 3);
@@ -761,15 +761,15 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="Basic Speed Matching Tab">
         
-        basicSpeedMatchForwardMomentumField.setHorizontalAlignment(JTextField.RIGHT);
-        basicSpeedMatchReverseMomentumField.setHorizontalAlignment(JTextField.RIGHT);
+        basicSpeedMatchAccelerationField.setHorizontalAlignment(JTextField.RIGHT);
+        basicSpeedMatchDecelerationField.setHorizontalAlignment(JTextField.RIGHT);
         basicSpeedMatchReverseCheckbox.setSelected(true);
-        basicSpeedMatchTableTypeGroup.add(basicSpeedMatchSimpleTableButton);
+        basicSpeedMatcherTypeGroup.add(basicStartMidHighSpeedMatchButton);
         //TODO: I18N
-        basicSpeedMatchSimpleTableButton.setToolTipText("Set the simple speed table. Faster than setting the complex speed table.");
-        basicSpeedMatchTableTypeGroup.add(basicSpeedMatchComplexTableButton);
-        basicSpeedMatchComplexTableButton.setToolTipText("Set the complex speed table. Some decoders will only respect the trim CVs if the complex speed table is used.");
-        basicSpeedMatchSimpleTableButton.setSelected(true);
+        basicStartMidHighSpeedMatchButton.setToolTipText("Set VStart (CV 2), VMid (CV 6), and VHigh (CV 5). Faster than setting the speed table.");
+        basicSpeedMatcherTypeGroup.add(basicSpeedTableSpeedMatchButton);
+        basicSpeedTableSpeedMatchButton.setToolTipText("Set the speed table. Some decoders will only respect the trim CVs if the complex speed table is used.");
+        basicStartMidHighSpeedMatchButton.setSelected(true);
         
         basicSpeedMatchTargetStartSpeedField.setHorizontalAlignment(JTextField.RIGHT);
         basicSpeedMatchTargetStartSpeedUnit.setPreferredSize(new Dimension(35, 16));
@@ -798,8 +798,8 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         JPanel speedMatchTableTypePane = new JPanel();
         speedMatchTableTypePane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Select the Desired Speed Table"));
         speedMatchTableTypePane.setLayout(new FlowLayout());
-        speedMatchTableTypePane.add(basicSpeedMatchSimpleTableButton);
-        speedMatchTableTypePane.add(basicSpeedMatchComplexTableButton);
+        speedMatchTableTypePane.add(basicStartMidHighSpeedMatchButton);
+        speedMatchTableTypePane.add(basicSpeedTableSpeedMatchButton);
         basicSpeedMatchSettingsPane.add(speedMatchTableTypePane);
         
         //Other Settings
@@ -814,10 +814,10 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         JPanel speedMatchMomentumPane = new JPanel();
         speedMatchMomentumPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Set Momentum (If Desired)"));
         speedMatchMomentumPane.setLayout(new FlowLayout());
-        speedMatchMomentumPane.add(basicSpeedMatchForwardMomentumLabel);
-        speedMatchMomentumPane.add(basicSpeedMatchForwardMomentumField);
-        speedMatchMomentumPane.add(basicSpeedMatchReverseMomentumLabel);
-        speedMatchMomentumPane.add(basicSpeedMatchReverseMomentumField);
+        speedMatchMomentumPane.add(basicSpeedMatchAccelerationLabel);
+        speedMatchMomentumPane.add(basicSpeedMatchAccelerationField);
+        speedMatchMomentumPane.add(basicSpeedMatchDecelerationLabel);
+        speedMatchMomentumPane.add(basicSpeedMatchDecelerationField);
         basicSpeedMatchSettingsPane.add(speedMatchMomentumPane);
         
         //Speed Settings
@@ -840,40 +840,41 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         //<editor-fold defaultstate="collapsed" desc="Basic Speed Matcher Button Handlers">
         // Listen to speed match button
         basicSpeedMatchStartStopButton.addActionListener(e -> {
-            float targetStartSpeedKPH;
-            float targetHighSpeedKPH;
+            float targetStartSpeed;
+            float targetHighSpeed;
             boolean speedMatchReverse;
             boolean warmUpLoco;
+            int acceleration;
+            int deceleration;
             String error = "";
             
             if ((speedMatcher == null) && (profileState == ProfileState.IDLE)) {
                 //TODO: getCustomScale();
-                targetStartSpeedKPH = Integer.parseInt(basicSpeedMatchTargetStartSpeedField.getText());
-                targetHighSpeedKPH = Integer.parseInt(basicSpeedMatchTargetHighSpeedField.getText());
-                
-                if (mphButton.isSelected()) {
-                    targetStartSpeedKPH = Speed.mphToKph(targetStartSpeedKPH);
-                    targetHighSpeedKPH = Speed.mphToKph(targetHighSpeedKPH);
-                }
+                targetStartSpeed = Integer.parseInt(basicSpeedMatchTargetStartSpeedField.getText());
+                targetHighSpeed = Integer.parseInt(basicSpeedMatchTargetHighSpeedField.getText());
+                acceleration = Integer.parseInt(basicSpeedMatchAccelerationField.getText());
+                deceleration = Integer.parseInt(basicSpeedMatchDecelerationField.getText());
                 
                 //TODO: get complex/simple
                 speedMatchReverse = basicSpeedMatchReverseCheckbox.isSelected();
                 warmUpLoco = basicSpeedMatchWarmUpCheckBox.isSelected();
                 
                 speedMatcher = SpeedMatcherFactory.getSpeedMatcher(
-                        new SpeedMatcherConfig(
-                                SpeedMatcherConfig.SpeedMatcherType.BASIC,
-                                SpeedMatcherConfig.SpeedTable.BASIC,
-                                locomotiveAddress,
-                                targetStartSpeedKPH,
-                                targetHighSpeedKPH,
-                                Speed.Unit.KPH,
-                                warmUpLoco,
-                                speedMatchReverse,
-                                pm,
-                                LOG,
-                                statusLabel
-                        )
+                    new SpeedMatcherConfig(
+                        SpeedMatcherConfig.SpeedMatcherType.BASIC,
+                        SpeedMatcherConfig.SpeedTable.SIMPLE,
+                        locomotiveAddress,
+                        targetStartSpeed,
+                        targetHighSpeed,
+                        mphButton.isSelected() ? Speed.Unit.MPH : Speed.Unit.KPH,
+                        warmUpLoco,
+                        speedMatchReverse,
+                        acceleration,
+                        deceleration,
+                        pm,
+                        LOG,
+                        statusLabel
+                    )
                 );
                 
                 if (speedMatcher.StartSpeedMatch()) {

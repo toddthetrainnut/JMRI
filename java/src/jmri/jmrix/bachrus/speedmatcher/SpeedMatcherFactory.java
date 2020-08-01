@@ -21,20 +21,20 @@ public class SpeedMatcherFactory {
             case BASIC:
                 switch (config.speedTable) {
                     default:
-                        speedMatcher = new SimpleBasicSpeedMatcher(config);
+                        speedMatcher = new BasicStartMidHighSpeedMatcher(config);
                         break;
                 }
                 break;
-//            case ADVANCED:
+//            case SPEEDSTEPSCALE:
 //                switch (config.speedTable) {
-//                    case ADVANCED:
+//                    case SPEEDSTEPSCALE:
 //                        break;
 //                    case COMBO:
 //                        break;
 //                }
 //                break;
             default:
-                speedMatcher = new SimpleBasicSpeedMatcher(config);
+                speedMatcher = new BasicStartMidHighSpeedMatcher(config);
                 break;
         }
         
