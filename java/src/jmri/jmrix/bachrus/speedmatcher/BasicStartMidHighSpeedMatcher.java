@@ -8,6 +8,7 @@ import jmri.JmriException;
 import jmri.LocoAddress;
 import jmri.PowerManager;
 import jmri.jmrix.bachrus.Speed;
+import jmri.jmrix.bachrus.SpeedoReply;
 import jmri.jmrix.bachrus.speedmatcher.Bundle;
 import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 
@@ -507,6 +508,11 @@ public class BasicStartMidHighSpeedMatcher extends BasicSpeedMatcher {
     public void notifyFailedThrottleRequest(jmri.LocoAddress address, String reason) {
     }
     //</editor-fold>
+
+    @Override
+    public void reply(SpeedoReply m) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
     protected enum SpeedMatcherState {
         IDLE {

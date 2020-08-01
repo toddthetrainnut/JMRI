@@ -92,17 +92,9 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         IDLE,
         READ1,
         READ3,
-        READ4,
         READ17,
         READ18,
         READ29,
-        WRITE2,
-        WRITE3,
-        WRITE4,
-        WRITE5,
-        WRITE6,
-        WRITE66,
-        WRITE95
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Member Variables">
@@ -1282,7 +1274,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                 if ((speedMatchState == SpeedMatchState.IDLE) && (profileState == ProfileState.IDLE)) {
                     profileTimer = new javax.swing.Timer(4000, e -> profileTimeout());
                     profileTimer.setRepeats(false);
-                    // Request a throttle
                     profileState = ProfileState.WAIT_FOR_THROTTLE;
                     // Request a throttle
                     statusLabel.setText(Bundle.getMessage("StatReqThrottle"));
@@ -1599,98 +1590,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     //</editor-fold>
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Programming Functions">
-    /**
-     * Starts writing acceleration momentum (CV 3) using the ops mode programmer
-     *
-     * @param value acceleration value (0-255 inclusive)
-     */
-    protected synchronized void writeMomentumAccel(int value) {
-        progState = ProgState.WRITE3;
-        statusLabel.setText(Bundle.getMessage("ProgSetAccel", value));
-        startOpsModeWrite("3", value);
-    }
-
-    /**
-     * Starts writing deceleration momentum (CV 4) using the ops mode programmer
-     *
-     * @param value deceleration value (0-255 inclusive)
-     */
-    protected synchronized void writeMomentumDecel(int value) {
-        progState = ProgState.WRITE4;
-        statusLabel.setText(Bundle.getMessage("ProgSetDecel", value));
-        startOpsModeWrite("4", value);
-    }
-
-    /**
-     * Starts writing vStart to vStart (CV 2) using the ops mode programmer
-     */
-    protected synchronized void writeVStart() {
-        progState = ProgState.WRITE2;
-        statusLabel.setText(Bundle.getMessage("ProgSetVStart", vStart));
-        startOpsModeWrite("2", vStart);
-    }
-
-    /**
-     * Starts writing the average of vStart and vHigh to vMid (CV 6) using the
-     * ops mode programmer
-     */
-    protected synchronized void writeVMid() {
-        int vMid = (vStart + vHigh) / 2;
-        progState = ProgState.WRITE6;
-        //statusLabel.setText(Bundle.getMessage("ProgSetVMid", vMid));
-        startOpsModeWrite("6", vMid);
-    }
-
-    /**
-     * Starts writing vHigh to vHigh (CV 5) using the ops mode programmer
-     */
-    protected synchronized void writeVHigh() {
-        progState = ProgState.WRITE5;
-        statusLabel.setText(Bundle.getMessage("ProgSetVHigh", vHigh));
-        startOpsModeWrite("5", vHigh);
-    }
-
-    /**
-     * Starts writing forward trim (CV 66) using the ops mode programmer
-     *
-     * @param value forward trim value (0-255 inclusive)
-     */
-    protected synchronized void writeForwardTrim(int value) {
-        progState = ProgState.WRITE66;
-        statusLabel.setText(Bundle.getMessage("ProgSetForwardTrim", value));
-        startOpsModeWrite("66", value);
-    }
-
-    /**
-     * Starts writing reverse trim (CV 95) using the ops mode programmer
-     *
-     * @param value reverse trim value (0-255 inclusive)
-     */
-    protected synchronized void writeReverseTrim(int value) {
-        progState = ProgState.WRITE95;
-        statusLabel.setText(Bundle.getMessage("ProgSetReverseTrim", value));
-        startOpsModeWrite("95", value);
-    }
-
-    /**
-     * Starts reading the acceleration momentum (CV 3) using the service mode
-     * programmer
-     */
-    protected void readMomentumAccel() {
-        progState = ProgState.READ3;
-        statusLabel.setText(Bundle.getMessage("ProgReadAccel"));
-        startRead("3");
-    }
-
-    /**
-     * Starts reading the deceleration momentum (CV 4) using the service mode
-     * programmer
-     */
-    protected void readMomentumDecel() {
-        progState = ProgState.READ4;
-        statusLabel.setText(Bundle.getMessage("ProgReadDecel"));
-        startRead("4");
-    }
 
     /**
      * Starts reading the address (CVs 29 then 1 (short) or 17 and 18 (long))
@@ -1702,19 +1601,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         startRead("29");
     }
 
-    /**
-     * Starts writing a CV using the ops mode programmer
-     *
-     * @param cv    the CV
-     * @param value the value to write to the CV (0-255 inclusive)
-     */
-    protected void startOpsModeWrite(String cv, int value) {
-        try {
-            ops_mode_prog.writeCV(cv, value, this);
-        } catch (ProgrammerException e) {
-            LOG.error("Exception writing CV " + cv + " " + e);
-        }
-    }
 
     /**
      * Starts reading a CV using the service mode programmer
@@ -1782,34 +1668,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                     changeOfAddress();
                     statusLabel.setText(Bundle.getMessage("ProgRdComplete"));
                     progState = ProgState.IDLE;
-                    break;
-
-                case READ3:
-                    oldMomentumAccel = value;
-                    progState = ProgState.IDLE;
-                    break;
-
-                case READ4:
-                    oldMomentumDecel = value;
-                    progState = ProgState.IDLE;
-                    break;
-
-                case WRITE3:
-                case WRITE4:
-                case WRITE6:
-                case WRITE66:
-                case WRITE95:
-                    progState = ProgState.IDLE;
-                    break;
-
-                // when writing vStart or vHigh, also write vMid
-                case WRITE2:
-                case WRITE5:
-                    try {
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {
-                    }
-                    writeVMid();
                     break;
 
                 default:
