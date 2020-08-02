@@ -13,9 +13,9 @@ package jmri.jmrix.bachrus.speedmatcher;
 public class SpeedMatcherFactory {
     
     
-    public static ISpeedMatcher getSpeedMatcher(SpeedMatcherConfig config) {
+    public static SpeedMatcher getSpeedMatcher(SpeedMatcherConfig config) {
         
-        ISpeedMatcher speedMatcher;
+        SpeedMatcher speedMatcher;
         
         switch (config.type) {
             case BASIC:

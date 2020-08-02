@@ -51,13 +51,13 @@ import jmri.jmrit.roster.RosterEntry;
 import jmri.jmrit.roster.RosterEntrySelector;
 import jmri.jmrit.roster.swing.GlobalRosterEntryComboBox;
 import jmri.jmrix.bachrus.speedmatcher.BasicSpeedMatcher;
-import jmri.jmrix.bachrus.speedmatcher.ISpeedMatcher;
 import jmri.jmrix.bachrus.speedmatcher.BasicStartMidHighSpeedMatcher;
 import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherFactory;
 import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jmri.jmrix.bachrus.speedmatcher.SpeedMatcher;
 
 //</editor-fold>
 /**
@@ -310,7 +310,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     //TODO: AdvancedSpeedMatcherPane advancedSpeedMatcherPane;
     //</editor-fold> 
     //<editor-fold defaultstate="collapsed" desc="Speed Matching Member Variables">
-    protected ISpeedMatcher speedMatcher;
+    protected SpeedMatcher speedMatcher;
     //</editor-fold>
     //</editor-fold>
     // For testing only, must be 1 for normal use
@@ -1271,7 +1271,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     protected synchronized void startProfile() {
         if (locomotiveAddress.getNumber() > 0) {
             if (dirFwdButton.isSelected() || dirRevButton.isSelected()) {
-                if ((speedMatchState == SpeedMatchState.IDLE) && (profileState == ProfileState.IDLE)) {
+                if ((speedMatcher != null && speedMatcher.IsIdle()) && (profileState == ProfileState.IDLE)) {
                     profileTimer = new javax.swing.Timer(4000, e -> profileTimeout());
                     profileTimer.setRepeats(false);
                     profileState = ProfileState.WAIT_FOR_THROTTLE;
@@ -1371,6 +1371,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 //      } catch (JmriException e) {
 //          log.error("Exception during power off: "+e.toString());
 //      }
+
         //release throttle
         if (throttle != null) {
             throttle.setSpeedSetting(0.0F);
@@ -1384,13 +1385,14 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             ops_mode_prog = null;
         }
         
-        //TODO: ISpeedMatcher.CleanUp?
+        //clean up speed matcher
+        if (speedMatcher != null) {
+            speedMatcher.CleanUp();
+        }
 
         resetGraphButton.setEnabled(true);
         progState = ProgState.IDLE;
         profileState = ProfileState.IDLE;
-        speedMatchState = SpeedMatchState.IDLE;
-        speedMatchSetupState = SpeedMatchSetupState.IDLE;
         basicSpeedMatchStartStopButton.setText(Bundle.getMessage("btnStartSpeedMatch"));
     }
 
@@ -1414,9 +1416,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     protected void stopTimers() {
         if (profileTimer != null) {
             profileTimer.stop();
-        }
-        if (speedMatchTimer != null) {
-            speedMatchTimer.stop();
         }
     }
 
@@ -1574,7 +1573,11 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         if (currentSpeed < 0.01F) {
             currentSpeed = 0.0F;
         }
+        
         showSpeed();
+        if (speedMatcher != null) {
+            speedMatcher.UpdateCurrentSpeed(currentSpeed);
+        }
     }
 
     /**
@@ -1583,7 +1586,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     protected synchronized void throttleTimeout() {
         jmri.InstanceManager.throttleManagerInstance().cancelThrottleRequest(locomotiveAddress, this);
         profileState = ProfileState.IDLE;
-        speedMatchState = SpeedMatchState.IDLE;
         LOG.error("Timeout waiting for throttle");
     }
 

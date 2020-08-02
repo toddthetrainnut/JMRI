@@ -7,13 +7,13 @@ package jmri.jmrix.bachrus.speedmatcher;
 
 import jmri.DccThrottle;
 import jmri.LocoAddress;
-import jmri.jmrix.bachrus.speedmatcher.ISpeedMatcher;
+import jmri.jmrix.bachrus.speedmatcher.SpeedMatcher;
 
 /**
  *
  * @author toddt
  */
-public class SpeedStepScaleSpeedMatcher implements ISpeedMatcher {
+public class SpeedStepScaleSpeedMatcher implements SpeedMatcher {
 
     @Override
     public boolean StartSpeedMatch() {

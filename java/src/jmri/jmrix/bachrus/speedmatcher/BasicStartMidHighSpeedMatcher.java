@@ -1,16 +1,6 @@
 package jmri.jmrix.bachrus.speedmatcher;
 
-import javax.swing.Timer;
-import jmri.AddressedProgrammerManager;
 import jmri.DccThrottle;
-import jmri.InstanceManager;
-import jmri.JmriException;
-import jmri.LocoAddress;
-import jmri.PowerManager;
-import jmri.jmrix.bachrus.Speed;
-import jmri.jmrix.bachrus.SpeedoReply;
-import jmri.jmrix.bachrus.speedmatcher.Bundle;
-import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 
 /**
  *
@@ -35,30 +25,13 @@ public class BasicStartMidHighSpeedMatcher extends BasicSpeedMatcher {
     
     private float targetMidSpeedKPH;
 
-    private Timer speedMatchStateTimer;
     private SpeedMatcherState speedMatcherState = SpeedMatcherState.IDLE;
     private ProgrammerState programmerState = ProgrammerState.IDLE;
 
     public BasicStartMidHighSpeedMatcher(SpeedMatcherConfig config) {
-        this.dccLocoAddress = config.dccLocoAddress;
-        this.powerManager = config.powerManager;
-
-        if (config.speedUnit == Speed.Unit.MPH) {
-            this.targetStartSpeedKPH = Speed.mphToKph(config.targetStartSpeed);
-            this.targetTopSpeedKPH = Speed.mphToKph(config.targetTopSpeed);
-        } else {
-            this.targetStartSpeedKPH = config.targetStartSpeed;
-            this.targetTopSpeedKPH = config.targetTopSpeed;
-        }
-        this.targetMidSpeedKPH = this.targetStartSpeedKPH + ((this.targetTopSpeedKPH - this.targetStartSpeedKPH) / 2);
+        super(config);
         
-        this.trimReverseSpeed = config.trimReverseSpeed;
-        this.warmUpLocomotive = config.warmUpLoco;
-        this.acceleration = config.acceleration;
-        this.deceleration = config.deceleration;
-
-        this.logger = config.logger;
-        this.statusLabel = config.statusLabel;
+        this.targetMidSpeedKPH = this.targetStartSpeedKPH + ((this.targetTopSpeedKPH - this.targetStartSpeedKPH) / 2);
     }
 
     @Override
@@ -81,41 +54,29 @@ public class BasicStartMidHighSpeedMatcher extends BasicSpeedMatcher {
 
         speedMatcherState = SpeedMatcherState.WAIT_FOR_THROTTLE;
 
-        //get OPS MODE Programmer
-        if (InstanceManager.getNullableDefault(AddressedProgrammerManager.class) != null) {
-            if (InstanceManager.getDefault(AddressedProgrammerManager.class).isAddressedModePossible(dccLocoAddress)) {
-                opsModeProgrammer = InstanceManager.getDefault(AddressedProgrammerManager.class).getAddressedProgrammer(dccLocoAddress);
-            }
-        }
-
-        //start speed match timer
-        speedMatchStateTimer = new javax.swing.Timer(4000, e -> speedMatchTimeout());
-        speedMatchStateTimer.setRepeats(false); //timer is used without repeats to improve time accuracy when changing the delay
-
-        //request a throttle
-        statusLabel.setText(Bundle.getMessage("StatReqThrottle"));
-        speedMatchStateTimer.start();
-        logger.info("Requesting Throttle");
-        boolean throttleRequestOK = InstanceManager.throttleManagerInstance().requestThrottle(dccLocoAddress, this, true);
-        if (!throttleRequestOK) {
-            logger.error("Loco Address in use, throttle request failed.");
-            statusLabel.setText(Bundle.getMessage("StatAddressInUse"));
+        if (!super.InitializeAndStartSpeedMatcher(e -> speedMatchTimeout())) {
             CleanUp();
+            return false;
         }
 
-        return throttleRequestOK;
+        return true;
     }
 
     @Override
     public void StopSpeedMatch() {
-        CleanUp();
-
         logger.info("Speed matching manually stopped");
+        CleanUp();
     }
 
     @Override
     public boolean IsIdle() {
         return speedMatcherState == SpeedMatcherState.IDLE;
+    }
+
+    @Override
+    public void CleanUp() {
+        speedMatcherState = SpeedMatcherState.IDLE;
+        super.CleanUp();
     }
     
     public void Abort() {
@@ -123,57 +84,9 @@ public class BasicStartMidHighSpeedMatcher extends BasicSpeedMatcher {
         setupNextSpeedMatchState(true, 0);
     }
 
-    @Override
-    public void CleanUp() {
-        speedMatcherState = SpeedMatcherState.IDLE;
-
-        if (speedMatchStateTimer != null) {
-            speedMatchStateTimer.stop();
-        }
-
-        //release throttle
-        if (throttle != null) {
-            throttle.setSpeedSetting(0.0F);
-            InstanceManager.throttleManagerInstance().releaseThrottle(throttle, this);
-            throttle = null;
-        }
-
-        //release ops mode programmer
-        if (opsModeProgrammer != null) {
-            InstanceManager.getDefault(AddressedProgrammerManager.class).releaseAddressedProgrammer(opsModeProgrammer);
-            opsModeProgrammer = null;
-        }
-
-        statusLabel.setText(" ");
-    }
-
-    /**
-     * Sets up the speed match state by setting the throttle direction and
-     * speed, clearing the speed match error, clearing the step elapsed seconds,
-     * and setting the timer initial delay
-     *
-     * @param isForward    - throttle direction - true for forward, false for
-     *                     reverse
-     * @param speedStep    - throttle speed step
-     * @param initialDelay - initial delay for the timer in milliseconds
-     */
-    private void setupSpeedMatchState(boolean isForward, int speedStep, int initialDelay) {
-        throttle.setIsForward(isForward);
-        throttle.setSpeedSetting(speedStep * throttleIncrement);
-        speedMatchError = 0;
-        stepDuration = 0;
-        speedMatchStateTimer.setInitialDelay(initialDelay);
-    }
-    
     private void setupNextSpeedMatchState(boolean isForward, int speedStep) {
         speedMatcherState = speedMatcherState.nextState(this);
         setupSpeedMatchState(isForward, speedStep, 1500);
-    }
-
-    private void stopSpeedMatchStateTimer() {
-        if (speedMatchStateTimer != null) {
-            speedMatchStateTimer.stop();
-        }
     }
 
     /**
@@ -439,81 +352,54 @@ public class BasicStartMidHighSpeedMatcher extends BasicSpeedMatcher {
      */
     @Override
     public void notifyThrottleFound(DccThrottle t) {
-        stopSpeedMatchStateTimer();
-
-        throttle = t;
-        logger.info("Throttle acquired");
-        throttle.setSpeedStepMode(DccThrottle.SpeedStepMode28);
-        if (throttle.getSpeedStepMode() != DccThrottle.SpeedStepMode28) {
-            logger.error("Failed to set 28 step mode");
-            statusLabel.setText(Bundle.getMessage("ThrottleError28"));
-            InstanceManager.throttleManagerInstance().releaseThrottle(throttle, this);
-            return;
-        }
-
-        // turn on power
-        try {
-            powerManager.setPower(PowerManager.ON);
-        } catch (JmriException e) {
-            logger.error("Exception during power on: " + e.toString());
-            return;
-        }
-
-        throttleIncrement = throttle.getSpeedIncrement();
+       super.notifyThrottleFound(t);
 
         if (speedMatcherState == SpeedMatcherState.WAIT_FOR_THROTTLE) {
             logger.info("Starting speed matching");
 
-            // using speed matching timer to trigger each phase of speed matching
-            speedMatcherState = speedMatcherState.nextState(this);
-            setupSpeedMatchState(true, 0, 1500);
+            // using speed matching timer to trigger each phase of speed matching            
+            setupNextSpeedMatchState(true, 0);            
             speedMatchStateTimer.start();
         } else {
             CleanUp();
         }
     }
-
-    /**
-     * Called when we must decide whether to steal the throttle for the
-     * requested address. This is an automatically stealing implementation, so
-     * the throttle will be automatically stolen
-     *
-     * @param address  the requested address
-     * @param question the question being asked, steal / cancel, share / cancel,
-     *                 steal / share / cancel
-     */
-    @Override
-    public void notifyDecisionRequired(LocoAddress address, DecisionType question) {
-        InstanceManager.throttleManagerInstance().responseThrottleDecision(address, this, DecisionType.STEAL);
-    }
-
-    /**
-     * @deprecated since 4.15.7; use #notifyDecisionRequired(LocoAddress,
-     * DecisionType) instead
-     *
-     * @param address the requested address
-     */
-    @Deprecated
-    @Override
-    public void notifyStealThrottleRequired(jmri.LocoAddress address) {
-    }
-
-    /**
-     * Called when a throttle could not be obtained
-     *
-     * @param address the requested address
-     * @param reason  the reason the throttle could not be obtained
-     */
-    @Override
-    public void notifyFailedThrottleRequest(jmri.LocoAddress address, String reason) {
-    }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="ProgListener Overrides">
+    /**
+     * Called when the programmer (ops mode or service mode) has completed its
+     * operation
+     *
+     * @param value  Value from a read operation, or value written on a write
+     * @param status Denotes the completion code. Note that this is a bitwise
+     *               combination of the various states codes defined in this
+     *               interface. (see ProgListener.java for possible values)
+     */
     @Override
-    public void reply(SpeedoReply m) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public void programmingOpReply(int value, int status) {
+        if (status == 0) {
+            switch (programmerState) {
+                case IDLE:
+                    logger.debug("unexpected reply in IDLE state");
+                    break;
 
+                default:
+                    programmerState = ProgrammerState.IDLE;
+                    logger.warn("Unhandled read state: {}", programmerState);
+                    break;
+            }
+        } else {
+            // Error during programming
+            logger.error("Status not OK during " + programmerState.toString() + ": " + status);
+            //profileAddressField.setText("Error");
+            statusLabel.setText("Error using programmer");
+            programmerState = ProgrammerState.IDLE;
+            CleanUp();
+        }
+    }
+    //</editor-fold>
+    
     protected enum SpeedMatcherState {
         IDLE {
             @Override
