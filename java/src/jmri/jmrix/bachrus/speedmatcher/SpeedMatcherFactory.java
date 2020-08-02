@@ -20,8 +20,9 @@ public class SpeedMatcherFactory {
         switch (config.type) {
             case BASIC:
                 switch (config.speedTable) {
+                    //TODO: resepect different types
                     default:
-                        speedMatcher = new BasicStartMidHighSpeedMatcher(config);
+                        speedMatcher = new BasicSimpleCVSpeedMatcher(config);
                         break;
                 }
                 break;
@@ -34,7 +35,7 @@ public class SpeedMatcherFactory {
 //                }
 //                break;
             default:
-                speedMatcher = new BasicStartMidHighSpeedMatcher(config);
+                speedMatcher = new BasicSimpleCVSpeedMatcher(config);
                 break;
         }
         

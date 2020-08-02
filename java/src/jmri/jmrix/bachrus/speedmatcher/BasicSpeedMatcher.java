@@ -9,8 +9,11 @@ import jmri.jmrix.bachrus.speedmatcher.SpeedMatcher;
  */
 public abstract class BasicSpeedMatcher extends SpeedMatcher{
         
+    
+    //<editor-fold defaultstate="collapsed" desc="Instance Variables">
     protected float targetStartSpeedKPH;
     protected float targetTopSpeedKPH;
+    //</editor-fold>
     
     public BasicSpeedMatcher(SpeedMatcherConfig config) {
         super(config);
@@ -24,6 +27,7 @@ public abstract class BasicSpeedMatcher extends SpeedMatcher{
         }
     }
     
+    //<editor-fold defaultstate="collapsed" desc="Public APIs">
     public boolean Validate() {
         if (dccLocoAddress.getNumber() <= 0) {
             statusLabel.setText("Please enter a valid DCC address");
@@ -42,6 +46,7 @@ public abstract class BasicSpeedMatcher extends SpeedMatcher{
         
         return true;
     }
+    //</editor-fold>
     
     /**
      * Sets the PID controller's speed match error for speed matching

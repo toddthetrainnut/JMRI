@@ -7,13 +7,16 @@ package jmri.jmrix.bachrus.speedmatcher;
 
 import jmri.DccThrottle;
 import jmri.LocoAddress;
-import jmri.jmrix.bachrus.speedmatcher.SpeedMatcher;
 
 /**
  *
  * @author toddt
  */
-public class SpeedStepScaleSpeedMatcher implements SpeedMatcher {
+public class SpeedStepScaleSpeedMatcher extends SpeedMatcher {
+
+    public SpeedStepScaleSpeedMatcher(SpeedMatcherConfig config) {
+        super(config);
+    }
 
     @Override
     public boolean StartSpeedMatch() {
@@ -57,6 +60,11 @@ public class SpeedStepScaleSpeedMatcher implements SpeedMatcher {
 
     @Override
     public void notifyDecisionRequired(LocoAddress address, DecisionType question) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void programmingOpReply(int value, int status) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

@@ -9,6 +9,6 @@ package jmri.jmrix.bachrus.speedmatcher;
  *
  * @author toddt
  */
-public class BasicComboSpeedMatcher {
+public class BasicESUSpeedTableSpeedMatcher {
     
 }

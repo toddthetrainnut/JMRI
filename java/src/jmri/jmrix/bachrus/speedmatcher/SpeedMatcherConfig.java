@@ -22,7 +22,7 @@ public class SpeedMatcherConfig {
     }
     
     public enum SpeedTable {
-        SIMPLE, ADVANCED, COMBO
+        SIMPLE, ADVANCED, ESU
     }
     
     protected SpeedMatcherType type;

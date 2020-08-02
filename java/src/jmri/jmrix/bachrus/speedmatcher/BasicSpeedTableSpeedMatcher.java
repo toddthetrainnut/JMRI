@@ -13,6 +13,10 @@ import jmri.LocoAddress;
  * @author toddt
  */
 public class BasicSpeedTableSpeedMatcher extends BasicSpeedMatcher {
+    
+    public BasicSpeedTableSpeedMatcher(SpeedMatcherConfig config) {
+        super (config);
+    }
 
     @Override
     public boolean StartSpeedMatch() {
@@ -51,6 +55,11 @@ public class BasicSpeedTableSpeedMatcher extends BasicSpeedMatcher {
 
     @Override
     public void notifyDecisionRequired(LocoAddress address, DecisionType question) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void programmingOpReply(int value, int status) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
