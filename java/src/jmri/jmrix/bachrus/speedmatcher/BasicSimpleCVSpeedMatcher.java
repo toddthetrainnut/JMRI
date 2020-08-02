@@ -41,8 +41,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     //<editor-fold defaultstate="collapsed" desc="SpeedMatcher Overrides">
     @Override
     public boolean StartSpeedMatch() {
-        String error = "";
-
+        
         if (!super.Validate()) {
             return false;
         }
