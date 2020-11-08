@@ -1,7 +1,8 @@
-package jmri.jmrix.bachrus.speedmatcher;
+package jmri.jmrix.bachrus.speedmatcher.basic;
 
 import jmri.DccThrottle;
 import jmri.ProgrammerException;
+import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 
 /**
  *
@@ -12,7 +13,6 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private final int VSTART = 1;
     private final int VHIGH = 255;
-    private final int VMID = 1;
     private final int TRIM = 128;
     //</editor-fold>
     
@@ -21,8 +21,8 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     private int lastVStart = VSTART;
     private int vHigh = VHIGH;
     private int lastVHigh = VHIGH;
-    private int vMid = VMID;
-    private int lastVMid = VMID;
+    private int vMid = VSTART;
+    private int lastVMid = VSTART;
     private int reverseTrimValue = TRIM;
     private int lastReverseTrimValue = TRIM;
     
@@ -124,7 +124,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
             case INIT_VMID:
                 //set vMid to 1 (CV 6)
                 if (programmerState == ProgrammerState.IDLE) {
-                    writeVMid(VMID);
+                    writeVMid(VSTART);
                     setupNextSpeedMatchState(true, 0);
                 }
                 break;
@@ -536,7 +536,6 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     
     /**
      * Starts writing a CV using the ops mode programmer (Programming on the Main)
-     *
      * @param cv    the CV
      * @param value the value to write to the CV (0-255 inclusive)
      */
@@ -552,7 +551,6 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     /**
      * Called when the programmer (ops mode or service mode) has completed its
      * operation
-     *
      * @param value  Value from a read operation, or value written on a write
      * @param status Denotes the completion code. Note that this is a bitwise
      *               combination of the various states codes defined in this
@@ -560,7 +558,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
      */
     @Override
     public void programmingOpReply(int value, int status) {
-        if (status == 0) {
+        if (status == 0) { //OK
             switch (programmerState) {
                 case IDLE:
                     logger.debug("unexpected reply in IDLE state");

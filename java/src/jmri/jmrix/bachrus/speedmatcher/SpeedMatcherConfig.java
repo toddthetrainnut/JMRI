@@ -25,26 +25,22 @@ public class SpeedMatcherConfig {
         SIMPLE, ADVANCED, ESU
     }
     
-    protected SpeedMatcherType type;
-    protected SpeedTable speedTable; 
+    public SpeedMatcherType type;
+    public SpeedTable speedTable; 
     
-    protected DccLocoAddress dccLocoAddress;
-    protected Logger logger;
-    protected PowerManager powerManager;
+    public DccLocoAddress dccLocoAddress;
+    public Logger logger;
+    public PowerManager powerManager;
     
-    protected JLabel statusLabel;
-    protected float targetStartSpeed;
-    protected float targetTopSpeed;
-    protected Speed.Unit speedUnit;
-    protected boolean warmUpLoco;
-    protected boolean trimReverseSpeed; 
-    protected int acceleration;
-    protected int deceleration;
+    public float targetStartSpeed;
+    public float targetTopSpeed;
+    public Speed.Unit speedUnit;
+    public boolean warmUpLoco;
+    public boolean trimReverseSpeed; 
+    public int acceleration;
+    public int deceleration;
     
-    //Do not use
-    private SpeedMatcherConfig() {
-        
-    }
+    public JLabel statusLabel;
     
     public SpeedMatcherConfig(
             SpeedMatcherType type, 

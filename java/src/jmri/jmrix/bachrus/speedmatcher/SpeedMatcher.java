@@ -100,20 +100,25 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
         statusLabel.setText(" ");
     }
     //</editor-fold>
-
+    
+    
+    //<editor-fold defaultstate="collapsed" desc="Protected APIs">
+    protected abstract boolean Validate();
+    
     protected boolean InitializeAndStartSpeedMatcher(ActionListener timerActionListener) {
         //Setup speed match timer
         speedMatchStateTimer = new javax.swing.Timer(4000, timerActionListener);
         speedMatchStateTimer.setRepeats(false); //timer is used without repeats to improve time accuracy when changing the delay
-
+        
         if (!GetOpsModeProgrammer()) {
             return false;
         }
-
+        
         return GetThrottle();
     }
+    //</editor-fold>    
 
-        /**
+    /**
      * Sets up the speed match state by setting the throttle direction and
      * speed, clearing the speed match error, clearing the step elapsed seconds,
      * and setting the timer initial delay
@@ -135,6 +140,36 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
         if (speedMatchStateTimer != null) {
             speedMatchStateTimer.stop();
         }
+    }
+    
+        /**
+     * Sets the PID controller's speed match error for speed matching
+     *
+     * @param speedTarget - target speed in KPH
+     */
+    protected void setSpeedMatchError(float speedTarget) {
+        speedMatchError = speedTarget - currentSpeed;
+    }
+
+    /**
+     * Gets the next value to try for speed matching using a PID controller
+     *
+     * @param lastValue - the last speed match CV value tried
+     * @return the next value to try for speed matching (1-255 inclusive)
+     */
+    protected int getNextSpeedMatchValue(int lastValue) {
+        speedMatchIntegral += speedMatchError;
+        speedMatchDerivative = speedMatchError - lastSpeedMatchError;
+
+        int value = (lastValue + Math.round((kP * speedMatchError) + (kI * speedMatchIntegral) + (kD * speedMatchDerivative)));
+
+        if (value > 255) {
+            value = 255;
+        } else if (value < 1) {
+            value = 1;
+        }
+
+        return value;
     }
     
     //<editor-fold defaultstate="collapsed" desc="Helper Functions">

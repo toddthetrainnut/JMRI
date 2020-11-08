@@ -5,6 +5,8 @@
  */
 package jmri.jmrix.bachrus.speedmatcher;
 
+import jmri.jmrix.bachrus.speedmatcher.basic.BasicSimpleCVSpeedMatcher;
+
 
 /**
  *
