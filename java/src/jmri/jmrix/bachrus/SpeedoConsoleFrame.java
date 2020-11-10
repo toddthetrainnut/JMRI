@@ -789,6 +789,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         speedMatchImportantInfoPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Important Information"));
         speedMatchImportantInfoPane.setLayout(new BoxLayout(speedMatchImportantInfoPane, BoxLayout.LINE_AXIS));
         speedMatchImportantInfoPane.add(basicSpeedMatchInfo);
+        //TODO: Remove?
 //        speedMatchImportantInfoPane.add(basicSpeedMatchInfo2);
 //        speedMatchImportantInfoPane.add(basicSpeedMatchInfoNCE);
 //        speedMatchImportantInfoPane.add(basicSpeedMatchInfoDigitrax);
@@ -881,7 +882,10 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                 );
                 
                 if (speedMatcher.StartSpeedMatch()) {
-                    basicSpeedMatchStartStopButton.setText("Stop Speed Match"); //I18N
+                    basicSpeedMatchStartStopButton.setText("Stop Speed Match"); //TODO: I18N
+                }
+                else {
+                    speedMatcher = null;
                 }
             } else {
                 stopProfileAndSpeedMatch();

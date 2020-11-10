@@ -32,17 +32,17 @@ public abstract class BasicSpeedMatcher extends SpeedMatcher{
     @Override
     protected boolean Validate() {
         if (dccLocoAddress.getNumber() <= 0) {
-            statusLabel.setText("Please enter a valid DCC address");
+            statusLabel.setText(Bundle.getMessage("StatInvalidDCCAddress"));
             return false;
         }
         
         if (targetStartSpeedKPH < 1) {
-            statusLabel.setText("Please enter a valid start speed");
+            statusLabel.setText(Bundle.getMessage("StatInvalidStartSpeed"));
             return false;
         }
         
         if (targetTopSpeedKPH <= targetStartSpeedKPH) {
-            statusLabel.setText("Please enter a valid top speed");
+            statusLabel.setText(Bundle.getMessage("StatInvalidTopSpeed"));
             return false;
         }
         

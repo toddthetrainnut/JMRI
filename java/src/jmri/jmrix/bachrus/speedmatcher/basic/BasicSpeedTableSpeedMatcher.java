@@ -123,31 +123,33 @@ public class BasicSpeedTableSpeedMatcher extends BasicSpeedMatcher {
     //<editor-fold defaultstate="collapsed" desc="ThrottleListener Overrides">
     @Override
     public void notifyThrottleFound(DccThrottle t) {
-        super.notifyThrottleFound(t);
-        
-        if (speedMatcherState == SpeedMatcherState.WAIT_FOR_THROTTLE) {
-            logger.info("Starting speed matching");
-
-            // using speed matching timer to trigger each phase of speed matching            
-            setupNextSpeedMatchState(true, 0);
-            speedMatchStateTimer.start();
-        } else {
-            CleanUp();
-        }
-        
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
+         //To change body of generated methods, choose Tools | Templates.
+         
+//        super.notifyThrottleFound(t);
+//        
+//        if (speedMatcherState == SpeedMatcherState.WAIT_FOR_THROTTLE) {
+//            logger.info("Starting speed matching");
+//
+//            // using speed matching timer to trigger each phase of speed matching            
+//            setupNextSpeedMatchState(true, 0);
+//            speedMatchStateTimer.start();
+//        } else {
+//            CleanUp();
+//        }
     }
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Helper Functions">
     private void Abort() {
-        speedMatcherState = SpeedMatcherState.SET_ACCEL;
-        setupNextSpeedMatchState(true, 0);
+        //TODO:
+        //speedMatcherState = SpeedMatcherState.SET_ACCEL;
+        //setupNextSpeedMatchState(true, 0);
     }
     
     private void setupNextSpeedMatchState(boolean isForward, int speedStep) {
-        speedMatcherState = speedMatcherState.nextState(this);
-        setupSpeedMatchState(isForward, speedStep, 1500);
+        //speedMatcherState = speedMatcherState.nextState(this);
+        //setupSpeedMatchState(isForward, speedStep, 1500);
     }
     //</editor-fold>
 }

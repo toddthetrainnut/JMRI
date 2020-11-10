@@ -116,8 +116,7 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
         
         return GetThrottle();
     }
-    //</editor-fold>    
-
+    
     /**
      * Sets up the speed match state by setting the throttle direction and
      * speed, clearing the speed match error, clearing the step elapsed seconds,
@@ -171,6 +170,8 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
 
         return value;
     }
+    //</editor-fold>    
+
     
     //<editor-fold defaultstate="collapsed" desc="Helper Functions">
     private boolean GetOpsModeProgrammer() {
