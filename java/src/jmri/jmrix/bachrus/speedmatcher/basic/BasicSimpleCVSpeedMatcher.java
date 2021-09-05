@@ -5,7 +5,8 @@ import jmri.ProgrammerException;
 import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 
 /**
- *
+ * This is a simple speed matcher which will speed match a locomotive to a given
+ * start and top speed using the simple VStart, VMid, and VHigh CVs
  * @author Todd Wegter
  */
 public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
@@ -26,7 +27,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     private int reverseTrimValue = TRIM;
     private int lastReverseTrimValue = TRIM;
     
-    private float targetMidSpeedKPH;
+    private final float targetMidSpeedKPH;
     
     private SpeedMatcherState speedMatcherState = SpeedMatcherState.IDLE;
     private ProgrammerState programmerState = ProgrammerState.IDLE;
@@ -69,7 +70,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     @Override
     public void StopSpeedMatch() {
         logger.info("Speed matching manually stopped");
-        CleanUp();
+        Abort();
     }
 
     @Override

@@ -37,6 +37,7 @@ public class SpeedMatcherConfig {
     public Speed.Unit speedUnit;
     public boolean warmUpLoco;
     public boolean trimReverseSpeed; 
+    
     public int acceleration;
     public int deceleration;
     
