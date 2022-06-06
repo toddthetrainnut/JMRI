@@ -1,7 +1,6 @@
 package jmri.jmrix.bachrus.speedmatcher.basic;
 
 import jmri.DccThrottle;
-import jmri.ProgrammerException;
 import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 
 /**
@@ -12,25 +11,24 @@ import jmri.jmrix.bachrus.speedmatcher.SpeedMatcherConfig;
 public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
-    private final int VSTART = 1;
-    private final int VHIGH = 255;
-    private final int TRIM = 128;
+    private final int INITIAL_VSTART = 1;
+    private final int INITIAL_VHIGH = 255;
+    private final int INITIAL_TRIM = 128;
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Instance Variables">
-    private int vStart = VSTART;
-    private int lastVStart = VSTART;
-    private int vHigh = VHIGH;
-    private int lastVHigh = VHIGH;
-    private int vMid = VSTART;
-    private int lastVMid = VSTART;
-    private int reverseTrimValue = TRIM;
-    private int lastReverseTrimValue = TRIM;
+    private int vStart = INITIAL_VSTART;
+    private int lastVStart = INITIAL_VSTART;
+    private int vMid = INITIAL_VSTART;
+    private int lastVMid = INITIAL_VSTART;
+    private int vHigh = INITIAL_VHIGH;
+    private int lastVHigh = INITIAL_VHIGH;
+    private int reverseTrimValue = INITIAL_TRIM;
+    private int lastReverseTrimValue = INITIAL_TRIM;
     
     private final float targetMidSpeedKPH;
     
     private SpeedMatcherState speedMatcherState = SpeedMatcherState.IDLE;
-    private ProgrammerState programmerState = ProgrammerState.IDLE;
     //</editor-fold>
     
     public BasicSimpleCVSpeedMatcher(SpeedMatcherConfig config) {
@@ -48,14 +46,14 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
         }
 
         //reset instance variables
-        vStart = VSTART;
-        lastVStart = VSTART;
-        vHigh = VHIGH;
-        lastVHigh = VHIGH;
+        vStart = INITIAL_VSTART;
+        lastVStart = INITIAL_VSTART;
+        vHigh = INITIAL_VHIGH;
+        lastVHigh = INITIAL_VHIGH;
         vMid = 128;
         lastVMid = vMid;
-        reverseTrimValue = TRIM;
-        lastReverseTrimValue = TRIM;
+        reverseTrimValue = INITIAL_TRIM;
+        lastReverseTrimValue = INITIAL_TRIM;
 
         speedMatcherState = SpeedMatcherState.WAIT_FOR_THROTTLE;
 
@@ -114,10 +112,12 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
                 }
                 break;
                 
+            //TODO: TRW - add case to set speed step mode to Low/Med/High
+                
             case INIT_VSTART:
                 //set vStart to 1 (CV 2)
                 if (programmerState == ProgrammerState.IDLE) {
-                    writeVStart(VSTART);
+                    writeVStart(INITIAL_VSTART);
                     setupNextSpeedMatchState(true, 0);
                 }
                 break;
@@ -125,7 +125,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
             case INIT_VMID:
                 //set vMid to 1 (CV 6)
                 if (programmerState == ProgrammerState.IDLE) {
-                    writeVMid(VSTART);
+                    writeVMid(INITIAL_VSTART);
                     setupNextSpeedMatchState(true, 0);
                 }
                 break;
@@ -133,7 +133,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
             case INIT_VHIGH:
                 //set vHigh to 255 (CV 5)
                 if (programmerState == ProgrammerState.IDLE) {
-                    writeVHigh(VHIGH);
+                    writeVHigh(INITIAL_VHIGH);
                     setupNextSpeedMatchState(true, 0);
                 }
                 break;
@@ -141,7 +141,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
             case INIT_FORWARD_TRIM:
                 //set forward trim to 128 (CV 66)
                 if (programmerState == ProgrammerState.IDLE) {
-                    writeForwardTrim(TRIM);
+                    writeForwardTrim(INITIAL_TRIM);
                     setupNextSpeedMatchState(true, 0);
                 }
                 break;
@@ -149,7 +149,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
             case INIT_REVERSE_TRIM:
                 //set reverse trim to 128 (CV 95)
                 if (programmerState == ProgrammerState.IDLE) {
-                    writeReverseTrim(TRIM);
+                    writeReverseTrim(INITIAL_TRIM);
                     setupNextSpeedMatchState(true, 0);
                 }
                 break;
@@ -217,7 +217,8 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
                         } else {
                             vMid = getNextSpeedMatchValue(lastVMid);
                             
-                            if (((lastVMid == 1) || (lastVMid == 255)) && (vMid == lastVMid)) {
+                            if (((lastVMid == vStart) || (lastVMid == vHigh)) && (vMid == lastVMid)) {
+                                //TODO: TRW - ensure this is the right message
                                 statusLabel.setText(Bundle.getMessage("StatSetSpeedStep28Fail"));
                                 logger.debug("Unable to achieve desired speed vMid");
                                 Abort();
@@ -464,32 +465,13 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
     
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="Programmer">
-    /**
-     * Starts writing acceleration momentum (CV 3) using the ops mode programmer
-     * @param value acceleration value (0-255 inclusive)
-     */ 
-    private synchronized void writeMomentumAccel(int value) {
-        programmerState = ProgrammerState.WRITE3;
-        statusLabel.setText(Bundle.getMessage("ProgSetAccel", value));
-        startOpsModeWrite("3", value);
-    }
-    
-    /**
-     * Starts writing deceleration momentum (CV 4) using the ops mode programmer
-     * @param value deceleration value (0-255 inclusive)
-     */
-    protected synchronized void writeMomentumDecel(int value) {
-        programmerState = ProgrammerState.WRITE4;
-        statusLabel.setText(Bundle.getMessage("ProgSetDecel", value));
-        startOpsModeWrite("4", value);
-    }
-    
+    //<editor-fold defaultstate="collapsed" desc="Programmer"> 
+     
     /**
      * Starts writing vStart (CV 2) using the ops mode programmer
      * @param value vStart value (0-255 inclusive)
      */
-    protected synchronized void writeVStart(int value) {
+    private synchronized void writeVStart(int value) {
         programmerState = ProgrammerState.WRITE2;
         statusLabel.setText(Bundle.getMessage("ProgSetVStart", value));
         startOpsModeWrite("2", value);
@@ -499,7 +481,7 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
      * Starts writing vMid (CV 6) using the ops mode programmer
      * @param value vMid value (0-255 inclusive)
      */
-    protected synchronized void writeVMid(int value) {
+    private synchronized void writeVMid(int value) {
         programmerState = ProgrammerState.WRITE6;
         statusLabel.setText(Bundle.getMessage("ProgSetVMid", value));
         startOpsModeWrite("6", value);
@@ -509,104 +491,17 @@ public class BasicSimpleCVSpeedMatcher extends BasicSpeedMatcher {
      * Starts writing vHigh (CV 5) using the ops mode programmer
      * @param value vHigh value (0-255 inclusive)
      */
-    protected synchronized void writeVHigh(int value) {
+    private synchronized void writeVHigh(int value) {
         programmerState = ProgrammerState.WRITE5;
         statusLabel.setText(Bundle.getMessage("ProgSetVHigh", value));
         startOpsModeWrite("5", value);
     }
     
-    /**
-     * Starts writing forward trim (CV 66) using the ops mode programmer
-     * @param value forward trim value (0-255 inclusive)
-     */
-    protected synchronized void writeForwardTrim(int value) {
-        programmerState = ProgrammerState.WRITE66;
-        statusLabel.setText(Bundle.getMessage("ProgSetForwardTrim", value));
-        startOpsModeWrite("66", value);
-    }
-    
-    /**
-     * Starts writing reverse trim (CV 95) using the ops mode programmer
-     * @param value reverse trim value (0-255 inclusive)
-     */
-    protected synchronized void writeReverseTrim(int value) {
-        programmerState = ProgrammerState.WRITE95;
-        statusLabel.setText(Bundle.getMessage("ProgSetReverseTrim", value));
-        startOpsModeWrite("95", value);
-    }
-    
-    /**
-     * Starts writing a CV using the ops mode programmer (Programming on the Main)
-     * @param cv    the CV
-     * @param value the value to write to the CV (0-255 inclusive)
-     */
-    private void startOpsModeWrite(String cv, int value) {
-        try {
-            opsModeProgrammer.writeCV(cv, value, this);
-        } catch (ProgrammerException e) {
-            logger.error("Exception writing CV " + cv + " " + e);
-        }
-    }
-    
-    //<editor-fold defaultstate="collapsed" desc="ProgListener Overrides">
-    /**
-     * Called when the programmer (ops mode or service mode) has completed its
-     * operation
-     * @param value  Value from a read operation, or value written on a write
-     * @param status Denotes the completion code. Note that this is a bitwise
-     *               combination of the various states codes defined in this
-     *               interface. (see ProgListener.java for possible values)
-     */
-    @Override
-    public void programmingOpReply(int value, int status) {
-        if (status == 0) { //OK
-            switch (programmerState) {
-                case IDLE:
-                    logger.debug("unexpected reply in IDLE state");
-                    break;
-                    
-                case WRITE2:
-                case WRITE3:
-                case WRITE4:
-                case WRITE5:
-                case WRITE6:
-                case WRITE66:
-                case WRITE95:
-                    programmerState = ProgrammerState.IDLE;
-                    break;
-                    
-                default:
-                    programmerState = ProgrammerState.IDLE;
-                    logger.warn("Unhandled programmer state: {}", programmerState);
-                    break;
-            }
-        } else {
-            // Error during programming
-            logger.error("Status not OK during " + programmerState.toString() + ": " + status);
-            //profileAddressField.setText("Error");
-            statusLabel.setText("Error using programmer");
-            programmerState = ProgrammerState.IDLE;
-            CleanUp();
-        }
-    }
-    //</editor-fold>
-    
-    private enum ProgrammerState {
-        IDLE,
-        WRITE2,
-        WRITE3,
-        WRITE4,
-        WRITE5,
-        WRITE6,
-        WRITE66,
-        WRITE95,
-    }
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="ThrottleListener Overrides">
     /**
      * Called when a throttle is found
-     *
      * @param t the requested DccThrottle
      */
     @Override
