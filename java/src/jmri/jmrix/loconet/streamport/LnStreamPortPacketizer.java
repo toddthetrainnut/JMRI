@@ -1,7 +1,5 @@
 package jmri.jmrix.loconet.streamport;
 
-import java.io.DataInputStream;
-import java.io.OutputStream;
 import java.util.NoSuchElementException;
 import jmri.jmrix.loconet.LnPacketizer;
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
@@ -35,11 +33,6 @@ public class LnStreamPortPacketizer extends LnPacketizer {
 
     public LnStreamPortPacketizer(LocoNetSystemConnectionMemo m) {
         super(m);
-    }
-
-    @Deprecated
-    public LnStreamPortPacketizer() {
-        this(new LocoNetSystemConnectionMemo());
     }
 
     public LnStreamPortController streamController = null;
@@ -140,10 +133,7 @@ public class LnStreamPortPacketizer extends LnPacketizer {
     @Override
     public void startThreads() {
         int priority = Thread.currentThread().getPriority();
-        log.debug("startThreads current priority = " + priority // NOI18N
-                + " max available = " + Thread.MAX_PRIORITY // NOI18N
-                + " default = " + Thread.NORM_PRIORITY // NOI18N
-                + " min available = " + Thread.MIN_PRIORITY); // NOI18N
+        log.debug("startThreads current priority = {} max available = " + Thread.MAX_PRIORITY + " default = " + Thread.NORM_PRIORITY + " min available = " + Thread.MIN_PRIORITY, priority); // NOI18N
 
         // make sure that the xmt priority is no lower than the current priority
         int xmtpriority = (Thread.MAX_PRIORITY - 1 > priority ? Thread.MAX_PRIORITY - 1 : Thread.MAX_PRIORITY);
@@ -151,7 +141,7 @@ public class LnStreamPortPacketizer extends LnPacketizer {
         if (xmtHandler == null) {
             xmtHandler = new XmtHandler();
         }
-        Thread xmtThread = new Thread(xmtHandler, "LocoNet transmit handler"); // NOI18N
+        xmtThread = new Thread(xmtHandler, "LocoNet transmit handler"); // NOI18N
         log.debug("Xmt thread starts at priority {}", xmtpriority); // NOI18N
         xmtThread.setDaemon(true);
         xmtThread.setPriority(Thread.MAX_PRIORITY - 1);
@@ -161,7 +151,7 @@ public class LnStreamPortPacketizer extends LnPacketizer {
         if (rcvHandler == null) {
             rcvHandler = new RcvHandler(this);
         }
-        Thread rcvThread = new Thread(rcvHandler, "LocoNet receive handler"); // NOI18N
+        rcvThread = new Thread(rcvHandler, "LocoNet receive handler"); // NOI18N
         rcvThread.setDaemon(true);
         rcvThread.setPriority(Thread.MAX_PRIORITY);
         rcvThread.start();

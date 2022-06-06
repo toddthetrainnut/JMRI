@@ -3,8 +3,6 @@ package jmri.jmrix;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -15,6 +13,7 @@ import jmri.ConfigureManager;
 import jmri.InstanceManager;
 import jmri.swing.JTitledSeparator;
 import jmri.swing.PreferencesPanel;
+import jmri.util.swing.JComboBoxUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,6 @@ import org.slf4j.LoggerFactory;
  */
 public class JmrixConfigPane extends JPanel implements PreferencesPanel {
 
-    private static final ResourceBundle acb = ResourceBundle.getBundle("apps.AppsConfigBundle");
     public static final String NONE_SELECTED = Bundle.getMessage("noneSelected");
     public static final String NO_PORTS_FOUND = Bundle.getMessage("noPortsFound");
     public static final String NONE = Bundle.getMessage("none");
@@ -45,8 +43,8 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
     private final static Logger log = LoggerFactory.getLogger(JmrixConfigPane.class);
 
     /*
-     * Create panel is seperated off from the instance and synchronized, so that only
-     * one connection can be configured at once, this prevents multiple threads from
+     * Create panel is separated off from the instance and synchronized, so that only
+     * one connection can be configured at once. This prevents multiple threads from
      * trying to create the same panel at the same time.
      */
     /**
@@ -139,6 +137,7 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
      * existing information in an existing ConnectionConfig object. It's
      * permitted to call this with a null argument, e.g. for when first
      * configuring the system.
+     * @param original Existing ConnectionConfig object to (re)connect with
      */
     protected JmrixConfigPane(ConnectionConfig original) {
 
@@ -160,12 +159,17 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
                 manuBox.addItem(manuName);
             }
         }
+        JComboBoxUtil.setupComboBoxMaxRows(manuBox);
+
         manuBox.addActionListener((ActionEvent evt) -> {
             updateComboConnection();
         });
 
         // get the list of ConnectionConfig items into a selection box
-        classConnectionNameList = manager.getConnectionTypes((String) manuBox.getSelectedItem());
+        String selectedItem = (String) manuBox.getSelectedItem();
+        if (selectedItem != null) {
+            classConnectionNameList = manager.getConnectionTypes(selectedItem);
+        }
         classConnectionList = new jmri.jmrix.ConnectionConfig[classConnectionNameList.length + 1];
         modeBox.addItem(NONE_SELECTED);
         if (manuBox.getSelectedIndex() != 0) {
@@ -191,7 +195,7 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
                         Class<?> cl = Class.forName(className);
                         config = (ConnectionConfig) cl.getDeclaredConstructor().newInstance();
                         if( !(config instanceof StreamConnectionConfig)) {
-                           // only include if the connection is not a 
+                           // only include if the connection is not a
                            // StreamConnection.  Those connections require
                            // additional context.
                            modeBox.addItem(config.name());
@@ -203,13 +207,15 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
                 } catch (NullPointerException e) {
                     log.error("Attempt to load {} failed.", className, e);
                 } catch (InvocationTargetException | ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-                    log.error("Attempt to load {} failed: {}.", className, e);
+                    log.error("Attempt to load {} failed", className, e);
                 }
             }
             if ((modeBox.getSelectedIndex() == 0) && (p.getComboBoxLastSelection((String) manuBox.getSelectedItem()) != null)) {
                 modeBox.setSelectedItem(p.getComboBoxLastSelection((String) manuBox.getSelectedItem()));
             }
         }
+        JComboBoxUtil.setupComboBoxMaxRows(modeBox);
+
         modeBox.addActionListener((ActionEvent a) -> {
             if ((String) modeBox.getSelectedItem() != null) {
                 if (!((String) modeBox.getSelectedItem()).equals(NONE_SELECTED)) {
@@ -241,25 +247,22 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
     public void updateComboConnection() {
         modeBox.removeAllItems();
         modeBox.addItem(NONE_SELECTED);
-        classConnectionNameList = InstanceManager.getDefault(ConnectionConfigManager.class).getConnectionTypes((String) manuBox.getSelectedItem());
+        String selectedItem = (String) manuBox.getSelectedItem();
+        if (selectedItem != null) {
+            classConnectionNameList = InstanceManager.getDefault(ConnectionConfigManager.class).getConnectionTypes(selectedItem);
+        }
         classConnectionList = new jmri.jmrix.ConnectionConfig[classConnectionNameList.length + 1];
 
         if (manuBox.getSelectedIndex() != 0) {
+            int n = 1;
             modeBox.setEnabled(true);
-        } else {
-            modeBox.setSelectedIndex(0);
-            modeBox.setEnabled(false);
-        }
-
-        int n = 1;
-        if (manuBox.getSelectedIndex() != 0) {
             for (String classConnectionNameList1 : classConnectionNameList) {
                 try {
                     jmri.jmrix.ConnectionConfig config;
                     Class<?> cl = Class.forName(classConnectionNameList1);
                     config = (jmri.jmrix.ConnectionConfig) cl.getDeclaredConstructor().newInstance();
                     if( !(config instanceof StreamConnectionConfig)) {
-                        // only include if the connection is not a 
+                        // only include if the connection is not a
                         // StreamConnection.  Those connections require
                         // additional context.
                         modeBox.addItem(config.name());
@@ -270,15 +273,17 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
                     if (classConnectionNameList.length == 1) {
                         modeBox.setSelectedIndex(1);
                     }
-                } catch (InvocationTargetException | NullPointerException | ClassNotFoundException 
+                } catch (InvocationTargetException | NullPointerException | ClassNotFoundException
                                 | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-                    log.warn("Attempt to load {} failed: {}", classConnectionNameList1, e);
+                    log.warn("Attempt to load {} failed", classConnectionNameList1, e);
                 }
             }
             if (p.getComboBoxLastSelection((String) manuBox.getSelectedItem()) != null) {
                 modeBox.setSelectedItem(p.getComboBoxLastSelection((String) manuBox.getSelectedItem()));
             }
         } else {
+            modeBox.setSelectedIndex(0);
+            modeBox.setEnabled(false);
             if (ccCurrent != null) {
                 ccCurrent.dispose();
             }
@@ -304,6 +309,7 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
             }
         }
         if (old != this.ccCurrent) {
+            assert this.ccCurrent != null;
             this.ccCurrent.register();
         }
         validate();
@@ -374,7 +380,7 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
 
     @Override
     public String getPreferencesItemText() {
-        return acb.getString("MenuConnections"); // NOI18N
+        return Bundle.getMessage("MenuConnections"); // NOI18N
     }
 
     @Override
@@ -413,18 +419,18 @@ public class JmrixConfigPane extends JPanel implements PreferencesPanel {
 
     @Override
     public void savePreferences() {
-        // do nothing - the persistant manager will take care of this
+        // do nothing - the persistent manager will take care of this
     }
 
     @Override
     public boolean isDirty() {
-        // avoid potentially expensive exrta test for isDirty
+        // avoid potentially expensive extra test for isDirty
         if (log.isDebugEnabled()) {
             log.debug("Connection \"{}\" is {}.",
                     this.getConnectionName(),
-                    (this.isDirty || ((this.ccCurrent != null) ? this.ccCurrent.isDirty() : true) ? "dirty" : "clean"));
+                    (this.isDirty || ((this.ccCurrent == null) || this.ccCurrent.isDirty()) ? "dirty" : "clean"));
         }
-        return this.isDirty || ((this.ccCurrent != null) ? this.ccCurrent.isDirty() : true);
+        return this.isDirty || ((this.ccCurrent == null) || this.ccCurrent.isDirty());
     }
 
     @Override

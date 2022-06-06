@@ -33,6 +33,7 @@ public class PickSinglePanel<T extends NamedBean> extends JPanel {
         _table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _table.setCellSelectionEnabled(true);
         _table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 int row = getTable().getSelectedRow();
                 int col = getTable().getSelectedColumn(); // might be -1 if just inserted
@@ -130,7 +131,7 @@ public class PickSinglePanel<T extends NamedBean> extends JPanel {
             try {
                 bean = _model.addBean(sysname, uname);
             } catch (IllegalArgumentException ex) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(this.getRootPane(),
                     Bundle.getMessage("PickAddFailed", ex.getMessage()),  // NOI18N
                     Bundle.getMessage("WarningTitle"),  // NOI18N
                     JOptionPane.WARNING_MESSAGE);

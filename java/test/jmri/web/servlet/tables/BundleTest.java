@@ -2,7 +2,7 @@ package jmri.web.servlet.tables;
 
 import java.util.Locale;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 /**
  * Tests for the Bundle class
@@ -11,30 +11,22 @@ import org.junit.Test;
  */
 public class BundleTest  {
     @Test public void testGoodKeyMessage() {
-        Assert.assertEquals("JMRI Tables", Bundle.getMessage("TablesTitle"));
+        Assert.assertEquals("JMRI Table", Bundle.getMessage("TablesTitle"));
     }
 
-    @Test public void testBadKeyMessage() {
-        try {
-            Bundle.getMessage("FFFFFTTTTTTT");
-        } catch (java.util.MissingResourceException e) {
-            return;
-        } // OK
-        Assert.fail("No exception thrown");
+    @Test
+    public void testBadKeyMessage() {
+        Assert.assertThrows(java.util.MissingResourceException.class, () -> Bundle.getMessage("FFFFFTTTTTTT"));
     }
 
     @Test public void testGoodKeyMessageArg() {
-        Assert.assertEquals("JMRI Tables", Bundle.getMessage("TablesTitle", new Object[]{}));
+        Assert.assertEquals("JMRI Table", Bundle.getMessage("TablesTitle", new Object[]{}));
         Assert.assertEquals("About Test", Bundle.getMessage("TitleAbout", "Test"));
     }
 
-    @Test public void testBadKeyMessageArg() {
-        try {
-            Bundle.getMessage("FFFFFTTTTTTT", new Object[]{});
-        } catch (java.util.MissingResourceException e) {
-            return;
-        } // OK
-        Assert.fail("No exception thrown");
+    @Test
+    public void testBadKeyMessageArg() {
+        Assert.assertThrows(java.util.MissingResourceException.class, () -> Bundle.getMessage("FFFFFTTTTTTT", new Object[]{}));
     }
 
     @Test public void testLocaleMessage() {

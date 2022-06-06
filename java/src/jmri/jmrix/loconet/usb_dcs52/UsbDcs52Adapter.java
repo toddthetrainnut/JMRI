@@ -39,12 +39,7 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
     @Override
     protected void setSerialPort(SerialPort activeSerialPort) throws UnsupportedCommOperationException {
         // find the baud rate value, configure comm options
-        int baud = 57600;  // default, but also defaulted in the initial value of selectedSpeed
-        for (int i = 0; i < validBaudNumbers().length; i++) {
-            if (validBaudRates()[i].equals(mBaudRate)) {
-                baud = validBaudNumbers()[i];
-            }
-        }
+        int baud = currentBaudNumber(mBaudRate);
         activeSerialPort.setSerialPortParams(baud, SerialPort.DATABITS_8,
                 SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 
@@ -55,11 +50,7 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
         }
         configureLeadsAndFlowControl(activeSerialPort, flow);
 
-        log.info("USB DCS52 adapter"
-                + (activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=")
-                + activeSerialPort.getFlowControlMode()
-                + " RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT
-                + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN);
+        log.info("USB DCS52 adapter{}{} RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN, activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=", activeSerialPort.getFlowControlMode());
     }
 
     /**
@@ -77,10 +68,10 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
             // connect to a packetizing traffic controller
             // that does echoing
             //
-            // Note - already created a LocoNetSystemConnectionMemo, so re-use 
+            // Note - already created a LocoNetSystemConnectionMemo, so re-use
             // it when creating a PR2 Packetizer.  (If create a new one, will
             // end up with two "LocoNet" menus...)
-            jmri.jmrix.loconet.pr2.LnPr2Packetizer packets = 
+            jmri.jmrix.loconet.pr2.LnPr2Packetizer packets =
                     new jmri.jmrix.loconet.pr2.LnPr2Packetizer(this.getSystemConnectionMemo());
             packets.connectPort(this);
 
@@ -88,7 +79,7 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
             this.getSystemConnectionMemo().setLnTrafficController(packets);
             // do the common manager config
             this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);  // never transponding!
+                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);  // never transponding!
             this.getSystemConnectionMemo().configureManagersPR2();
 
             // start operation
@@ -107,6 +98,7 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
             // MS100 modes - connecting to a separate command station
             // get transponding option
             setTranspondingAvailable(getOptionState("TranspondingPresent"));
+            setInterrogateOnStart(getOptionState("InterrogateOnStart"));
             // connect to a packetizing traffic controller
             LnPacketizer packets = getPacketizer(getOptionState(option4Name));
             packets.connectPort(this);
@@ -115,7 +107,7 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
             this.getSystemConnectionMemo().setLnTrafficController(packets);
             // do the common manager config
             this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);
+                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);
 
             this.getSystemConnectionMemo().configureManagersMS100();
 
@@ -140,7 +132,7 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
      */
     @Override
     public String[] validBaudRates() {
-        return new String[]{"57,600 baud"}; // NOI18N
+        return new String[]{"57,600 baud"}; // TODO I18N
     }
 
     /**
@@ -151,6 +143,11 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
     @Override
     public int[] validBaudNumbers() {
         return new int[]{57600};
+    }
+
+    @Override
+    public int defaultBaudIndex() {
+        return 0;
     }
 
     // Option 1 does flow control, inherited from LocoBufferAdapter
@@ -165,12 +162,12 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
      */
     public String[] commandStationOptions() {
         String[] retval = new String[commandStationNames.length + 1];
-        retval[0] = LnCommandStationType.COMMAND_STATION_USB_DCS52_ALONE.getName();
-        retval[1] = LnCommandStationType.COMMAND_STATION_DCS052.getName();
+        retval[0] = LnCommandStationType.COMMAND_STATION_DCS052.getName();
+        retval[1] = LnCommandStationType.COMMAND_STATION_USB_DCS52_ALONE.getName();
         int count = 2;
         for (String commandStationName : commandStationNames) {
             if (!commandStationName.equals(LnCommandStationType.COMMAND_STATION_DCS052.getName())) {
-                // include all but COMMAND_STATION_DCS052, which was forced  to 
+                // include all but COMMAND_STATION_DCS052, which was forced  to
                 // the front of the list (above)
                 retval[count++] = commandStationName;
             }
@@ -190,4 +187,5 @@ public class UsbDcs52Adapter extends LocoBufferAdapter {
     }
 
     private final static Logger log = LoggerFactory.getLogger(UsbDcs52Adapter.class);
+
 }

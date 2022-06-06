@@ -3,6 +3,7 @@ package jmri.jmrix.easydcc;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.DccLocoAddress;
 import jmri.LocoAddress;
+import jmri.SpeedStepMode;
 import jmri.jmrix.AbstractThrottle;
 
 /**
@@ -25,25 +26,15 @@ public class EasyDccThrottle extends AbstractThrottle {
      */
     public EasyDccThrottle(EasyDccSystemConnectionMemo memo, DccLocoAddress address) {
         super(memo);
-        super.speedStepMode = SpeedStepMode128;
+        super.speedStepMode = SpeedStepMode.NMRA_DCC_128;
         tc = memo.getTrafficController();
 
         // cache settings. It would be better to read the
         // actual state, but I don't know how to do this
-        this.speedSetting = 0;
-        this.f0 = false;
-        this.f1 = false;
-        this.f2 = false;
-        this.f3 = false;
-        this.f4 = false;
-        this.f5 = false;
-        this.f6 = false;
-        this.f7 = false;
-        this.f8 = false;
-        this.f9 = false;
-        this.f10 = false;
-        this.f11 = false;
-        this.f12 = false;
+        synchronized (this) {
+            this.speedSetting = 0;
+        }
+        // Functions default to false
         this.address = address;
         this.isForward = true;
     }
@@ -129,7 +120,7 @@ public class EasyDccThrottle extends AbstractThrottle {
     }
 
     /**
-     * Set the speed {@literal &} direction.
+     * Set the speed and direction.
      * <p>
      * This intentionally skips the emergency stop value of 1.
      *
@@ -138,12 +129,14 @@ public class EasyDccThrottle extends AbstractThrottle {
     @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY") // OK to compare floating point, notify on any change
     @Override
     public void setSpeedSetting(float speed) {
-        float oldSpeed = this.speedSetting;
-        this.speedSetting = speed;
-
+        float oldSpeed;
+        synchronized (this) {
+            oldSpeed = this.speedSetting;
+            this.speedSetting = speed;
+        }
         byte[] result;
 
-        if (super.speedStepMode == SpeedStepMode128) {
+        if (super.speedStepMode == SpeedStepMode.NMRA_DCC_128) {
             int value = (int) ((127 - 1) * speed);     // -1 for rescale to avoid estop
             if (value > 0) {
                 value = value + 1;  // skip estop
@@ -205,9 +198,8 @@ public class EasyDccThrottle extends AbstractThrottle {
         }
 
         tc.sendEasyDccMessage(m, null);
-
-        if (oldSpeed != this.speedSetting) {
-            notifyPropertyChangeListener("SpeedSetting", oldSpeed, this.speedSetting);
+        synchronized (this) {
+            firePropertyChange(SPEEDSETTING, oldSpeed, this.speedSetting);
         }
         record(speed);
     }
@@ -216,13 +208,13 @@ public class EasyDccThrottle extends AbstractThrottle {
     public void setIsForward(boolean forward) {
         boolean old = isForward;
         isForward = forward;
-        setSpeedSetting(speedSetting);  // send the command
-        if (old != isForward) {
-            notifyPropertyChangeListener("IsForward", old, isForward);
+        synchronized (this) {
+            setSpeedSetting(speedSetting);  // send the command
         }
+        firePropertyChange(ISFORWARD, old, isForward);
     }
 
-    private DccLocoAddress address;
+    private final DccLocoAddress address;
     EasyDccTrafficController tc;
 
     @Override
@@ -231,7 +223,7 @@ public class EasyDccThrottle extends AbstractThrottle {
     }
 
     @Override
-    protected void throttleDispose() {
+    public void throttleDispose() {
         active = false;
         finishRecord();
     }

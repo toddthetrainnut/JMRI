@@ -1,21 +1,15 @@
 package jmri.jmrit.operations.locations.tools;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
+
+import javax.swing.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsXml;
@@ -26,8 +20,6 @@ import jmri.jmrit.operations.rollingstock.cars.CarLoads;
 import jmri.jmrit.operations.rollingstock.cars.CarTypes;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Frame for user edit of track loads
@@ -509,7 +501,7 @@ public class TrackLoadEditFrame extends OperationsFrame implements java.beans.Pr
         // remove car types not serviced by this location and track
         for (int i = comboBoxTypes.getItemCount() - 1; i >= 0; i--) {
             String type = comboBoxTypes.getItemAt(i);
-            if (_track != null && !_track.acceptsTypeName(type)) {
+            if (_track != null && !_track.isTypeNameAccepted(type)) {
                 comboBoxTypes.removeItem(type);
             }
         }
@@ -517,7 +509,7 @@ public class TrackLoadEditFrame extends OperationsFrame implements java.beans.Pr
         // remove car types not serviced by this location and track
         for (int i = comboBoxShipTypes.getItemCount() - 1; i >= 0; i--) {
             String type = comboBoxShipTypes.getItemAt(i);
-            if (_track != null && !_track.acceptsTypeName(type)) {
+            if (_track != null && !_track.isTypeNameAccepted(type)) {
                 comboBoxShipTypes.removeItem(type);
             }
         }
@@ -562,10 +554,11 @@ public class TrackLoadEditFrame extends OperationsFrame implements java.beans.Pr
             updateLoadNames();
             updateShipLoadNames();
         }
-        if (e.getPropertyName().equals(Track.LOAD_OPTIONS_CHANGED_PROPERTY)) {
-            if (_track != null) {
-                updateButtons(true);
-            }
+        if (_track != null && e.getPropertyName().equals(Track.LOAD_OPTIONS_CHANGED_PROPERTY)) {
+            updateButtons(true);
+        }
+        if (_track != null && e.getPropertyName().equals(Track.HOLD_CARS_CHANGED_PROPERTY)) {
+            holdCars.setSelected(_track.isHoldCarsWithCustomLoadsEnabled());
         }
     }
 

@@ -1,33 +1,52 @@
 package jmri.jmrix.can.cbus;
 
-import jmri.ProgListenerScaffold;
+import jmri.Programmer;
 import jmri.ProgrammingMode;
+import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JUnitUtil;
-import org.junit.*;
+
+import org.junit.Assert;
+import org.junit.jupiter.api.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
+ * @author Andrew Crosland Copyright (C) 2021
  */
 public class CbusDccProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
 
     @Test
     @Override
     public void testDefault() {
-        Assert.assertEquals("Check Default", ProgrammingMode.PAGEMODE,
+        Assert.assertEquals("Check Default", ProgrammingMode.DIRECTBITMODE,
                 programmer.getMode());        
+        Assert.assertEquals("Check Default", ProgrammingMode.DIRECTBITMODE,
+                programmer2.getMode());        
     }
     
     @Override
     @Test
     public void testDefaultViaBestMode() {
-        Assert.assertEquals("Check Default", ProgrammingMode.PAGEMODE,
+        Assert.assertEquals("Check Default", ProgrammingMode.DIRECTBITMODE,
                 ((CbusDccProgrammer)programmer).getBestMode());        
+        Assert.assertEquals("Check Default", ProgrammingMode.DIRECTBITMODE,
+                ((CbusDccProgrammer)programmer2).getBestMode());        
     }
 
+    @Test
+    public void testDispose() {
+    
+        Assertions.assertEquals(2, tcis.numListeners(),"2 tcis listeners");
+    
+        programmer.dispose();
+        programmer2.dispose();
+        
+        Assertions.assertEquals(0, tcis.numListeners(),"0 tcis listeners");
+    }
+    
 /*
-    @Test(expected=java.lang.IllegalArgumentException.class)
+    @Test
     public void testSetGetMode() {
         programmer.setMode(ProgrammingMode.REGISTERMODE);
         Assert.assertEquals("Check mode matches set", ProgrammingMode.REGISTERMODE,
@@ -70,20 +89,35 @@ public class CbusDccProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     }
 
 */
+    
+    protected Programmer programmer2;
+    private TrafficControllerScaffold tcis;
+    private CanSystemConnectionMemo memo;
 
-    // The minimal setup for log4J
     @Override
-    @Before
+    @BeforeEach
     public void setUp() {
         JUnitUtil.setUp();
-        programmer = new CbusDccProgrammer(new TrafficControllerScaffold());
+        tcis = new TrafficControllerScaffold();
+        memo = new CanSystemConnectionMemo();
+        memo.setTrafficController(tcis);
+        programmer = new CbusDccProgrammer(tcis);
+        programmer2 = new CbusDccProgrammer(tcis);
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() {
+        programmer.dispose();
+        programmer2.dispose();
+        programmer2 = null;
         programmer = null;
+        tcis.terminateThreads();
+        tcis = null;
+        memo.dispose();
+        memo = null;
         JUnitUtil.tearDown();
+
     }
 
     // private final static Logger log = LoggerFactory.getLogger(CbusDccProgrammerTest.class);

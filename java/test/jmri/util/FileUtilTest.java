@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -12,10 +12,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
-import org.junit.After;
+
+import jmri.profile.ProfileManager;
+
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for the jmri.util.FileUtil class.
@@ -69,6 +73,7 @@ public class FileUtilTest {
     // preference: prefix with relative path, convert to absolute in system-specific form
     @Test
     public void testGEFPrefRel() {
+        JUnitUtil.resetProfileManager();
         String name = FileUtil.getExternalFilename("preference:non-existant-file-foo");
         Assert.assertEquals(FileUtil.getUserFilesPath() + "non-existant-file-foo", name);
     }
@@ -106,6 +111,7 @@ public class FileUtilTest {
 
     @Test
     public void testGetpfPreferenceS() {
+        JUnitUtil.resetProfileManager();
         String name = FileUtil.getPortableFilename("preference:non-existant-file-foo");
         Assert.assertEquals("preference:non-existant-file-foo", name);
     }
@@ -266,7 +272,7 @@ public class FileUtilTest {
         File file = File.createTempFile("FileUtilTest", null);
         String text = "jmri.util.FileUtil#appendTextToFile";
         FileUtil.appendTextToFile(file, text);
-        List<String> lines = Files.readAllLines(Paths.get(file.toURI()), Charset.forName("UTF-8"));
+        List<String> lines = Files.readAllLines(Paths.get(file.toURI()), StandardCharsets.UTF_8);
         Assert.assertEquals(text, lines.get(0));
     }
 
@@ -326,10 +332,134 @@ public class FileUtilTest {
         Assert.assertNull(FileUtil.findExternalFilename(FileUtil.PROGRAM + this.preferencesTestFile.getName()));
     }
 
-    @Before
-    public void setUp() throws Exception {
-        jmri.util.JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
+    @Test
+    public void testGetpfScriptsS() {
+        String name = FileUtil.getPortableFilename("scripts:non-existant-file-foo");
+        assertEquals("scripts:non-existant-file-foo", name);
+    }
+
+    @Test
+    public void testGEFScriptsAbs() {
+
+        File f = new File("jython/non-existant-file-foo");
+        String name = FileUtil.getExternalFilename("scripts:" + f.getAbsolutePath());
+        assertEquals(f.getAbsolutePath(), name);
+
+    }
+
+    @Test
+    public void testLocateActualJythonFile() {
+
+        File actualFile = null;
+        try {
+            actualFile = FileUtil.getFile(FileUtil.getProgramPath()+"jython/BackAndForth.py");
+        }
+        catch ( FileNotFoundException ex ) {
+            fail("jython/BackAndForth.py not found, ", ex);
+        }
+
+        assertNotNull(actualFile);
+        assertEquals("scripts:BackAndForth.py", FileUtil.getPortableFilename(actualFile));
+
+        URI toFind = FileUtil.findURI("jython/BackAndForth.py");
+        assertNotNull(toFind);
+        assertFalse(toFind.getPath().isBlank());
+ 
+    }
+
+    @Test
+    public void testLocateActualJythonByScripts() {
+
+        File actualFile = null;
+        try {
+            actualFile = FileUtil.getFile("scripts:BackAndForth.py");
+        }
+        catch ( FileNotFoundException ex ) {
+            fail("scripts:BackAndForth.py not found, ", ex);
+        }
+        assertNotNull(actualFile);
+
+        URI toFind = FileUtil.findURI("scripts:BackAndForth.py");
+        assertNotNull(toFind);
+        assertFalse(toFind.getPath().isBlank());
+        assertTrue(toFind.getPath().contains("jython"));
+
+    }
+
+    @Test
+    public void testLocateActualJythonByScriptsFail() {
+        URI toFind = FileUtil.findURI("scripts:thisisdefinitelynotascript.py");
+        assertNull(toFind);
+    }
+
+    @Test
+    public void testLogixNgExampleTableCsv() {
+
+        String absPath = "Absolute Path Not Found";
+        String relativePath = "Relative Path Not Found";
+
+        try {
+            File absoluteFile = FileUtil.getFile(FileUtil.getProgramPath() + "/jython/LogixNG/LogixNG_ExampleTable.csv");
+            assertNotNull(absoluteFile);
+            absPath = absoluteFile.getAbsolutePath();
+        }
+        catch (FileNotFoundException ex) {
+            fail("absolute LogixNG_ExampleTable not found, ", ex);
+        }
+
+        try {
+            File relativeFile = FileUtil.getFile("scripts:LogixNG/LogixNG_ExampleTable.csv");
+            assertNotNull(relativeFile);
+            relativePath = relativeFile.getAbsolutePath();
+        }
+        catch ( FileNotFoundException ex ) {
+            fail("relative LogixNG_ExampleTable not found, ", ex);
+        }
+
+        assertEquals( absPath, relativePath);
+    }
+
+    @Test
+    public void testScriptsPathPresent() {
+
+        assertTrue( FileUtil.getScriptsPath().contains("jython"),
+            "script path " + FileUtil.getScriptsPath());
+
+        try {
+            assertTrue( FileUtil.getFile("scripts:").getAbsolutePath().contains("jython"),
+                "scripts: " + FileUtil.getFile("scripts:").getAbsolutePath());
+        }
+        catch ( FileNotFoundException ex ) {
+            fail("scripts: path does not contain jython, ", ex);
+        }
+
+    }
+
+    @Test
+    public void testSetScriptsDirectory() {
+        
+        // most scripts: tests within this class assume default user profile
+        // scripts directory.
+        assertTrue( FileUtil.getScriptsPath().contains("jython"),
+            "script path " + FileUtil.getScriptsPath());
+        
+        // though the user can change this,
+        FileUtil.setScriptsPath( ProfileManager.getDefault().getActiveProfile(), 
+            (FileUtil.getProfilePath() + "myScripts" ) );
+        
+        assertFalse( FileUtil.getScriptsPath().contains("jython"),"not jython " + FileUtil.getScriptsPath());
+        assertEquals(FileUtil.getProfilePath() + "myScripts" + File.separator, FileUtil.getScriptsPath());
+        
+    }
+
+    @BeforeEach
+    public void setUp(@TempDir File folder) throws IOException {
+
+        JUnitUtil.setUp();
+        // The profile is setup with a temp directory to ensure no contamination
+        // from previous tests when setting user script directories etc.
+        JUnitUtil.resetProfileManager(new jmri.profile.NullProfile(folder));
+
         this.programTestFile = new File(UUID.randomUUID().toString());
         this.programTestFile.createNewFile();
         JUnitUtil.waitFor(() -> {
@@ -344,7 +474,7 @@ public class FileUtilTest {
         }, "Create program test file");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.programTestFile.delete();
         JUnitUtil.waitFor(() -> {
@@ -354,6 +484,6 @@ public class FileUtilTest {
         JUnitUtil.waitFor(() -> {
             return !this.preferencesTestFile.exists();
         }, "Remove program test file");
-        jmri.util.JUnitUtil.tearDown();
+        JUnitUtil.tearDown();
     }
 }

@@ -1,15 +1,17 @@
 package jmri.jmrix.ecos;
 
+import jmri.InstanceManager;
+import jmri.ShutDownManager;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Before;
+
+import org.junit.jupiter.api.*;
 
 /**
  * EcosSensorManagerTest.java
  *
- * Description:	tests for the EcosSensorManager class
+ * Test for the EcosSensorManager class
  *
- * @author	Paul Bender Copyright (C) 2012,2016
+ * @author Paul Bender Copyright (C) 2012,2016
  */
 public class EcosSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
 
@@ -18,23 +20,28 @@ public class EcosSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBa
         return "US" + i;
     }
 
-    EcosTrafficController tc = null;
+    private EcosTrafficController tc;
 
-    // The minimal setup for log4J
-    @Before
+    @BeforeEach
     @Override
     public void setUp() {
         JUnitUtil.setUp();
+        JUnitUtil.resetProfileManager();
+        JUnitUtil.initRosterConfigManager();
+        JUnitUtil.initDefaultUserMessagePreferences();
         tc = new EcosInterfaceScaffold();
         EcosSystemConnectionMemo memo = new EcosSystemConnectionMemo(tc);
         l = new EcosSensorManager(memo);
+        InstanceManager.getDefault(ShutDownManager.class).deregister(memo.getPreferenceManager().ecosPreferencesShutDownTask);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
+        l.dispose();
+        tc.terminateThreads();
+        l = null;
         tc = null;
         JUnitUtil.tearDown();
     }
-
 
 }

@@ -1,5 +1,7 @@
 package jmri.jmrix.oaktree;
 
+import java.util.Locale;
+import javax.annotation.Nonnull;
 import jmri.Light;
 import jmri.managers.AbstractLightManager;
 import org.slf4j.Logger;
@@ -18,64 +20,66 @@ import org.slf4j.LoggerFactory;
  */
 public class SerialLightManager extends AbstractLightManager {
 
-    OakTreeSystemConnectionMemo _memo = null;
-    protected String prefix = "O";
-
     public SerialLightManager(OakTreeSystemConnectionMemo memo) {
-        _memo = memo;
-        prefix = getSystemPrefix();
+        super(memo);
     }
 
     /**
-     * Return the Oak Tree system prefix
+     * {@inheritDoc}
      */
     @Override
-    public String getSystemPrefix() {
-        return _memo.getSystemPrefix();
-
+    @Nonnull
+    public OakTreeSystemConnectionMemo getMemo() {
+        return (OakTreeSystemConnectionMemo) memo;
     }
 
     /**
      * Create a new Light based on the system name.
      * Assumes calling method has checked that a Light with this system name
      * does not already exist.
-     *
-     * @return null if the system name is not in a valid format or if the
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if the system name is not in a valid format or if the
      * system name does not correspond to a configured OakTree digital output bit
      */
     @Override
-    public Light createNewLight(String systemName, String userName) {
-        Light lgt = null;
+    @Nonnull
+    protected Light createNewLight(@Nonnull String systemName, String userName) throws IllegalArgumentException {
         // Validate the systemName
-        if (SerialAddress.validSystemNameFormat(systemName, 'L', prefix) == NameValidity.VALID) {
-            lgt = new SerialLight(systemName, userName, _memo);
-            if (!SerialAddress.validSystemNameConfig(systemName, 'L', _memo)) {
+        if (SerialAddress.validSystemNameFormat(systemName, 'L', getSystemPrefix()) == NameValidity.VALID) {
+            Light lgt = new SerialLight(systemName, userName, getMemo());
+            if (!SerialAddress.validSystemNameConfig(systemName, 'L', getMemo())) {
                 log.warn("Light system Name does not refer to configured hardware: {}", systemName);
             }
+            return lgt;
         } else {
             log.error("Invalid Light system Name format: {}", systemName);
+            throw new IllegalArgumentException("Invalid Light system Name format: " + systemName);
         }
-        return lgt;
     }
 
     /**
-     * Validate system name format.
-     * @return 'true' if system name has a valid format, else return 'false'
+     * {@inheritDoc}
      */
     @Override
-    public NameValidity validSystemNameFormat(String systemName) {
-        return (SerialAddress.validSystemNameFormat(systemName, 'L', prefix));
+    @Nonnull
+    public String validateSystemNameFormat(@Nonnull String systemName, @Nonnull Locale locale) {
+        return SerialAddress.validateSystemNameFormat(systemName, getSystemNamePrefix(), locale);
     }
 
     /**
-     * Validate system name for configuration.
-     *
-     * @return 'true' if system name has a valid meaning in current
-     * configuration, else returns 'false'
+     * {@inheritDoc}
      */
     @Override
-    public boolean validSystemNameConfig(String systemName) {
-        return (SerialAddress.validSystemNameConfig(systemName, 'L', _memo));
+    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
+        return (SerialAddress.validSystemNameFormat(systemName, typeLetter(), getSystemPrefix()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean validSystemNameConfig(@Nonnull String systemName) {
+        return (SerialAddress.validSystemNameConfig(systemName, typeLetter(), getMemo()));
     }
 
     /**
@@ -85,8 +89,9 @@ public class SerialLightManager extends AbstractLightManager {
      * alternate representation, else return ""
      */
     @Override
-    public String convertSystemNameToAlternate(String systemName) {
-        return (SerialAddress.convertSystemNameToAlternate(systemName, prefix));
+    @Nonnull
+    public String convertSystemNameToAlternate(@Nonnull String systemName) {
+        return (SerialAddress.convertSystemNameToAlternate(systemName, getSystemPrefix()));
     }
 
     /**
@@ -95,15 +100,6 @@ public class SerialLightManager extends AbstractLightManager {
     @Override
     public String getEntryToolTip() {
         return Bundle.getMessage("AddOutputEntryToolTip");
-    }
-
-    /**
-     * Allow access to SerialLightManager.
-     * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
-     */
-    @Deprecated
-    static public SerialLightManager instance() {
-        return null;
     }
 
     private final static Logger log = LoggerFactory.getLogger(SerialLightManager.class);

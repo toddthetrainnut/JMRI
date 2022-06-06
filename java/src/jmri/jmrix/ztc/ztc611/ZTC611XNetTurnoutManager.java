@@ -1,7 +1,9 @@
 package jmri.jmrix.ztc.ztc611;
 
+import javax.annotation.Nonnull;
 import jmri.Turnout;
 import jmri.jmrix.lenz.XNetAddress;
+import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 
 /**
  * Implement turnout manager - Specific to ZTC ZTC611
@@ -13,25 +15,30 @@ import jmri.jmrix.lenz.XNetAddress;
  */
 public class ZTC611XNetTurnoutManager extends jmri.jmrix.lenz.XNetTurnoutManager {
 
-    public ZTC611XNetTurnoutManager(jmri.jmrix.lenz.XNetTrafficController controller, String prefix) {
-        super(controller, prefix);
+    public ZTC611XNetTurnoutManager(XNetSystemConnectionMemo memo) {
+        super(memo);
     }
 
     // XNet-specific methods
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
     @Override
-    public Turnout createNewTurnout(String systemName, String userName) {
+    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
         // check if the output bit is available
-        int bitNum = XNetAddress.getBitFromSystemName(systemName, prefix);
+        int bitNum = XNetAddress.getBitFromSystemName(systemName, getSystemPrefix());
         if (bitNum == -1) {
-            return (null);
+            throw new IllegalArgumentException("Cannot get Bit from System Name " + systemName);
         }
-        Turnout t = new ZTC611XNetTurnout(prefix, bitNum, tc);
+        Turnout t = new ZTC611XNetTurnout(getSystemPrefix(), bitNum, tc);
         t.setUserName(userName);
         return t;
     }
 
     @Override
-    public boolean allowMultipleAdditions(String systemName) {
+    public boolean allowMultipleAdditions(@Nonnull String systemName) {
         return true;
     }
 

@@ -1,10 +1,13 @@
 package jmri.jmrix;
 
 import java.util.List;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jmri.InstanceManager;
+import jmri.InstanceManagerAutoDefault;
 import jmri.beans.Bean;
 import jmri.jmrix.internal.InternalSystemConnectionMemo;
+import jmri.SystemConnectionMemo;
 
 /**
  * Manager for SystemConnectionMemos. Manages SystemConnectionMemos and
@@ -15,7 +18,7 @@ import jmri.jmrix.internal.InternalSystemConnectionMemo;
  *
  * @author Randall Wood Copyright 2017
  */
-public class SystemConnectionMemoManager extends Bean {
+public class SystemConnectionMemoManager extends Bean implements InstanceManagerAutoDefault {
 
     /**
      * Property name change fired when a connection is registered. The fired
@@ -55,12 +58,19 @@ public class SystemConnectionMemoManager extends Bean {
     }
 
     public void deregister(SystemConnectionMemo memo) {
-        // removeFromActionList();
         InstanceManager.deregister(memo, SystemConnectionMemo.class);
         log.trace("fire CONNECTION_REMOVED for {}", memo);
         firePropertyChange(CONNECTION_REMOVED, memo, null);
     }
 
+    /**
+     * For a given System UserName AND System Prefix, get the Connection Memo.
+     * Both must match to return the memo.
+     * @param systemPrefix System Prefix to search for.
+     * @param userName system UserName to search for.
+     * @return connection memo, else null if no memo located.
+     */
+    @CheckForNull
     public synchronized SystemConnectionMemo getSystemConnectionMemo(@Nonnull String systemPrefix, @Nonnull String userName) {
         for (SystemConnectionMemo memo: InstanceManager.getList(SystemConnectionMemo.class)) {
             if (memo.getSystemPrefix().equals(systemPrefix) && memo.getUserName().equals(userName)) {
@@ -70,6 +80,12 @@ public class SystemConnectionMemoManager extends Bean {
         return null;
     }
 
+    /**
+     * For a given System UserName, get the Connection Memo.
+     * @param userName system UserName to search for.
+     * @return connection memo, else null if no memo located.
+     */
+    @CheckForNull
     public synchronized SystemConnectionMemo getSystemConnectionMemoForUserName(@Nonnull String userName) {
         for (SystemConnectionMemo memo: InstanceManager.getList(SystemConnectionMemo.class)) {
             if (memo.getUserName().equals(userName)) {
@@ -79,6 +95,12 @@ public class SystemConnectionMemoManager extends Bean {
         return null;
     }
 
+    /**
+     * For a given System Prefix, get the Connection Memo.
+     * @param systemPrefix System Prefix to search for.
+     * @return connection memo, else null if no memo located.
+     */
+    @CheckForNull
     public synchronized SystemConnectionMemo getSystemConnectionMemoForSystemPrefix(@Nonnull String systemPrefix) {
         for (SystemConnectionMemo memo: InstanceManager.getList(SystemConnectionMemo.class)) {
             if (memo.getSystemPrefix().equals(systemPrefix)) {
@@ -115,9 +137,7 @@ public class SystemConnectionMemoManager extends Bean {
      * @return the default instance, created if needed
      */
     public static SystemConnectionMemoManager getDefault() {
-        return InstanceManager.getOptionalDefault(SystemConnectionMemoManager.class).orElseGet(() -> {
-            return InstanceManager.setDefault(SystemConnectionMemoManager.class, new SystemConnectionMemoManager());
-        });
+        return InstanceManager.getDefault(SystemConnectionMemoManager.class);
     }
 
     private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SystemConnectionMemoManager.class);

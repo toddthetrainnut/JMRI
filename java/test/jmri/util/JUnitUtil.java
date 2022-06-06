@@ -1,98 +1,58 @@
 package jmri.util;
 
-import java.awt.Container;
-import java.awt.Frame;
-import java.awt.Window;
+import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.concurrent.Callable;
 
 import javax.annotation.Nonnull;
 import javax.swing.AbstractButton;
 
-import org.apache.log4j.Level;
-import org.junit.Assert;
-import org.netbeans.jemmy.FrameWaiter;
-import org.netbeans.jemmy.TestOut;
-import org.netbeans.jemmy.operators.AbstractButtonOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import apps.gui.GuiLafPreferencesManager;
-import jmri.AddressedProgrammerManager;
-import jmri.ConditionalManager;
-import jmri.ConfigureManager;
-import jmri.GlobalProgrammerManager;
-import jmri.InstanceManager;
-import jmri.JmriException;
-import jmri.LightManager;
-import jmri.LogixManager;
-import jmri.MemoryManager;
-import jmri.NamedBean;
-import jmri.PowerManager;
-import jmri.PowerManagerScaffold;
-import jmri.ReporterManager;
-import jmri.RouteManager;
-import jmri.SensorManager;
-import jmri.ShutDownManager;
-import jmri.ShutDownTask;
-import jmri.SignalHeadManager;
-import jmri.SignalMastLogicManager;
-import jmri.SignalMastManager;
-import jmri.ThrottleManager;
-import jmri.TurnoutManager;
-import jmri.TurnoutOperationManager;
-import jmri.UserPreferencesManager;
+import jmri.*;
 import jmri.implementation.JmriConfigurationManager;
+import jmri.jmrit.blockboss.BlockBossLogicProvider;
+import jmri.jmrit.display.EditorFrameOperator;
+import jmri.jmrit.display.EditorManager;
 import jmri.jmrit.display.layoutEditor.LayoutBlockManager;
 import jmri.jmrit.logix.OBlockManager;
 import jmri.jmrit.logix.WarrantManager;
+import jmri.jmrit.logixng.*;
+import jmri.jmrit.logixng.implementation.DefaultLogixNGManager;
+import jmri.jmrit.logixng.implementation.DefaultConditionalNGManager;
+import jmri.jmrit.logixng.implementation.DefaultAnalogActionManager;
+import jmri.jmrit.logixng.implementation.DefaultAnalogExpressionManager;
+import jmri.jmrit.logixng.implementation.DefaultDigitalActionManager;
+import jmri.jmrit.logixng.implementation.DefaultDigitalBooleanActionManager;
+import jmri.jmrit.logixng.implementation.DefaultDigitalExpressionManager;
+import jmri.jmrit.logixng.implementation.DefaultStringActionManager;
+import jmri.jmrit.logixng.implementation.DefaultStringExpressionManager;
+import jmri.jmrit.roster.RosterConfigManager;
 import jmri.jmrix.ConnectionConfigManager;
 import jmri.jmrix.debugthrottle.DebugThrottleManager;
-import jmri.jmrix.internal.InternalReporterManager;
-import jmri.jmrix.internal.InternalSensorManager;
-import jmri.managers.AbstractSignalHeadManager;
-import jmri.managers.DefaultConditionalManager;
-import jmri.managers.DefaultIdTagManager;
-import jmri.managers.DefaultLogixManager;
-import jmri.managers.DefaultMemoryManager;
-import jmri.managers.DefaultRailComManager;
-import jmri.managers.DefaultSignalMastLogicManager;
-import jmri.managers.DefaultSignalMastManager;
-import jmri.managers.TestUserPreferencesManager;
-import jmri.profile.NullProfile;
-import jmri.profile.Profile;
-import jmri.profile.ProfileManager;
+import jmri.jmrix.internal.*;
+import jmri.managers.*;
+import jmri.profile.*;
 import jmri.progdebugger.DebugProgrammerManager;
-import jmri.util.managers.InternalLightManagerThrowExceptionScaffold;
-import jmri.util.managers.MemoryManagerThrowExceptionScaffold;
-import jmri.util.managers.OBlockManagerThrowExceptionScaffold;
-import jmri.util.managers.RouteManagerThrowExceptionScaffold;
-import jmri.util.managers.SensorManagerThrowExceptionScaffold;
-import jmri.util.managers.SignalHeadManagerThrowExceptionScaffold;
-import jmri.util.managers.SignalMastManagerThrowExceptionScaffold;
-import jmri.util.managers.TurnoutManagerThrowExceptionScaffold;
-import jmri.util.managers.WarrantManagerThrowExceptionScaffold;
-import jmri.util.prefs.JmriConfigurationProvider;
-import jmri.util.prefs.JmriPreferencesProvider;
-import jmri.util.prefs.JmriUserInterfaceConfigurationProvider;
+import jmri.util.gui.GuiLafPreferencesManager;
+import jmri.util.managers.*;
+import jmri.util.prefs.*;
 import jmri.util.zeroconf.MockZeroConfServiceManager;
 import jmri.util.zeroconf.ZeroConfServiceManager;
+
+import org.apache.log4j.Level;
+import org.junit.Assert;
+import org.netbeans.jemmy.*;
+import org.netbeans.jemmy.operators.*;
 
 /**
  * Common utility methods for working with JUnit.
  * <p>
  * To release the current thread and allow other listeners to execute:  <code><pre>
- * JUnitUtil.releaseThread(this);
+ * JUnitUtil.waitFor(int time);
  * </pre></code> Note that this is not appropriate for Swing objects; you need
  * to use Jemmy for that.
  * <p>
@@ -123,36 +83,55 @@ public class JUnitUtil {
      * Standard time (in mSec) to wait when releasing
      * a thread during a test.
      * <p>
+     * The method releaseThread() is removed but this constant is still used
+     * by some tests when calling waitFor(int time).
+     * <p>
      * Public in case modification is needed from a test or script.
      */
-    static final public int DEFAULT_RELEASETHREAD_DELAY = 50;
-    
+    static final public int WAITFOR_DEFAULT_DELAY = 50;
+
+    /**
+     * Default standard time step (in mSec) when looping in a waitFor operation.
+     */
+    static final private int DEFAULT_WAITFOR_DELAY_STEP = 5;
+
     /**
      * Standard time step (in mSec) when looping in a waitFor operation.
      * <p>
      * Public in case modification is needed from a test or script.
-     */    
-    static final public int WAITFOR_DELAY_STEP = 5;
+     * This value is always reset to {@value #DEFAULT_WAITFOR_DELAY_STEP}
+     * during setUp().
+     */
+    static public int WAITFOR_DELAY_STEP = DEFAULT_WAITFOR_DELAY_STEP;
+
+    /**
+     * Default maximum time to wait before failing a waitFor operation.
+     * <p>
+     * The default value is really long, but that only matters when the test
+     * is failing anyway, and some of the LayoutEditor/SignalMastLogic tests
+     * are slow. But too long will cause CI jobs to time out before this logs
+     * the error....
+     */
+    static final private int DEFAULT_WAITFOR_MAX_DELAY = 10000;
+
     /**
      * Maximum time to wait before failing a waitFor operation.
-     * The default value is really long, but that only matters when the test is failing anyway, 
-     * and some of the LayoutEditor/SignalMastLogic tests are slow. But too long will cause CI jobs
-     * to time out before this logs the error....
      * <p>
      * Public in case modification is needed from a test or script.
-     */    
-    static final public int WAITFOR_MAX_DELAY = 10000;
+     * This value is always reset to {@value #DEFAULT_WAITFOR_MAX_DELAY} during setUp().
+     */
+    static public int WAITFOR_MAX_DELAY = DEFAULT_WAITFOR_MAX_DELAY;
 
     /**
      * When true, prints each setUp method to help identify which tests include a failure.
-     * When checkSetUpTearDownSequence is also true, this also sprints on execution of tearDown.
+     * When checkSetUpTearDownSequence is also true, this also prints on execution of tearDown.
      * <p>
      * Set from the jmri.util.JUnitUtil.printSetUpTearDownNames environment variable.
      */
     static boolean printSetUpTearDownNames = Boolean.getBoolean("jmri.util.JUnitUtil.printSetUpTearDownNames"); // false unless set true
 
     /**
-     * When true, checks that calls to setUp and tearDown properly alterante, printing an 
+     * When true, checks that calls to setUp and tearDown properly alterante, printing an
      * error message with context information on System.err if inconsistent calls are observed.
      * <p>
      * Set from the jmri.util.JUnitUtil.checkSetUpTearDownSequence environment variable.
@@ -168,11 +147,18 @@ public class JUnitUtil {
     static boolean checkSequenceDumpsStack =    Boolean.getBoolean("jmri.util.JUnitUtil.checkSequenceDumpsStack"); // false unless set true
 
     /**
-     * Check for any threads left behind after a test calls {@link #tearDown}
+     * Announce any threads left behind after a test calls {@link #tearDown}
      * <p>
      * Set from the jmri.util.JUnitUtil.checkRemnantThreads environment variable.
      */
     static boolean checkRemnantThreads =    Boolean.getBoolean("jmri.util.JUnitUtil.checkRemnantThreads"); // false unless set true
+
+    /**
+     * Kill any threads left behind after a test calls {@link #tearDown}
+     * <p>
+     * Set from the jmri.util.JUnitUtil.killRemnantThreads environment variable
+     */
+    static boolean killRemnantThreads =    Boolean.getBoolean("jmri.util.JUnitUtil.killRemnantThreads"); // false unless set true
 
     /**
      * Check for tests that take an excessive time
@@ -183,63 +169,65 @@ public class JUnitUtil {
     static long    checkTestDurationMax =   Long.getLong("jmri.util.JUnitUtil.checkTestDurationMax", 5000); // milliseconds
 
     static long    checkTestDurationStartTime = 0;  // working value
-    
-    static private int threadCount = 0;
-    
-    static private boolean didSetUp = false;
-    static private boolean didTearDown = true;
+
+    static private boolean didSetUp = false;    // If true, last saw setUp, waiting tearDown normally
+    static private boolean didTearDown = true;  // If true, last saw tearDown, waiting setUp normally
+
     static private String lastSetUpClassName = "<unknown>";
     static private String lastSetUpThreadName = "<unknown>";
     static private StackTraceElement[] lastSetUpStackTrace = new StackTraceElement[0];
     static private String lastTearDownClassName = "<unknown>";
     static private String lastTearDownThreadName = "<unknown>";
     static private StackTraceElement[] lastTearDownStackTrace = new StackTraceElement[0];
-    
+
     static private boolean isLoggingInitialized = false;
     static private String initPrefsDir = null;
+
     /**
-     * JMRI standard setUp for tests. This should be the first line in the {@code @Before}
-     * annotated method.
+     * JMRI standard setUp for tests that mock the InstanceManager. This should be the first line in the {@code @Before}
+     * annotated method if the tests mock the InstanceManager.
+     * One or the other of {@link #setUp()} or {@link #setUpLoggingAndCommonProperties()} must
+     * be present in the {@code @Before} routine.
      */
-    public static void setUp() {
+    public static void setUpLoggingAndCommonProperties() {
         if (!isLoggingInitialized) {
             // init logging if needed
             isLoggingInitialized = true;
             String filename = System.getProperty("jmri.log4jconfigfilename", "tests.lcf");
-            Log4JUtil.initLogging(filename);
+            TestingLoggerConfiguration.initLogging(filename);
         }
-        
+
         // need to do this each time
         try {
             JUnitAppender.start();
-            
+
             // reset warn _only_ once logic to make tests repeatable
-            Log4JUtil.restartWarnOnce();
+            JUnitLoggingUtil.restartWarnOnce();
             // ensure logging of deprecated method calls;
             // individual tests can turn off as needed
-            Log4JUtil.setDeprecatedLogging(true);
- 
+            JUnitLoggingUtil.setDeprecatedLogging(true);
+
         } catch (Throwable e) {
             System.err.println("Could not start JUnitAppender, but test continues:\n" + e);
         }
-            
-        // clear the backlog and reset the UnexpectedMessageFlags so that 
+
+        // clear the backlog and reset the UnexpectedMessageFlags so that
         // errors from a previous test do not interfere with the current test.
         JUnitAppender.clearBacklog();
-        JUnitAppender.resetUnexpectedMessageFlags(Level.INFO); 
+        JUnitAppender.resetUnexpectedMessageFlags(Level.INFO);
 
 
         // do not set the UncaughtExceptionHandler while unit testing
         // individual tests can explicitly set it after calling this method
         Thread.setDefaultUncaughtExceptionHandler(null);
 
-        // make sure the jmri.prefsdir property match the property passed 
+        // make sure the jmri.prefsdir property match the property passed
         // to the tests.
         if (initPrefsDir == null) {
             initPrefsDir = System.getProperty("jmri.prefsdir", "./temp");
         }
-        System.setProperty("jmri.prefsdir",initPrefsDir);
-        
+        System.setProperty("jmri.prefsdir", initPrefsDir);
+
         // silence the Jemmy GUI unit testing framework
         JUnitUtil.silenceGUITestOutput();
 
@@ -248,54 +236,133 @@ public class JUnitUtil {
         // enough differences that this is, for now, turned off
         resetWindows(false, false);
 
-        // Do a minimal amount of de-novo setup
-        resetInstanceManager();
-
         // Log and/or check the use of setUp and tearDown
         if (checkSetUpTearDownSequence || printSetUpTearDownNames) {
             lastSetUpClassName = getTestClassName();
-        
+
             if (printSetUpTearDownNames) System.err.println(">> Starting test in "+lastSetUpClassName);
-        
+
             if ( checkSetUpTearDownSequence)  {
                 if (checkSequenceDumpsStack)  lastSetUpThreadName = Thread.currentThread().getName();
-                
+
                 if (didSetUp || ! didTearDown) {
-                    System.err.println("   "+getTestClassName()+".setUp on thread "+lastSetUpThreadName+" unexpectedly found setUp="+didSetUp+" tearDown="+didTearDown+"; last tearDown was in "+lastTearDownClassName+" thread "+lastTearDownThreadName);
+                    System.err.println("   "+getTestClassName()+".setUp on thread "+lastSetUpThreadName+" unexpectedly found setUp="+didSetUp+" tearDown="+didTearDown+"; last setUp was in "+lastSetUpClassName+" thread "+lastSetUpThreadName);
                     if (checkSequenceDumpsStack) {
                         System.err.println("---- This stack ------");
                         Thread.dumpStack();
                         System.err.println("---- Last setUp stack ------");
-                        for (StackTraceElement e : lastSetUpStackTrace) System.err.println("	at "+e);
+                        for (StackTraceElement e : lastSetUpStackTrace) System.err.println("    at " + e);
                         System.err.println("---- Last tearDown stack ------");
-                        for (StackTraceElement e : lastTearDownStackTrace) System.err.println("	at "+e);
+                        for (StackTraceElement e : lastTearDownStackTrace) System.err.println("    at " + e);
                         System.err.println("----------------------");
                     }
                 }
-                
+
                 didTearDown = false;
                 didSetUp = true;
 
                 if (checkSequenceDumpsStack) lastSetUpStackTrace = Thread.currentThread().getStackTrace();
             }
         }
-        
+
         // checking time?
-        if (checkTestDuration) checkTestDurationStartTime = System.currentTimeMillis();
+        if (checkTestDuration) {
+            checkTestDurationStartTime = System.currentTimeMillis();
+        }
     }
-    
+
+    /**
+     * JMRI standard setUp for tests. This should be the first line in the {@code @Before}
+     * annotated method if the tests do not mock the InstanceManager.
+     * One or the other of {@link #setUp()} or {@link #setUpLoggingAndCommonProperties()} must
+     * be present in the {@code @Before} routine.
+     */
+    public static void setUp() {
+        WAITFOR_DELAY_STEP = DEFAULT_WAITFOR_DELAY_STEP;
+        WAITFOR_MAX_DELAY = DEFAULT_WAITFOR_MAX_DELAY;
+
+        // all the setup for a MockInstanceManager applies
+        setUpLoggingAndCommonProperties();
+
+        // Do a minimal amount of de-novo setup
+        resetInstanceManager();
+
+    }
+
+    /**
+     * Silently remove any AbstractTurnout threads that are still running.
+     * A bit expensive, so only used when needed.
+     */
+    public static void clearTurnoutThreads(){
+        removeMatchingThreads("setCommandedStateAtInterval"); // must stay consistent with AbstractTurnout
+    }
+
+    /**
+     * Silently remove any DefaultRoute threads that are still running.
+     * A bit expensive, so only used when needed.
+     */
+    public static void clearRouteThreads(){
+        removeMatchingThreads("setRoute"); // must stay consistent with DefaultRoute
+    }
+
+    /**
+     * Silently remove any blockboss/Simple Signal Logic threads that are still running.
+     * A bit expensive, so only used when needed.
+     */
+    public static void clearBlockBossLogicThreads(){
+        removeMatchingThreads("BlockBossLogic");
+    }
+
+    /**
+     * Utility to remove any threads with a matchiing name
+     */
+    public static void removeMatchingThreads(String nameContains) {
+        ThreadGroup main = Thread.currentThread().getThreadGroup();
+        while (main.getParent() != null ) {main = main.getParent(); }
+        Thread[] list = new Thread[main.activeCount()+2];  // space on end
+        int max = main.enumerate(list);
+
+        for (int i = 0; i<max; i++) {
+            Thread t = list[i];
+            if (t.getState() == Thread.State.TERMINATED) { // going away, just not cleaned up yet
+                continue;
+            }
+            String name = t.getName();
+            if (name.contains(nameContains)) {
+                killThread(t);
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")        // Thread.stop()
+    static void killThread(Thread t) {
+        t.interrupt();
+        try {
+            t.join(100); // give it a bit of time to end
+            if (t.getState() != Thread.State.TERMINATED) {
+                t.stop(); // yes, we know it's deprecated, but it's the only option for Jemmy threads
+                log.warn("   Thread {} did not terminate", t.getName());
+            }
+        } catch (IllegalMonitorStateException | IllegalStateException | InterruptedException e) {
+            log.error("While interrupting thread {}:", t.getName(), e);
+        }
+    }
+
     /**
      * Teardown from tests. This should be the last line in the {@code @After}
      * annotated method.
      */
     public static void tearDown() {
 
+        // check that no LogixNG threads is still running
+        jmri.jmrit.logixng.util.LogixNG_Thread.assertLogixNGThreadNotRunning();
+
         // checking time?
         if (checkTestDuration) {
             long duration = System.currentTimeMillis() - checkTestDurationStartTime;
             if (duration > checkTestDurationMax) {
                 // test too long, log that
-                log.warn("Test in {} duration {} msec exceeded limit {}", getTestClassName(), duration, checkTestDurationMax);
+                System.err.println("Test in "+getTestClassName()+" duration "+duration+" ms exceeded limit "+checkTestDurationMax);
             }
         }
         // Log and/or check the use of setUp and tearDown
@@ -304,31 +371,31 @@ public class JUnitUtil {
 
             if (checkSetUpTearDownSequence) {
                 if (checkSequenceDumpsStack) lastTearDownThreadName = Thread.currentThread().getName();
-                
+
                 if (! didSetUp || didTearDown) {
-                    System.err.println("   "+getTestClassName()+".tearDown on thread "+lastTearDownThreadName+" unexpectedly found setUp="+didSetUp+" tearDown="+didTearDown+"; last setUp was in "+lastSetUpClassName+" thread "+lastSetUpThreadName);
+                    System.err.println("   "+getTestClassName()+".tearDown on thread "+lastTearDownThreadName+" unexpectedly found setUp="+didSetUp+" tearDown="+didTearDown+"; last tearDown was in "+lastTearDownClassName+" thread "+lastTearDownThreadName);
                     if (checkSequenceDumpsStack) {
                         System.err.println("---- This stack ------");
                         Thread.dumpStack();
                         System.err.println("---- Last setUp stack ------");
-                        for (StackTraceElement e : lastSetUpStackTrace) System.err.println("	at "+e);
+                        for (StackTraceElement e : lastSetUpStackTrace) System.err.println("    at " + e);
                         System.err.println("---- Last tearDown stack ------");
-                        for (StackTraceElement e : lastTearDownStackTrace) System.err.println("	at "+e);
+                        for (StackTraceElement e : lastTearDownStackTrace) System.err.println("    at " + e);
                         System.err.println("----------------------");
                     }
                 }
-                
+
                 didSetUp = false;
                 didTearDown = true;
-            
+
                 if (checkSequenceDumpsStack) lastTearDownStackTrace = Thread.currentThread().getStackTrace();
             }
-        
+
             // To save time & space, only print end when doing full check
             if (printSetUpTearDownNames && checkSetUpTearDownSequence)  System.err.println("<<   Ending test in "+lastTearDownClassName);
 
         }
-        
+
         // ideally this would be resetWindows(false, true) to force an error if an earlier
         // test left a window open, but different platforms seem to have just
         // enough differences that this is, for now, turned off
@@ -338,63 +405,26 @@ public class JUnitUtil {
         JUnitAppender.end();
         Level severity = Level.ERROR; // level at or above which we'll complain
         boolean unexpectedMessageSeen = JUnitAppender.unexpectedMessageSeen(severity);
+        String unexpectedMessageContent = JUnitAppender.unexpectedMessageContent(severity);
         JUnitAppender.verifyNoBacklog();
         JUnitAppender.resetUnexpectedMessageFlags(severity);
-        Assert.assertFalse("Unexpected "+severity+" or higher messages emitted: "+JUnitAppender.unexpectedMessageContent(severity), unexpectedMessageSeen);
-        
-        // Optionally, check that no threads were left running (controlled by jmri.util.JUnitUtil.checkRemnantThreads environment var)
-        if (checkRemnantThreads) {
-            checkThreads();
+        Assert.assertFalse("Unexpected "+severity+" or higher messages emitted: "+unexpectedMessageContent, unexpectedMessageSeen);
+
+        // check for hanging shutdown tasks - after test for ERROR so it can complain
+        checkShutDownManager();
+
+        // Optionally, handle any threads left running
+        if (checkRemnantThreads || killRemnantThreads) {
+            handleThreads();
         }
-        
+
         // Optionally, print whatever is on the Swing queue to see what's keeping things alive
         //Object entry = java.awt.Toolkit.getDefaultToolkit().getSystemEventQueue().peekEvent();
         //if (entry != null) System.err.println("entry: "+entry);
-        
+
         // Optionally, check that the Swing queue is idle
         //new org.netbeans.jemmy.QueueTool().waitEmpty(250);
 
-    }
-
-    /**
-     * Release the current thread, allowing other threads to process. Waits for
-     * {@value #DEFAULT_RELEASETHREAD_DELAY} milliseconds.
-     * <p>
-     * This cannot be used on the Swing or AWT event threads. For those, please
-     * use Jemmy's wait routine.
-     *
-     * @param self currently ignored
-     * @deprecated 4.9.1 Use the various waitFor routines instead
-     */
-    @Deprecated // 4.9.1 Use the various waitFor routines instead
-    public static void releaseThread(Object self) {
-        releaseThread(self, DEFAULT_RELEASETHREAD_DELAY);
-    }
-
-    /**
-     * Release the current thread, allowing other threads to process.
-     * <p>
-     * This cannot be used on the Swing or AWT event threads. For those, please
-     * use Jemmy's wait routine.
-     *
-     * @param self  currently ignored
-     * @param delay milliseconds to wait
-     * @deprecated 4.9.1 Use the various waitFor routines instead
-     */
-    @Deprecated // 4.9.1 Use the various waitFor routines instead
-    public static void releaseThread(Object self, int delay) {
-        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
-            log.error("Cannot use releaseThread on Swing thread", new Exception());
-            return;
-        }
-        try {
-            int priority = Thread.currentThread().getPriority();
-            Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-            Thread.sleep(delay);
-            Thread.currentThread().setPriority(priority);
-        } catch (InterruptedException e) {
-            Assert.fail("failed due to InterruptedException");
-        }
     }
 
     /**
@@ -487,7 +517,7 @@ public class JUnitUtil {
      * this will have to do.
      * <p>
      *
-     * @param time Delay in msec
+     * @param time Delay in milliseconds
      */
     static public void waitFor(int time) {
         if (javax.swing.SwingUtilities.isEventDispatchThread()) {
@@ -508,10 +538,8 @@ public class JUnitUtil {
                     Thread.currentThread().setPriority(priority);
                 }
             }
-            return;
         } catch (Exception ex) {
             log.error("Exception in waitFor condition.", ex);
-            return;
         }
     }
 
@@ -605,7 +633,14 @@ public class JUnitUtil {
      * tests of {@code git-working-copy/temp}.
      */
     public static void resetFileUtilSupport() {
-        FileUtilSupport.getDefault().setUserFilesPath(FileUtil.getPreferencesPath());
+        try {
+            Field field = FileUtilSupport.class.getDeclaredField("defaultInstance");
+            field.setAccessible(true);
+            field.set(null, null);
+            FileUtilSupport.getDefault().setUserFilesPath(ProfileManager.getDefault().getActiveProfile(), FileUtil.getPreferencesPath());
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+            log.error("Exception resetting FileUtilSupport", ex);
+        }
     }
 
     static public interface ReleaseUntil {
@@ -709,14 +744,14 @@ public class JUnitUtil {
     }
 
     public static void initMemoryManager() {
-        MemoryManager m = new DefaultMemoryManager();
+        MemoryManager m = new DefaultMemoryManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
             InstanceManager.getDefault(ConfigureManager.class).registerConfig(m, jmri.Manager.MEMORIES);
         }
     }
 
     public static void initReporterManager() {
-        ReporterManager m = new InternalReporterManager();
+        ReporterManager m = new InternalReporterManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
             InstanceManager.getDefault(ConfigureManager.class).registerConfig(m, jmri.Manager.REPORTERS);
         }
@@ -729,6 +764,24 @@ public class JUnitUtil {
         }
     }
 
+    public static void deregisterBlockManagerShutdownTask() {
+        if (! InstanceManager.isInitialized(ShutDownManager.class)) return;
+        if (! InstanceManager.isInitialized(BlockManager.class)) return;
+
+        InstanceManager
+                .getDefault(ShutDownManager.class)
+                .deregister(InstanceManager.getDefault(BlockManager.class).shutDownTask);
+    }
+
+    public static void deregisterEditorManagerShutdownTask() {
+        if (! InstanceManager.isInitialized(ShutDownManager.class)) return;
+        if (! InstanceManager.isInitialized(EditorManager.class)) return;
+
+        InstanceManager
+                .getDefault(ShutDownManager.class)
+                .deregister(InstanceManager.getDefault(EditorManager.class).shutDownTask);
+    }
+
     public static void initWarrantManager() {
         WarrantManager w = new WarrantManager();
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
@@ -737,7 +790,7 @@ public class JUnitUtil {
     }
 
     public static void initSignalMastLogicManager() {
-        SignalMastLogicManager w = new DefaultSignalMastLogicManager();
+        SignalMastLogicManager w = new DefaultSignalMastLogicManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
             InstanceManager.getDefault(ConfigureManager.class).registerConfig(w, jmri.Manager.SIGNALMASTLOGICS);
         }
@@ -751,14 +804,14 @@ public class JUnitUtil {
     }
 
     public static void initSectionManager() {
-        jmri.SectionManager w = new jmri.SectionManager();
+        jmri.SectionManager w = new jmri.managers.DefaultSectionManager();
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
             InstanceManager.getDefault(ConfigureManager.class).registerConfig(w, jmri.Manager.SECTIONS);
         }
     }
 
     public static void initInternalSignalHeadManager() {
-        SignalHeadManager m = new AbstractSignalHeadManager();
+        SignalHeadManager m = new AbstractSignalHeadManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
         InstanceManager.setDefault(SignalHeadManager.class, m);
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
             InstanceManager.getDefault(ConfigureManager.class).registerConfig(m, jmri.Manager.SIGNALHEADS);
@@ -766,7 +819,7 @@ public class JUnitUtil {
     }
 
     public static void initDefaultSignalMastManager() {
-        InstanceManager.setDefault(SignalMastManager.class, new DefaultSignalMastManager());
+        InstanceManager.setDefault(SignalMastManager.class, new DefaultSignalMastManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class)));
     }
 
     public static void initDebugCommandStation() {
@@ -806,9 +859,36 @@ public class JUnitUtil {
         InstanceManager.setDefault(PowerManager.class, new PowerManagerScaffold());
     }
 
+    /**
+     * Initialize an {@link IdTagManager} that does not use persistent storage.
+     * If needing an IdTagManager that does use persistent storage use
+     * {@code InstanceManager.setDefault(IdTagManager.class, new DefaultIdTagManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class)));}
+     * to initialize an IdTagManager in the {@code @Before} annotated method of
+     * the test class or allow the {@link DefaultIdTagManager} to be
+     * automatically initialized when needed.
+     */
     public static void initIdTagManager() {
-        InstanceManager.reset(jmri.IdTagManager.class);
-        InstanceManager.store(new DefaultIdTagManager(), jmri.IdTagManager.class);
+        InstanceManager.reset(IdTagManager.class);
+        InstanceManager.setDefault(IdTagManager.class,
+                new DefaultIdTagManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class)) {
+                    @Override
+                    public void writeIdTagDetails() {
+                        // do not actually write tags
+                        this.dirty = false;
+                    }
+
+                    @Override
+                    public void readIdTagDetails() {
+                        // do not actually read tags
+                        this.dirty = false;
+                    }
+
+                    @Override
+                    protected void initShutdownTask(){
+                        //don't even register the shutdownTask
+                    }
+
+                });
     }
 
     public static void initRailComManager() {
@@ -817,14 +897,14 @@ public class JUnitUtil {
     }
 
     public static void initLogixManager() {
-        LogixManager m = new DefaultLogixManager();
+        LogixManager m = new DefaultLogixManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
             InstanceManager.getDefault(ConfigureManager.class).registerConfig(m, jmri.Manager.LOGIXS);
         }
     }
 
     public static void initConditionalManager() {
-        ConditionalManager m = new DefaultConditionalManager();
+        ConditionalManager m = new DefaultConditionalManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
         if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
             InstanceManager.getDefault(ConfigureManager.class).registerConfig(m, jmri.Manager.CONDITIONALS);
         }
@@ -832,6 +912,68 @@ public class JUnitUtil {
 
     public static void initInternalTurnoutManagerThrowException() {
         InstanceManager.setDefault(TurnoutManager.class, new TurnoutManagerThrowExceptionScaffold());
+    }
+
+    public static void initLogixNGManager() {
+        initLogixNGManager(true);
+    }
+
+    public static void initLogixNGManager(boolean activate) {
+        LogixNG_Manager m1 = new DefaultLogixNGManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m1, jmri.Manager.LOGIXNGS);
+        }
+        InstanceManager.setDefault(LogixNG_Manager.class, m1);
+
+        ConditionalNG_Manager m2 = new DefaultConditionalNGManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m2, jmri.Manager.LOGIXNG_CONDITIONALNGS);
+        }
+        InstanceManager.setDefault(ConditionalNG_Manager.class, m2);
+
+        AnalogActionManager m3 = new DefaultAnalogActionManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m3, jmri.Manager.LOGIXNG_ANALOG_ACTIONS);
+        }
+        InstanceManager.setDefault(AnalogActionManager.class, m3);
+
+        AnalogExpressionManager m4 = new DefaultAnalogExpressionManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m4, jmri.Manager.LOGIXNG_ANALOG_EXPRESSIONS);
+        }
+        InstanceManager.setDefault(AnalogExpressionManager.class, m4);
+
+        DigitalActionManager m5 = new DefaultDigitalActionManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m5, jmri.Manager.LOGIXNG_DIGITAL_ACTIONS);
+        }
+        InstanceManager.setDefault(DigitalActionManager.class, m5);
+
+        DigitalBooleanActionManager m6 = new DefaultDigitalBooleanActionManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m6, jmri.Manager.LOGIXNG_DIGITAL_BOOLEAN_ACTIONS);
+        }
+        InstanceManager.setDefault(DigitalBooleanActionManager.class, m6);
+
+        DigitalExpressionManager m7 = new DefaultDigitalExpressionManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m7, jmri.Manager.LOGIXNG_DIGITAL_EXPRESSIONS);
+        }
+        InstanceManager.setDefault(DigitalExpressionManager.class, m7);
+
+        StringActionManager m8 = new DefaultStringActionManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m8, jmri.Manager.LOGIXNG_STRING_ACTIONS);
+        }
+        InstanceManager.setDefault(StringActionManager.class, m8);
+
+        StringExpressionManager m9 = new DefaultStringExpressionManager();
+        if (InstanceManager.getNullableDefault(ConfigureManager.class) != null) {
+            InstanceManager.getDefault(ConfigureManager.class).registerConfig(m9, jmri.Manager.LOGIXNG_STRING_EXPRESSIONS);
+        }
+        InstanceManager.setDefault(StringExpressionManager.class, m9);
+
+        if (activate) m1.activateAllLogixNGs(false, false);
     }
 
     public static void initInternalSensorManagerThrowException() {
@@ -883,75 +1025,118 @@ public class JUnitUtil {
      * stopped all services it is managing.
      */
     public static void resetZeroConfServiceManager() {
-        ZeroConfServiceManager manager = InstanceManager.containsDefault(ZeroConfServiceManager.class)
-                ? InstanceManager.getDefault(ZeroConfServiceManager.class)
-                : null;
-        if (manager != null) {
-            manager.stopAll();
-            JUnitUtil.waitFor(() -> {
-                return (manager.allServices().isEmpty());
-            }, "Stopping all ZeroConf Services");
-        }
+        if (! InstanceManager.containsDefault(ZeroConfServiceManager.class)) return; // not present, don't create on by asking for it.
+
+        ZeroConfServiceManager manager = InstanceManager.getDefault(ZeroConfServiceManager.class);
+        manager.stopAll();
+
+        JUnitUtil.waitFor(() -> {
+            return (manager.allServices().isEmpty());
+        }, "Stopping all ZeroConf Services");
+
+        manager.dispose();
     }
 
     /**
      * End any running BlockBossLogic (Simple Signal Logic) objects
      */
     public static void clearBlockBossLogic() {
-        jmri.jmrit.blockboss.BlockBossLogic.stopAllAndClear();
+        if(InstanceManager.containsDefault(BlockBossLogicProvider.class)) {
+            InstanceManager.getDefault(BlockBossLogicProvider.class).dispose();
+        }
     }
-    
+
     /**
      * Leaves ShutDownManager, if any, in place,
      * but removes its contents.
-     * @see #initShutDownManager()
+     * <p>
+     * Instead of using this,
+     * it's better to have your test code remove _and_ _check_
+     * for specific items; this just suppresses output from the
+     * {@link #checkShutDownManager()} check down as part of the
+     * default end-of-test code.
+     *
+     * @see #checkShutDownManager()
      */
     public static void clearShutDownManager() {
-        ShutDownManager sm = InstanceManager.getNullableDefault(jmri.ShutDownManager.class);
-        if (sm == null) return;
-        List<ShutDownTask> list = sm.tasks();
-        while (list != null && list.size() > 0) {
-            sm.deregister(list.get(0));
-            list = sm.tasks();  // avoid ConcurrentModificationException
+        if (!  InstanceManager.containsDefault(ShutDownManager.class)) return; // not present, stop (don't create)
+
+        ShutDownManager sm = InstanceManager.getDefault(jmri.ShutDownManager.class);
+
+        List<Callable<Boolean>> callables = sm.getCallables();
+        while (!callables.isEmpty()) {
+            Callable<Boolean> callable = callables.get(0);
+            sm.deregister(callable);
+            callables = sm.getCallables(); // avoid ConcurrentModificationException
+        }
+
+        List<Runnable> runnables = sm.getRunnables();
+        while (!runnables.isEmpty()) {
+            Runnable runnable = runnables.get(0);
+            sm.deregister(runnable);
+            runnables = sm.getRunnables(); // avoid ConcurrentModificationException
+        }
+    }
+
+    /**
+     * Errors if the {@link jmri.ShutDownManager} was not left empty. Normally
+     * run as part of the default end-of-test code. Considered an error so that
+     * CI will flag these and tests will be improved.
+     *
+     * @see #clearShutDownManager()
+     */
+    static void checkShutDownManager() {
+        if (!  InstanceManager.containsDefault(ShutDownManager.class)) return; // not present, stop (don't create)
+
+        ShutDownManager sm = InstanceManager.getDefault(jmri.ShutDownManager.class);
+
+        List<Callable<Boolean>> callables = sm.getCallables();
+        while (!callables.isEmpty()) {
+            Callable<Boolean> callable = callables.get(0);
+            log.error("Test {} left registered shutdown callable of type {}", getTestClassName(), callable.getClass(),
+                        LoggingUtil.shortenStacktrace(new Exception("traceback")));
+            sm.deregister(callable);
+            callables = sm.getCallables(); // avoid ConcurrentModificationException
+        }
+        List<Runnable> runnables = sm.getRunnables();
+        while (!runnables.isEmpty()) {
+            Runnable runnable = runnables.get(0);
+            log.error("Test {} left registered shutdown runnable of type {}", getTestClassName(), runnable.getClass(),
+                        LoggingUtil.shortenStacktrace(new Exception("traceback")));
+            sm.deregister(runnable);
+            runnables = sm.getRunnables(); // avoid ConcurrentModificationException
         }
 
         // use reflection to reset static fields in the class.
         try {
             Class<?> c = jmri.managers.DefaultShutDownManager.class;
-            java.lang.reflect.Field f = c.getDeclaredField("shuttingDown");
+            Field f = c.getDeclaredField("shuttingDown");
             f.setAccessible(true);
             f.set(sm, false);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException x) {
             log.error("Failed to reset DefaultShutDownManager shuttingDown field", x);
         }
-        
-    }
 
-    /**
-     * Creates, if needed, a new ShutDownManager, clearing any existing
-     * ShutDownManager, and ensuring the ShutDownManager is not in the state of
-     * ShuttingDown if the ShutDownManager is a MockShutDownManager.
-     */
-    public static void initShutDownManager() {
-        ShutDownManager manager = InstanceManager.getDefault(ShutDownManager.class);
-        List<ShutDownTask> tasks = manager.tasks();
-        while (!tasks.isEmpty()) {
-            manager.deregister(tasks.get(0));
-            tasks = manager.tasks(); // avoid ConcurrentModificationException
-        }
-        if (manager instanceof MockShutDownManager) {
-            ((MockShutDownManager) manager).resetShuttingDown();
-        }
     }
 
     public static void initStartupActionsManager() {
         InstanceManager.store(
-                new apps.StartupActionsManager(),
-                apps.StartupActionsManager.class);
+                new jmri.util.startup.StartupActionsManager(),
+                jmri.util.startup.StartupActionsManager.class);
     }
 
     public static void initConnectionConfigManager() {
         InstanceManager.setDefault(ConnectionConfigManager.class, new ConnectionConfigManager());
+    }
+
+    public static void initRosterConfigManager() {
+        RosterConfigManager manager = new RosterConfigManager();
+        try {
+            manager.initialize(ProfileManager.getDefault().getActiveProfile());
+        } catch (InitializationException ex) {
+            log.error("Failed to initialize RosterConfigManager", ex);
+        }
+        InstanceManager.setDefault(RosterConfigManager.class, manager);
     }
 
     /*
@@ -960,25 +1145,11 @@ public class JUnitUtil {
     public static void resetApplication() {
         try {
             Class<?> c = jmri.Application.class;
-            java.lang.reflect.Field f = c.getDeclaredField("name");
+            Field f = c.getDeclaredField("name");
             f.setAccessible(true);
             f.set(new jmri.Application(), null);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException x) {
             log.error("Failed to reset jmri.Application static field", x);
-        }
-    }
-
-    /*
-     * Use reflection to reset the apps.AppsBase instance
-     */
-    public static void resetAppsBase() {
-        try {
-            Class<?> c = apps.AppsBase.class;
-            java.lang.reflect.Field f = c.getDeclaredField("preInit");
-            f.setAccessible(true);
-            f.set(null, false);
-        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException x) {
-            log.error("Failed to reset apps.AppsBase static preInit field", x);
         }
     }
 
@@ -988,7 +1159,7 @@ public class JUnitUtil {
     public static void resetNodeIdentity() {
         try {
             Class<?> c = jmri.util.node.NodeIdentity.class;
-            java.lang.reflect.Field f = c.getDeclaredField("instance");
+            Field f = c.getDeclaredField("instance");
             f.setAccessible(true);
             f.set(c, null);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException x) {
@@ -1008,8 +1179,8 @@ public class JUnitUtil {
      * test use {@link #resetProfileManager(jmri.profile.Profile)} with a
      * provided profile.
      * <p>
-     * The new profile will have the name {@literal TestProfile }, the id
-     * {@literal 00000000 }, and will be in the directory {@literal temp }
+     * The new profile will have the name {@literal TestProfile}, the id
+     * {@literal 00000000}, and will be in the directory {@literal temp}
      * within the sources working copy.
      */
     public static void resetProfileManager() {
@@ -1025,16 +1196,11 @@ public class JUnitUtil {
 
     /**
      * Use if the profile needs to be written to or cleared as part of the test.
-     * Suggested use in the {@link org.junit.Before} annotated method is:      <code>
-     *
-     * @Rule
-     * public org.junit.rules.TemporaryFolder folder = new org.junit.rules.TemporaryFolder();
-     *
-     * @Before
-     * public void setUp() {
-     *     resetProfileManager(new jmri.profile.NullProfile(folder.newFolder(jmri.profile.Profile.PROFILE)));
-     * }
-     * </code>
+     * A temporary folder is suggested for the profile, see
+     * https://www.jmri.org/help/en/html/doc/Technical/JUnit.shtml#tempFileCreation
+     * <code>
+     * jmri.profile.Profile profile = new jmri.profile.NullProfile(temporaryFolder);
+     * JUnitUtil.resetProfileManager(profile);
      *
      * @param profile the provided profile
      */
@@ -1051,18 +1217,18 @@ public class JUnitUtil {
             // reset UI provider
             Field providers = JmriUserInterfaceConfigurationProvider.class.getDeclaredField("PROVIDERS");
             providers.setAccessible(true);
-            ((HashMap<?, ?>) providers.get(null)).clear();
+            ((Map<?, ?>) providers.get(null)).clear();
             // reset XML storage provider
             providers = JmriConfigurationProvider.class.getDeclaredField("PROVIDERS");
             providers.setAccessible(true);
-            ((HashMap<?, ?>) providers.get(null)).clear();
+            ((Map<?, ?>) providers.get(null)).clear();
             // reset java.util.prefs.Preferences storage provider
             Field shared = JmriPreferencesProvider.class.getDeclaredField("SHARED_PROVIDERS");
             Field privat = JmriPreferencesProvider.class.getDeclaredField("PRIVATE_PROVIDERS");
             shared.setAccessible(true);
-            ((HashMap<?, ?>) shared.get(null)).clear();
+            ((Map<?, ?>) shared.get(null)).clear();
             privat.setAccessible(true);
-            ((HashMap<?, ?>) privat.get(null)).clear();
+            ((Map<?, ?>) privat.get(null)).clear();
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             log.error("Unable to reset preferences providers", ex);
         }
@@ -1111,7 +1277,7 @@ public class JUnitUtil {
 
         return "<unknown class>";
     }
-        
+
     /**
      * Dispose of any disposable windows. This should only be used if there is
      * no ability to actually close windows opened by a test using
@@ -1193,19 +1359,19 @@ public class JUnitUtil {
      */
     public static void dispose(@Nonnull Window window) {
         java.util.Objects.requireNonNull(window, "Window cannot be null");
-        
+
         ThreadingUtil.runOnGUI(() -> {
             window.dispose();
         });
     }
-    
+
     public static Thread getThreadByName(String threadName) {
         for (Thread t : Thread.getAllStackTraces().keySet()) {
             if (t.getName().equals(threadName)) return t;
         }
         return null;
     }
-    
+
     public static Thread getThreadStartsWithName(String threadName) {
         for (Thread t : Thread.getAllStackTraces().keySet()) {
             if (t.getName().startsWith(threadName)) return t;
@@ -1219,15 +1385,17 @@ public class JUnitUtil {
         "Java2D Disposer",
         "AWT-Shutdown",
         "AWT-EventQueue",
+        "AWT-XAWT",                         // seen on Jenkins Ubuntu
         "GC Daemon",
         "Finalizer",
         "Reference Handler",
-        "Signal Dispatcher",                // POSIX signals in JRE
+        "Signal Dispatcher",                // POSIX signals in JRE, not trains signals
         "Java2D Queue Flusher",
         "Time-limited test",
         "WindowMonitor-DispatchThread",
         "RMI Reaper",
         "RMI TCP Accept",
+        "RMI GC Daemon",
         "TimerQueue",
         "Java Sound Event Dispatcher",
         "Aqua L&F",                         // macOS
@@ -1235,74 +1403,138 @@ public class JUnitUtil {
         "JMRI Common Timer",
         "BluecoveAsynchronousShutdownThread", // from LocoNet BlueTooth implementation
         "Keep-Alive-Timer",                 // from "system" group
-        "process reaper"                    // observed in macOS JRE
+        "process reaper",                   // observed in macOS JRE
+        "SIGINT handler",                   // observed in JmDNS; clean shutdown takes time
+        "Multihomed mDNS.Timer",            // observed in JmDNS; clean shutdown takes time
+        "Direct Clip",                      // observed in macOS JRE, associated with javax.sound.sampled.AudioSystem
+        "Basic L&F File Loading Thread",
+        "dns.close in ZeroConfServiceManager#stopAll",
+        "Common-Cleaner",
+        "Batik CleanerThread"  // XML
     }));
     static List<Thread> threadsSeen = new ArrayList<>();
 
     /**
-     * Do a diagnostic check of threads, 
+     * Do a diagnostic check of threads,
      * providing a traceback if any new ones are still around.
      * <p>
      * First implementation is rather simplistic.
      */
-    static void checkThreads() {
+    static void handleThreads() {
         // now check for extra threads
-        threadCount = 0;
-        Thread.getAllStackTraces().keySet().forEach((t) -> 
-            {
-                if (threadsSeen.contains(t)) return;
-                if (t.getState() == Thread.State.TERMINATED) return; // going away, just not cleaned up yet
-                String name = t.getName();
-                if (! (threadNames.contains(name)
-                     || name.startsWith("RMI TCP Accept")
-                     || name.startsWith("AWT-EventQueue")
-                     || name.startsWith("Aqua L&F")
-                     || name.startsWith("Image Fetcher ")
-                     || name.startsWith("JmDNS(")
-                     || name.startsWith("SocketListener(")
-                     || name.startsWith("SocketListener(")
-                     || (name.startsWith("SwingWorker-pool-1-thread-") && 
-                            ( t.getThreadGroup() != null && 
-                                (t.getThreadGroup().getName().contains("FailOnTimeoutGroup") || t.getThreadGroup().getName().contains("main") )
-                            ) 
-                        )
-                    )) {  
-                    
-                        // if still running, wait to see if being terminated
-                        
-                        threadCount++;
-                        threadsSeen.add(t);
-                        
+        ThreadGroup main = Thread.currentThread().getThreadGroup();
+        while (main.getParent() != null ) {main = main.getParent(); }
+        Thread[] list = new Thread[main.activeCount()+2];  // space on end
+        int max = main.enumerate(list);
+
+        for (int i = 0; i<max; i++) {
+            Thread t = list[i];
+            if (t.getState() == Thread.State.TERMINATED) { // going away, just not cleaned up yet
+                threadsSeen.remove(t);  // don't want to prevent gc
+                continue;
+            }
+            if (threadsSeen.contains(t)) continue;
+            String name = t.getName();
+            ThreadGroup g = t.getThreadGroup();
+            String group = (g != null) ?  g.getName() : "<null group>";
+
+            if (! (
+                    threadNames.contains(name)
+                 || group.equals("system")
+                 || name.startsWith("Timer-")  // we separately scan for JMRI-resident timers
+                 || name.startsWith("RMI TCP Accept")
+                 || name.startsWith("AWT-EventQueue")
+                 || name.startsWith("Aqua L&F")
+                 || name.startsWith("junit-jupiter-")  // JUnit
+                 || name.startsWith("Image Fetcher ")
+                 || name.startsWith("Image Animator ")
+                 || name.startsWith("JmDNS(")
+                 || name.startsWith("JmmDNS pool")
+                 || name.startsWith("ForkJoinPool.commonPool-worker")
+                 || name.startsWith("SocketListener(")
+                 || name.startsWith("Libgraal")
+                 || name.startsWith("LibGraal")
+                 || name.startsWith("TruffleCompilerThread-")
+                 || ( name.startsWith("pool-") && name.endsWith("thread-1") )
+                 || group.contains("FailOnTimeoutGroup") // JUnit timeouts
+                 || ( name.startsWith("SwingWorker-pool-1-thread-") &&
+                         ( group.contains("FailOnTimeoutGroup") || group.contains("main") )
+                    )
+                )) {
+
+                        if (t.getState() == Thread.State.TERMINATED) {
+                            // might have transitioned during above (logging slow)
+                            continue;
+                        }
+
+                        // This thread we have to deal with.
+                        boolean kill = true;
+                        String action = "Interrupt";
+                        if (!killRemnantThreads) {
+                            action = "Found";
+                            kill = false;
+                        }
+
                         // for anonymous threads, show the traceback in hopes of finding what it is
                         if (name.startsWith("Thread-")) {
-                            Exception ex = new Exception("traceback of numbered thread");
-                            ex.setStackTrace(Thread.getAllStackTraces().get(t));
-                            log.warn("Found remnant thread \"{}\" in group \"{}\" after {}", t.getName(), (t.getThreadGroup() != null ? t.getThreadGroup().getName() : "<no group>"), getTestClassName(), ex);
+                            StackTraceElement[] traces = Thread.getAllStackTraces().get(t);
+                            if (traces == null) continue;  // thread went away, maybe terminated in parallel
+                            if (traces.length >7 && traces[7].getClassName().contains("org.netbeans.jemmy") ) {
+                                // empirically. jemmy leaves anonymous threads
+                                log.warn("Jemmy remnant thread running {}.{} [{}.{}]",
+                                        traces[7].getClassName(),
+                                        traces[7].getMethodName(),
+                                       traces[7].getFileName(),
+                                       traces[7].getLineNumber()
+                                    );
+                            } else {
+                                // anonymous thread that should be displayed
+                                Exception ex = new Exception("traceback of numbered thread");
+                                ex.setStackTrace(traces);
+                                log.warn("{} remnant thread \"{}\" in group \"{}\" after {}", action, name, group, getTestClassName(), ex);
+                            }
                         } else {
-                            log.warn("Found remnant thread \"{}\" in group \"{}\" after {}", t.getName(), (t.getThreadGroup() != null ? t.getThreadGroup().getName() : "<no group>"), getTestClassName());
+                            log.warn("{} remnant thread \"{}\" in group \"{}\" after {}", action, name, group, getTestClassName());
                         }
-                }
-            });
+                        if (kill) {
+                            killThread(t);
+                        } else {
+                            threadsSeen.add(t);
+                        }
+            }
+        }
     }
 
     /* Global Panel operations */
     /**
-     * Close all panels associated with the jmri.jmrit.display.EditorManager instance.
+     * Close all panels associated with the {@link EditorManager} default
+     * instance.
      */
-    public static void closeAllPanels(){
-        List<jmri.jmrit.display.Editor> l = (InstanceManager.getNullableDefault(jmri.jmrit.display.EditorManager.class)).getEditorsList();
-        for( jmri.jmrit.display.Editor e : l ){
-           jmri.jmrit.display.EditorFrameOperator efo = new jmri.jmrit.display.EditorFrameOperator(e);
-           efo.closeFrameWithConfirmations(); 
-        }
+    public static void closeAllPanels() {
+        InstanceManager.getOptionalDefault(EditorManager.class)
+                .ifPresent(m -> m.getAll()
+                        .forEach(e -> {
+                            if(e.isVisible()){
+                               e.requestFocus();
+                               try {
+                                   EditorFrameOperator editorFrameOperator = new EditorFrameOperator(e.getTargetFrame());
+                                   editorFrameOperator.closeFrameWithConfirmations();
+                               } catch (TimeoutExpiredException timeoutException ) {
+                                   log.error("Failed to close panel {} with exception {}",e.getTitle(),
+                                           timeoutException.getMessage(),
+                                           LoggingUtil.shortenStacktrace(timeoutException));
+                               }
+                            }
+                            e.dispose();
+                        }));
+        EditorFrameOperator.clearEditorFrameOperatorThreads();
     }
-
 
     /* GraphicsEnvironment utility methods */
 
     /**
      * Get the content pane of a dialog.
-     * 
+     *
      * @param title the dialog title
      * @return the content pane
      */
@@ -1312,21 +1544,7 @@ public class JUnitUtil {
 
     /**
      * Press a button after finding it in a container by title.
-     * 
-     * @param clazz an object no longer used
-     * @param frame container containing button to press
-     * @param text button title
-     * @return the pressed button
-     * @deprecated use {@link #pressButton(Container, String)} instead
-     */
-    @Deprecated // for removal after 4.18
-    public static AbstractButton pressButton(SwingTestCase clazz, Container frame, String text) {
-        return pressButton(frame, text);
-    }
-
-    /**
-     * Press a button after finding it in a container by title.
-     * 
+     *
      * @param frame container containing button to press
      * @param text button title
      * @return the pressed button
@@ -1339,6 +1557,6 @@ public class JUnitUtil {
         return button;
     }
 
-    private final static Logger log = LoggerFactory.getLogger(JUnitUtil.class);
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JUnitUtil.class);
 
 }

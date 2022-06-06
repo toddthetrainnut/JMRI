@@ -5,13 +5,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.Arrays;
-import javax.swing.JOptionPane;
 import jmri.jmrix.maple.SerialMessage;
 import jmri.jmrix.maple.SerialPortController; // no special xSimulatorController
 import jmri.jmrix.maple.SerialReply;
 import jmri.jmrix.maple.MapleSystemConnectionMemo;
-import jmri.jmrix.maple.SerialTrafficController;
+import jmri.util.ImmediatePipedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,16 +56,16 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
     @Override
     public String openPort(String portName, String appName) {
         try {
-            PipedOutputStream tempPipeI = new PipedOutputStream();
+            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
             log.debug("tempPipeI created");
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
             log.debug("inpipe created {}", inpipe != null);
-            PipedOutputStream tempPipeO = new PipedOutputStream();
+            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {
-            log.error("init (pipe): Exception: " + e.toString());
+            log.error("init (pipe): Exception: {}", e.toString());
         }
         opened = true;
         return null; // indicates OK return
@@ -210,29 +208,27 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
             }
             SerialMessage m = readMessage();
             SerialReply r;
-            if (log.isDebugEnabled()) {
-                StringBuffer buf = new StringBuffer();
-                buf.append("Maple Simulator Thread received message: ");
+            if (log.isTraceEnabled()) {
+                StringBuilder buf = new StringBuilder();
                 if (m != null) {
                     for (int i = 0; i < m.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & m.getElement(i)) + " ");
+                        buf.append(Integer.toHexString(0xFF & m.getElement(i))).append(" ");
                     }
                 } else {
                     buf.append("null message buffer");
                 }
-                log.trace(buf.toString()); // generates a lot of traffic
+                log.trace("Maple Simulator Thread received message: {}", buf); // generates a lot of traffic
             }
             if (m != null) {
                 r = generateReply(m);
                 if (r != null) { // ignore errors
                     writeReply(r);
                     if (log.isDebugEnabled()) {
-                        StringBuffer buf = new StringBuffer();
-                        buf.append("Maple Simulator Thread sent reply: ");
+                        StringBuilder buf = new StringBuilder();
                         for (int i = 0; i < r.getNumDataElements(); i++) {
-                            buf.append(Integer.toHexString(0xFF & r.getElement(i)) + " ");
+                            buf.append(Integer.toHexString(0xFF & r.getElement(i))).append(" ");
                         }
-                        log.debug(buf.toString());
+                        log.debug("Maple Simulator Thread sent reply: {}", buf);
                     }
                 }
             }
@@ -312,7 +308,7 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
                 log.debug("command ignored");
                 reply = null; // ignore all other messages
         }
-        log.debug(reply == null ? "Message ignored" : "Reply generated " + reply.toString());
+        log.debug("Reply {}", reply == null ? "empty, Message ignored" : "generated " + reply.toString());
         return (reply);
     }
 

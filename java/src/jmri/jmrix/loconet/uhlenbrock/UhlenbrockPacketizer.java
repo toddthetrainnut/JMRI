@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import jmri.jmrix.loconet.LnPacketizer;
-import jmri.jmrix.loconet.LocoNetInterface;
 import jmri.jmrix.loconet.LocoNetMessage;
 import jmri.jmrix.loconet.LocoNetMessageException;
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
@@ -40,8 +39,8 @@ public class UhlenbrockPacketizer extends LnPacketizer {
 
     @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
             justification = "Only used during system initialization")
-    public UhlenbrockPacketizer() {
-        super(new LocoNetSystemConnectionMemo());
+    public UhlenbrockPacketizer(LocoNetSystemConnectionMemo m) {
+        super(m);
         log.debug("UhlenbrockPacketizer instantiated");
     }
 
@@ -134,10 +133,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
                             int byte2 = readByteProtected(istream) & 0xFF;
                             //log.debug("Byte2: "+Integer.toHexString(byte2));
                             if ((byte2 & 0x80) != 0) {
-                                log.warn("LocoNet message with opCode: "
-                                        + Integer.toHexString(opCode)
-                                        + " ended early. Byte2 is also an opcode: "
-                                        + Integer.toHexString(byte2));
+                                log.warn("LocoNet message with opCode: {} ended early. Byte2 is also an opcode: {}", Integer.toHexString(opCode), Integer.toHexString(byte2));
                                 opCode = byte2;
                                 throw new LocoNetMessageException();
                             }
@@ -166,8 +162,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
                                     /* N byte message */
 
                                     if (byte2 < 2) {
-                                        log.error("LocoNet message length invalid: " + byte2
-                                                + " opcode: " + Integer.toHexString(opCode));
+                                        log.error("LocoNet message length invalid: {} opcode: {}", byte2, Integer.toHexString(opCode));
                                     }
                                     msg = new LocoNetMessage(byte2);
                                     break;
@@ -184,12 +179,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
                                 int b = readByteProtected(istream) & 0xFF;
                                 //log.debug("char "+i+" is: "+Integer.toHexString(b));
                                 if ((b & 0x80) != 0) {
-                                    log.warn("LocoNet message with opCode: "
-                                            + Integer.toHexString(opCode)
-                                            + " ended early. Expected length: " + len
-                                            + " seen length: " + i
-                                            + " unexpected byte: "
-                                            + Integer.toHexString(b));
+                                    log.warn("LocoNet message with opCode: {} ended early. Expected length: {} seen length: {} unexpected byte: {}", Integer.toHexString(opCode), len, i, Integer.toHexString(b));
                                     opCode = b;
                                     throw new LocoNetMessageException();
                                 }
@@ -204,7 +194,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
                     }
                     // check parity
                     if (!msg.checkParity()) {
-                        log.warn("Ignore LocoNet packet with bad checksum: " + msg.toString());
+                        log.warn("Ignore LocoNet packet with bad checksum: {}", msg.toString());
                         throw new LocoNetMessageException();
                     }
 
@@ -219,7 +209,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
                     // message is complete, dispatch it !!
                     {
                         log.debug("queue message for notification");
-//log.info("-------------------Uhlenbrock IB-COM LocoNet message RECEIVED: "+msg.toString());
+                        //log.debug("-------------------Uhlenbrock IB-COM LocoNet message RECEIVED: {}", msg.toString());
                         final LocoNetMessage thisMsg = msg;
                         final LnPacketizer thisTc = trafficController;
                         // return a notification via the queue to ensure end
@@ -244,7 +234,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
                     log.debug("EOFException, is LocoNet serial I/O using timeouts?");
                 } catch (java.io.IOException e) {
                     // fired when write-end of HexFile reaches end
-                    log.debug("IOException, should only happen with HexFile: {}", e);
+                    log.debug("IOException, should only happen with HexFile", e);
                     log.debug("End of file");
                     disconnectPort(controller);
                     return;
@@ -278,7 +268,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
                         lastMessage = xmtLocoNetList.removeFirst();
                         msg = xmtList.removeFirst();
                     }
-//log.info("-------------------Uhlenbrock IB-COM LocoNet message to SEND: "+msg.toString());
+                    //log.debug("-------------------Uhlenbrock IB-COM LocoNet message to SEND: {}", msg.toString());
 
                     // input - now send
                     try {
@@ -347,10 +337,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
     @Override
     public void startThreads() {
         int priority = Thread.currentThread().getPriority();
-        log.debug("startThreads current priority = " + priority
-                + " max available = " + Thread.MAX_PRIORITY
-                + " default = " + Thread.NORM_PRIORITY
-                + " min available = " + Thread.MIN_PRIORITY);
+        log.debug("startThreads current priority = {} max available = " + Thread.MAX_PRIORITY + " default = " + Thread.NORM_PRIORITY + " min available = " + Thread.MIN_PRIORITY, priority);
 
         // make sure that the xmt priority is no lower than the current priority
         int xmtpriority = (Thread.MAX_PRIORITY - 1 > priority ? Thread.MAX_PRIORITY - 1 : Thread.MAX_PRIORITY);
@@ -358,7 +345,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
         if (xmtHandler == null) {
             xmtHandler = new XmtHandler();
         }
-        Thread xmtThread = new Thread(xmtHandler, "LocoNet Uhlenbrock transmit handler");
+        xmtThread = new Thread(xmtHandler, "LocoNet Uhlenbrock transmit handler");
         log.debug("Xmt thread starts at priority {}", xmtpriority);
         xmtThread.setDaemon(true);
         xmtThread.setPriority(Thread.MAX_PRIORITY - 1);
@@ -368,7 +355,7 @@ public class UhlenbrockPacketizer extends LnPacketizer {
         if (rcvHandler == null) {
             rcvHandler = new RcvHandler(this);
         }
-        Thread rcvThread = new Thread(rcvHandler, "LocoNet Uhlenbrock receive handler");
+        rcvThread = new Thread(rcvHandler, "LocoNet Uhlenbrock receive handler");
         rcvThread.setDaemon(true);
         rcvThread.setPriority(Thread.MAX_PRIORITY);
         rcvThread.start();

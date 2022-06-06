@@ -1,12 +1,6 @@
 package jmri.jmrit.mailreport;
 
-import java.awt.Dimension;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.Insets;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -14,7 +8,10 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+
 import javax.swing.JFrame;
+
+import jmri.util.gui.GuiLafPreferencesManager;
 import jmri.InstanceManager;
 import jmri.jmrix.ConnectionConfig;
 import jmri.jmrix.ConnectionConfigManager;
@@ -22,6 +19,7 @@ import jmri.profile.Profile;
 import jmri.profile.ProfileManager;
 import jmri.util.FileUtil;
 import jmri.util.JmriInsets;
+import jmri.util.JmriJFrame;
 import jmri.util.PortNameMapper;
 import jmri.util.PortNameMapper.SerialPortFriendlyName;
 import jmri.util.zeroconf.ZeroConfService;
@@ -49,6 +47,9 @@ public class ReportContext {
     public String getReport(boolean reportNetworkInfo) {
 
         addString("JMRI Version: " + jmri.Version.name() + "   ");
+
+        addEarlyInitializationPreferences();
+
         addString("JMRI configuration file name: "
                 + System.getProperty("org.jmri.apps.Apps.configFilename") + "   (from org.jmri.apps.Apps.configFilename system property)");
         if (!jmri.util.JmriJFrame.getFrameList().isEmpty() && jmri.util.JmriJFrame.getFrameList().get(0) != null) {
@@ -62,11 +63,9 @@ public class ReportContext {
         ConnectionConfigManager cm = InstanceManager.getNullableDefault(ConnectionConfigManager.class);
         if (cm != null) {
             ConnectionConfig[] connList = cm.getConnections();
-            if (connList != null) {
-                for (int x = 0; x < connList.length; x++) {
-                    ConnectionConfig conn = connList[x];
-                    addString("Connection " + x + ": " + conn.getManufacturer() + " connected via " + conn.name() + " on " + conn.getInfo() + " Disabled " + conn.getDisabled() + "   ");
-                }
+            for (int x = 0; x < connList.length; x++) {
+                ConnectionConfig conn = connList[x];
+                addString("Connection " + x + ": " + conn.getManufacturer() + " connected via " + conn.name() + " on " + conn.getInfo() + " Disabled " + conn.getDisabled() + "   ");
             }
         } else {
             addString("No connections present");
@@ -98,10 +97,16 @@ public class ReportContext {
 
         File panel = jmri.configurexml.LoadXmlUserAction.getCurrentFile();
         addString("Current panel file: " + (panel == null ? "[none]" : panel.getPath()) + "   ");
+        
+        addString("Locale: " + InstanceManager.getDefault(GuiLafPreferencesManager.class).getLocale());
 
         //String operations = jmri.jmrit.operations.setup.OperationsSetupXml.getFileLocation();
         //addString("Operations files location: "+operations+"  ");
-        jmri.jmrit.audio.AudioFactory af = jmri.InstanceManager.getNullableDefault(jmri.AudioManager.class).getActiveAudioFactory();
+        jmri.AudioManager am = jmri.InstanceManager.getNullableDefault(jmri.AudioManager.class);
+        jmri.jmrit.audio.AudioFactory af = null;
+        if ( am !=null ) {
+            af = am.getActiveAudioFactory();
+        }
         String audio = af != null ? af.toString() : "[not initialised]";
         addString("Audio factory type: " + audio + "   ");
 
@@ -166,6 +171,15 @@ public class ReportContext {
         addString(prop + ": " + System.getProperty(prop) + "   ");
     }
 
+    void addEarlyInitializationPreferences() {
+        jmri.util.EarlyInitializationPreferences eip =
+                jmri.util.EarlyInitializationPreferences.getInstance();
+
+        for (String pref : eip.getStartupPreferences()) {
+            addString(pref + "   ");
+        }
+    }
+
     /**
      * Provide screen - size information. This is based on the
      * jmri.util.JmriJFrame calculation, but isn't refactored to there because
@@ -201,21 +215,14 @@ public class ReportContext {
         }
 
         // look at context
-        //Rectangle virtualBounds = new Rectangle();
         try {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             addString("Environment max bounds: " + ge.getMaximumWindowBounds());
 
             try {
-                GraphicsDevice[] gs = ge.getScreenDevices();
-                for (GraphicsDevice gd : gs) {
-                    GraphicsConfiguration[] gc = gd.getConfigurations();
-                    for (int i = 0; i < gc.length; i++) {
-                        addString("bounds[" + i + "] = " + gc[i].getBounds());
-                        // virtualBounds = virtualBounds.union(gc[i].getBounds());
-                    }
-                    addString("Device: " + gd.getIDstring() + " bounds = " + gd.getDefaultConfiguration().getBounds()
-                            + " " + gd.getDefaultConfiguration().toString());
+                for (JmriJFrame.ScreenDimensions sd: JmriJFrame.getScreenDimensions()) {
+                    addString("Device: " + sd.getGraphicsDevice().getIDstring() + " bounds = " + sd.getBounds());
+                    addString("Device: " + sd.getGraphicsDevice().getIDstring() + " insets = " + sd.getInsets());
                 }
             } catch (HeadlessException ex) {
                 addString("Exception getting device bounds " + ex.getMessage());

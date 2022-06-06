@@ -17,8 +17,6 @@ import jmri.jmrit.roster.IdentifyLoco;
 import jmri.jmrit.roster.Roster;
 import jmri.jmrit.roster.RosterEntry;
 import jmri.jmrit.roster.swing.RosterEntrySelectorPanel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Provide GUI controls to select a known loco via the Roster.
@@ -30,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (C) 2001, 2002
  */
-public class KnownLocoSelPane extends LocoSelPane {
+abstract public class KnownLocoSelPane extends LocoSelPane {
 
     public KnownLocoSelPane(JLabel s, boolean ident, ProgModeSelector selector) {
         mCanIdent = ident;
@@ -77,6 +75,7 @@ public class KnownLocoSelPane extends LocoSelPane {
         addProgrammerBox();
 
         JButton go2 = new JButton(Bundle.getMessage("OpenProgrammer"));
+        go2.getAccessibleContext().setAccessibleName(Bundle.getMessage("OpenProgrammer"));
         go2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -148,13 +147,13 @@ public class KnownLocoSelPane extends LocoSelPane {
         List<RosterEntry> l = Roster.getDefault().matchingList(null, null, Integer.toString(dccAddress),
                 null, null, null, null);
         if (log.isDebugEnabled()) {
-            log.debug("selectLoco found " + l.size() + " matches");
+            log.debug("selectLoco found {} matches", l.size());
         }
         if (l.size() > 0) {
             RosterEntry r = l.get(0);
             String id = r.getId();
             if (log.isDebugEnabled()) {
-                log.debug("Loco id is " + id);
+                log.debug("Loco id is {}", id);
             }
             String group = locoBox.getSelectedRosterGroup();
             if (group != null && !group.equals(Roster.ALLENTRIES)) {
@@ -168,7 +167,7 @@ public class KnownLocoSelPane extends LocoSelPane {
                 locoBox.setSelectedRosterEntry(r);
             }
         } else {
-            log.warn("Read address " + dccAddress + ", but no such loco in roster");
+            log.warn("Read address {}, but no such loco in roster", dccAddress);
         }
     }
 
@@ -191,14 +190,16 @@ public class KnownLocoSelPane extends LocoSelPane {
         }
     }
 
-    /**
-     * meant to be overridden to start the desired type of programmer
-     */
-    protected void startProgrammer(DecoderFile decoderFile, RosterEntry r,
-            String programmerName) {
-        log.error("startProgrammer method in NewLocoSelPane should have been overridden");
-    }
 
-    private final static Logger log = LoggerFactory.getLogger(KnownLocoSelPane.class);
+    /*
+     * Start the programming operation(s).
+     * @param decoderFile contains decoder definition
+     * @param r contains locomotive-specific roster information
+     * @param programmerName used to find the right programmer for the operation.
+     */
+    abstract protected void startProgrammer(DecoderFile decoderFile, RosterEntry r,
+            String programmerName);
+
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(KnownLocoSelPane.class);
 
 }

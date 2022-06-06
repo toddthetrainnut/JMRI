@@ -2,6 +2,7 @@ package jmri.jmrix.dccpp.dccppovertcp;
 
 import java.awt.event.ActionEvent;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -80,11 +81,9 @@ public class ServerFrame extends jmri.util.JmriJFrame implements ServerListner, 
             saveButton.setEnabled(true);
         });
 
-        if (portNumber != null) {
-            portNumber.addChangeListener((ChangeEvent e) -> {
-                saveButton.setEnabled(true);
-            });
-        }
+        portNumber.addChangeListener((ChangeEvent e) -> {
+            saveButton.setEnabled(true);
+        });
 
         super.pack();
     }
@@ -98,20 +97,15 @@ public class ServerFrame extends jmri.util.JmriJFrame implements ServerListner, 
         super.windowClosing(e);
     }
 
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-
     private void updateServerStatus() {
         Server server = InstanceManager.getDefault(Server.class);
         autoStartCheckBox.setSelected(server.getAutoStart());
         autoStartCheckBox.setEnabled(!server.isEnabled());
-        if (portNumber != null) {
-            portNumber.setValue(server.getPortNumber());
-            portNumber.setEnabled(!server.isEnabled());
-            portNumberLabel.setEnabled(!server.isEnabled());
-        }
+
+        portNumber.setValue(server.getPortNumber());
+        portNumber.setEnabled(!server.isEnabled());
+        portNumberLabel.setEnabled(!server.isEnabled());
+
         startButton.setEnabled(!server.isEnabled());
         stopButton.setEnabled(server.isEnabled());
         saveButton.setEnabled(server.isSettingChanged());
@@ -158,7 +152,8 @@ public class ServerFrame extends jmri.util.JmriJFrame implements ServerListner, 
     public static class Initializer extends AbstractInstanceInitializer {
 
         @Override
-        public <T> Object getDefault(Class<T> type) throws IllegalArgumentException {
+        @Nonnull
+        public <T> Object getDefault(Class<T> type) {
             if (type.equals(ServerFrame.class)) {
                 return new ServerFrame();
             }
@@ -166,6 +161,7 @@ public class ServerFrame extends jmri.util.JmriJFrame implements ServerListner, 
         }
 
         @Override
+        @Nonnull
         public Set<Class<?>> getInitalizes() {
             Set<Class<?>> set = super.getInitalizes();
             set.add(ServerFrame.class);

@@ -6,62 +6,32 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.tree.TreePath;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.tree.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jmri.Audio;
-import jmri.Conditional;
+
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import jmri.*;
 import jmri.Conditional.Operator;
-import jmri.ConditionalAction;
-import jmri.ConditionalVariable;
-import jmri.InstanceManager;
-import jmri.Light;
-import jmri.Logix;
-import jmri.Route;
-import jmri.Sensor;
-import jmri.SignalHead;
-import jmri.SignalMast;
-import jmri.Turnout;
 import jmri.implementation.DefaultConditional;
 import jmri.implementation.DefaultConditionalAction;
 import jmri.jmrit.beantable.LRouteTableAction;
 import jmri.jmrit.logix.OBlock;
 import jmri.jmrit.logix.Warrant;
+import jmri.script.swing.ScriptFileChooser;
+import jmri.swing.NamedBeanComboBox;
 import jmri.util.FileUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.swing.JComboBoxUtil;
@@ -99,9 +69,10 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
     public ConditionalTreeEdit() {
     }
 
-    JmriJFrame _editLogixFrame = null;
     JPanel _curDetailPanel = new JPanel();
     JTextField _editLogixUserName = new JTextField(20);   // Logix User Name field
+    NamedBeanComboBox<?> _comboNameBox = null;
+
 
     // ------------ Edit detail components ------------
     JPanel _detailGrid = new JPanel();
@@ -331,8 +302,8 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
         _leftButtonBar.add(_labelPanel);
 
         // ------------ Add Button ------------
-        JButton addButton = new JButton(Bundle.getMessage("AddButtonText"));    // NOI18N
-        addButton.setToolTipText(Bundle.getMessage("HintAddButton"));       // NOI18N
+        JButton addButton = new JButton(Bundle.getMessage("ButtonAddText")); // NOI18N
+        addButton.setToolTipText(Bundle.getMessage("HintAddButton"));        // NOI18N
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -738,7 +709,7 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
      * Create a new variable Can be invoked by a Variables or Variable node.
      */
     void newVariable() {
-        if (LRouteTableAction.LOGIX_INITIALIZER.equals(_curLogix.getSystemName())) {
+        if (LRouteTableAction.getLogixInitializer().equals(_curLogix.getSystemName())) {
             JOptionPane.showMessageDialog(_editLogixFrame,
                     Bundle.getMessage("Error49"), Bundle.getMessage("ErrorTitle"), // NOI18N
                     JOptionPane.ERROR_MESSAGE);
@@ -933,6 +904,10 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
             if (refList != null) {
                 for (String ref : refList) {
                     Conditional cRef = _conditionalManager.getBySystemName(ref);
+                    if (cRef==null){
+                        log.error("Conditional :{}: not found while updating username",ref);
+                        continue;
+                    }
                     List<ConditionalVariable> varList = cRef.getCopyOfStateVariables();
                     int idx = 0;
                     for (ConditionalVariable var : varList) {
@@ -1121,6 +1096,7 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
                 cdlNode.setText(buildNodeText("Conditional", cdl, i));  // NOI18N
                 _cdlModel.nodeChanged(cdlNode);
             }
+            return;
         }
 
         if (_curNodeType.equals("Variables")) {  // NOI18N
@@ -1537,10 +1513,6 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
         fireLogixEvent();
     }
 
-    public void bringToFront() {
-        _editLogixFrame.toFront();
-    }
-
     // ============  Tree Content and Navigation ============
 
     /**
@@ -1620,8 +1592,8 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
      * Actions, Level 3 contains the detail Variable and Action entries.
      */
     void createConditionalContent() {
-        int _numConditionals = _curLogix.getNumConditionals();
-        for (int i = 0; i < _numConditionals; i++) {
+        int numConditionals = _curLogix.getNumConditionals();
+        for (int i = 0; i < numConditionals; i++) {
             String csName = _curLogix.getConditionalByNumberOrder(i);
             Conditional curConditional = _curLogix.getConditional(csName);
             _cdlNode = new ConditionalTreeNode(buildNodeText("Conditional", curConditional, 0), "Conditional", csName, i);    // NOI18N
@@ -2789,7 +2761,7 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
     }
 
     /**
-     * Fetch valid appearances for a given Signal Head.
+     * Fetch valid localized appearances for a given Signal Head.
      * <p>
      * Warn if head is not found.
      *
@@ -2857,6 +2829,9 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
         _curVariable.setTriggerActions(_variableTriggerActions.isSelected());
 
         Conditional.ItemType itemType = _variableItemBox.getItemAt(_variableItemBox.getSelectedIndex());
+        if (!checkIsAction(name, itemType) ) {
+            return false;
+        }
         Conditional.Type testType = Conditional.Type.NONE;
         switch (itemType) {
             case SENSOR:
@@ -3781,6 +3756,7 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
                     _actionBoxLabel.setText(Bundle.getMessage("LabelActionSignal"));  // NOI18N
                     _actionBoxLabel.setToolTipText(Bundle.getMessage("SignalSetHint"));  // NOI18N
                     loadJComboBoxWithHeadAppearances(_actionBox, _actionNameField.getText().trim());
+                    _actionBox.setSelectedItem(_curAction.getActionDataString());
                 } else if (actionType != Conditional.Action.NONE) {
                     signalHeadGrid = "NameTypeActionFinal";  // NOI18N
                 }
@@ -3803,6 +3779,7 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
                     _actionBoxLabel.setText(Bundle.getMessage("LabelSignalAspect"));  // NOI18N
                     _actionBoxLabel.setToolTipText(Bundle.getMessage("SignalMastSetHint"));  // NOI18N
                     loadJComboBoxWithMastAspects(_actionBox, _actionNameField.getText().trim());
+                    _actionBox.setSelectedItem(_curAction.getActionDataString());
                 } else if (actionType != Conditional.Action.NONE) {
                     signalMastGrid = "NameTypeActionFinal";  // NOI18N
                 }
@@ -4152,7 +4129,7 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
     }
 */
     JFileChooser sndFileChooser = null;
-    JFileChooser scriptFileChooser = null;
+    ScriptFileChooser scriptFileChooser = null;
     JFileChooser defaultFileChooser = null;
 
     /**
@@ -4171,17 +4148,12 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
                 sndFileChooser = new JFileChooser(System.getProperty("user.dir") // NOI18N
                         + java.io.File.separator + "resources" // NOI18N
                         + java.io.File.separator + "sounds");  // NOI18N
-                jmri.util.FileChooserFilter filt = new jmri.util.FileChooserFilter("wav sound files");  // NOI18N
-                filt.addExtension("wav");  // NOI18N
-                sndFileChooser.setFileFilter(filt);
+                sndFileChooser.setFileFilter(new FileNameExtensionFilter("wav sound files", "wav")); // NOI18N
             }
             currentChooser = sndFileChooser;
         } else if (actionType == Conditional.Action.RUN_SCRIPT) {
             if (scriptFileChooser == null) {
-                scriptFileChooser = new JFileChooser(FileUtil.getScriptsPath());
-                jmri.util.FileChooserFilter filt = new jmri.util.FileChooserFilter("Python script files");  // NOI18N
-                filt.addExtension("py");
-                scriptFileChooser.setFileFilter(filt);
+                scriptFileChooser = new ScriptFileChooser(FileUtil.getScriptsPath());
             }
             currentChooser = scriptFileChooser;
         } else {
@@ -4246,6 +4218,9 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
                 return false;
             }
             referenceByMemory = true;
+        }
+        if (!checkIsVariable(name, itemType) ) {
+            return false;
         }
         switch (itemType) {
             case SENSOR:
@@ -4328,7 +4303,7 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
                     if (lgtx == null) {
                         return false;
                     }
-                    if (!lgtx.isIntensityVariable()) {
+                    if (!(lgtx instanceof VariableLight)) {
                         JOptionPane.showMessageDialog(_editLogixFrame,
                                 Bundle.getMessage("Error45", name), // NOI18N
                                 Bundle.getMessage("ErrorTitle"),
@@ -4345,7 +4320,8 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
                     if (lgtx == null) {
                         return false;
                     }
-                    if (!lgtx.isTransitionAvailable()) {
+                    if ( !(lgtx instanceof VariableLight)
+                            || !((VariableLight)lgtx).isTransitionAvailable()) {
                         JOptionPane.showMessageDialog(_editLogixFrame,
                                 Bundle.getMessage("Error40", name), // NOI18N
                                 Bundle.getMessage("ErrorTitle"),
@@ -4584,6 +4560,68 @@ public class ConditionalTreeEdit extends ConditionalEditBase {
         _curConditional.setAction(_actionList);
         _actionList = _curConditional.getCopyOfActions();
         _curLogix.activateLogix();
+    }
+
+    /**
+     * Check that a state variable is not also used as an action
+     *
+     * @param name of the state variable
+     * @param itemType item type of the state variable
+     * @return true if variable is not an action of if the user OK's
+     * its use as an action also.
+     */
+    boolean checkIsAction(String name, Conditional.ItemType itemType) {
+        String actionName = null;
+        for (ConditionalAction action : _actionList) {
+            Conditional.ItemType actionType = action.getType().getItemType();
+            if (itemType == actionType) {
+                if (name.equals(action.getDeviceName())) {
+                    actionName = action.getDeviceName();
+                } else {
+                    NamedBean bean  = action.getBean();
+                    if (bean != null &&
+                        (name.equals(bean.getSystemName()) ||
+                                name.equals(bean.getUserName()))) {
+                        actionName = action.getDeviceName();
+                   }
+                }
+            }
+            if (actionName != null) {
+                return confirmActionAsVariable(actionName, name);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check that an action is not also used as a state variable
+     *
+     * @param name of the action
+     * @param itemType item type of the action
+     * @return true if action is not a state variable of if the user OK's
+     * its use as such.
+     */
+    boolean checkIsVariable(String name, Conditional.ItemType itemType) {
+        String varName = null;
+        for (ConditionalVariable var : _variableList) {
+            Conditional.ItemType varType = var.getType().getItemType();
+            if (itemType == varType) {
+                if (name.equals(var.getName())) {
+                    varName = var.getName();
+                } else {
+                    NamedBean bean  = var.getBean();
+                    if (bean != null &&
+                        (name.equals(bean.getSystemName()) ||
+                                name.equals(bean.getUserName()))) {
+                        varName = var.getName();
+                   }
+                }
+            }
+            if (varName != null) {
+                return confirmActionAsVariable(name, varName);
+            }
+        }
+        return true;
     }
 
     // ------------ Action detail listeners ------------

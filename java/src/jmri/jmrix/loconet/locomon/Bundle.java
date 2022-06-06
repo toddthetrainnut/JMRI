@@ -3,7 +3,7 @@ package jmri.jmrix.loconet.locomon;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Locale;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
+import javax.annotation.CheckForNull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -12,7 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @javax.annotation.concurrent.Immutable
 
-/**
+/*
  * Provides standard access for resource bundles in a package.
  *
  * Convention is to provide a subclass of this name in each package, working off
@@ -23,8 +23,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 public class Bundle extends jmri.jmrix.loconet.Bundle {
 
-    @Nullable
-    private final static String name = "jmri.jmrix.loconet.locomon.Llnmon"; // NOI18N
+    @CheckForNull
+    private final static String name = null; // No local resources
 
     //
     // below here is boilerplate to be copied exactly
@@ -80,7 +80,7 @@ public class Bundle extends jmri.jmrix.loconet.Bundle {
     private final static Bundle b = new Bundle();
 
     @Override
-    @Nullable
+    @CheckForNull
     protected String bundleName() {
         return name;
     }

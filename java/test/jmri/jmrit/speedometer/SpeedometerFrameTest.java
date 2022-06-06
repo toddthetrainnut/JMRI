@@ -4,16 +4,15 @@ import java.awt.GraphicsEnvironment;
 
 import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
-import org.junit.After;
+
 import org.junit.Assert;
+import org.junit.jupiter.api.*;
 import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Test simple functioning of SpeedometerFrame
  *
- * @author	Paul Bender Copyright (C) 2016
+ * @author Paul Bender Copyright (C) 2016
  */
 public class SpeedometerFrameTest {
 
@@ -89,7 +88,7 @@ public class SpeedometerFrameTest {
              Throwable cause = ite.getCause();
              Assert.fail("verifyInputsValid execution failed reason: " + cause.getMessage());
         }
-        JUnitAppender.assertErrorMessage("Invalid system name for Sensor: \"\" needed non-empty suffix to follow IS");
+        JUnitAppender.assertErrorMessage("Invalid system name for Sensor: System name must start with \"IS\".");
         JUnitAppender.assertErrorMessage("Start sensor invalid:");
         JUnitUtil.dispose(frame);
     }
@@ -111,13 +110,13 @@ public class SpeedometerFrameTest {
         JUnitUtil.dispose(frame);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initInternalSensorManager();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         JUnitUtil.tearDown();
     }

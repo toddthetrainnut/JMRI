@@ -5,13 +5,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.Arrays;
+import javax.annotation.Nonnull;
 import javax.swing.JOptionPane;
 import jmri.jmrix.grapevine.SerialMessage;
 import jmri.jmrix.grapevine.SerialPortController; // no special xSimulatorController
 import jmri.jmrix.grapevine.SerialReply;
 import jmri.jmrix.grapevine.GrapevineSystemConnectionMemo;
 import jmri.jmrix.grapevine.SerialTrafficController;
+import jmri.util.ImmediatePipedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,12 +70,11 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
     @Override
     public String openPort(String portName, String appName) {
         try {
-            PipedOutputStream tempPipeI = new PipedOutputStream();
+            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
             log.debug("tempPipeI created");
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
-            log.debug("inpipe created {}", inpipe != null);
-            PipedOutputStream tempPipeO = new PipedOutputStream();
+            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {
@@ -232,27 +232,25 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
             SerialReply r;
             if (log.isDebugEnabled()) {
                 StringBuffer buf = new StringBuffer();
-                buf.append("Grapevine Simulator Thread received message: ");
                 if (m != null) {
                     for (int i = 0; i < m.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & m.getElement(i)) + " ");
+                        buf.append(Integer.toHexString(0xFF & m.getElement(i))).append(" ");
                     }
                 } else {
                     buf.append("null message buffer");
                 }
-                log.trace(buf.toString()); // generates a lot of traffic
+                log.trace("Grapevine Simulator Thread received message: {}", buf); // generates a lot of traffic
             }
             if (m != null) {
                 r = generateReply(m);
                 if (r != null) { // ignore errors
                     writeReply(r);
                     if (log.isDebugEnabled()) {
-                        StringBuffer buf = new StringBuffer();
-                        buf.append("Grapevine Simulator Thread sent reply: ");
+                        StringBuilder buf = new StringBuilder();
                         for (int i = 0; i < r.getNumDataElements(); i++) {
-                            buf.append(Integer.toHexString(0xFF & r.getElement(i)) + " ");
+                            buf.append(Integer.toHexString(0xFF & r.getElement(i))).append(" ");
                         }
-                        log.debug(buf.toString());
+                        log.debug("Grapevine Simulator Thread sent reply: {}", buf );
                     }
                 }
             }
@@ -355,7 +353,7 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
                     // reply = setParity(reply, 0);
                 }
         }
-        log.debug(reply == null ? "Message ignored" : "Reply generated " + reply.toString());
+        log.debug("Reply {}", reply == null ? "empty, Message ignored" : " generated " + reply.toString());
         return reply;
     }
 
@@ -366,19 +364,16 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
      *
      * @param r reply on message
      */
-    private void writeReply(SerialReply r) {
-        if (r == null) {
-            return; // there is no reply to be sent
-        }
+    private void writeReply(@Nonnull SerialReply r) {
         for (int i = 0; i < r.getNumDataElements(); i++) {
             try {
                 outpipe.writeByte((byte) r.getElement(i));
-            } catch (java.io.IOException ex) {
+            } catch (java.io.IOException ignored) {
             }
         }
         try {
             outpipe.flush();
-        } catch (java.io.IOException ex) {
+        } catch (java.io.IOException ignored) {
         }
     }
 

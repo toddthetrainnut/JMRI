@@ -1,6 +1,7 @@
 package jmri.jmrix.marklin;
 
 import java.util.Hashtable;
+import javax.annotation.Nonnull;
 import javax.swing.JOptionPane;
 import jmri.JmriException;
 import jmri.Sensor;
@@ -21,24 +22,34 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
         implements MarklinListener {
 
     public MarklinSensorManager(MarklinSystemConnectionMemo memo) {
-        this.memo = memo;
+        super(memo);
         tc = memo.getTrafficController();
         // connect to the TrafficManager
         tc.addMarklinListener(this);
     }
 
-    MarklinSystemConnectionMemo memo;
     MarklinTrafficController tc;
     //The hash table simply holds the object number against the MarklinSensor ref.
     private Hashtable<Integer, Hashtable<Integer, MarklinSensor>> _tmarklin = new Hashtable<Integer, Hashtable<Integer, MarklinSensor>>();   // stores known Marklin Obj
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getSystemPrefix() {
-        return memo.getSystemPrefix();
+    @Nonnull
+    public MarklinSystemConnectionMemo getMemo() {
+        return (MarklinSystemConnectionMemo) memo;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * System name is normalized to ensure uniqueness.
+     * @throws IllegalArgumentException when SystemName can't be converted
+     */
     @Override
-    public Sensor createNewSensor(String systemName, String userName) {
+    @Nonnull
+    protected Sensor createNewSensor(@Nonnull String systemName, String userName) throws IllegalArgumentException {
         MarklinSensor s = new MarklinSensor(systemName, userName);
         if (systemName.contains(":")) {
             int board = 0;
@@ -49,13 +60,14 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
             try {
                 board = Integer.parseInt(curAddress.substring(0, seperator));
                 if (!_tmarklin.containsKey(board)) {
-                    _tmarklin.put(board, new Hashtable<Integer, MarklinSensor>());
+                    _tmarklin.put(board, new Hashtable<>());
                     MarklinMessage m = MarklinMessage.sensorPollMessage(board);
                     tc.sendMarklinMessage(m, this);
                 }
             } catch (NumberFormatException ex) {
-                log.error("Unable to convert " + curAddress + " into the Module and port format of nn:xx");
-                return null;
+                throw new IllegalArgumentException("Unable to convert " +  // NOI18N
+                        curAddress +
+                        " into the Module and port format of nn:xx"); // NOI18N
             }
             Hashtable<Integer, MarklinSensor> sensorList = _tmarklin.get(board);
             try {
@@ -64,22 +76,19 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
                     sensorList.put(channel, s);
                 }
             } catch (NumberFormatException ex) {
-                log.error("Unable to convert " + curAddress + " into the Module and port format of nn:xx");
-                return null;
+                throw new IllegalArgumentException("Unable to convert " +  // NOI18N
+                        curAddress +
+                        " into the Module and port format of nn:xx"); // NOI18N
             }
         }
-
         return s;
     }
 
     @Override
-    public String createSystemName(String curAddress, String prefix) throws JmriException {
+    @Nonnull
+    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException {
         if (!curAddress.contains(":")) {
-            log.error("Unable to convert {} into the Module and port format of nn:xx", curAddress);
-            JOptionPane.showMessageDialog(null, Bundle.getMessage("WarningModuleAddress"),
-                    Bundle.getMessage("WarningTitle"), JOptionPane.ERROR_MESSAGE);
-            // TODO prevent further execution, return error flag
-            throw new JmriException("Hardware Address should be passed in the form 'Module:port'");
+            throw new JmriException("Hardware Address "+curAddress+"should be passed in the form 'Module:port'");
         }
 
         //Address format passed is in the form of board:channel or T:turnout address
@@ -87,22 +96,16 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
         try {
             board = Integer.parseInt(curAddress.substring(0, seperator));
         } catch (NumberFormatException ex) {
-            log.error("First part of {} in front of : should be a number", curAddress);
-            throw new JmriException("Module Address passed should be a number");
+            throw new JmriException("First part of "+curAddress+" in front of : should be a number");
         }
         try {
             port = Integer.parseInt(curAddress.substring(seperator + 1));
         } catch (NumberFormatException ex) {
-            log.error("Second part of {} after : should be a number", curAddress);
-            throw new JmriException("Port Address passed should be a number");
+            throw new JmriException("Second part of "+curAddress+" after : should be a number");
         }
 
         if (port == 0 || port > 16) {
-            log.error("Port number must be between 1 and 16");
-            JOptionPane.showMessageDialog(null, Bundle.getMessage("WarningPortRangeXY", 1, 16),
-                    Bundle.getMessage("WarningTitle"), JOptionPane.ERROR_MESSAGE);
-            // TODO prevent further execution, return error flag
-            throw new JmriException("Port number must be between 1 and 16");
+            throw new JmriException("Port number "+port+" in "+curAddress+" must be between 1 and 16");
         }
         StringBuilder sb = new StringBuilder();
         sb.append(getSystemPrefix());
@@ -114,55 +117,12 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
         return sb.toString();
     }
 
-    int board = 0;
-    int port = 0;
+    private int board = 0;
+    private int port = 0;
 
     @Override
-    public String getNextValidAddress(String curAddress, String prefix) {
-
-        String tmpSName = "";
-
-        try {
-            tmpSName = createSystemName(curAddress, prefix);
-        } catch (JmriException ex) {
-            jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).
-                    showErrorMessage(Bundle.getMessage("ErrorTitle"), Bundle.getMessage("ErrorConvertNumberX", curAddress), "" + ex, "", true, false);
-            return null;
-        }
-
-        // Check to determine if the System Name is in use, return null if it is,
-        // otherwise return the next valid address.
-        Sensor s = getBySystemName(tmpSName);
-        if (s != null) {
-            port++;
-            while (port < 17) {
-                try {
-                    tmpSName = createSystemName(board + ":" + port, prefix);
-                } catch (JmriException e) {
-                    log.error("Error creating system name for " + board + ":" + port);
-                    JOptionPane.showMessageDialog(null, (Bundle.getMessage("ErrorCreateSystemName") +  " " + board + ":" + port),
-                            Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
-                }
-                s = getBySystemName(tmpSName);
-                if (s == null) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(board);
-                    sb.append(":");
-                    //Little work around to pad single digit address out.
-                    padPortNumber(port, sb);
-                    return sb.toString();
-                }
-                port++;
-            }
-            return null;
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(board);
-            sb.append(":");
-            //Little workaround to pad single digit address out.
-            padPortNumber(port, sb);
-            return sb.toString();
-        }
+    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+        return true;
     }
 
     void padPortNumber(int portNo, StringBuilder sb) {
@@ -190,7 +150,7 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
                     MarklinMessage m = MarklinMessage.sensorPollMessage(module);
                     tc.sendMarklinMessage(m, this);
                     if (log.isDebugEnabled()) {
-                        log.debug("New module added " + module);
+                        log.debug("New module added {}", module);
                     }
                 }
                 MarklinSensor ms = sensorList.get(contact);
@@ -200,7 +160,7 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
                     //Little work around to pad single digit address out.
                     padPortNumber(contact, sb);
                     if (log.isDebugEnabled()) {
-                        log.debug("New sensor added " + contact + " : " + sb.toString());
+                        log.debug("New sensor added {} : {}", contact, sb.toString());
                     }
                     ms = (MarklinSensor) provideSensor(sb.toString());
                 }
@@ -212,8 +172,8 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
                     ms.setOwnState(Sensor.ACTIVE);
                     return;
                 }
-                log.error("state not found " + ms.getDisplayName() + " " + r.getElement(9) + " " + r.getElement(10));
-                log.error(r.toString());
+                log.error("state not found {} {} {}", ms.getDisplayName(), r.getElement(9), r.getElement(10));
+                log.error("for reply {}", r);
             } else {
                 int s88Module = r.getElement(9);
                 if (_tmarklin.containsKey(s88Module)) {
@@ -223,7 +183,7 @@ public class MarklinSensorManager extends jmri.managers.AbstractSensorManager
                     return;
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug("State s88Module not registered " + s88Module);
+                    log.debug("State s88Module not registered {}", s88Module);
                 }
             }
         }

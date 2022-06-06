@@ -36,7 +36,7 @@ public class JmrixConfigPaneXml extends AbstractXmlAdapter {
             return null;
         }
         String adapter = ConfigXmlManager.adapterName(oprime);
-        log.debug("forward to " + adapter);
+        log.debug("forward to {}", adapter);
         try {
             XmlAdapter x = (XmlAdapter) Class.forName(adapter).getDeclaredConstructor().newInstance();
             return x.store(oprime);
@@ -61,18 +61,18 @@ public class JmrixConfigPaneXml extends AbstractXmlAdapter {
         }
         String name = shared.getAttribute("LAFclass").getValue();
         String className = installedLAFs.get(name);
-        log.debug("GUI selection: " + name + " class name: " + className);
+        log.debug("GUI selection: {} class name: {}", name, className);
         // set the GUI
         if (className != null) {
             try {
                 if (!className.equals(UIManager.getLookAndFeel().getClass().getName())) {
-                    log.debug("set GUI to " + name + "," + className);
+                    log.debug("set GUI to {},{}", name, className);
                     updateLookAndFeel(name, className);
                 } else {
-                    log.debug("skip updateLAF as already has className==" + className);
+                    log.debug("skip updateLAF as already has className=={}", className);
                 }
             } catch (Exception ex) {
-                log.error("Exception while setting GUI look & feel: " + ex);
+                log.error("Exception while setting GUI look & feel", ex);
                 result = false;
             }
         }
@@ -91,16 +91,16 @@ public class JmrixConfigPaneXml extends AbstractXmlAdapter {
             // Set the new look and feel, and update the sample message to reflect it.
             UIManager.setLookAndFeel(className);
         } catch (Exception e) {
-            String errMsg = "The " + name + " look-and-feel ";
+            String errMsg;
             if (e instanceof UnsupportedLookAndFeelException) {
-                errMsg += "is not supported on this platform.";
+                errMsg = "is not supported on this platform.";
             } else if (e instanceof ClassNotFoundException) {
-                errMsg += "could not be found.";
+                errMsg = "could not be found.";
             } else {
-                errMsg += "could not be loaded.";
+                errMsg = "could not be loaded.";
             }
 
-            log.error(errMsg);
+            log.error("The {} look-and-feel {}",name,errMsg);
 
         }
     }

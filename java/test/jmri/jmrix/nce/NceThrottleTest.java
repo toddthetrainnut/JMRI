@@ -1,19 +1,20 @@
 package jmri.jmrix.nce;
 
 import jmri.util.JUnitUtil;
-import org.junit.After;
+import jmri.SpeedStepMode;
+
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class NceThrottleTest extends jmri.jmrix.AbstractThrottleTest {
 
     private NceTrafficControlScaffold tcis = null;
     private NceSystemConnectionMemo memo = null;
+    private NceThrottleManager tm;
 
     @Test
     public void testCTor() {
@@ -48,8 +49,8 @@ public class NceThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     @Test
     @Override
     public void testGetSpeedStepMode() {
-        int expResult = 1;
-        int result = instance.getSpeedStepMode();
+        SpeedStepMode expResult = SpeedStepMode.NMRA_DCC_128;
+        SpeedStepMode result = instance.getSpeedStepMode();
         Assert.assertEquals(expResult, result);
     }
 
@@ -384,21 +385,29 @@ public class NceThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     }
 
 
-    // The minimal setup for log4J
-    @Before
+    @BeforeEach
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         tcis = new NceTrafficControlScaffold();
         memo = new NceSystemConnectionMemo();
         memo.setNceTrafficController(tcis);
-        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class,new NceThrottleManager(memo));
-        instance = new NceThrottle(memo,new jmri.DccLocoAddress(1024,true));
+        tm = new NceThrottleManager(memo);
+        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class, tm);
+        instance = new NceThrottle(memo, new jmri.DccLocoAddress(1024,true));
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() {
+        // no need to dispose of instance
+        //if (tm != null) {
+        //    tm.dispose();
+        //}
+        memo.dispose();
+        memo = null;
+        tcis.terminateThreads();
+        tcis = null;
         JUnitUtil.tearDown();
     }
 

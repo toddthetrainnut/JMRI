@@ -1,5 +1,6 @@
 package jmri.jmrix.jmriclient;
 
+import javax.annotation.Nonnull;
 import jmri.Turnout;
 
 /**
@@ -12,24 +13,32 @@ import jmri.Turnout;
  */
 public class JMRIClientTurnoutManager extends jmri.managers.AbstractTurnoutManager {
 
-    private JMRIClientSystemConnectionMemo memo = null;
-    private String prefix = null;
-
     public JMRIClientTurnoutManager(JMRIClientSystemConnectionMemo memo) {
-        this.memo = memo;
-        this.prefix = memo.getSystemPrefix();
+        super(memo);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getSystemPrefix() {
-        return prefix;
+    @Nonnull
+    public JMRIClientSystemConnectionMemo getMemo() {
+        return (JMRIClientSystemConnectionMemo) memo;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
     @Override
-    public Turnout createNewTurnout(String systemName, String userName) {
-        Turnout t;
-        int addr = Integer.parseInt(systemName.substring(prefix.length() + 1));
-        t = new JMRIClientTurnout(addr, memo);
+    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+        int addr;
+        try {
+            addr = Integer.parseInt(systemName.substring(getSystemNamePrefix().length()));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Failed to convert systemName '"+systemName+"' to a Turnout.");
+        }
+        Turnout t = new JMRIClientTurnout(addr, getMemo());
         t.setUserName(userName);
         return t;
     }
@@ -39,13 +48,23 @@ public class JMRIClientTurnoutManager extends jmri.managers.AbstractTurnoutManag
      * on the server.
      */
     @Override
-    public String createSystemName(String curAddress, String prefix) throws jmri.JmriException {
+    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws jmri.JmriException {
         return prefix + typeLetter() + curAddress;
     }
 
     @Override
-    public boolean allowMultipleAdditions(String systemName) {
+    public boolean allowMultipleAdditions(@Nonnull String systemName) {
         return true;
+    }
+    
+    /**
+     * Validates to only numeric.
+     * {@inheritDoc}
+     */
+    @Override
+    @Nonnull
+    public String validateSystemNameFormat(@Nonnull String name, @Nonnull java.util.Locale locale) throws jmri.NamedBean.BadSystemNameException {
+        return validateSystemNameFormatOnlyNumeric(name,locale);
     }
 
 }

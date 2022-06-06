@@ -1,11 +1,11 @@
 package jmri.jmrix.sprog;
 
+import jmri.SpeedStepMode;
 import jmri.util.JUnitUtil;
 import jmri.jmrix.sprog.SprogConstants.SprogMode;
-import org.junit.After;
+
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 /**
  * Tests for SprogThrottle.
@@ -350,6 +350,7 @@ public class SprogThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup4 method, of class AbstractThrottle.
      */
     @Test
+    @Override
     public void testSendFunctionGroup4() {
     }
 
@@ -357,11 +358,33 @@ public class SprogThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup5 method, of class AbstractThrottle.
      */
     @Test
+    @Override
     public void testSendFunctionGroup5() {
     }
 
-    // The minimal setup for log4J
-    @Before
+    /**
+     * Test of getSpeedStepMode method
+     */
+    @Test
+    @Override
+    public void testGetSpeedStepMode() {
+        SpeedStepMode expResult = SpeedStepMode.NMRA_DCC_128;
+        SpeedStepMode result = instance.getSpeedStepMode();
+        Assert.assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getSpeedIncrement method
+     */
+    @Test
+    @Override
+    public void testGetSpeedIncrement() {
+        float expResult = 1.0F/126.0F;
+        float result = instance.getSpeedIncrement();
+        Assert.assertEquals(expResult, result, 0.0);
+    }
+    
+    @BeforeEach
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
@@ -376,7 +399,7 @@ public class SprogThrottleTest extends jmri.jmrix.AbstractThrottleTest {
         instance = new SprogThrottle(m, new jmri.DccLocoAddress(2,false));
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() {
         stcs.dispose();

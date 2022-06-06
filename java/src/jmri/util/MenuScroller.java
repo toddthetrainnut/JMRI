@@ -333,7 +333,8 @@ public class MenuScroller
         // add our menu key listener
         menu.addMenuKeyListener(menuScrollerMenuKeyListener);
 
-        if (false) {    // not working
+// Dead code commented out 2021-12-13
+//        if (false) {    // not working
 //        KeyListenerInstaller.installKeyListenerOnAllComponents(new KeyAdapter() {
 //            @Override
 //            public void keyTyped(KeyEvent e) {
@@ -341,16 +342,16 @@ public class MenuScroller
 //                log.debug("keyTyped(" + keyCode + ")");
 //            }
 //        }, menu);
-
-            menu.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyTyped(KeyEvent e) {
-                    int keyCode = e.getKeyCode();
-                    log.debug("keyTyped(" + keyCode + ")");
-                }
-            });
-
-        }
+//
+//             menu.addKeyListener(new KeyAdapter() {
+//                 @Override
+//                 public void keyTyped(KeyEvent e) {
+//                     int keyCode = e.getKeyCode();
+//                     log.debug("keyTyped({})", keyCode);
+//                 }
+//             });
+//
+//         }
 
         // add a Popup Menu listener
         menu.addPopupMenuListener(menuScrollerPopupMenuListener);
@@ -518,7 +519,8 @@ public class MenuScroller
      * @see MenuScroller#dispose()
      */
     @Override
-    public void finalize() throws Throwable {
+    @SuppressWarnings("deprecation") // Object.finalize
+    protected void finalize() throws Throwable {
         dispose();
     }
 
@@ -557,9 +559,11 @@ public class MenuScroller
             }
             menu.setPreferredSize(new Dimension(maxPreferredWidth, menu.getPreferredSize().height));
 
-            JComponent parent = (JComponent) upItem.getParent();
-            parent.revalidate();
-            parent.repaint();
+            java.awt.Container cont = upItem.getParent();
+            if (cont instanceof JComponent) {
+                ((JComponent) cont).revalidate();
+                ((JComponent) cont).repaint();
+            }
         }
     }
 
@@ -582,16 +586,19 @@ public class MenuScroller
 
         private void setMenuItems() {
             menuItems = menu.getComponents();
-            if (false) {    // not working
-                for (Component c : menuItems) {
-                    JMenuItem jmi = (JMenuItem) c;
-                    // remove all menu key listeners
-                    for (MenuKeyListener mkl : jmi.getMenuKeyListeners()) {
-                        jmi.removeMenuKeyListener(mkl);
-                    }
-                    jmi.addMenuKeyListener(menuScrollerMenuKeyListener);
-                }
-            }
+
+            // Dead code commented out 2021-12-13
+            // if (false) {    // not working
+            //     for (Component c : menuItems) {
+            //         JMenuItem jmi = (JMenuItem) c;
+            //         // remove all menu key listeners
+            //         for (MenuKeyListener mkl : jmi.getMenuKeyListeners()) {
+            //             jmi.removeMenuKeyListener(mkl);
+            //         }
+            //         jmi.addMenuKeyListener(menuScrollerMenuKeyListener);
+            //     }
+            // }
+
             if (keepVisibleIndex >= topFixedCount
                     && keepVisibleIndex <= menuItems.length - bottomFixedCount
                     && (keepVisibleIndex > firstIndex + scrollCount
@@ -607,10 +614,13 @@ public class MenuScroller
         private void restoreMenuItems() {
             menu.removeAll();
             for (Component c : menuItems) {
-                if (false) {    // not working
-                    JMenuItem jmi = (JMenuItem) c;
-                    jmi.removeMenuKeyListener(menuScrollerMenuKeyListener);
-                }
+
+                // Dead code commented out 2021-12-13
+                // if (false) {    // not working
+                //     JMenuItem jmi = (JMenuItem) c;
+                //    jmi.removeMenuKeyListener(menuScrollerMenuKeyListener);
+                // }
+
                 menu.add(c);
             }
         }
@@ -663,13 +673,13 @@ public class MenuScroller
         @Override
         public void menuKeyTyped(MenuKeyEvent e) {
             int keyCode = e.getKeyCode();
-            log.debug("MenuScroller.keyTyped(" + keyCode + ")");
+            log.debug("MenuScroller.keyTyped({})", keyCode);
         }
 
         @Override
         public void menuKeyPressed(MenuKeyEvent e) {
             int keyCode = e.getKeyCode();
-            log.debug("MenuScroller.keyPressed(" + keyCode + ")");
+            log.debug("MenuScroller.keyPressed({})", keyCode);
         }
 
         @Override
@@ -693,7 +703,7 @@ public class MenuScroller
                 }
 
                 default: {
-                    log.debug("MenuScroller.keyReleased(" + keyCode + ")");
+                    log.debug("MenuScroller.keyReleased({})", keyCode);
                     break;
                 }
             }   //switch

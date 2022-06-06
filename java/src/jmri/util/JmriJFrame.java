@@ -1,10 +1,14 @@
 package jmri.util;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentListener;
@@ -27,7 +31,8 @@ import jmri.InstanceManager;
 import jmri.ShutDownManager;
 import jmri.UserPreferencesManager;
 import jmri.beans.BeanInterface;
-import jmri.beans.Beans;
+import jmri.beans.BeanUtil;
+import jmri.implementation.AbstractShutDownTask;
 import jmri.util.swing.JmriAbstractAction;
 import jmri.util.swing.JmriPanel;
 import jmri.util.swing.WindowInterface;
@@ -44,14 +49,14 @@ import org.slf4j.LoggerFactory;
  * Features:
  * <ul>
  * <li>Size limited to the maximum available on the screen, after removing any
- * menu bars (Mac) and taskbars (Windows)
+ * menu bars (macOS) and taskbars (Windows)
  * <li>Cleanup upon closing the frame: When the frame is closed (WindowClosing
  * event), the {@link #dispose()} method is invoked to do cleanup. This is inherited from
  * JFrame itself, so super.dispose() needs to be invoked in the over-loading
  * methods.
  * <li>Maintains a list of existing JmriJFrames
  * </ul>
- * <h3>Window Closing</h3>
+ * <h2>Window Closing</h2>
  * Normally, a JMRI window wants to be disposed when it closes. This is what's
  * needed when each invocation of the corresponding action can create a new copy
  * of the window. To do this, you don't have to do anything in your subclass.
@@ -83,6 +88,10 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         super();
         reuseFrameSavedPosition = savePosition;
         reuseFrameSavedSized = saveSize;
+        initFrame();
+    }
+
+    final void initFrame() {
         addWindowListener(this);
         addComponentListener(this);
         windowInterface = new JmriJFrameInterface();
@@ -144,10 +153,14 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
      */
     public JmriJFrame(String name, boolean saveSize, boolean savePosition) {
         this(saveSize, savePosition);
+        setFrameTitle(name);
+    }
+
+    final void setFrameTitle(String name) {
         setTitle(name);
         generateWindowRef();
         if (this.getClass().getName().equals(JmriJFrame.class.getName())) {
-            if ((this.getTitle() == null) || (this.getTitle().equals(""))) {
+            if ((this.getTitle() == null) || (this.getTitle().isEmpty())) {
                 return;
             }
         }
@@ -171,12 +184,16 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     public void setFrameLocation() {
         InstanceManager.getOptionalDefault(UserPreferencesManager.class).ifPresent(prefsMgr -> {
             if (prefsMgr.hasProperties(windowFrameRef)) {
-                Dimension screen = getToolkit().getScreenSize();
-                if ((reuseFrameSavedPosition)
-                        && (!((prefsMgr.getWindowLocation(windowFrameRef).getX() >= screen.getWidth()) || (prefsMgr
-                        .getWindowLocation(windowFrameRef).getY() >= screen.getHeight())))) {
+                // Track the computed size and position of this window
+                Rectangle window = new Rectangle(this.getX(),this.getY(),this.getWidth(), this.getHeight());
+                boolean isVisible = false;
+                log.debug("Initial window location & size: {}", window);
+
+                log.debug("Detected {} screens.",GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length);
+                log.debug("windowFrameRef: {}", windowFrameRef);
+                if (reuseFrameSavedPosition) {
                     log.debug("setFrameLocation 1st clause sets \"{}\" location to {}", getTitle(), prefsMgr.getWindowLocation(windowFrameRef));
-                    this.setLocation(prefsMgr.getWindowLocation(windowFrameRef));
+                    window.setLocation(prefsMgr.getWindowLocation(windowFrameRef));
                 }
                 //
                 // Simple case that if either height or width are zero, then we should not set them
@@ -187,11 +204,12 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
                     log.debug("setFrameLocation 2nd clause sets \"{}\" preferredSize to {}", getTitle(), prefsMgr.getWindowSize(windowFrameRef));
                     this.setPreferredSize(prefsMgr.getWindowSize(windowFrameRef));
                     log.debug("setFrameLocation 2nd clause sets \"{}\" size to {}", getTitle(), prefsMgr.getWindowSize(windowFrameRef));
-                    this.setSize(prefsMgr.getWindowSize(windowFrameRef));
+                    window.setSize(prefsMgr.getWindowSize(windowFrameRef));
+                    log.debug("window now set to location: {}", window);
                 }
 
                 //
-                // We just check to make sure that having set the location that we do not have anther frame with the same
+                // We just check to make sure that having set the location that we do not have another frame with the same
                 // class name and title in the same location, if it is we offset
                 //
                 for (JmriJFrame j : getJmriJFrameManager()) {
@@ -203,8 +221,98 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
                         }
                     }
                 }
+
+                //
+                // Now we loop through all possible displays to determine if this window rectangle would intersect
+                // with any of these screens - in other words, ensure that this frame would be (partially) visible
+                // on at least one of the connected screens
+                //
+                for (ScreenDimensions sd: getScreenDimensions()) {
+                    boolean canShow = window.intersects(sd.getBounds());
+                    if (canShow) isVisible = true;
+                    log.debug("Screen {} bounds {}, {}", sd.getGraphicsDevice().getIDstring(), sd.getBounds(), sd.getInsets());
+                    log.debug("Does \"{}\" window {} fit on screen {}? {}", getTitle(), window, sd.getGraphicsDevice().getIDstring(), canShow);
+                }
+
+                log.debug("Can \"{}\" window {} display on a screen? {}", getTitle(), window, isVisible);
+
+                //
+                // We've determined that at least one of the connected screens can display this window
+                // so set its location and size based upon previously stored values
+                //
+                if (isVisible) {
+                    this.setLocation(window.getLocation());
+                    this.setSize(window.getSize());
+                    log.debug("Set \"{}\" location to {} and size to {}", getTitle(), window.getLocation(), window.getSize());
+                }
             }
         });
+    }
+
+    private final static ArrayList<ScreenDimensions> screenDim = getInitialScreenDimensionsOnce();
+
+    /**
+     * returns the previously initialized array of screens. See getScreenDimensionsOnce()
+     * @return ArrayList of screen bounds and insets
+     */
+    public static ArrayList<ScreenDimensions> getScreenDimensions() {
+        return screenDim;
+    }
+
+    /**
+     * Iterates through the attached displays and retrieves bounds, insets
+     * and id for each screen.
+     * Size of returned ArrayList equals the number of detected displays.
+     * Used to initialize a static final array.
+     * @return ArrayList of screen bounds and insets
+     */
+    private static ArrayList<ScreenDimensions> getInitialScreenDimensionsOnce() {
+        ArrayList<ScreenDimensions> screenDimensions = new ArrayList<>();
+        if (GraphicsEnvironment.isHeadless()) {
+            // there are no screens
+            return screenDimensions;
+        }
+        for (GraphicsDevice gd: GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+            Rectangle bounds = new Rectangle();
+            Insets insets = new Insets(0, 0, 0, 0);
+            for (GraphicsConfiguration gc: gd.getConfigurations()) {
+                if (bounds.isEmpty()) {
+                    bounds = gc.getBounds();
+                } else {
+                    bounds = bounds.union(gc.getBounds());
+                }
+                insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+            }
+            screenDimensions.add(new ScreenDimensions(bounds, insets, gd));
+        }
+        return screenDimensions;
+    }
+
+    /**
+     * Represents the dimensions of an attached screen/display
+     */
+    public static class ScreenDimensions {
+        final Rectangle bounds;
+        final Insets insets;
+        final GraphicsDevice gd;
+
+        public ScreenDimensions(Rectangle bounds, Insets insets, GraphicsDevice gd) {
+            this.bounds = bounds;
+            this.insets = insets;
+            this.gd = gd;
+        }
+
+        public Rectangle getBounds() {
+            return bounds;
+        }
+
+        public Insets getInsets() {
+            return insets;
+        }
+
+        public GraphicsDevice getGraphicsDevice() {
+            return gd;
+        }
     }
 
     /**
@@ -271,46 +379,56 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     }
 
     /**
+     * Initialize only once the MaximumSize for the screen
+     */
+    private final Dimension maxSizeDimension = getMaximumSize();
+
+    /**
      * Tries to get window to fix entirely on screen. First choice is to move
      * the origin up and left as needed, then to make the window smaller
      */
     void reSizeToFitOnScreen() {
-        Dimension dim = getMaximumSize();
         int width = this.getPreferredSize().width;
         int height = this.getPreferredSize().height;
-        log.trace("reSizeToFitOnScreen of \"{}\" starts with maximum size {}", getTitle(), dim);
+        log.trace("reSizeToFitOnScreen of \"{}\" starts with maximum size {}", getTitle(), maxSizeDimension);
         log.trace("reSizeToFitOnScreen starts with preferred height {} width {}", height, width);
         log.trace("reSizeToFitOnScreen starts with location {},{}", getX(), getY());
+        // Normalise the location
+        ScreenDimensions sd = getContainingDisplay(this.getLocation());
+        Point locationOnDisplay = new Point(getLocation().x - sd.getBounds().x, getLocation().y - sd.getBounds().y);
+        log.trace("reSizeToFitScreen normalises origin to {}, {}", locationOnDisplay.x, locationOnDisplay.y);
 
-        if ((width + this.getX()) >= dim.getWidth()) {
+        if ((width + locationOnDisplay.x) >= maxSizeDimension.getWidth()) {
             // not fit in width, try to move position left
-            int offsetX = (width + this.getX()) - (int) dim.getWidth(); // pixels too large
+            int offsetX = (width + locationOnDisplay.x) - (int) maxSizeDimension.getWidth(); // pixels too large
             log.trace("reSizeToFitScreen moves \"{}\" left {} pixels", getTitle(), offsetX);
-            int positionX = this.getX() - offsetX;
+            int positionX = locationOnDisplay.x - offsetX;
             if (positionX < 0) {
                 log.trace("reSizeToFitScreen sets \"{}\" X to zero", getTitle());
                 positionX = 0;
             }
-            this.setLocation(positionX, this.getY());
+            this.setLocation(positionX + sd.getBounds().x, this.getY());
+            log.trace("reSizeToFitOnScreen during X calculation sets location {}, {}", positionX + sd.getBounds().x, this.getY());
             // try again to see if it doesn't fit
-            if ((width + this.getX()) >= dim.getWidth()) {
-                width = width - (int) ((width + this.getX()) - dim.getWidth());
+            if ((width + locationOnDisplay.x) >= maxSizeDimension.getWidth()) {
+                width = width - (int) ((width + locationOnDisplay.x) - maxSizeDimension.getWidth());
                 log.trace("reSizeToFitScreen sets \"{}\" width to {}", getTitle(), width);
             }
         }
-        if ((height + this.getY()) >= dim.getHeight()) {
+        if ((height + locationOnDisplay.y) >= maxSizeDimension.getHeight()) {
             // not fit in height, try to move position up
-            int offsetY = (height + this.getY()) - (int) dim.getHeight(); // pixels too large
+            int offsetY = (height + locationOnDisplay.y) - (int) maxSizeDimension.getHeight(); // pixels too large
             log.trace("reSizeToFitScreen moves \"{}\" up {} pixels", getTitle(), offsetY);
-            int positionY = this.getY() - offsetY;
+            int positionY = locationOnDisplay.y - offsetY;
             if (positionY < 0) {
                 log.trace("reSizeToFitScreen sets \"{}\" Y to zero", getTitle());
                 positionY = 0;
             }
-            this.setLocation(this.getX(), positionY);
+            this.setLocation(this.getX(), positionY + sd.getBounds().y);
+            log.trace("reSizeToFitOnScreen during Y calculation sets location {}, {}", this.getX(), positionY + sd.getBounds().y);
             // try again to see if it doesn't fit
-            if ((height + this.getY()) >= dim.getHeight()) {
-                height = height - (int) ((height + this.getY()) - dim.getHeight());
+            if ((height + this.getY()) >= maxSizeDimension.getHeight()) {
+                height = height - (int) ((height + locationOnDisplay.y) - maxSizeDimension.getHeight());
                 log.trace("reSizeToFitScreen sets \"{}\" height to {}", getTitle(), height);
             }
         }
@@ -361,7 +479,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
 
     /**
      * Add a standard help menu, including window specific help item.
-     * 
+     *
      * Final because it defines the content of a standard help menu, not to be messed with individually
      *
      * @param ref    JHelp reference for the desired window-specific help page
@@ -384,6 +502,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     /**
      * Adds a "Close Window" key shortcut to close window on op-W.
      */
+    @SuppressWarnings("deprecation")  // getMenuShortcutKeyMask()
     void addWindowCloseShortCut() {
         // modelled after code in JavaDev mailing list item by Bill Tschumy <bill@otherwise.com> 08 Dec 2004
         AbstractAction act = new AbstractAction() {
@@ -398,7 +517,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         };
         getRootPane().getActionMap().put("close", act);
 
-        int stdMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        int stdMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
         InputMap im = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // We extract the modifiers as a string, then add the I18N string, and
@@ -496,6 +615,22 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         return (escapeKeyActionClosesWindow && getEscapeKeyAction() != null);
     }
 
+    private ScreenDimensions getContainingDisplay(Point location) {
+        // Loop through attached screen to determine which
+        // contains the top-left origin point of this window
+        for (ScreenDimensions sd: getScreenDimensions()) {
+            boolean isOnThisScreen = sd.getBounds().contains(location);
+            log.debug("Is \"{}\" window origin {} located on screen {}? {}", getTitle(), this.getLocation(), sd.getGraphicsDevice().getIDstring(), isOnThisScreen);
+            if (isOnThisScreen) {
+                // We've found the screen that contains this origin
+                return sd;
+            }
+        }
+        // As a fall-back, return the first display which is the primary
+        log.debug("Falling back to using the primary display");
+        return getScreenDimensions().get(0);
+    }
+
     /**
      * {@inheritDoc}
      * Provide a maximum frame size that is limited to what can fit on the
@@ -510,18 +645,18 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     @Override
     public Dimension getMaximumSize() {
         // adjust maximum size to full screen minus any toolbars
+        if (GraphicsEnvironment.isHeadless()) {
+            // there are no screens
+            return new Dimension(0,0);
+        }
         try {
-            // Try our own alorithm. This throws null-pointer exceptions on
+            // Try our own algorithm. This throws null-pointer exceptions on
             // some Java installs, however, for unknown reasons, so be
             // prepared to fall back.
             try {
-                // First, ask for the physical screen size
-                Dimension screen = getToolkit().getScreenSize();
-
-                // Next, ask for any insets on the screen.
-                Insets insets = JmriInsets.getInsets();
-                int widthInset = insets.right + insets.left;
-                int heightInset = insets.top + insets.bottom;
+                ScreenDimensions sd = getContainingDisplay(this.getLocation());
+                int widthInset = sd.getInsets().right + sd.getInsets().left;
+                int heightInset = sd.getInsets().top + sd.getInsets().bottom;
 
                 // If insets are zero, guess based on system type
                 if (widthInset == 0 && heightInset == 0) {
@@ -557,10 +692,10 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
                 }
 
                 // calculate size as screen size minus space needed for offsets
-                log.trace("getMaximumSize returns normally {},{}", (screen.width - widthInset), (screen.height - heightInset));
-                return new Dimension(screen.width - widthInset, screen.height - heightInset);
+                log.trace("getMaximumSize returns normally {},{}", (sd.getBounds().width - widthInset), (sd.getBounds().height - heightInset));
+                return new Dimension(sd.getBounds().width - widthInset, sd.getBounds().height - heightInset);
 
-            } catch (NoSuchMethodError e) {
+        } catch (NoSuchMethodError e) {
                 Dimension screen = getToolkit().getScreenSize();
                 log.trace("getMaximumSize returns approx due to failure {},{}", screen.width, screen.height);
                 return new Dimension(screen.width, screen.height - 45); // approximate this...
@@ -612,6 +747,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
      * The returned list is a copy made at the time of the call, so it can be
      * manipulated as needed by the caller.
      *
+     * @param <T> generic JmriJframe.
      * @param type The Class the list should be limited to.
      * @return An ArrayList of Frames.
      */
@@ -620,7 +756,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         List<T> result = new ArrayList<>();
         JmriJFrameManager m = getJmriJFrameManager();
         synchronized (m) {
-            m.stream().filter((f) -> (type.isInstance(f))).forEachOrdered((f) -> 
+            m.stream().filter((f) -> (type.isInstance(f))).forEachOrdered((f) ->
                 {
                     result.add((T)f);
                 });
@@ -645,11 +781,15 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         return null;
     }
 
+    /*
+     * addNotify removed - In linux the "setSize(dimension)" is honoured after the pack, increasing its size, overriding preferredSize
+     *                   - In windows the "setSize(dimension)" is ignored after the pack, so has no effect.
+     */
     // handle resizing when first shown
-    private boolean mShown = false;
+    // private boolean mShown = false;
 
-    /** {@inheritDoc} */
-    @Override
+    // /** {@inheritDoc} */
+    /* @Override
     public void addNotify() {
         super.addNotify();
         // log.debug("addNotify window ({})", getTitle());
@@ -666,6 +806,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         }
         mShown = true;
     }
+*/
 
     /**
      * Set whether the frame Position is saved or not after it has been created.
@@ -733,7 +874,6 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
      * Handle closing a window or quiting the program while the modified bit was
      * set.
      */
-    @SuppressFBWarnings(value = "LI_LAZY_INIT_STATIC", justification = "modified is only on Swing thread")
     protected void handleModified() {
         if (getModifiedFlag()) {
             this.setVisible(true);
@@ -792,7 +932,11 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     public void windowDeiconified(java.awt.event.WindowEvent e) {
     }
 
-    /** Does nothing in this class */
+    /**
+     * {@inheritDoc}
+     *
+     * The JmriJFrame implementation calls {@link #handleModified()}.
+     */
     @Override
     public void windowClosing(java.awt.event.WindowEvent e) {
         handleModified();
@@ -828,14 +972,18 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     public void componentShown(java.awt.event.ComponentEvent e) {
     }
 
-    private transient jmri.implementation.AbstractShutDownTask task = null;
+    private transient AbstractShutDownTask task = null;
 
     protected void setShutDownTask() {
-        task = new jmri.implementation.AbstractShutDownTask(getTitle()) {
+        task = new AbstractShutDownTask(getTitle()) {
             @Override
-            public boolean execute() {
+            public Boolean call() {
                 handleModified();
-                return true;
+                return Boolean.TRUE;
+            }
+
+            @Override
+            public void run() {
             }
         };
         InstanceManager.getDefault(ShutDownManager.class).register(task);
@@ -846,7 +994,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * When window is finally destroyed, remove it from the list of windows.
      * <p>
      * Subclasses that over-ride this method must invoke this implementation
@@ -879,35 +1027,11 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     }
 
     /*
-     * Daniel Boudreau 3/19/2014. There is a problem with saving the correct window size on a Linux OS. The testing was
-     * done using Oracle Java JRE 1.7.0_51 and Debian (Wheezy) Linux on a PC. One issue is that the window size returned
-     * by getSize() is slightly smaller than the actual window size. If we use getSize() to save the window size the
-     * window will shrink each time the window is closed and reopened. The previous workaround was to use
-     * getPreferredSize(), that returns whatever we've set in setPreferredSize() which keeps the window size constant
-     * when we save the data to the user preference file. However, if the user resizes the window, getPreferredSize()
-     * doesn't change, only getSize() changes when the user resizes the window. So we need to try and detect when the
-     * window size was modified by the user. Testing has shown that the window width is short by 4 pixels and the height
-     * is short by 3. This code will save the window size if the width or height was changed by at least 5 pixels. Sorry
-     * for this kludge.
+     * Save current window size, do not put adjustments here. Search elsewhere for the problem.
      */
-    private void saveWindowSize(jmri.UserPreferencesManager p) {
-        if (SystemType.isLinux()) {
-            // try to determine if user has resized the window
-            log.debug("getSize() width: {}, height: {}", super.getSize().getWidth(), super.getSize().getHeight());
-            log.debug("getPreferredSize() width: {}, height: {}", super.getPreferredSize().getWidth(), super.getPreferredSize().getHeight());
-            if (Math.abs(super.getPreferredSize().getWidth() - (super.getSize().getWidth() + 4)) > 5
-                    || Math.abs(super.getPreferredSize().getHeight() - (super.getSize().getHeight() + 3)) > 5) {
-                // adjust the new window size to be slight wider and higher than actually returned
-                Dimension size = new Dimension((int) super.getSize().getWidth() + 4, (int) super.getSize().getHeight() + 3);
-                log.debug("setting new window size {}", size);
-                p.setWindowSize(windowFrameRef, size);
-            } else {
-                p.setWindowSize(windowFrameRef, super.getPreferredSize());
-            }
-        } else {
-            p.setWindowSize(windowFrameRef, super.getSize());
-        }
-    }
+     private void saveWindowSize(jmri.UserPreferencesManager p) {
+         p.setWindowSize(windowFrameRef, super.getSize());
+     }
 
     /*
      * This field contains a list of properties that do not correspond to the JavaBeans properties coding pattern, or
@@ -920,8 +1044,8 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     /** {@inheritDoc} */
     @Override
     public void setIndexedProperty(String key, int index, Object value) {
-        if (Beans.hasIntrospectedProperty(this, key)) {
-            Beans.setIntrospectedIndexedProperty(this, key, index, value);
+        if (BeanUtil.hasIntrospectedProperty(this, key)) {
+            BeanUtil.setIntrospectedIndexedProperty(this, key, index, value);
         } else {
             if (!properties.containsKey(key)) {
                 properties.put(key, new Object[0]);
@@ -936,22 +1060,22 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         if (properties.containsKey(key) && properties.get(key).getClass().isArray()) {
             return ((Object[]) properties.get(key))[index];
         }
-        return Beans.getIntrospectedIndexedProperty(this, key, index);
+        return BeanUtil.getIntrospectedIndexedProperty(this, key, index);
     }
 
-    /** {@inheritDoc} 
+    /** {@inheritDoc}
      * Subclasses should override this method with something more direct and faster
      */
     @Override
     public void setProperty(String key, Object value) {
-        if (Beans.hasIntrospectedProperty(this, key)) {
-            Beans.setIntrospectedProperty(this, key, value);
+        if (BeanUtil.hasIntrospectedProperty(this, key)) {
+            BeanUtil.setIntrospectedProperty(this, key, value);
         } else {
             properties.put(key, value);
         }
     }
 
-    /** {@inheritDoc} 
+    /** {@inheritDoc}
      * Subclasses should override this method with something more direct and faster
      */
     @Override
@@ -959,20 +1083,20 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
         if (properties.containsKey(key)) {
             return properties.get(key);
         }
-        return Beans.getIntrospectedProperty(this, key);
+        return BeanUtil.getIntrospectedProperty(this, key);
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean hasProperty(String key) {
-        return (properties.containsKey(key) || Beans.hasIntrospectedProperty(this, key));
+        return (properties.containsKey(key) || BeanUtil.hasIntrospectedProperty(this, key));
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean hasIndexedProperty(String key) {
         return ((this.properties.containsKey(key) && this.properties.get(key).getClass().isArray())
-                || Beans.hasIntrospectedIndexedProperty(this, key));
+                || BeanUtil.hasIntrospectedIndexedProperty(this, key));
     }
 
     protected transient WindowInterface windowInterface = null;
@@ -1015,7 +1139,7 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     public Set<String> getPropertyNames() {
         Set<String> names = new HashSet<>();
         names.addAll(properties.keySet());
-        names.addAll(Beans.getIntrospectedPropertyNames(this));
+        names.addAll(BeanUtil.getIntrospectedPropertyNames(this));
         return names;
     }
 
@@ -1049,5 +1173,5 @@ public class JmriJFrame extends JFrame implements WindowListener, jmri.ModifiedF
     }
 
     private final static Logger log = LoggerFactory.getLogger(JmriJFrame.class);
-    
+
 }

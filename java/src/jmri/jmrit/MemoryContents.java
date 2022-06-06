@@ -226,8 +226,7 @@ public class MemoryContents {
     private void initPage(int page) {
         if (pageArray[page] != null) {
             if (log.isDebugEnabled()) {
-                log.debug("Method initPage was previously invoked for page " // NOI18N
-                        + page);
+                log.debug("Method initPage was previously invoked for page {}", page);
             }
             return;
         }
@@ -448,7 +447,7 @@ public class MemoryContents {
                             // could not infer a valid addressing type.
                             String message = "Could not infer addressing type from" // NOI18N
                                     + " line " + lineNum + "."; // NOI18N
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordContentException(message);
                         }
                     }
@@ -460,7 +459,7 @@ public class MemoryContents {
                         // unknown LOAD OFFSET field type - cannot continue.
                         String message = "Fell thru with unknown loadOffsetFieldType value " // NOI18N
                                 + loadOffsetFieldType + " for line" + lineNum + "."; // NOI18N
-                        log.error(message);
+                        logError(message);
                         throw new MemoryFileAddressingRangeException(message);
                     }
 
@@ -468,8 +467,7 @@ public class MemoryContents {
                     int recordType = Integer.valueOf(line.substring(indexOfLastAddressCharacter + 1,
                             indexOfLastAddressCharacter + 3), 16).intValue();
                     if (log.isDebugEnabled()) {
-                        log.debug("RECTYP = 0x" // NOI18N
-                                + Integer.toHexString(recordType));
+                        log.debug("RECTYP = 0x{}", Integer.toHexString(recordType));
                     }
 
                     // verify record character count
@@ -484,7 +482,7 @@ public class MemoryContents {
                                 = "Data record line length is incorrect for " // NOI18N
                                 + "inferred addressing type and for data " // NOI18N
                                 + "count field in line " + lineNum;// NOI18N
-                        log.error(message);
+                        logError(message);
                         throw new MemoryFileRecordLengthException(message);
                     }
 
@@ -511,7 +509,7 @@ public class MemoryContents {
                                 + ", expected checksum = 0x" // NOI18N
                                 + Integer.toHexString(expectedChecksum)
                                 + "."; // NOI18N
-                        log.error(message);
+                        logError(message);
                         throw new MemoryFileChecksumException(message);
                     }
 
@@ -521,7 +519,7 @@ public class MemoryContents {
                             // problem - data record happened after an EOF record was parsed
                             String message = "Found a Data record in line " // NOI18N
                                     + lineNum + " after the EOF record"; // NOI18N
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordFoundAfterEOFRecord(message);
                         }
 
@@ -541,7 +539,7 @@ public class MemoryContents {
                             String message = "Data crosses boundary which could lead to " // NOI18N
                                     + " mis-interpretation.  Aborting read at line " // NOI18N
                                     + line;
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileAddressingRangeException(message);
                         }
 
@@ -575,7 +573,7 @@ public class MemoryContents {
                                     = "Found a Extended Segment Address record in line " // NOI18N
                                     + lineNum
                                     + " after the EOF record"; // NOI18N
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordFoundAfterEOFRecord(message);
                         }
 
@@ -584,7 +582,7 @@ public class MemoryContents {
                             String message = "Extended Segment Address record " // NOI18N
                                     + "did not have 16 bits of data content." // NOI18N
                                     + lineNum;
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordContentException(message);
                         }
                         int startpoint = indexOfLastAddressCharacter + 3;
@@ -598,7 +596,7 @@ public class MemoryContents {
                                     + "Record data value 0x" // NOI18N
                                     + Integer.toHexString(newPage)
                                     + " in line " + lineNum; // NOI18N
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileAddressingRangeException(message);
                         }
                         curExtLinAddr = 0;
@@ -615,7 +613,7 @@ public class MemoryContents {
                                     = "Found a Extended Linear Address record in line " // NOI18N
                                     + lineNum
                                     + " after the EOF record"; // NOI18N
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordFoundAfterEOFRecord(message);
                         }
 
@@ -624,7 +622,7 @@ public class MemoryContents {
                             String message = "Extended Linear Address record has " // NOI18N
                                     + "non-zero LOAD OFFSET field." // NOI18N
                                     + lineNum;
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordContentException(message);
                         }
 
@@ -635,7 +633,7 @@ public class MemoryContents {
                                     + "found RECLEN value of " + // NOI18N
                                     +extractRecLen(line)
                                     + " in line " + lineNum; // NOI18N
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordContentException(message);
                         }
                         int startpoint = indexOfLastAddressCharacter + 3;
@@ -649,7 +647,7 @@ public class MemoryContents {
                                     + lineNum
                                     + " is not allowed in files using " // NOI18N
                                     + "24-bit LOAD OFFSET field.";  // NOI18N
-                            log.error(message); // NOI18N
+                            logError(message); // NOI18N
                             throw new MemoryFileRecordContentException(message);
                         } else if (tempPage < PAGES) {
                             curExtLinAddr = tempPage * 65536;
@@ -657,7 +655,7 @@ public class MemoryContents {
                             currentPage = tempPage;
                             initPage(currentPage);
                             if (log.isDebugEnabled()) {
-                                log.debug("New page 0x" + Integer.toHexString(currentPage)); // NOI18N
+                                log.debug("New page 0x{}", Integer.toHexString(currentPage)); // NOI18N
                             } // NOI18N
                         } else {
                             String message = "Page number 0x" // NOI18N
@@ -665,7 +663,7 @@ public class MemoryContents {
                                     + " specified in line number " // NOI18N
                                     + lineNum
                                     + " is beyond the supported 24-bit address range."; // NOI18N;
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileAddressingRangeException(message);
                         }
 
@@ -674,7 +672,7 @@ public class MemoryContents {
                                 || (extractLoadOffset(line) != 0)) {
                             String message = "Illegal EOF record form in line " // NOI18N
                                     + lineNum;
-                            log.error(message);
+                            logError(message);
                             throw new MemoryFileRecordContentException(message);
                         }
 
@@ -685,13 +683,13 @@ public class MemoryContents {
                                 + Integer.toHexString(recordType)
                                 + " was found in line " // NOI18N
                                 + lineNum + ".  Aborting file read."; // NOI18N
-                        log.error(message);
+                        logError(message);
                         throw new MemoryFileUnknownRecordType(message);
                     }
                     // end parsing hex file record
                 } else {
                     String message = "Unknown line type in line " + lineNum + "."; // NOI18N
-                    log.error(message);
+                    logError(message);
                     throw new MemoryFileUnknownRecordType(message);
                 }
             }
@@ -707,15 +705,21 @@ public class MemoryContents {
         }
         if (!foundDataRecords) {
             String message = "No Data Records found in file - aborting."; // NOI18N
-            log.error(message);
+            logError(message);
             throw new MemoryFileNoDataRecordsException(message);
         } else if (!foundEOFRecord) {  // found Data Records, but no EOF
             String message = "No EOF Record found in file - aborting."; // NOI18N
-            log.error(message);
+            logError(message);
             throw new MemoryFileNoEOFRecordException(message);
         }
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
+        justification="pass Error String directly.")
+    private void logError(String errorToLog) {
+        log.error(errorToLog);
+    }
+    
     /**
      * Sends a character stream of an image of a programmatic representation of
      * memory in the Intel "I8HEX" file format to a Writer.
@@ -814,7 +818,7 @@ public class MemoryContents {
                 }
                 for (int i = 0; i < pageArray[segment].length - blocksize + 1; i += blocksize) {
                     if (log.isDebugEnabled()) {
-                        log.debug("write at 0x" + Integer.toHexString(i)); // NOI18N
+                        log.debug("write at 0x{}", Integer.toHexString(i)); // NOI18N
                     }
                     // see if need to write the current block
                     boolean write = false;
@@ -830,7 +834,7 @@ public class MemoryContents {
                             if (startOffset < 0) {
                                 startOffset = j;
                                 if (log.isDebugEnabled()) {
-                                    log.debug("startOffset = 0x" + Integer.toHexString(startOffset)); // NOI18N
+                                    log.debug("startOffset = 0x{}", Integer.toHexString(startOffset)); // NOI18N
                                 }
                             }
                         }
@@ -850,11 +854,7 @@ public class MemoryContents {
                                 count++;
                             }
                             if (log.isDebugEnabled()) {
-                                log.debug("Writing Address " + startOffset + " (" // NOI18N
-                                        + (isLoadOffsetType24Bits() ? "24" : "16") // NOI18N
-                                        + "bit Address) count " // NOI18N
-                                        + count
-                                );
+                                log.debug("Writing Address {} ({}bit Address) count {}", startOffset, isLoadOffsetType24Bits() ? "24" : "16", count);
                             }
 
                             StringBuffer output = new StringBuffer(":"); // NOI18N
@@ -946,7 +946,7 @@ public class MemoryContents {
         try {
             return pageArray[currentPage][location % PAGESIZE] != DEFAULT_MEM_VALUE;
         } catch (Exception e) {
-            log.error("error in locationInUse " + currentPage + " " + location, e); // NOI18N
+            log.error("error in locationInUse {} {}", currentPage, location, e); // NOI18N
             return false;
         }
     }
@@ -963,20 +963,13 @@ public class MemoryContents {
     public int getLocation(int location) {
         currentPage = location / PAGESIZE;
         if (pageArray[currentPage] == null) {
-            log.error("Error in getLocation(0x" // NOI18N
-                    + Integer.toHexString(location)
-                    + "): accessed uninitialized page " // NOI18N
-                    + currentPage);
+            log.error("Error in getLocation(0x{}): accessed uninitialized page {}", Integer.toHexString(location), currentPage);
             return DEFAULT_MEM_VALUE;
         }
         try {
             return pageArray[currentPage][location % PAGESIZE];
         } catch (Exception e) {
-            log.error("Error in getLocation(0x" // NOI18N
-                    + Integer.toHexString(location)
-                    + "); computed (current page 0x" // NOI18N
-                    + Integer.toHexString(currentPage)
-                    + "): exception ", e); // NOI18N
+            log.error("Error in getLocation(0x{}); computed (current page 0x{}): exception ", Integer.toHexString(location), Integer.toHexString(currentPage), e); // NOI18N
             return 0;
         }
     }
@@ -1012,9 +1005,7 @@ public class MemoryContents {
      */
     private LoadOffsetFieldType inferRecordAddressType(String recordString) {
         if (recordString.charAt(0) != LEADING_CHAR_RECORD_MARK) {
-            log.error("Cannot infer record addressing type because line " // NOI18N
-                    + lineNum
-                    + " is not a record."); // NOI18N
+            log.error("Cannot infer record addressing type because line {} is not a record.", lineNum); // NOI18N
             return LoadOffsetFieldType.ADDRESSFIELDSIZEUNKNOWN;
         }
         String r = recordString.substring(CHARS_IN_RECORD_MARK);  // create a string without the leading ':'
@@ -1022,10 +1013,7 @@ public class MemoryContents {
         if (((len + 1) / 2) != (len / 2)) {
             // Not an even number of characters in the line (after removing the ':'
             // character), so must be a bad record.
-            log.error("Cannot infer record addressing type because line " // NOI18N
-                    + lineNum
-                    + " does not " // NOI18N
-                    + "have the correct number of characters."); // NOI18N
+            log.error("Cannot infer record addressing type because line {} does not have the correct number of characters.", lineNum); // NOI18N
             return LoadOffsetFieldType.ADDRESSFIELDSIZEUNKNOWN;
         }
 
@@ -1038,13 +1026,7 @@ public class MemoryContents {
 
         // Return if record checksum value does not match calculated checksum
         if (calculatedChecksum != checksumInRecord) {
-            log.error("Cannot infer record addressing type because line " // NOI18N
-                    + lineNum
-                    + " does not have the correct checksum (expect 0x" // NOI18N
-                    + Integer.toHexString(calculatedChecksum)
-                    + ", found CHKSUM = 0x" // NOI18N
-                    + Integer.toHexString(checksumInRecord)
-                    + ")"); // NOI18N
+            log.error("Cannot infer record addressing type because line {} does not have the correct checksum (expect 0x{}, found CHKSUM = 0x{})", lineNum, Integer.toHexString(calculatedChecksum), Integer.toHexString(checksumInRecord)); // NOI18N
             return LoadOffsetFieldType.ADDRESSFIELDSIZEUNKNOWN;
         }
 
@@ -1059,10 +1041,7 @@ public class MemoryContents {
             if (isSupportedRecordType(Integer.parseInt(r.substring(6, 8), 16))) {
                 return LoadOffsetFieldType.ADDRESSFIELDSIZE16BITS;
             } else {
-                log.error("Cannot infer record addressing type in line " // NOI18N
-                        + lineNum
-                        + " because record " // NOI18N
-                        + "type is an unsupported record type."); // NOI18N
+                log.error("Cannot infer record addressing type in line {} because record type is an unsupported record type.", lineNum); // NOI18N
                 return LoadOffsetFieldType.ADDRESSFIELDSIZEUNKNOWN;
             }
         }
@@ -1072,9 +1051,7 @@ public class MemoryContents {
             if (isSupportedRecordType(Integer.parseInt(r.substring(8, 10), 16))) {
                 return LoadOffsetFieldType.ADDRESSFIELDSIZE24BITS;
             } else {
-                log.error("Cannot infer record addressing type in line " // NOI18N
-                        + lineNum
-                        + " because record type is an unsupported record type."); // NOI18N
+                log.error("Cannot infer record addressing type in line {} because record type is an unsupported record type.", lineNum); // NOI18N
                 return LoadOffsetFieldType.ADDRESSFIELDSIZEUNKNOWN;
             }
         }
@@ -1137,10 +1114,7 @@ public class MemoryContents {
     private boolean addressAndCountIsOk(int addr, int count) {
         int beginPage = addr / PAGESIZE;
         int endPage = ((addr + count - 1) / PAGESIZE);
-        log.debug("Effective Record Addr = 0x" + Integer.toHexString(addr) // NOI18N
-                + " count = " + count // NOI18N
-                + " BeginPage = " + beginPage // NOI18N
-                + " endpage = " + endPage); // NOI18N
+        log.debug("Effective Record Addr = 0x{} count = {} BeginPage = {} endpage = {}", Integer.toHexString(addr), count, beginPage, endPage); // NOI18N
         return (beginPage == endPage);
     }
 
@@ -1164,13 +1138,13 @@ public class MemoryContents {
                 int f = t.indexOf(": "); // NOI18N
                 String value = t.substring(f + 2, t.length());
                 if (log.isDebugEnabled()) {
-                    log.debug("Key " + keyName + " was found in firmware image with value '" + value + "'"); // NOI18N
+                    log.debug("Key {} was found in firmware image with value '{}'", keyName, value); // NOI18N
                 }
                 return value;
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Key " + keyName + " is not defined in firmware image"); // NOI18N
+            log.debug("Key {} is not defined in firmware image", keyName); // NOI18N
         }
         return null;
 
@@ -1193,7 +1167,7 @@ public class MemoryContents {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Did not find key " + keyName); // NOI18N
+            log.debug("Did not find key {}", keyName); // NOI18N
         }
         return -1;
     }
@@ -1214,7 +1188,7 @@ public class MemoryContents {
             keyValComments.add("! " + keyName + ": " + value + "\n"); // NOI18N
             return;
         }
-        log.warn("Key " + keyName + " already exists in key/value set.  Overriding previous value!"); // NOI18N
+        log.warn("Key {} already exists in key/value set.  Overriding previous value!", keyName); // NOI18N
         keyValComments.set(keyIndex, "! " + keyName + ": " + value + "\n"); // NOI18N
     }
 

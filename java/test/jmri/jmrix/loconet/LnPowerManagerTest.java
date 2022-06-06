@@ -4,15 +4,14 @@ import jmri.JmriException;
 import jmri.PowerManager;
 import jmri.jmrix.AbstractPowerManagerTestBase;
 import jmri.util.JUnitUtil;
-import org.junit.After;
+
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 /**
  * Tests for the Jmri package LnPowerManager.
  *
- * @author	Bob Jacobsen Copyright 2001
+ * @author Bob Jacobsen Copyright 2001
  */
 public class LnPowerManagerTest extends AbstractPowerManagerTestBase {
 
@@ -98,7 +97,7 @@ public class LnPowerManagerTest extends AbstractPowerManagerTestBase {
     public void testImplementsIdle() {
 
         // DB150 implements IDLE power state
-        memo.configureCommandStation(LnCommandStationType.COMMAND_STATION_DB150, false, false, false);
+        memo.configureCommandStation(LnCommandStationType.COMMAND_STATION_DB150, false, false, false,false);
         Assert.assertTrue(p.implementsIdle());
         // DCS100 implements IDLE power state
         memo.getSlotManager().setCommandStationType(LnCommandStationType.COMMAND_STATION_DCS100);
@@ -136,7 +135,7 @@ public class LnPowerManagerTest extends AbstractPowerManagerTestBase {
 
         hearOn();  // set up an initial state
         // DCS51 does not implement IDLE power state
-        memo.configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS200, false, false, false);
+        memo.configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS200, false, false, false, false);
         Assert.assertTrue(p.implementsIdle());
         hearIdle();
         Assert.assertEquals("power state", PowerManager.IDLE, p.getPower());
@@ -150,8 +149,9 @@ public class LnPowerManagerTest extends AbstractPowerManagerTestBase {
     }
 
     @Test
+    @Override
     public void testSetPowerIdle() throws JmriException {
-        memo.configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS200, false, false, false);
+        memo.configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS200, false, false, false, false);
         Assert.assertTrue("LocoNet implements IDLE", p.implementsIdle());
         int initialSent = outboundSize();
         p.setPower(PowerManager.IDLE);
@@ -173,7 +173,7 @@ public class LnPowerManagerTest extends AbstractPowerManagerTestBase {
     }
 
     // setup a default interface
-    @Before
+    @BeforeEach
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
@@ -184,7 +184,7 @@ public class LnPowerManagerTest extends AbstractPowerManagerTestBase {
         p = pwr = new LnPowerManager(memo);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         pwr.dispose();
         memo.dispose();

@@ -1,8 +1,12 @@
 package jmri.managers;
 
-import jmri.Manager;
-import jmri.SignalHead;
-import jmri.SignalHeadManager;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
+import jmri.*;
+import jmri.jmrix.internal.InternalSystemConnectionMemo;
+
+import java.util.Objects;
 
 /**
  * Abstract partial implementation of a SignalHeadManager.
@@ -19,9 +23,13 @@ import jmri.SignalHeadManager;
 public class AbstractSignalHeadManager extends AbstractManager<SignalHead>
         implements SignalHeadManager {
 
-    public AbstractSignalHeadManager() {
-        super();
-        jmri.InstanceManager.turnoutManagerInstance().addVetoableChangeListener(this);
+    public AbstractSignalHeadManager(InternalSystemConnectionMemo memo) {
+        super(memo);
+        init();
+    }
+    
+    final void init(){
+        InstanceManager.getDefault(TurnoutManager.class).addVetoableChangeListener(this);
     }
 
     /** {@inheritDoc} */
@@ -32,45 +40,44 @@ public class AbstractSignalHeadManager extends AbstractManager<SignalHead>
 
     /** {@inheritDoc} */
     @Override
-    public String getSystemPrefix() {
-        return "I";
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public char typeLetter() {
         return 'H';
     }
 
     /** {@inheritDoc} */
     @Override
-    public SignalHead getSignalHead(String name) {
-        if (name == null || name.length() == 0) {
+    @CheckForNull
+    public SignalHead getSignalHead(@Nonnull String name) {
+        Objects.requireNonNull(name, "SignalHead name cannot be null.");  // NOI18N
+        if (name.trim().length() == 0) {
             return null;
         }
         SignalHead t = getByUserName(name);
         if (t != null) {
             return t;
         }
-
         return getBySystemName(name);
     }
 
     /** {@inheritDoc} */
     @Override
-    public SignalHead getBySystemName(String name) {
-        return _tsys.get(name);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public SignalHead getByUserName(String key) {
-        return _tuser.get(key);
-    }
-
-    /** {@inheritDoc} */
-    @Override
+    @Nonnull
     public String getBeanTypeHandled(boolean plural) {
         return Bundle.getMessage(plural ? "BeanNameSignalHeads" : "BeanNameSignalHead");
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<SignalHead> getNamedBeanClass() {
+        return SignalHead.class;
+    }
+    
+    @Override
+    public void dispose(){
+        InstanceManager.getDefault(TurnoutManager.class).removeVetoableChangeListener(this);
+        super.dispose();
+    }
+
 }

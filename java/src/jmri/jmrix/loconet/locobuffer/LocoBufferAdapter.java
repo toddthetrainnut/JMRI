@@ -21,7 +21,7 @@ import purejavacomm.SerialPort;
 import purejavacomm.UnsupportedCommOperationException;
 
 /**
- * Provide access to LocoNet via a LocoBuffer attached to a serial comm port.
+ * Provide access to LocoNet via a LocoBuffer attached to a serial com port.
  * <p>
  * Normally controlled by the LocoBufferFrame class.
  *
@@ -38,14 +38,17 @@ public class LocoBufferAdapter extends LnPortController {
         option1Name = "FlowControl"; // NOI18N
         option2Name = "CommandStation"; // NOI18N
         option3Name = "TurnoutHandle"; // NOI18N
-        option4Name = "PacketizerType"; //NOI18N
+        option4Name = "PacketizerType"; // NOI18N
         options.put(option1Name, new Option(Bundle.getMessage("XconnectionUsesLabel", Bundle.getMessage("TypeSerial")), validOption1));  // NOI18N
         options.put(option2Name, new Option(Bundle.getMessage("CommandStationTypeLabel"), getCommandStationListWithStandaloneLN(), false));  // NOI18N
         options.put(option3Name, new Option(Bundle.getMessage("TurnoutHandling"),
                 new String[]{Bundle.getMessage("HandleNormal"), Bundle.getMessage("HandleSpread"), Bundle.getMessage("HandleOneOnly"), Bundle.getMessage("HandleBoth")})); // I18N
         options.put(option4Name, new Option(Bundle.getMessage("PacketizerTypeLabel"), packetizerOptions()));  // NOI18N
-        options.put("TranspondingPresent", new Option(Bundle.getMessage("TranspondingPresent"), 
+        options.put("TranspondingPresent", new Option(Bundle.getMessage("TranspondingPresent"),
                 new String[]{Bundle.getMessage("ButtonNo"), Bundle.getMessage("ButtonYes")} )); // NOI18N
+        options.put("InterrogateOnStart", new Option(Bundle.getMessage("InterrogateOnStart"),
+                new String[]{Bundle.getMessage("ButtonYes"), Bundle.getMessage("ButtonNo")} )); // NOI18N
+
     }
     
     /**
@@ -101,7 +104,7 @@ public class LocoBufferAdapter extends LnPortController {
             try {
                 setSerialPort(activeSerialPort);
             } catch (UnsupportedCommOperationException e) {
-                log.error("Cannot set serial parameters on port " + portName + ": " + e.getMessage());
+                log.error("Cannot set serial parameters on port {}: {}", portName, e.getMessage());
                 return "Cannot set serial parameters on port " + portName + ": " + e.getMessage(); // NOI18N
             }
 
@@ -115,7 +118,7 @@ public class LocoBufferAdapter extends LnPortController {
                     activeSerialPort.isReceiveThresholdEnabled()                                        
                 );
             } catch (Exception et) {
-                log.info("failed to set serial timeout: " + et); // NOI18N
+                log.info("failed to set serial timeout: ", et); // NOI18N
             }
 
             // get and save stream
@@ -127,19 +130,11 @@ public class LocoBufferAdapter extends LnPortController {
             // report status?
             if (log.isInfoEnabled()) {
                 // report now
-                log.info(portName + " port opened at " // NOI18N
-                        + activeSerialPort.getBaudRate() + " baud with" // NOI18N
-                        + " DTR: " + activeSerialPort.isDTR() // NOI18N
-                        + " RTS: " + activeSerialPort.isRTS() // NOI18N
-                        + " DSR: " + activeSerialPort.isDSR() // NOI18N
-                        + " CTS: " + activeSerialPort.isCTS() // NOI18N
-                        + "  CD: " + activeSerialPort.isCD() // NOI18N
-                );
+                log.info("{} port opened at {} baud with DTR: {} RTS: {} DSR: {} CTS: {}  CD: {}", portName, activeSerialPort.getBaudRate(), activeSerialPort.isDTR(), activeSerialPort.isRTS(), activeSerialPort.isDSR(), activeSerialPort.isCTS(), activeSerialPort.isCD());
             }
             if (log.isDebugEnabled()) {
                 // report additional status
-                log.debug(" port flow control shows " // NOI18N
-                        + (activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? "hardware flow control" : "no flow control")); // NOI18N
+                log.debug(" port flow control shows {}", activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? "hardware flow control" : "no flow control"); // NOI18N
 
                 // log events
                 setPortEventLogging(activeSerialPort);
@@ -180,6 +175,7 @@ public class LocoBufferAdapter extends LnPortController {
         setCommandStationType(getOptionState(option2Name));
         setTurnoutHandling(getOptionState(option3Name));
         setTranspondingAvailable(getOptionState("TranspondingPresent"));
+        setInterrogateOnStart(getOptionState("InterrogateOnStart"));
         // connect to a packetizing traffic controller
         LnPacketizer packets = getPacketizer(getOptionState(option4Name));
         packets.connectPort(this);
@@ -189,7 +185,7 @@ public class LocoBufferAdapter extends LnPortController {
         // do the common manager config
 
         this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);
+                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);
         this.getSystemConnectionMemo().configureManagers();
 
         // start operation
@@ -214,8 +210,7 @@ public class LocoBufferAdapter extends LnPortController {
         try {
             return new DataOutputStream(activeSerialPort.getOutputStream());
         } catch (java.io.IOException e) {
-            log.error("getOutputStream exception: " +  // NOI18N
-                    e.getMessage());
+            log.error("getOutputStream exception: {}", e.getMessage());
         }
         return null;
     }
@@ -242,12 +237,8 @@ public class LocoBufferAdapter extends LnPortController {
             flow = SerialPort.FLOWCONTROL_NONE;
         }
         configureLeadsAndFlowControl(activeSerialPort, flow);
-        
-        log.info("LocoBuffer (serial) adapter"
-                + (activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=")
-                + activeSerialPort.getFlowControlMode()
-                + " RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT
-                + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN);
+
+        log.info("LocoBuffer (serial) adapter{}{} RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN, activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=", activeSerialPort.getFlowControlMode());
     }
 
     /**
@@ -269,6 +260,11 @@ public class LocoBufferAdapter extends LnPortController {
     protected String[] validSpeeds = new String[]{Bundle.getMessage("Baud19200LB"), Bundle.getMessage("Baud57600LB")};
     protected int[] validSpeedValues = new int[]{19200, 57600};
 
+    @Override
+    public int defaultBaudIndex() {
+        return 0;
+    }
+
     // meanings are assigned to these above, so make sure the order is consistent
     protected String[] validOption1 = new String[]{Bundle.getMessage("FlowOptionHwRecomm"), Bundle.getMessage("FlowOptionNo")};
 
@@ -289,7 +285,7 @@ public class LocoBufferAdapter extends LnPortController {
     private String[] packetizerOptions() {
         String[] retval = new String[packetizers.length];
         for (int i=0;i < packetizers.length; i++) {
-            retval[i]=packetizers[i][0];
+            retval[i] = packetizers[i][0];
         }
         return retval;
     }

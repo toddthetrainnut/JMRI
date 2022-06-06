@@ -1,33 +1,31 @@
 package jmri.jmrit.dispatcher;
 
 import jmri.util.JUnitUtil;
-import org.junit.After;
+
+import org.junit.jupiter.api.*;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class AllocationRequestTest {
 
     @Test
     public void testCTor() {
-        jmri.Transit transit = new jmri.Transit("TT1");
+        jmri.Transit transit = new jmri.implementation.DefaultTransit("TT1");
         ActiveTrain at = new ActiveTrain(transit,"Train",ActiveTrain.USER);
-        jmri.Section section1 = new jmri.Section("TS1");
+        jmri.Section section1 = new jmri.implementation.DefaultSection("TS1");
         AllocationRequest t = new AllocationRequest(section1,1,1,at);
         Assert.assertNotNull("exists",t);
     }
 
-    // The minimal setup for log4J
-    @Before
+    @BeforeEach
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         JUnitUtil.tearDown();
     }

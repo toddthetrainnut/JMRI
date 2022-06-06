@@ -1,19 +1,20 @@
 package jmri.jmrix.easydcc;
 
+import jmri.SpeedStepMode;
 import jmri.util.JUnitUtil;
-import org.junit.After;
+
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class EasyDccThrottleTest extends jmri.jmrix.AbstractThrottleTest {
 
     private EasyDccTrafficControlScaffold tc = null;
     private EasyDccSystemConnectionMemo memo = null;
+    private EasyDccThrottleManager tm;
 
     @Test
     public void testCTor() {
@@ -37,9 +38,20 @@ public class EasyDccThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     @Test
     @Override
     public void testGetSpeedStepMode() {
-        int expResult = 1;
-        int result = instance.getSpeedStepMode();
+        SpeedStepMode expResult = SpeedStepMode.NMRA_DCC_128;
+        SpeedStepMode result = instance.getSpeedStepMode();
         Assert.assertEquals(expResult, result);
+    }
+    
+    /**
+     * Test of getSpeedIncrement method, of class AbstractThrottle.
+     */
+    @Test
+    @Override
+    public void testGetSpeedIncrement() {
+        float expResult = SpeedStepMode.NMRA_DCC_128.increment;
+        float result = instance.getSpeedIncrement();
+        Assert.assertEquals(expResult, result, 0.0);
     }
 
     /**
@@ -196,20 +208,26 @@ public class EasyDccThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     public void testSendFunctionGroup3() {
     }
 
-    // The minimal setup for log4J
-    @Before
+    @BeforeEach
+    @Override
     public void setUp() {
         JUnitUtil.setUp();
         // infrastructure objects
         tc = new EasyDccTrafficControlScaffold(null);
         memo = new EasyDccSystemConnectionMemo(tc);
-        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class, new EasyDccThrottleManager(memo));
+        tm = new EasyDccThrottleManager(memo);
+        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class, tm);
         instance = new EasyDccThrottle(memo, new jmri.DccLocoAddress(100, true));
     }
 
-    @After
+    @AfterEach
+    @Override
     public void tearDown() {
+        if (tm != null) {
+            tm.dispose();
+        }
         tc.terminateThreads();
+        tc = null;
         memo = null;
         JUnitUtil.tearDown();
     }

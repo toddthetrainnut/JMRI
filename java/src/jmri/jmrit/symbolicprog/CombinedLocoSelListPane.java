@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * parts are unchanged.
  * <p>
  * The JComboBox implementation always had to have selected entries, so we added
- * dummy "select from .." items at the top {@literal &} used those to indicate
+ * dummy "select from .." items at the top and used those to indicate
  * that there was no selection in that box. Here, the lack of a selection
  * indicates there's no selection.
  *
@@ -134,6 +134,7 @@ public class CombinedLocoSelListPane extends CombinedLocoSelPane {
      * even though there's no definitions for it. This is protected against
      * invoking any listeners, as the change is meant to be transparent; the
      * original selection is set back.
+     * @param specific The value to update
      */
     void updateMfgListContents(String specific) {
         if (mMfgListener != null) {
@@ -173,13 +174,11 @@ public class CombinedLocoSelListPane extends CombinedLocoSelPane {
         DecoderFile df = InstanceManager.getDefault(DecoderIndexFile.class)
                 .fileFromTitle(mDecoderList.getSelectedValue());
         if (log.isDebugEnabled()) {
-            log.debug("decoder selection changed to "
-                    + mDecoderList.getSelectedValue());
+            log.debug("decoder selection changed to {}", mDecoderList.getSelectedValue());
         }
         if (df != null) {
             if (log.isDebugEnabled()) {
-                log.debug("matching mfg is "
-                        + df.getMfg());
+                log.debug("matching mfg is {}", df.getMfg());
             }
             updateMfgListWithoutTrigger(df.getMfg());
         }
@@ -188,6 +187,7 @@ public class CombinedLocoSelListPane extends CombinedLocoSelPane {
     /**
      * Set a selection in the manufacturer list, without triggering an update of
      * the decoder panel.
+     * @param mfg Selected manufacturer code
      */
     void updateMfgListWithoutTrigger(String mfg) {
         mMfgList.removeListSelectionListener(mMfgListener);
@@ -214,6 +214,8 @@ public class CombinedLocoSelListPane extends CombinedLocoSelPane {
      * @param pMfgID   Manufacturer ID number (CV8)
      * @param pModelID Model ID number (CV7)
      */
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
+        justification="String also built for display in _statusLabel")
     @Override
     void updateForDecoderMfgID(String pMfg, int pMfgID, int pModelID) {
         String msg = "Found mfg " + pMfgID + " (" + pMfg + ") version " + pModelID + "; no such decoder defined";
@@ -230,7 +232,7 @@ public class CombinedLocoSelListPane extends CombinedLocoSelPane {
         // try to select all decoders from that MFG
         JComboBox<String> temp = InstanceManager.getDefault(DecoderIndexFile.class).matchingComboBox(null, null, Integer.toString(pMfgID), null, null, null);
         if (log.isDebugEnabled()) {
-            log.debug("mfg-only selectDecoder found " + temp.getItemCount() + " matches");
+            log.debug("mfg-only selectDecoder found {} matches", temp.getItemCount());
         }
         // install all those in the JComboBox in place of the longer, original list
         mDecoderList.setModel(temp.getModel());
@@ -241,6 +243,8 @@ public class CombinedLocoSelListPane extends CombinedLocoSelPane {
     /**
      * Decoder identify did not match anything, warn and show all
      */
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
+        justification="String also built for display in _statusLabel")
     @Override
     void updateForDecoderNotID(int pMfgID, int pModelID) {
         String msg = "Found mfg " + pMfgID + " version " + pModelID + "; no such manufacterer defined";

@@ -1,11 +1,18 @@
 package jmri.managers;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import jmri.*;
 import jmri.implementation.SignalSpeedMap;
+import jmri.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,11 +24,23 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
         implements TurnoutManager {
 
-    public AbstractTurnoutManager() {
-        //super(Manager.TURNOUTS);
-        InstanceManager.getDefault(TurnoutOperationManager.class);		// force creation of an instance
-        jmri.InstanceManager.sensorManagerInstance().addVetoableChangeListener(this);
+    public AbstractTurnoutManager(SystemConnectionMemo memo) {
+        super(memo);
+        InstanceManager.getDefault(TurnoutOperationManager.class); // force creation of an instance
+        init();
     }
+
+    final void init() {
+        InstanceManager.getDefault(SensorManager.class).addVetoableChangeListener(this);
+        // set listener for changes in memo
+        memo.addPropertyChangeListener(pcl);
+    }
+
+    final PropertyChangeListener pcl = (PropertyChangeEvent e) -> {
+        if (e.getPropertyName().equals(SystemConnectionMemo.INTERVAL)) {
+            handleIntervalChange((Integer) e.getNewValue());
+        }
+    };
 
     /** {@inheritDoc} */
     @Override
@@ -37,16 +56,11 @@ public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
 
     /** {@inheritDoc} */
     @Override
+    @Nonnull
     public Turnout provideTurnout(@Nonnull String name) {
+        log.debug("provide turnout {}", name);
         Turnout result = getTurnout(name);
-        if (result == null) {
-            if (name.startsWith(getSystemPrefix() + typeLetter())) {
-                result = newTurnout(name, null);
-            } else {
-                result = newTurnout(makeSystemName(name), null);
-            }
-        }
-        return result;
+        return result == null ? newTurnout(makeSystemName(name, true), null) : result;
     }
 
     /** {@inheritDoc} */
@@ -62,95 +76,94 @@ public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
 
     /** {@inheritDoc} */
     @Override
-    public Turnout getBySystemName(@Nonnull String name) {
-        return _tsys.get(name);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Turnout getByUserName(String key) {
-        return _tuser.get(key);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Turnout newTurnout(@Nonnull String systemName, @Nullable String userName) {
+    @Nonnull
+    public Turnout newTurnout(@Nonnull String systemName, @CheckForNull String userName) throws IllegalArgumentException {
         Objects.requireNonNull(systemName, "SystemName cannot be null. UserName was " + ((userName == null) ? "null" : userName));  // NOI18N
-
         // add normalize? see AbstractSensor
         log.debug("newTurnout: {};{}", systemName, userName);
 
         // is system name in correct format?
-        if (!systemName.startsWith(getSystemPrefix() + typeLetter())
-                || !(systemName.length() > (getSystemPrefix() + typeLetter()).length())) {
-            log.error("Invalid system name for turnout: {} needed {}{} followed by a suffix",
+        if (!systemName.startsWith(getSystemNamePrefix())
+                || !(systemName.length() > (getSystemNamePrefix()).length())) {
+            log.error("Invalid system name for Turnout: {} needed {}{} followed by a suffix",
                     systemName, getSystemPrefix(), typeLetter());
-            throw new IllegalArgumentException("Invalid system name for turnout: " + systemName
-                    + " needed " + getSystemPrefix() + typeLetter());
+            throw new IllegalArgumentException("Invalid system name for Turnout: " + systemName
+                    + " needed " + getSystemNamePrefix());
         }
 
         // return existing if there is one
-        Turnout s;
-        if ((userName != null) && ((s = getByUserName(userName)) != null)) {
-            if (getBySystemName(systemName) != s) {
-                log.error("inconsistent user ({}) and system name ({}) results; userName related to ({})",
-                        userName, systemName, s.getSystemName());
+        Turnout t;
+        if (userName != null) {
+            t = getByUserName(userName);
+            if (t != null) {
+                if (getBySystemName(systemName) != t) {
+                    log.error("inconsistent user ({}) and system name ({}) results; userName related to ({})",
+                        userName, systemName, t.getSystemName());
+                }
+            return t;
             }
-            return s;
         }
-        if ((s = getBySystemName(systemName)) != null) {
-            if ((s.getUserName() == null) && (userName != null)) {
-                s.setUserName(userName);
+        t = getBySystemName(systemName);
+        if (t != null) {
+            if ((t.getUserName() == null) && (userName != null)) {
+                t.setUserName(userName);
             } else if (userName != null) {
                 log.warn("Found turnout via system name ({}) with non-null user name ({}). Turnout \"{} ({})\" cannot be used.",
-                        systemName, s.getUserName(), systemName, userName);
+                        systemName, t.getUserName(), systemName, userName);
             }
-            return s;
+            return t;
         }
 
         // doesn't exist, make a new one
-        s = createNewTurnout(systemName, userName);
-
-        // if that failed, blame it on the input arguments
-        if (s == null) {
-            throw new IllegalArgumentException("Unable to create turnout from " + systemName);
-        }
+        t = createNewTurnout(systemName, userName);
+        // if that failed, will throw an IllegalArgumentException
 
         // Some implementations of createNewTurnout() register the new bean,
-        // some don't. 
-        if (getBeanBySystemName(s.getSystemName()) == null) {
+        // some don't.
+        if (getBySystemName(t.getSystemName()) == null) {
             // save in the maps if successful
-            register(s);
+            register(t);
         }
 
         try {
-            s.setStraightSpeed("Global");
+            t.setStraightSpeed("Global");
         } catch (jmri.JmriException ex) {
-            log.error(ex.toString());
+            log.error("Turnout : {} : {}", t, ex.getMessage());
         }
 
         try {
-            s.setDivergingSpeed("Global");
+            t.setDivergingSpeed("Global");
         } catch (jmri.JmriException ex) {
-            log.error(ex.toString());
+            log.error("Turnout : {} : {}", t, ex.getMessage());
         }
-        return s;
+        return t;
     }
 
     /** {@inheritDoc} */
     @Override
+    @Nonnull
     public String getBeanTypeHandled(boolean plural) {
         return Bundle.getMessage(plural ? "BeanNameTurnouts" : "BeanNameTurnout");
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<Turnout> getNamedBeanClass() {
+        return Turnout.class;
+    }
+
     /** {@inheritDoc} */
     @Override
+    @Nonnull
     public String getClosedText() {
         return Bundle.getMessage("TurnoutStateClosed");
     }
 
     /** {@inheritDoc} */
     @Override
+    @Nonnull
     public String getThrownText() {
         return Bundle.getMessage("TurnoutStateThrown");
     }
@@ -200,14 +213,19 @@ public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
 
     /**
      * Internal method to invoke the factory, after all the logic for returning
-     * an existing method has been invoked.
+     * an existing Turnout has been invoked.
      *
-     * @return never null
+     * @param systemName the system name to use for the new Turnout
+     * @param userName   the user name to use for the new Turnout
+     * @return the new Turnout or
+     * @throws IllegalArgumentException if unsuccessful
      */
-    abstract protected Turnout createNewTurnout(@Nonnull String systemName, String userName);
+    @Nonnull
+    abstract protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException;
 
     /** {@inheritDoc} */
     @Override
+    @Nonnull
     public String[] getValidOperationTypes() {
         if (jmri.InstanceManager.getNullableDefault(jmri.CommandStation.class) != null) {
             return new String[]{"Sensor", "Raw", "NoFeedback"};
@@ -217,83 +235,17 @@ public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
     }
 
     /**
-     * A temporary method that determines if it is possible to add a range of
-     * turnouts in numerical order eg 10 to 30, primarily used to enable/disable the Add
-     * range box in the Add new turnout panel.
-     *
-     * @param systemName configured system connection name
-     * @return false as default, unless overridden by implementations as supported
+     * Default Turnout ensures a numeric only system name.
+     * {@inheritDoc}
      */
-    @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
-        return false;
-    }
-
-    /** {@inheritDoc} */
+    @Nonnull
     @Override
     public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException {
-        try {
-            Integer.parseInt(curAddress);
-        } catch (java.lang.NumberFormatException ex) {
-            log.warn("Hardware Address passed should be a number, was {}", curAddress);
-            throw new JmriException("Hardware Address passed should be a number");
-        }
-        return prefix + typeLetter() + curAddress;
+        return prefix + typeLetter() + checkNumeric(curAddress);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public String getNextValidAddress(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException {
-        // If the hardware address passed does not already exist then this can
-        // be considered the next valid address.
-        String tmpSName = "";
-        try {
-            tmpSName = createSystemName(curAddress, prefix);
-        } catch (JmriException ex) {
-            jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).
-                    showErrorMessage(Bundle.getMessage("WarningTitle"), Bundle.getMessage("ErrorConvertNumberX", curAddress), null, "", true, false);
-            return null;
-        }
-
-        Turnout t = getBySystemName(tmpSName);
-        if (t == null) {
-            return curAddress;
-        }
-
-        // This bit deals with handling the curAddress, and how to get the next address.
-        int iName = 0;
-        try {
-            iName = Integer.parseInt(curAddress);
-        } catch (NumberFormatException ex) {
-            log.error("Unable to convert {} Hardware Address to a number", curAddress);
-            jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).
-                    showErrorMessage(Bundle.getMessage("WarningTitle"), Bundle.getMessage("ErrorConvertNumberX", curAddress), null, "", true, false);
-            return null;
-        }
-        // The Number of Output Bits of the previous turnout will help determine the next
-        // valid address.
-        iName = iName + t.getNumberOutputBits();
-        // Check to determine if the systemName is in use;
-        // return null if it is, otherwise return the next valid address.
-        t = getBySystemName(prefix + typeLetter() + iName);
-        if (t != null) {
-            for (int x = 1; x < 10; x++) {
-                iName = iName + t.getNumberOutputBits();
-                t = getBySystemName(prefix + typeLetter() + iName);
-                if (t == null) {
-                    return Integer.toString(iName);
-                }
-            }
-            // feedback when next address is also in use
-            log.warn("10 hardware addresses starting at {} already in use. No new Turnouts added", curAddress);
-            return null;
-        } else {
-            return Integer.toString(iName);
-        }
-    }
-
-    String defaultClosedSpeed = "Normal";
-    String defaultThrownSpeed = "Restricted";
+    private String defaultClosedSpeed = "Normal";
+    private String defaultThrownSpeed = "Restricted";
 
     /** {@inheritDoc} */
     @Override
@@ -314,8 +266,8 @@ public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
             } catch (NumberFormatException nx) {
                 try {
                     jmri.InstanceManager.getDefault(SignalSpeedMap.class).getSpeed(speed);
-                } catch (Exception ex) {
-                    throw new JmriException("Value of requested turnout default closed speed is not valid");
+                } catch (IllegalArgumentException ex) {
+                    throw new JmriException("Value of requested turnout default closed speed is not valid. " + ex.getMessage());
                 }
             }
         }
@@ -344,8 +296,8 @@ public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
             } catch (NumberFormatException nx) {
                 try {
                     jmri.InstanceManager.getDefault(SignalSpeedMap.class).getSpeed(speed);
-                } catch (Exception ex) {
-                    throw new JmriException("Value of requested turnout default thrown speed is not valid");
+                } catch (IllegalArgumentException ex) {
+                    throw new JmriException("Value of requested turnout default thrown speed is not valid. " + ex.getMessage());
                 }
             }
         }
@@ -369,7 +321,59 @@ public abstract class AbstractTurnoutManager extends AbstractManager<Turnout>
     /** {@inheritDoc} */
     @Override
     public String getEntryToolTip() {
-        return "Enter a number from 1 to 9999"; // Basic number format help
+        return Bundle.getMessage("EnterNumber1to9999ToolTip");
+    }
+
+    private void handleIntervalChange(int newVal) {
+        turnoutInterval = newVal;
+        log.debug("in memo turnoutInterval changed to {}", turnoutInterval);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getOutputInterval() {
+        return turnoutInterval;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setOutputInterval(int newInterval) {
+        memo.setOutputInterval(newInterval);
+        turnoutInterval = newInterval; // local field will hear change and update automatically?
+        log.debug("turnoutInterval set to: {}", newInterval);
+    }
+
+    /**
+     * Duration in milliseconds of interval between separate Turnout commands on the same connection.
+     * <p>
+     * Change from e.g. XNetTurnout extensions and scripts using {@link #setOutputInterval(int)}
+     */
+    private int turnoutInterval = memo.getOutputInterval();
+    private LocalDateTime waitUntil = LocalDateTime.now();
+
+    /** {@inheritDoc} */
+    @Override
+    @Nonnull
+    public LocalDateTime outputIntervalEnds() {
+        log.debug("outputIntervalEnds called in AbstractTurnoutManager");
+        if (waitUntil.isAfter(LocalDateTime.now())) {
+            waitUntil = waitUntil.plus(turnoutInterval, ChronoUnit.MILLIS);
+        } else {
+            waitUntil = LocalDateTime.now().plus(turnoutInterval, ChronoUnit.MILLIS); // default interval = 250 Msec
+        }
+        return waitUntil;
+    }
+
+    /**
+     * Removes SensorManager and SystemConnectionMemo change listeners.
+     * {@inheritDoc}
+     */
+    @OverridingMethodsMustInvokeSuper
+    @Override
+    public void dispose(){
+        memo.removePropertyChangeListener(pcl);
+        InstanceManager.getDefault(SensorManager.class).removeVetoableChangeListener(this);
+        super.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(AbstractTurnoutManager.class);

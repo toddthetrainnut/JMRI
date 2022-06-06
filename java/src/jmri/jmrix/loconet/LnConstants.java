@@ -89,6 +89,7 @@ package jmri.jmrix.loconet;
  * @author John Kabat
  * @author Alain Le Marchand
  * @author B. Milhaupt Copyright (C) 2018
+ * @author Michael Richardson Copyright (C) 2021
  */
 public final class LnConstants {
 
@@ -142,6 +143,7 @@ public final class LnConstants {
     public final static int OPC_MULTI_SENSE_MSG = 0x60; // byte 1
     public final static int OPC_MULTI_SENSE_PRESENT = 0x20; // MSG field: transponder seen
     public final static int OPC_MULTI_SENSE_ABSENT = 0x00; // MSG field: transponder lost
+    public final static int OPC_MULTI_SENSE_RAILCOM_AD = 0x40; // MSG field: RailCom App Dyn
     public final static int OPC_MULTI_SENSE_POWER = 0x60; // MSG field: Power message
 
     public final static int STAT1_SL_SPURGE = 0x80;  /* internal use only, not seen on net */
@@ -263,7 +265,7 @@ public final class LnConstants {
 
     /** Fast CLock valid **/
     public final static int FC_VALID = 0X40;
- 
+
      /** This slot communicates with the programming track   */
     public final static int PRG_SLOT = 0x7c;
 
@@ -337,22 +339,12 @@ public final class LnConstants {
 
     public final static int CVH_D7 = 0x02;      /* MSbit for data value      */
 
-// The following two are commented out pending some decisions as to (a) whether
-// they belong here or in the parser and (b) understanding what they say about
-// a data format; note use of a pointer dereference
-
-    /* build data byte from programmer message */
-//public final static int PROG_DATA(ptr)      (((ptr->cvh & CVH_D7) << 6) | (ptr->data7 & 0x7f))
-
-    /* build CV # from programmer message */
-//public final static int PROG_CV_NUM(ptr)    (((((ptr->cvh & CVH_CV8_CV9) >> 3) | (ptr->cvh & CVH_CV7)) * 128)   \
-//                            + (ptr->cvl & 0x7f))
-
     /* LocoNet opcodes */
     public final static int OPC_GPBUSY = 0x81;
     public final static int OPC_GPOFF = 0x82;
     public final static int OPC_GPON = 0x83;
     public final static int OPC_IDLE = 0x85;
+    public final static int OPC_RE_LOCORESET_BUTTON = 0x8A; // Undocumented name
     public final static int OPC_LOCO_SPD = 0xa0;
     public final static int OPC_LOCO_DIRF = 0xa1;
     public final static int OPC_LOCO_SND = 0xa2;
@@ -371,6 +363,7 @@ public final class LnConstants {
     public final static int OPC_SW_ACK = 0xbd;
     public final static int OPC_LOCO_ADR = 0xbf;
     public final static int OPC_MULTI_SENSE = 0xd0; // Undocumented name
+    public final static int OPC_MULTI_SENSE_LONG = 0xe0; // Undocumented name
     public final static int OPC_PANEL_RESPONSE = 0xd7; // Undocumented name
     public final static int OPC_PANEL_QUERY = 0xdf; // Undocumented name
     public final static int OPC_LISSY_UPDATE = 0xe4; // Undocumented name
@@ -378,10 +371,8 @@ public final class LnConstants {
     public final static int OPC_ALM_READ = 0xe6; // Undocumented name
     public final static int OPC_SL_RD_DATA = 0xe7;
     public final static int OPC_IMM_PACKET = 0xed;
-    //TODO Conflicts with OPC_EXP_WR_SL_DATA - or maybe length?
     public final static int OPC_IMM_PACKET_2 = 0xee;
     public final static int OPC_WR_SL_DATA = 0xef;
-    //TODO Conflicts with OPC_EXP_WR_SL_DATA - or maybe length?
     public final static int OPC_ALM_WRITE = 0xee; // Undocumented name
     public final static int OPC_MASK = 0x7f;  /* mask for acknowledge opcodes */
 
@@ -421,6 +412,7 @@ public final class LnConstants {
             case OPC_GPOFF      : return "OPC_GPOFF"; // NOI18N
             case OPC_GPON       : return "OPC_GPON"; // NOI18N
             case OPC_IDLE       : return "OPC_IDLE"; // NOI18N
+            case OPC_RE_LOCORESET_BUTTON:   return "OPC_RE_LOCORESET_BUTTON"; // NOI18N
             case OPC_LOCO_SPD   : return "OPC_LOCO_SPD"; // NOI18N
             case OPC_LOCO_DIRF  : return "OPC_LOCO_DIRF"; // NOI18N
             case OPC_LOCO_SND   : return "OPC_LOCO_SND"; // NOI18N
@@ -439,6 +431,7 @@ public final class LnConstants {
             case OPC_SW_ACK     : return "OPC_SW_ACK"; // NOI18N
             case OPC_LOCO_ADR   : return "OPC_LOCO_ADR"; // NOI18N
             case OPC_MULTI_SENSE: return "OPC_MULTI_SENSE"; // NOI18N
+            case OPC_MULTI_SENSE_LONG: return "OPC_MULTI_SENSE_LONG"; // NOI18N
             case OPC_PANEL_QUERY: return "OPC_PANEL_QUERY"; // NOI18N
             case OPC_PANEL_RESPONSE: return "OPC_PANEL_RESPONSE"; // NOI18N
             case OPC_LISSY_UPDATE: return "OPC_LISSY_UPDATE"; // NOI18N
@@ -511,10 +504,12 @@ public final class LnConstants {
     public final static int RE_IPL_MFR_ALL = 0x00;
     public final static int RE_IPL_DIGITRAX_HOST_LNRP = 0x01;
     public final static int RE_IPL_DIGITRAX_HOST_UT4 = 0x04;
+    public final static int RE_IPL_DIGITRAX_HOST_UT6 = 0x06;
     public final static int RE_IPL_DIGITRAX_HOST_WTL12 = 0x0c;
     public final static int RE_IPL_DIGITRAX_HOST_DB210OPTO = 0x14;
     public final static int RE_IPL_DIGITRAX_HOST_DB210 = 0x15;
     public final static int RE_IPL_DIGITRAX_HOST_DB220 = 0x16;
+    public final static int RE_IPL_DIGITRAX_HOST_DCS210PLUS = 0x1a;
     public final static int RE_IPL_DIGITRAX_HOST_DCS210 = 0x1b;
     public final static int RE_IPL_DIGITRAX_HOST_DCS240 = 0x1c;
     public final static int RE_IPL_DIGITRAX_HOST_DCS52 = 0x34;
@@ -522,10 +517,14 @@ public final class LnConstants {
     public final static int RE_IPL_DIGITRAX_HOST_PR4 = 0x24;
     public final static int RE_IPL_DIGITRAX_HOST_DT402 = 0x2A;
     public final static int RE_IPL_DIGITRAX_HOST_DT500 = 0x32;
+    public final static int RE_IPL_DIGITRAX_HOST_DT602 = 0x3E;
     public final static int RE_IPL_DIGITRAX_HOST_DCS51 = 0x33;
     public final static int RE_IPL_DIGITRAX_HOST_BXPA1 = 0x51;
     public final static int RE_IPL_DIGITRAX_HOST_UR92 = 0x5C;
+    public final static int RE_IPL_DIGITRAX_HOST_UR93 = 0x5D;
     public final static int RE_IPL_DIGITRAX_HOST_BXP88 = 0x58;
+    public final static int RE_IPL_DIGITRAX_HOST_DS74 = 0x74;
+    public final static int RE_IPL_DIGITRAX_HOST_DS78V = 0x7C;
     public final static int RE_IPL_DIGITRAX_HOST_LNWI = 0x63;
     public final static int RE_IPL_DIGITRAX_HOST_ALL = 0x00;
     public final static int RE_IPL_DIGITRAX_SLAVE_RF24 = 0x18;
@@ -682,5 +681,8 @@ public final class LnConstants {
     public final static int RE_IB2_SPECIAL_F12_MASK = 0x10; //F12 is also controlled with the special F20-F28 command
     public final static int RE_IB2_SPECIAL_F20_MASK = 0x20;
     public final static int RE_IB2_SPECIAL_F28_MASK = 0x40;
+
+    public final static String DIGITRAX_STRING = "Digitrax"; // NOI18N
+    public final static String RR_CIRKITS_STRING = "RR-CirKits"; // NOI18N
 
 }

@@ -44,7 +44,7 @@ public class IntelliboxAdapter extends LocoBufferAdapter {
         this.getSystemConnectionMemo().setLnTrafficController(packets);
         // do the common manager config
         this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);
+                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);
         this.getSystemConnectionMemo().configureManagers();
 
         // start operation
@@ -68,7 +68,8 @@ public class IntelliboxAdapter extends LocoBufferAdapter {
     }
 
     /**
-     * Rephrase option 1, so that it doesn't talk about LocoBuffer
+     * Rephrase option 1, so that it doesn't talk about LocoBuffer.
+     * @return human readable string, TypeSerial.
      */
     public String option1Name() {
         return Bundle.getMessage("XconnectionUsesLabel", Bundle.getMessage("TypeSerial"));
@@ -76,6 +77,7 @@ public class IntelliboxAdapter extends LocoBufferAdapter {
 
     /**
      * Provide just one valid command station value.
+     * @return single value array with name of COMMAND_STATION_IBX_TYPE_1 .
      */
     public String[] commandStationOptions() {
         String[] retval = {

@@ -1,6 +1,5 @@
 package jmri;
 
-import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -21,11 +20,11 @@ import javax.annotation.Nonnull;
  *
  * @author Bob Jacobsen Copyright (C) 2001
  */
-public interface SensorManager extends ProvidingManager<Sensor> {
+public interface SensorManager extends ProvidingManager<Sensor>, NameIncrementingManager {
 
     /**
      * Get the Sensor with the user name, then system name if needed; if that fails, create a
-     * new Sensor. 
+     * new Sensor.
      * If the name is a valid system name, it will be used for the new Sensor.
      * Otherwise, the {@link Manager#makeSystemName} method will attempt to turn it
      * into a valid system name.
@@ -43,13 +42,13 @@ public interface SensorManager extends ProvidingManager<Sensor> {
     @Nonnull
     public Sensor provideSensor(@Nonnull String name) throws IllegalArgumentException;
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     default public Sensor provide(@Nonnull String name) throws IllegalArgumentException { return provideSensor(name); }
 
     /**
-     * Get an existing Sensor or return null if it doesn't exist. 
-     * 
+     * Get an existing Sensor or return null if it doesn't exist.
+     *
      * Locates via user name, then system name if needed.
      *
      * @param name User name or system name to match
@@ -64,7 +63,9 @@ public interface SensorManager extends ProvidingManager<Sensor> {
     public void dispose();
 
     /**
-     * Return a Sensor with the specified system and user names. 
+     * Return a Sensor with the specified user or system name.
+     * Return Sensor by UserName else provide by SystemName.
+     * <p>
      * Note that
      * two calls with the same arguments will get the same instance; there is
      * only one Sensor object representing a given physical turnout and
@@ -97,8 +98,8 @@ public interface SensorManager extends ProvidingManager<Sensor> {
     public Sensor newSensor(@Nonnull String systemName, @CheckForNull String userName) throws IllegalArgumentException;
 
     /**
-     * Get an existing Sensor or return null if it doesn't exist. 
-     * 
+     * Get an existing Sensor or return null if it doesn't exist.
+     *
      * Locates via user name.
      *
      * @param name User name to match
@@ -106,11 +107,12 @@ public interface SensorManager extends ProvidingManager<Sensor> {
      */
     @CheckReturnValue
     @CheckForNull
+    @Override
     public Sensor getByUserName(@Nonnull String name);
 
     /**
-     * Get an existing Sensor or return null if it doesn't exist. 
-     * 
+     * Get an existing Sensor or return null if it doesn't exist.
+     *
      * Locates via system name
      *
      * @param name System name to match
@@ -118,6 +120,7 @@ public interface SensorManager extends ProvidingManager<Sensor> {
      */
     @CheckReturnValue
     @CheckForNull
+    @Override
     public Sensor getBySystemName(@Nonnull String name);
 
     /**
@@ -130,33 +133,6 @@ public interface SensorManager extends ProvidingManager<Sensor> {
      * layout is possible.
      */
     public void updateAll();
-
-    /**
-     * Determines if it is possible to add a range of sensors in numerical
-     * order.
-     *
-     * @param systemName the system name to check against; appears to be ignored
-     *                   in all implementations
-     * @return true if possible; false otherwise
-     */
-    @CheckReturnValue
-    public boolean allowMultipleAdditions(@Nonnull String systemName);
-
-    /**
-     * Determine if the address supplied is valid and free, if not then it shall
-     * return the next free valid address up to a maximum of 10 addresses away
-     * from the initial address. Used when adding a range of Sensors.
-     *
-     * @param curAddress The hardware address of the sensor we wish to add
-     * @param prefix     The System Prefix used to make up the systemName
-     *                   check.
-     * @return null if the system name made from prefix and curAddress is in
-     *         use
-     * @throws jmri.JmriException if problem calculating next address
-     */
-    @CheckReturnValue
-    @CheckForNull
-    public String getNextValidAddress(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException;
 
     /**
      * Get a system name for a given hardware address and system prefix.

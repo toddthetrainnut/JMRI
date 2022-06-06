@@ -8,12 +8,9 @@ import jmri.managers.TurnoutManagerScaffold;
 import jmri.progdebugger.DebugProgrammerManager;
 import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
-import org.junit.After;
+
+import org.junit.jupiter.api.*;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Test InstanceManager
@@ -67,6 +64,21 @@ public class InstanceManagerTest {
         Assert.assertTrue("2nd addressed programmer manager is default", InstanceManager.getDefault(AddressedProgrammerManager.class) == m2);
     }
 
+    @Test
+    public void testIsInitialized() {
+        // counts on the following test class to be loaded
+        Assert.assertFalse(InstanceManager.isInitialized(jmri.InstanceManagerTest.InstanceManagerInitCheck.class));
+        Assert.assertFalse(InstanceManager.isInitialized(jmri.InstanceManagerTest.InstanceManagerInitCheck.class));
+
+        Assert.assertNotNull(InstanceManager.getDefault(jmri.InstanceManagerTest.InstanceManagerInitCheck.class));
+
+        Assert.assertTrue(InstanceManager.isInitialized(jmri.InstanceManagerTest.InstanceManagerInitCheck.class));
+    }
+
+    static public class InstanceManagerInitCheck implements jmri.InstanceManagerAutoDefault {
+        public InstanceManagerInitCheck() {}
+    }
+
     // the following test was moved from jmri.jmrit.symbolicprog.PackageTet when
     // it was converted to JUnit4 format.  It seemed out of place there.
     // check configuring the programmer
@@ -104,6 +116,11 @@ public class InstanceManagerTest {
                 InstanceManager.getList(PowerManager.class).get(0));
         Assert.assertEquals("retrieved 2nd PowerManager", m2,
                 InstanceManager.getList(PowerManager.class).get(1));
+
+        Assert.assertEquals("access by string",
+                InstanceManager.getList(PowerManager.class),
+                InstanceManager.getList("jmri.PowerManager")
+            );
     }
 
     @Test
@@ -120,6 +137,23 @@ public class InstanceManagerTest {
 
         Assert.assertEquals("retrieved same PowerManager", m1, m2);
         Assert.assertEquals("retrieved same TurnoutManager", t1, t2);
+
+        Assert.assertEquals("access by string",
+                InstanceManager.getDefault(PowerManager.class),
+                InstanceManager.getDefault("jmri.PowerManager")
+            );
+
+    }
+
+    @Test
+    public void testGetInstance() throws ClassNotFoundException {
+        // for sync usage, check a predicate - Class.forName returns same object always
+        Assert.assertTrue("access by string",
+                Class.forName("jmri.PowerManager") == Class.forName("jmri.PowerManager")
+            );
+        // the rest of the checks are done via calls to getInstance
+        // embedded in various other tests
+
     }
 
     @Test
@@ -364,16 +398,18 @@ public class InstanceManagerTest {
         Assert.assertFalse("Should be empty", InstanceManager.containsDefault(OkAutoCreate.class));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         JUnitUtil.setUp();
         OkToDispose.setUp();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
+        JUnitUtil.deregisterBlockManagerShutdownTask();
+        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 
-    private final static Logger log = LoggerFactory.getLogger(InstanceManagerTest.class);
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(InstanceManagerTest.class);
 }

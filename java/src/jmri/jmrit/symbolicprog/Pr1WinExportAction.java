@@ -56,12 +56,10 @@ public class Pr1WinExportAction extends AbstractAction {
         if (retVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             if (log.isDebugEnabled()) {
-                log.debug("start to export to PR1 file " + file);
+                log.debug("start to export to PR1 file {}", file);
             }
 
-            try {
-
-                PrintStream str = new PrintStream(new FileOutputStream(file));
+            try ( PrintStream str = new PrintStream(new FileOutputStream(file)); ) {
 
                 str.println("[DecoderData]");
                 for (int i = 1; i <= 256; i++) {
@@ -88,10 +86,10 @@ public class Pr1WinExportAction extends AbstractAction {
                 str.flush();
                 str.close();
             } catch (IOException ex) {
-                log.error("Error writing file: " + ex);
+                log.error("Error writing file", ex);
             }
         }
     }
 
-    private final static Logger log = LoggerFactory.getLogger(Pr1ExportAction.class);
+    private final static Logger log = LoggerFactory.getLogger(Pr1WinExportAction.class);
 }

@@ -18,14 +18,14 @@ import org.slf4j.LoggerFactory;
  * <p>
  * System name specifies the creation information:
  * <pre>
- * IF$shsm:basic:one-searchlight:(IH1)(IH2)
+ * IF$shsm:basic:one-searchlight(IH1)(IH2)
  * </pre>
  * The name is a colon-separated series of terms:
  * <ul>
  * <li>IF$shsm - defines signal masts of this type
  * <li>basic - name of the signaling system
  * <li>one-searchlight - name of the particular aspect map
- * <li>(IH1)(IH2) - colon-separated list of names for SignalHeads
+ * <li>(IH1)(IH2) - List of signal head names in parentheses.  Note: There is no colon between the mast name and the head names.
  * </ul>
  * There was an older form where the SignalHead names were also colon separated:
  * IF$shsm:basic:one-searchlight:IH1:IH2 This was deprecated because colons appear in
@@ -94,7 +94,7 @@ public class SignalHeadSignalMast extends AbstractSignalMast {
     }
 
     private void configureHeads(String parts[], int start) {
-        heads = new ArrayList<NamedBeanHandle<SignalHead>>();
+        heads = new ArrayList<>();
         for (int i = start; i < parts.length; i++) {
             String name = parts[i];
             // check head exists
@@ -162,7 +162,7 @@ public class SignalHeadSignalMast extends AbstractSignalMast {
         return heads;
     }
 
-    //taken out of the defaultsignalappearancemap
+    // taken out of the defaultsignalappearancemap
     public void setAppearances(String aspect) {
         if (map == null) {
             log.error("No appearance map defined, unable to set appearance {}", getDisplayName());
@@ -183,7 +183,7 @@ public class SignalHeadSignalMast extends AbstractSignalMast {
             log.debug("No delay set");
             //can be considered normal if does not exists or is invalid
         }
-        HashMap<SignalHead, Integer> delayedSet = new HashMap<SignalHead, Integer>(heads.size());
+        HashMap<SignalHead, Integer> delayedSet = new HashMap<>(heads.size());
         for (int i = 0; i < heads.size(); i++) {
             // some extensive checking
             boolean error = false;
@@ -220,7 +220,7 @@ public class SignalHeadSignalMast extends AbstractSignalMast {
             }
         }
         if (delay != 0) {
-            //If a delay is required we will fire this off into a seperate thread and let it get on with it.
+            // If a delay is required we will fire this off into a seperate thread and let it get on with it.
             final HashMap<SignalHead, Integer> thrDelayedSet = delayedSet;
             final int thrDelay = delay;
             Runnable r = new Runnable() {
@@ -229,13 +229,13 @@ public class SignalHeadSignalMast extends AbstractSignalMast {
                     setDelayedAppearances(thrDelayedSet, thrDelay);
                 }
             };
-            Thread thr = new Thread(r);
+            Thread thr = jmri.util.ThreadingUtil.newThread(r);
             thr.setName(getDisplayName() + " delayed set appearance");
             thr.setDaemon(true);
             try {
                 thr.start();
             } catch (java.lang.IllegalThreadStateException ex) {
-                log.error(ex.toString());
+                log.error("Illegal Thread Sate: {}",getDisplayName(), ex);
             }
         }
     }
@@ -259,20 +259,20 @@ public class SignalHeadSignalMast extends AbstractSignalMast {
                 }
             };
 
-            Thread thr = new Thread(r);
+            Thread thr = jmri.util.ThreadingUtil.newThread(r);
             thr.setName(getDisplayName());
             thr.setDaemon(true);
             try {
                 thr.start();
                 thr.join();
             } catch (java.lang.IllegalThreadStateException | InterruptedException ex) {
-                log.error(ex.toString());
+                log.error("Exception: ", ex);
             }
         }
     }
 
     public static List<SignalHead> getSignalHeadsUsed() {
-        List<SignalHead> headsUsed = new ArrayList<SignalHead>();
+        List<SignalHead> headsUsed = new ArrayList<>();
         for (SignalMast mast : InstanceManager.getDefault(jmri.SignalMastManager.class).getNamedBeanSet()) {
             if (mast instanceof jmri.implementation.SignalHeadSignalMast) {
                 java.util.List<NamedBeanHandle<SignalHead>> masthead = ((jmri.implementation.SignalHeadSignalMast) mast).getHeadsUsed();
@@ -301,7 +301,7 @@ public class SignalHeadSignalMast extends AbstractSignalMast {
     @Override
     public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
         NamedBean nb = (NamedBean) evt.getOldValue();
-        if ("CanDelete".equals(evt.getPropertyName())) { //IN18N
+        if ("CanDelete".equals(evt.getPropertyName())) { // NOI18N
             if (nb instanceof SignalHead) {
                 for (NamedBeanHandle<SignalHead> bean : getHeadsUsed()) {
                     if (bean.getBean().equals(nb)) {

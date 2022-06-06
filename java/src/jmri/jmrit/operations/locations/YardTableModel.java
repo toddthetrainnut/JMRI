@@ -1,11 +1,14 @@
 package jmri.jmrit.operations.locations;
 
 import java.beans.PropertyChangeEvent;
+
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import jmri.jmrit.operations.setup.Control;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jmri.jmrit.operations.setup.Control;
 
 /**
  * Table Model for edit of yards used by operations
@@ -23,33 +26,27 @@ public class YardTableModel extends TrackTableModel {
     }
 
     @Override
-    public String getColumnName(int col) {
-        switch (col) {
-            case NAME_COLUMN:
-                return Bundle.getMessage("YardName");
-            default:
-                // fall out
-                break;
-        }
-        return super.getColumnName(col);
-    }
-
-    @Override
     protected void editTrack(int row) {
         log.debug("Edit yard");
         if (tef != null) {
             tef.dispose();
         }
         // use invokeLater so new window appears on top
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                tef = new YardEditFrame();
-                Track yard = tracksList.get(row);
-                tef.initComponents(_location, yard);
-                tef.setTitle(Bundle.getMessage("EditYard"));
-            }
+        SwingUtilities.invokeLater(() -> {
+            tef = new YardEditFrame();
+            Track yard = _tracksList.get(row);
+            tef.initComponents(yard);
         });
+    }
+    
+    @Override
+    public String getColumnName(int col) {
+        switch (col) {
+            case NAME_COLUMN:
+                return Bundle.getMessage("YardName");
+            default:
+                return super.getColumnName(col);
+        }
     }
 
     // this table listens for changes to a location and its yards
@@ -63,7 +60,7 @@ public class YardTableModel extends TrackTableModel {
         if (e.getSource().getClass().equals(Track.class)) {
             Track track = ((Track) e.getSource());
             if (track.isYard()) {
-                int row = tracksList.indexOf(track);
+                int row = _tracksList.indexOf(track);
                 if (Control.SHOW_PROPERTY) {
                     log.debug("Update yard table row: {} track: ({})", row, track.getName());
                 }

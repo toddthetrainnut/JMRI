@@ -3,7 +3,7 @@ package jmri.jmrit.jython;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Locale;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
+import javax.annotation.CheckForNull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -21,10 +21,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * @author Bob Jacobsen Copyright (C) 2012
  * @since 3.3.1
  */
-public class Bundle extends jmri.Bundle {
+public class Bundle extends jmri.jmrit.Bundle {
 
-    @Nullable
-    private static final String name = "jmri.jmrit.jython.JythonBundle"; // NOI18N
+    @CheckForNull
+    private static final String name = "jmri.jmrit.jython.Bundle"; // NOI18N
 
     //
     // below here is boilerplate to be copied exactly
@@ -94,7 +94,7 @@ public class Bundle extends jmri.Bundle {
     private final static Bundle b = new Bundle();
 
     @Override
-    @Nullable
+    @CheckForNull
     protected String bundleName() {
         return name;
     }

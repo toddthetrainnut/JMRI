@@ -1,21 +1,21 @@
 package jmri.jmrit.dispatcher;
 
 import java.awt.GraphicsEnvironment;
+
 import jmri.InstanceManager;
-import jmri.Scale;
+import jmri.jmrit.dispatcher.DispatcherFrame.TrainsFrom;
 import jmri.util.JUnitUtil;
-import org.junit.After;
+
+import org.junit.jupiter.api.*;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 
 /**
  * Swing tests for dispatcher options
  *
- * @author	Dave Duchamp
+ * @author Dave Duchamp
  * @author  Paul Bender Copyright(C) 2017
  */
 public class DispatcherFrameTest {
@@ -23,6 +23,7 @@ public class DispatcherFrameTest {
     @Test
     public void testShowAndClose() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
 
         DispatcherFrame d = InstanceManager.getDefault(DispatcherFrame.class);
 
@@ -41,15 +42,14 @@ public class DispatcherFrameTest {
         // options file by creating a DispatcherFrame object.  A future
         // enhancement shold probably break this coupling.
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
 
         DispatcherFrame d = InstanceManager.getDefault(DispatcherFrame.class);
 
         // set all options
         d.setLayoutEditor(null);
         d.setUseConnectivity(false);
-        d.setTrainsFromRoster(true);
-        d.setTrainsFromTrains(false);
-        d.setTrainsFromUser(false);
+        d.setTrainsFrom(TrainsFrom.TRAINSFROMROSTER);
         d.setAutoAllocate(false);
         d.setAutoTurnouts(false);
         d.setHasOccupancyDetection(false);
@@ -62,9 +62,7 @@ public class DispatcherFrameTest {
         // test all options
         Assert.assertNull("LayoutEditor", d.getLayoutEditor());
         Assert.assertFalse("UseConnectivity", d.getUseConnectivity());
-        Assert.assertTrue("TrainsFromRoster", d.getTrainsFromRoster());
-        Assert.assertFalse("TrainsFromTrains", d.getTrainsFromTrains());
-        Assert.assertFalse("TrainsFromUser", d.getTrainsFromUser());
+        Assert.assertEquals(TrainsFrom.TRAINSFROMROSTER, d.getTrainsFrom());
         Assert.assertFalse("AutoAllocate", d.getAutoAllocate());
         Assert.assertFalse("AutoTurnouts", d.getAutoTurnouts());
         Assert.assertFalse("HasOccupancyDetection", d.getHasOccupancyDetection());
@@ -92,6 +90,7 @@ public class DispatcherFrameTest {
     @Test
     public void testAddTrainButton() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
 
         DispatcherFrame d = InstanceManager.getDefault(DispatcherFrame.class);
 
@@ -117,6 +116,7 @@ public class DispatcherFrameTest {
     @Test
     public void testAllocateExtraSectionButton() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
 
         DispatcherFrame d = InstanceManager.getDefault(DispatcherFrame.class);
 
@@ -142,6 +142,7 @@ public class DispatcherFrameTest {
     @Test
     public void testCancelRestartButton() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
 
         DispatcherFrame d = InstanceManager.getDefault(DispatcherFrame.class);
 
@@ -164,15 +165,18 @@ public class DispatcherFrameTest {
     }
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
+        JUnitUtil.initRosterConfigManager();
         JUnitUtil.initDebugThrottleManager();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
+        JUnitUtil.deregisterBlockManagerShutdownTask();
+        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 }

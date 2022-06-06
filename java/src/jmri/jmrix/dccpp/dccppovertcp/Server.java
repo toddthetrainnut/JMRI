@@ -14,7 +14,6 @@ import java.util.Set;
 import jmri.InstanceInitializer;
 import jmri.InstanceManager;
 import jmri.implementation.AbstractInstanceInitializer;
-import jmri.implementation.QuietShutDownTask;
 import jmri.jmrix.dccpp.DCCppConstants;
 import jmri.util.FileUtil;
 import jmri.util.zeroconf.ZeroConfService;
@@ -36,7 +35,7 @@ public class Server {
     boolean settingsLoaded = false;
     ServerListner stateListner;
     boolean settingsChanged = false;
-    QuietShutDownTask shutDownTask;
+    Runnable shutDownTask;
     ZeroConfService service = null;
     static final String AUTO_START_KEY = "AutoStart";
     static final String PORT_NUMBER_KEY = "PortNumber";
@@ -84,9 +83,9 @@ public class Server {
         String settingsFileName = FileUtil.getUserFilesPath() + SETTINGS_FILE_NAME;
         log.debug("Server: saving settings file {}", settingsFileName);
 
-        try {
-            OutputStream outStream = new FileOutputStream(settingsFileName);
-            PrintStream settingsStream = new PrintStream(outStream);
+        try ( OutputStream outStream = new FileOutputStream(settingsFileName);
+            PrintStream settingsStream = new PrintStream(outStream); ) {
+
             settingsStream.println("# DCCppOverTcp Configuration Settings");
             settingsStream.println(AUTO_START_KEY + " = " + (autoStart ? "1" : "0"));
             settingsStream.println(PORT_NUMBER_KEY + " = " + portNumber);
@@ -94,7 +93,7 @@ public class Server {
             settingsStream.flush();
             settingsStream.close();
             settingsChanged = false;
-        } catch (FileNotFoundException ex) {
+        } catch ( IOException ex) {
             log.warn("Server: saveSettings exception: ", ex);
         }
         updateServerStateListener();
@@ -151,13 +150,7 @@ public class Server {
             log.info("Starting ZeroConfService _dccppovertcpserver._tcp.local for DCCppOverTCP Server");
             this.service.publish();
             if (this.shutDownTask == null) {
-                this.shutDownTask = new QuietShutDownTask("DCCppOverTcpServer") {
-                    @Override
-                    public boolean execute() {
-                        InstanceManager.getDefault(Server.class).disable();
-                        return true;
-                    }
-                };
+                this.shutDownTask = this::disable;
             }
             if (this.shutDownTask != null) {
                 InstanceManager.getDefault(jmri.ShutDownManager.class).register(this.shutDownTask);
@@ -255,7 +248,7 @@ public class Server {
     public static class Initializer extends AbstractInstanceInitializer {
 
         @Override
-        public <T> Object getDefault(Class<T> type) throws IllegalArgumentException {
+        public <T> Object getDefault(Class<T> type) {
             if (type.equals(Server.class)) {
                 Server instance = new Server();
                 if (instance.getAutoStart()) {

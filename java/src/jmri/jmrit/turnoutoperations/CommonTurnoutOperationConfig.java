@@ -22,6 +22,7 @@ public class CommonTurnoutOperationConfig extends TurnoutOperationConfig {
     /**
      * Create the config JPanel, if there is one, to configure this operation
      * type.
+     * @param op turnout operation.
      */
     public CommonTurnoutOperationConfig(TurnoutOperation op) {
         super(op);
@@ -67,9 +68,9 @@ public class CommonTurnoutOperationConfig extends TurnoutOperationConfig {
      */
     @Override
     public void endConfigure() {
-        int newInterval = ((Integer) intervalSpinner.getValue()).intValue();
+        int newInterval = ((Integer) intervalSpinner.getValue());
         myOp.setInterval(newInterval);
-        int newMaxTries = ((Integer) maxTriesSpinner.getValue()).intValue();
+        int newMaxTries = ((Integer) maxTriesSpinner.getValue());
         myOp.setMaxTries(newMaxTries);
     }
 

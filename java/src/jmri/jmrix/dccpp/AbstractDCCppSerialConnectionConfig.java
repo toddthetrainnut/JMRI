@@ -1,18 +1,18 @@
 package jmri.jmrix.dccpp;
 
 /**
- * Abstract Configuration for a DCC++ Serial Connection
- * <p>
+ * Abstract Configuration for a DCC++ Serial Connection.
  *
  * @author Mark Underwood Copyright (C) 2015
-  *
+ *
  * Based on AbstractXNetSerialConnectionConfig by Paul Bender
  */
-abstract public class AbstractDCCppSerialConnectionConfig extends jmri.jmrix.AbstractSerialConnectionConfig {
+public abstract class AbstractDCCppSerialConnectionConfig extends jmri.jmrix.AbstractSerialConnectionConfig {
 
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
+     * @param p serial port adapter
      */
     public AbstractDCCppSerialConnectionConfig(jmri.jmrix.SerialPortAdapter p) {
         super(p);

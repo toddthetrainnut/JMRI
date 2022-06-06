@@ -1,14 +1,10 @@
 package jmri.jmrix.internal;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import jmri.NamedBean;
 import jmri.Turnout;
 import jmri.managers.AbstractTurnoutManager;
+import jmri.util.PreferNumericComparator;
 import jmri.implementation.AbstractTurnout;
 
 /**
@@ -18,53 +14,67 @@ import jmri.implementation.AbstractTurnout;
  */
 public class InternalTurnoutManager extends AbstractTurnoutManager {
 
-    public InternalTurnoutManager(String prefix) {
-        super();
-        this.prefix = prefix;
-    }
-
-    protected String prefix = "I";
-
-    @Override
-    public String getSystemPrefix() {
-        return prefix;
-    }
-
-    /**
-     * Create and return an internal (no layout connection) turnout
-     */
-    @Override
-    protected Turnout createNewTurnout(String systemName, String userName) {
-        return new AbstractTurnout(systemName, userName) {
-
-            @Override
-            protected void forwardCommandChangeToLayout(int s) {
-            }
-
-            @Override
-            protected void turnoutPushbuttonLockout(boolean b) {
-            }
-        };
-    }
-
-    @Override
-    public boolean allowMultipleAdditions(String systemName) {
-        return true;
-    }
-
-    @Override
-    public String createSystemName(String curAddress, String prefix) throws jmri.JmriException {
-        return prefix + typeLetter() + curAddress;
+    public InternalTurnoutManager(InternalSystemConnectionMemo memo) {
+        super(memo);
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @return always 'VALID' because we can take anything
      */
     @Override
-    public NameValidity validSystemNameFormat(String systemName) {
-        return NameValidity.VALID;
+    @Nonnull
+    public InternalSystemConnectionMemo getMemo() {
+        return (InternalSystemConnectionMemo) memo;
+    }
+
+    /**
+     * Create and return an internal (no layout connection) Turnout.
+     * {@inheritDoc}
+     */
+    @Nonnull
+    @Override
+    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+        return new AbstractTurnout(systemName, userName) {
+
+            @Override
+            protected void forwardCommandChangeToLayout(int s) {
+                // nothing to do
+            }
+
+            @Override
+            protected void turnoutPushbuttonLockout(boolean b) {
+                // nothing to do
+            }
+
+            @Override
+            public int compareSystemNameSuffix(@Nonnull String suffix1, @Nonnull String suffix2, NamedBean n) {
+                return (new PreferNumericComparator()).compare(suffix1, suffix2);
+            }
+            
+            @Override
+            public boolean isCanFollow() {
+                return true;
+            }
+        };
+    }
+
+    /**
+     * Multiple additions enabled for Internal Turnouts.
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+        return true;
+    }
+
+    /**
+     * No validation for Internal Turnouts.
+     * {@inheritDoc}
+     */
+    @Override
+    @Nonnull
+    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws jmri.JmriException {
+        return prefix + typeLetter() + curAddress;
     }
 
     /**
@@ -79,6 +89,7 @@ public class InternalTurnoutManager extends AbstractTurnoutManager {
      * Turnout operation support. Internal turnouts don't need retries.
      */
     @Override
+    @Nonnull
     public String[] getValidOperationTypes() {
         return new String[]{"NoFeedback"};
     }

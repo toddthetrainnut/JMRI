@@ -1,5 +1,7 @@
 package jmri.jmrix.anyma;
 
+import java.util.Locale;
+import javax.annotation.Nonnull;
 import jmri.Light;
 import jmri.Manager;
 import jmri.managers.AbstractLightManager;
@@ -17,71 +19,79 @@ import org.slf4j.LoggerFactory;
  */
 public class UsbLightManager extends AbstractLightManager {
 
-    private AnymaDMX_SystemConnectionMemo _memo = null;
-
     /**
      * constructor
      *
      * @param memo the system connection memo
      */
     public UsbLightManager(AnymaDMX_SystemConnectionMemo memo) {
+        super(memo);
         log.debug("*    UsbLightManager constructor called");
-        _memo = memo;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getSystemPrefix() {
-        log.debug("*    UsbLightManager.getSystemPrefix() called");
-        return _memo.getSystemPrefix();
+    @Nonnull
+    public AnymaDMX_SystemConnectionMemo getMemo() {
+        return (AnymaDMX_SystemConnectionMemo) memo;
     }
 
     /**
-     * Method to create a new Light based on the system name.
+     * Create a new Light based on the system name and optional user name.
      * <p>
      * Assumes calling method has checked that a Light with this system name
      * does not already exist.
-     *
-     * @param systemName the system name to use for this light
-     * @param userName   the user name to use for this light
-     * @return null if the system name is not in a valid format or if the system
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if the system name is not in a valid format or if the system
      *         name does not correspond to a valid channel
      */
     @Override
-    public Light createNewLight(String systemName, String userName) {
+    @Nonnull
+    public Light createNewLight(@Nonnull String systemName, String userName) throws IllegalArgumentException {
         log.debug("*    UsbLightManager.createNewLight() called");
-        Light result = null;    // assume failure (pessimist!)
 
-        int nAddress = _memo.getNodeAddressFromSystemName(systemName);
+        int nAddress = getMemo().getNodeAddressFromSystemName(systemName);
         if (nAddress != -1) {
-            int channelNum = _memo.getChannelFromSystemName(systemName);
+            int channelNum = getMemo().getChannelFromSystemName(systemName);
             if (channelNum != 0) {
                 // Validate the systemName
-                if (_memo.validSystemNameFormat(systemName, 'L') == Manager.NameValidity.VALID) {
-                    if (_memo.validSystemNameConfig(systemName, 'L')) {
-                        result = new AnymaDMX_UsbLight(systemName, userName, _memo);
+                if (getMemo().validSystemNameFormat(systemName, 'L') == Manager.NameValidity.VALID) {
+                    if (getMemo().validSystemNameConfig(systemName, 'L')) {
+                        return new AnymaDMX_UsbLight(systemName, userName, getMemo());
                     } else {
-                        log.warn("Light System Name does not refer to configured hardware: " + systemName);
+                        log.warn("Light System Name does not refer to configured hardware: {}", systemName);
+                        throw new IllegalArgumentException("Light System Name " + systemName + " does not refer to configured hardware");
                     }
                 } else {
-                    log.error("Invalid Light System Name format: " + systemName);
+                    log.error("Invalid Light System Name format: {}", systemName);
+                    throw new IllegalArgumentException("Invalid Light System Name format: " + systemName);
                 }
             } else {
-                log.error("Invalid channel number from System Name: " + systemName);
+                log.error("Invalid channel number from System Name: {}", systemName);
+                throw new IllegalArgumentException("Invalid channel number from System Name: " + systemName);
             }
         }
-        return result;
+        throw new IllegalArgumentException("Invalid Node Address from System Name: " + systemName);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Manager.NameValidity validSystemNameFormat(String systemName) {
+    public Manager.NameValidity validSystemNameFormat(@Nonnull String systemName) {
         log.debug("*    UsbLightManager.validSystemNameFormat() called");
-        return _memo.validSystemNameFormat(systemName, 'L');
+        return getMemo().validSystemNameFormat(systemName, 'L');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nonnull
+    public String validateSystemNameFormat(@Nonnull String systemName, @Nonnull Locale locale) {
+        return validateIntegerSystemNameFormat(systemName, 1, 512, locale);
     }
 
     /**
@@ -92,9 +102,9 @@ public class UsbLightManager extends AbstractLightManager {
      *         configuration, else return 'false'
      */
     @Override
-    public boolean validSystemNameConfig(String systemName) {
+    public boolean validSystemNameConfig(@Nonnull String systemName) {
         log.debug("*    UsbLightManager.validSystemNameConfig() called");
-        return _memo.validSystemNameConfig(systemName, 'L');
+        return getMemo().validSystemNameConfig(systemName, 'L');
     }
 
     /**
@@ -105,16 +115,17 @@ public class UsbLightManager extends AbstractLightManager {
      *         alternate representation, else returns ""
      */
     @Override
-    public String convertSystemNameToAlternate(String systemName) {
+    @Nonnull
+    public String convertSystemNameToAlternate(@Nonnull String systemName) {
         log.debug("*    UsbLightManager.convertSystemNameToAlternate() called");
-        return _memo.convertSystemNameToAlternate(systemName);
+        return getMemo().convertSystemNameToAlternate(systemName);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean supportsVariableLights(String systemName) {
+    public boolean supportsVariableLights(@Nonnull String systemName) {
         return true;
     }
 
@@ -122,7 +133,7 @@ public class UsbLightManager extends AbstractLightManager {
      * {@inheritDoc}
      */
     @Override
-    public boolean allowMultipleAdditions(String systemName) {
+    public boolean allowMultipleAdditions(@Nonnull String systemName) {
         return true;
     }
 
@@ -131,11 +142,9 @@ public class UsbLightManager extends AbstractLightManager {
      */
     @Override
     public String getEntryToolTip() {
-        log.debug("*    UsbLightManager.getEntryToolTip() called");
-        //TODO: Why doesn't this work?!?
-        return null; //BundleBundle.getMessage("AddOutputEntryToolTip");
+        return Bundle.getMessage("AddOutputEntryToolTip");
     }
 
-    private final static Logger log
-            = LoggerFactory.getLogger(UsbLightManager.class);
+    private final static Logger log = LoggerFactory.getLogger(UsbLightManager.class);
+
 }

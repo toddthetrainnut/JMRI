@@ -9,7 +9,7 @@ import jmri.jmrix.easydcc.EasyDccMessage;
 import jmri.jmrix.easydcc.EasyDccPortController; // no special xSimulatorController
 import jmri.jmrix.easydcc.EasyDccReply;
 import jmri.jmrix.easydcc.EasyDccSystemConnectionMemo;
-import jmri.jmrix.easydcc.EasyDccTrafficController;
+import jmri.util.ImmediatePipedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class SimulatorAdapter extends EasyDccPortController implements Runnable 
     final static int SENSOR_MSG_RATE = 10;
 
     private boolean outputBufferEmpty = true;
-    private boolean checkBuffer = true;
+    private final boolean checkBuffer = true;
     // Simulator responses
     char EDC_OPS = 0x4F;
     char EDC_PROG = 0x50;
@@ -53,12 +53,10 @@ public class SimulatorAdapter extends EasyDccPortController implements Runnable 
     @Override
     public String openPort(String portName, String appName) {
         try {
-            PipedOutputStream tempPipeI = new PipedOutputStream();
-            log.debug("tempPipeI created");
+            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
-            log.debug("inpipe created {}", inpipe != null);
-            PipedOutputStream tempPipeO = new PipedOutputStream();
+            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {
@@ -88,7 +86,7 @@ public class SimulatorAdapter extends EasyDccPortController implements Runnable 
      */
     public boolean okToSend() {
         if (checkBuffer) {
-            log.debug("Buffer Empty: " + outputBufferEmpty);
+            log.debug("Buffer Empty: {}", outputBufferEmpty);
             return (outputBufferEmpty);
         } else {
             log.debug("No Flow Control or Buffer Check");
@@ -207,27 +205,25 @@ public class SimulatorAdapter extends EasyDccPortController implements Runnable 
             EasyDccMessage m = readMessage();
             EasyDccReply r;
             if (log.isDebugEnabled()) {
-                StringBuffer buf = new StringBuffer();
-                buf.append("EasyDCC Simulator Thread received message: ");
+                StringBuilder buf = new StringBuilder();
                 if (m != null) {
                     for (int i = 0; i < m.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & m.getElement(i)) + " ");
+                        buf.append(Integer.toHexString(0xFF & m.getElement(i))).append(" ");
                     }
                 } else {
                     buf.append("null message buffer");
                 }
-                log.trace(buf.toString()); // generates a lot of traffic
+                log.trace("EasyDCC Simulator Thread received message: {}", buf); // generates a lot of traffic
             }
             if (m != null) {
                 r = generateReply(m);
                 writeReply(r);
-                if (log.isDebugEnabled() && r != null) {
-                    StringBuffer buf = new StringBuffer();
-                    buf.append("EasyDCC Simulator Thread sent reply: ");
+                if (log.isDebugEnabled()) {
+                    StringBuilder buf = new StringBuilder();
                     for (int i = 0; i < r.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & r.getElement(i)) + " ");
+                        buf.append(Integer.toHexString(0xFF & r.getElement(i))).append(" ");
                     }
-                    log.debug(buf.toString());
+                    log.debug("EasyDCC Simulator Thread sent reply: {}", buf);
                 }
             }
         }
@@ -263,7 +259,7 @@ public class SimulatorAdapter extends EasyDccPortController implements Runnable 
         EasyDccReply reply = new EasyDccReply();
         int i = 0;
         char command = msg.toString().charAt(0);
-        log.debug("Message type = " + command);
+        log.debug("Message type = {}", command);
         switch (command) {
 
             case 'X': // eXit programming

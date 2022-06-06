@@ -1,18 +1,19 @@
 package jmri.jmrix.can.cbus.swing.simulator;
 
-import java.awt.GraphicsEnvironment;
 import java.util.List;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JmriJFrame;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import jmri.util.ThreadingUtil;
+
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+
 import org.netbeans.jemmy.operators.*;
 
 /**
@@ -23,33 +24,40 @@ import org.netbeans.jemmy.operators.*;
  */
 public class SimulatorPaneTest extends jmri.util.swing.JmriPanelTest {
 
+    private CanSystemConnectionMemo memo; 
+    private TrafficControllerScaffold tcis;
+ 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() {
         JUnitUtil.setUp();
-        panel = new SimulatorPane();
         title = Bundle.getMessage("MenuItemNetworkSim");
         helpTarget = "package.jmri.jmrix.can.cbus.swing.simulator.SimulatorPane";
+        memo = new CanSystemConnectionMemo();
+        tcis = new TrafficControllerScaffold();
+        memo.setTrafficController(tcis);
+        
+        panel = new SimulatorPane();
     }
     
     @Override
-    @After
-    public void tearDown() {        JUnitUtil.tearDown();    }
-    
+    @AfterEach
+    public void tearDown() {
+        tcis.terminateThreads();
+        memo.dispose();
+        tcis = null;
+        memo = null;
+        super.tearDown();
+    }
+
+    @DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
     @Test
     public void testInitComp() {
         
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        ((SimulatorPane)panel).initComponents(memo);
         
-        CanSystemConnectionMemo memo = new CanSystemConnectionMemo();
-        TrafficControllerScaffold tcis = new TrafficControllerScaffold();
-        memo.setTrafficController(tcis);
-        
-        SimulatorPane panel = new SimulatorPane();
-        panel.initComponents(memo);
-        
-        Assert.assertNotNull("exists", panel);
-        Assert.assertEquals("name with memo","CAN " + Bundle.getMessage("MenuItemNetworkSim"), panel.getTitle());
+        Assertions.assertNotNull(panel, "exists");
+        Assertions.assertEquals("CAN " + Bundle.getMessage("MenuItemNetworkSim"), panel.getTitle(), "name with memo");
         
         // check pane has loaded something
         JmriJFrame f = new JmriJFrame();
@@ -67,19 +75,19 @@ public class SimulatorPaneTest extends jmri.util.swing.JmriPanelTest {
         f.setJMenuBar(bar);
         
         f.pack();
-        f.setVisible(true);
         
+        ThreadingUtil.runOnGUI(() -> {
+            f.setVisible(true);
+        });
         // Find new window by name
         JFrameOperator jfo = new JFrameOperator( panel.getTitle() );
         
-        Assert.assertTrue(getResetCsButtonEnabled(jfo));
+        Assertions.assertTrue(getResetCsButtonEnabled(jfo));
 
         // Ask to close window
         jfo.requestClose();
-
-        tcis = null;
-        memo = null;
-        
+        jfo.waitClosed();
+ 
     }
     
     private boolean getResetCsButtonEnabled( JFrameOperator jfo ){

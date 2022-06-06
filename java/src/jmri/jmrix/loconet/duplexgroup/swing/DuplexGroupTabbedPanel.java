@@ -1,6 +1,7 @@
 package jmri.jmrix.loconet.duplexgroup.swing;
 
-import java.util.ResourceBundle;
+import java.awt.BorderLayout;
+
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
 import jmri.jmrix.loconet.swing.LnPanel;
 import jmri.util.JmriJFrame;
@@ -35,6 +36,7 @@ public class DuplexGroupTabbedPanel extends LnPanel {
     @Override
     public void initComponents() {
         tabbedPane = new javax.swing.JTabbedPane();
+        setLayout(new BorderLayout());
         dgsp = new DuplexGroupScanPanel();
         dgip = new DuplexGroupInfoPanel();
         tabbedPane.addTab(Bundle.getMessage("TabTextGroupIdentity"), null,
@@ -68,9 +70,13 @@ public class DuplexGroupTabbedPanel extends LnPanel {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 tmr.stop();
-                if ((thisone.getRootPane().getParent()) instanceof JmriJFrame) {
-                    ((JmriJFrame) (thisone.getRootPane().getParent())).setPreferredSize(null);
-                    ((JmriJFrame) (thisone.getRootPane().getParent())).pack();
+                java.awt.Container f = thisone.getRootPane().getParent();
+                if (f != null) {
+                    if (f instanceof JmriJFrame) {
+                        JmriJFrame jf = (JmriJFrame) f;
+                        jf.setPreferredSize(null);
+                        jf.pack();
+                    }
                 }
             }
         });

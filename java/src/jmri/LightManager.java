@@ -24,11 +24,11 @@ import javax.annotation.Nonnull;
  *
  * @author Dave Duchamp Copyright (C) 2004
  */
-public interface LightManager extends ProvidingManager<Light> {
+public interface LightManager extends ProvidingManager<Light>, NameIncrementingManager {
 
     /**
      * Get the Light with the user name, then system name if needed; if that fails, create a
-     * new Light. 
+     * new Light.
      * If the name is a valid system name, it will be used for the new Light.
      * Otherwise, the {@link Manager#makeSystemName} method will attempt to turn it
      * into a valid system name.
@@ -40,10 +40,11 @@ public interface LightManager extends ProvidingManager<Light> {
      * @return Never null under normal circumstances
      */
     @Nonnull
-    public Light provideLight(@Nonnull String name);
+    public Light provideLight(@Nonnull String name) throws IllegalArgumentException;
 
     /** {@inheritDoc} */
     @Override
+    @Nonnull
     default public Light provide(@Nonnull String name) throws IllegalArgumentException { return provideLight(name); }
 
     /** {@inheritDoc} */
@@ -51,24 +52,20 @@ public interface LightManager extends ProvidingManager<Light> {
     public void dispose();
 
     /**
-     * Get an existing Light or return null if it doesn't exist. 
-     * 
+     * Get an existing Light or return null if it doesn't exist.
+     * <p>
      * Locates via user name, then system name if needed.
-     *
      * @param name User name, system name, or address which can be promoted to
      *             system name
-     * @return Never null
-     * @throws IllegalArgumentException if Light doesn't already exist and the
-     *                                  manager cannot create the Light due to
-     *                                  an illegal name or name that can't be
-     *                                  parsed.
+     * @return Light, or null if no existing Light.
      */
     @CheckReturnValue
     @CheckForNull
     public Light getLight(@Nonnull String name);
 
     /**
-     * Return a Light with the specified system and user names. 
+     * Return a Light with the specified user or system name.
+     * Lookup Light by UserName, then Provide New Light by SystemName.
      * Note that
      * two calls with the same arguments will get the same instance; there is
      * only one Light object representing a given physical Light and therefore
@@ -98,7 +95,7 @@ public interface LightManager extends ProvidingManager<Light> {
      *                                  parsed.
      */
     @Nonnull
-    public Light newLight(@Nonnull String systemName, @CheckForNull String userName);
+    public Light newLight(@Nonnull String systemName, @CheckForNull String userName) throws IllegalArgumentException;
 
     /**
      * Locate a Light by its user name.
@@ -108,6 +105,7 @@ public interface LightManager extends ProvidingManager<Light> {
      */
     @CheckReturnValue
     @CheckForNull
+    @Override
     public Light getByUserName(@Nonnull String s);
 
     /**
@@ -118,6 +116,7 @@ public interface LightManager extends ProvidingManager<Light> {
      */
     @CheckReturnValue
     @CheckForNull
+    @Override
     public Light getBySystemName(@Nonnull String s);
 
     /**
@@ -127,7 +126,14 @@ public interface LightManager extends ProvidingManager<Light> {
      * @return true if valid; false otherwise
      */
     @CheckReturnValue
-    public boolean validSystemNameConfig(@Nonnull String systemName);
+    public default boolean validSystemNameConfig(@Nonnull String systemName){
+        try {
+            validateSystemNameFormat(systemName);
+            return true;
+        } catch (jmri.NamedBean.BadSystemNameException ex) {
+            return false;
+        }
+    }
 
     /**
      * Convert the system name to a normalized alternate name.
@@ -164,13 +170,17 @@ public interface LightManager extends ProvidingManager<Light> {
     public boolean supportsVariableLights(@Nonnull String systemName);
 
     /**
-     * Test if possible to generate multiple lights given a numerical range to
-     * complete the system name.
+     * Get a system name for a given hardware address and system prefix.
      *
-     * @param systemName the system name
-     * @return true if multiple lights can be created at once; false otherwise
+     * @param curAddress desired hardware address
+     * @param prefix     system prefix used in system name, excluding Bean type-letter.
+     * @return the complete Light system name for the prefix and current
+     *         address
+     * @throws jmri.JmriException if unable to create a system name for the
+     *                            given address, possibly due to invalid address
+     *                            format
      */
-    @CheckReturnValue
-    public boolean allowMultipleAdditions(@Nonnull String systemName);
+    @Nonnull
+    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException;
 
 }

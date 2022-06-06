@@ -1,10 +1,11 @@
 package jmri;
 
 import jmri.util.JUnitUtil;
-import org.junit.After;
+
+import org.junit.jupiter.api.*;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import jmri.implementation.DefaultTransit;
 
 /**
  * Tests for Transit class.
@@ -17,22 +18,22 @@ public class TransitTest {
 
    @Test
    public void SysNameConstructorTest(){
-      Assert.assertNotNull("Constructor", new Transit("TT1"));
+      Assert.assertNotNull("Constructor", new DefaultTransit("TT1"));
    }
 
    @Test
    public void TwoNameStringConstructorTest(){
-      Assert.assertNotNull("Constructor", new Transit("TT1", "user name"));
+      Assert.assertNotNull("Constructor", new DefaultTransit("TT1", "user name"));
    }
 
-   @Before
+   @BeforeEach
    public void setUp() {
         JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
    }
 
-   @After
+   @AfterEach
    public void tearDown(){
         JUnitUtil.tearDown();
    }
