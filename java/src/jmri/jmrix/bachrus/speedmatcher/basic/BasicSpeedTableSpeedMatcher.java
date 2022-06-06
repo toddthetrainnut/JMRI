@@ -32,9 +32,12 @@ public class BasicSpeedTableSpeedMatcher extends BasicSpeedMatcher {
     @Override
     public boolean StartSpeedMatch() {
         
-        if (!super.Validate()) {
-            return false;
-        }
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+        
+//        if (!super.Validate()) {
+//            return false;
+//        }
         
         //reset instance variables
         
@@ -89,11 +92,11 @@ public class BasicSpeedTableSpeedMatcher extends BasicSpeedMatcher {
 
             case INIT_SPEED_TABLE_STEPS:
                 //TODO: TRW - implementation
-                if (programmerState == programmerState.IDLE) {
-                    String speedTableStepValue = currentSpeedTableStep == SpeedTableStep.STEP28 ? INITIAL_STEP28 : INITIAL_SPEED_TABLE_STEP;
-                    writeSpeedTableStep(currentSpeedTableStep, speedTableStepValue);
-                    setupNextSpeedMatchState(true, 0);
-                }
+//                if (programmerState == programmerState.IDLE) {
+//                    String speedTableStepValue = currentSpeedTableStep == SpeedTableStep.STEP28 ? INITIAL_STEP28 : INITIAL_SPEED_TABLE_STEP;
+//                    writeSpeedTableStep(currentSpeedTableStep, speedTableStepValue);
+//                    setupNextSpeedMatchState(true, 0);
+//                }
                 break;
 
             case INIT_FORWARD_TRIM:
@@ -233,12 +236,10 @@ public class BasicSpeedTableSpeedMatcher extends BasicSpeedMatcher {
         INIT_SPEED_TABLE_STEPS {
             @Override
             protected SpeedMatcherState nextState(BasicSpeedTableSpeedMatcher speedMatcher) {
-                if (currentSpeedTableStep == SpeedTableStep.STEP28) {
-                    currentSpeedTableStep = SpeedTableStep.STEP1;
-                    return SpeedMatcherState.INIT_FORWARD_TRIM;
-                }
-                
-                
+//                if (currentSpeedTableStep == SpeedTableStep.STEP28) {
+//                    currentSpeedTableStep = SpeedTableStep.STEP1;
+//                    return SpeedMatcherState.INIT_FORWARD_TRIM;
+//                }
                 return this;
             }
         },
@@ -267,15 +268,15 @@ public class BasicSpeedTableSpeedMatcher extends BasicSpeedMatcher {
         FORWARD_SPEED_MATCH {
             @Override
             protected SpeedMatcherState nextState(BasicSpeedTableSpeedMatcher speedMatcher) {
-                if (currentSpeedTableStep == SpeedTableStep.STEP28) {
-                    currentSpeedTableStep = SpeedTableStep.STETP1;
-                    if (speedMatcher.trimReverseSpeed) {
-                        return SpeedMatcherState.REVERSE_WARM_UP;
-                    }
-                    else {
-                        return SpeedMatcherState.SET_ACCEL;
-                    }
-                }
+//                if (currentSpeedTableStep == SpeedTableStep.STEP28) {
+//                    currentSpeedTableStep = SpeedTableStep.STEP1;
+//                    if (speedMatcher.trimReverseSpeed) {
+//                        return SpeedMatcherState.REVERSE_WARM_UP;
+//                    }
+//                    else {
+//                        return SpeedMatcherState.SET_ACCEL;
+//                    }
+//                }
                 return this;
             }
         },
