@@ -1,9 +1,10 @@
 package jmri.web.servlet.tables;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.web.servlet.tables.TablesServlet class
@@ -18,13 +19,13 @@ public class TablesServletTest {
         Assert.assertNotNull(a);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

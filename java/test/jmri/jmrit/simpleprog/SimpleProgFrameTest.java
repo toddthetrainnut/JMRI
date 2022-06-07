@@ -1,10 +1,8 @@
 package jmri.jmrit.simpleprog;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -12,18 +10,19 @@ import org.junit.jupiter.api.*;
  */
 public class SimpleProgFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new SimpleProgFrame();
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new SimpleProgFrame();
+	}
 
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();

@@ -2,7 +2,6 @@ package jmri.jmrit.operations.trains.excel;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -13,8 +12,8 @@ import javax.swing.AbstractAction;
  */
 public class SetupExcelProgramSwitchListFrameAction extends AbstractAction {
 
-    public SetupExcelProgramSwitchListFrameAction() {
-        super(Bundle.getMessage("MenuItemSetupExcelProgramSwitchList"));
+    public SetupExcelProgramSwitchListFrameAction(String s) {
+        super(s);
     }
 
     SetupExcelProgramSwitchListFrame f = null;

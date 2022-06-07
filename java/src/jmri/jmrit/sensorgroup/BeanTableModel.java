@@ -21,7 +21,7 @@ public abstract class BeanTableModel extends AbstractTableModel {
         }
     }
 
-    public abstract Manager<?> getManager();
+    public abstract Manager getManager();
 
     @Override
     public int getColumnCount() {
@@ -57,24 +57,16 @@ public abstract class BeanTableModel extends AbstractTableModel {
     }
 
     /**
-     * User name column must be handled by subclass.
-     * {@inheritDoc}
+     * User name column must be handled by subclass
      */
     @Override
+    @SuppressWarnings("deprecation") // needs careful unwinding for Set operations & generics
     public Object getValueAt(int r, int c) {
         switch (c) {
-            case SNAME_COLUMN:  // system name
-                int i=0;
-                for (jmri.NamedBean bean : getManager().getNamedBeanSet()) {
-                    if ( i==r ){
-                        return bean.getSystemName();
-                    }
-                    i++;
-                }
-                log.error("No system name for row {}",r);
-                return "";
+            case SNAME_COLUMN:  // slot number
+                return getManager().getSystemNameList().get(r);
             default:
-                log.warn("getValueAt should not have been asked about c={}", c);
+                log.warn("getValueAt should not have been asked about c=" + c);
                 return null;
         }
     }

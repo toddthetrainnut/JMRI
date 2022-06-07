@@ -1,21 +1,19 @@
 package jmri.jmrit.sensorgroup;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-
+import org.junit.Before;
+import org.junit.Test;
 import java.awt.GraphicsEnvironment;
-
 import javax.swing.JFrame;
-
 import org.netbeans.jemmy.operators.JFrameOperator;
 
 /**
  *
- * @author Bob Jacobsen Copyright 2003, 2007
- * @author Paul Bender Copyright (C) 2017
+ * @author	Bob Jacobsen Copyright 2003, 2007
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SensorGroupActionTest {
 
@@ -40,16 +38,15 @@ public class SensorGroupActionTest {
         JUnitUtil.dispose(frame);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

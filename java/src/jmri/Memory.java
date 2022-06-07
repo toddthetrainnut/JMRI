@@ -5,7 +5,8 @@ package jmri;
  * <p>
  * The AbstractMemory class contains a basic implementation of the state and
  * messaging code, and forms a useful start for a system-specific
- * implementation. 
+ * implementation. Specific implementations in the jmrix package, e.g. for
+ * LocoNet and NCE, will convert to and from the layout commands.
  * <p>
  * The states and names are Java Bean parameters, so that listeners can be
  * registered to be notified of any changes.

@@ -1,14 +1,15 @@
 package jmri.implementation.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * DoubleTurnoutSignalHeadXmlTest.java
  *
- * Test for the DoubleTurnoutSignalHeadXml class
+ * Description: tests for the DoubleTurnoutSignalHeadXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class DoubleTurnoutSignalHeadXmlTest {
       Assert.assertNotNull("DoubleTurnoutSignalHeadXml constructor",new DoubleTurnoutSignalHeadXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

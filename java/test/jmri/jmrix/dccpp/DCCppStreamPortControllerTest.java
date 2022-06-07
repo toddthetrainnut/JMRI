@@ -5,17 +5,18 @@ import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * DCCppStreamPortControllerTest.java
  *
- * Test for the jmri.jmrix.dccpp.DCCppStreamPortController class
+ * Description:	tests for the jmri.jmrix.dccpp.DCCppStreamPortController class
  *
- * @author Paul Bender Copyright (C) 2012,2016
- * @author Mark Underwood (C) 2015
+ * @author	Paul Bender Copyright (C) 2012,2016
+ * @author	Mark Underwood (C) 2015
  */
 public class DCCppStreamPortControllerTest extends jmri.jmrix.AbstractStreamPortControllerTestBase {
 
@@ -24,8 +25,9 @@ public class DCCppStreamPortControllerTest extends jmri.jmrix.AbstractStreamPort
        Assert.assertNotNull("exists", apc);
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         try {
@@ -41,9 +43,8 @@ public class DCCppStreamPortControllerTest extends jmri.jmrix.AbstractStreamPort
     }
 
     @Override
-    @AfterEach
+    @After 
     public void tearDown() {
-        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
     }
 

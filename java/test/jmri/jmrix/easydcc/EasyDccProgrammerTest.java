@@ -1,16 +1,19 @@
 /**
  * JUnit tests for the EasyDccProgrammer class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 package jmri.jmrix.easydcc;
 
 import jmri.JmriException;
 import jmri.ProgrammingMode;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EasyDccProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         
@@ -159,8 +162,8 @@ public class EasyDccProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     int rcvdStatus;
     int rcvdInvoked;
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new EasyDccSystemConnectionMemo("E", "EasyDCC Test");
@@ -170,8 +173,7 @@ public class EasyDccProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         programmer = p = new EasyDccProgrammer(memo);
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         t.terminateThreads();
         programmer = p = null;

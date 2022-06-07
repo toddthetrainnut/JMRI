@@ -2,15 +2,17 @@ package jmri.jmrit.timetable.swing;
 
 import java.awt.GraphicsEnvironment;
 import java.util.Locale;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 
 /**
  * Tests for the TimeTableStartup Class
  * @author Dave Sand Copyright (C) 2018
  */
 public class TimeTableStartupTest {
+
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testCreate() {
@@ -27,7 +29,8 @@ public class TimeTableStartupTest {
     @Test
     public void testGetTitleException() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Assert.assertThrows(IllegalArgumentException.class, () -> new TimeTableStartup().getTitle(TimeTableFrame.class, Locale.US));
+        thrown.expect(IllegalArgumentException.class);
+        Assert.assertEquals("Open Timetable Exception", new TimeTableStartup().getTitle(TimeTableFrame.class, Locale.US));  // NOI18N
     }
 
     @Test
@@ -36,12 +39,12 @@ public class TimeTableStartupTest {
         Assert.assertNotNull(new TimeTableStartup().getActionClasses());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

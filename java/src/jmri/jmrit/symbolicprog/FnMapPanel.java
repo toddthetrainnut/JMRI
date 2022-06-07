@@ -204,7 +204,7 @@ public class FnMapPanel extends JPanel {
                             int iVar = _varModel.findVarIndex(name);
                             if (iVar >= 0) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Process var: {} as index {}", name, iVar);
+                                    log.debug("Process var: " + name + " as index " + iVar);
                                 }
                                 varsUsed.add(Integer.valueOf(iVar));
                                 VariableValue var = _varModel.getVariable(iVar);
@@ -225,7 +225,7 @@ public class FnMapPanel extends JPanel {
                                 outIsUsed[iOut] = true;
                             } else {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Did not find var: {}", name);
+                                    log.debug("Did not find var: " + name);
                                 }
                             }
                         }
@@ -310,7 +310,6 @@ public class FnMapPanel extends JPanel {
     /**
      * Use the "family" and "model" element from the decoder definition file to configure the
      * number of outputs and set up any that are named instead of numbered.
-     * @param model ELement holding content to decode
      */
     protected void configOutputs(Element model) {
         if (model == null) {
@@ -332,7 +331,7 @@ public class FnMapPanel extends JPanel {
             if (a != null) {
                 numOut = Integer.parseInt(a.getValue());
             }
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             log.error("error handling decoder's numOuts value");
         }
         a = model.getAttribute("numFns");
@@ -340,11 +339,11 @@ public class FnMapPanel extends JPanel {
             if (a != null) {
                 numFn = Integer.parseInt(a.getValue());
             }
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             log.error("error handling decoder's numFns value");
         }
         if (log.isDebugEnabled()) {
-            log.debug("numFns, numOuts {},{}", numFn, numOut);
+            log.debug("numFns, numOuts " + numFn + "," + numOut);
         }
         
         // take all "output" children

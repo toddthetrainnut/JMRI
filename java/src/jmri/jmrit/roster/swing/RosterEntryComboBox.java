@@ -53,7 +53,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
     /**
      * Create a combo box with an arbitrary Roster and all entries in the active
      * roster group.
-     * @param roster roster to use.
+     *
      */
     public RosterEntryComboBox(Roster roster) {
         this(roster, Roster.getDefault().getDefaultRosterGroup(), null, null, null, null, null, null, null);
@@ -62,7 +62,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
     /**
      * Create a combo box with the default Roster and all entries in an
      * arbitrary roster group.
-     * @param rosterGroup group to display.
+     *
      */
     public RosterEntryComboBox(String rosterGroup) {
         this(Roster.getDefault(), rosterGroup, null, null, null, null, null, null, null);
@@ -71,8 +71,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
     /**
      * Create a combo box with an arbitrary Roster and all entries in an
      * arbitrary roster group.
-     * @param roster roster to use.
-     * @param rosterGroup group to display.
+     *
      */
     public RosterEntryComboBox(Roster roster, String rosterGroup) {
         this(roster, rosterGroup, null, null, null, null, null, null, null);
@@ -82,13 +81,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
      * Create a combo box with the default Roster and entries in the active
      * roster group matching the specified attributes. Attributes with a null
      * value will not be considered when filtering the roster entries.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.     *
+     *
      */
     public RosterEntryComboBox(String roadName,
             String roadNumber,
@@ -113,14 +106,6 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
      * roster group matching the specified attributes. Attributes with a null
      * value will not be considered when filtering the roster entries.
      *
-     * @param roster roster to use.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.
      */
     public RosterEntryComboBox(Roster roster,
             String roadName,
@@ -147,14 +132,6 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
      * roster group matching the specified attributes. Attributes with a null
      * value will not be considered when filtering the roster entries.
      *
-     * @param rosterGroup group to display.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.
      */
     public RosterEntryComboBox(String rosterGroup,
             String roadName,
@@ -186,16 +163,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
      * <p>
      * All other constructors call this constructor with various default
      * parameters.
-     * 
-     * @param roster roster to use.
-     * @param rosterGroup group to display.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.
+     *
      */
     public RosterEntryComboBox(Roster roster,
             String rosterGroup,
@@ -261,7 +229,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
      * Update the combo box with an arbitrary roster group, using the same
      * roster entry attributes specified in a prior call to update or when
      * creating the combo box.
-     * @param rosterGroup group to display.
+     *
      */
     public final void update(String rosterGroup) {
         update(rosterGroup,
@@ -277,13 +245,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
     /**
      * Update the combo box with the currently selected roster group, using new
      * roster entry attributes.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.
+     *
      */
     public void update(String roadName,
             String roadNumber,
@@ -305,15 +267,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
     /**
      * Update the combo box with an arbitrary roster group, using new roster
      * entry attributes.
-     * @param rosterGroup group to display.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.
-    */
+     */
     public final void update(String rosterGroup,
             String roadName,
             String roadNumber,
@@ -324,8 +278,8 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
             String id) {
         Object selection = this.getSelectedItem();
         if (log.isDebugEnabled()) {
-            log.debug("Old selection: {}", selection);
-            log.debug("Old group: {}", _group);
+            log.debug("Old selection: " + selection);
+            log.debug("Old group: " + _group);
         }
         ActionListener[] ALs = this.getActionListeners();
         for (ActionListener al : ALs) {
@@ -366,8 +320,8 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("New selection: {}", this.getSelectedItem());
-            log.debug("New group: {}", _group);
+            log.debug("New selection: " + this.getSelectedItem());
+            log.debug("New group: " + _group);
         }
         for (ActionListener al : ALs) {
             this.addActionListener(al);
@@ -384,7 +338,7 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
     /**
      * Set the text of the item that visually indicates that no roster entry is
      * selected in the comboBox.
-     * @param itemText text to indicate no entry.
+     *
      */
     public void setNonSelectedItem(String itemText) {
         _nonSelectedItem = itemText;

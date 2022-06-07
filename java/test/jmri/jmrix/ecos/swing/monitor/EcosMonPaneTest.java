@@ -1,24 +1,20 @@
 package jmri.jmrix.ecos.swing.monitor;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.AbstractMonPaneScaffold;
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
-import jmri.util.ThreadingUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
  * Test simple functioning of EcosMonPane
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class EcosMonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
 
@@ -29,40 +25,35 @@ public class EcosMonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
     // startup compared to other AbstractMonPane derivatives.
     @Override
     @Test
-    public void checkAutoScrollCheckBox() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        AbstractMonPaneScaffold s = new AbstractMonPaneScaffold(pane);
+    public void checkAutoScrollCheckBox(){
+         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+         AbstractMonPaneScaffold s = new AbstractMonPaneScaffold(pane);
 
-        // for Jemmy to work, we need the pane inside of a frame
-        JmriJFrame f = new JmriJFrame();
-        Throwable thrown = catchThrowable(() -> ThreadingUtil.runOnGUI(() -> pane.initComponents()));
-        assertThat(thrown).withFailMessage("could not load pane " + thrown).isNull();
-
-        ThreadingUtil.runOnGUI(() -> {
-            f.add(pane);
-            // set title if available
-            if (pane.getTitle() != null) {
-                f.setTitle(pane.getTitle());
-            }
-            f.pack();
-            f.setVisible(true);
-        });
-
-        Assert.assertTrue(s.getAutoScrollCheckBoxValue());
-        s.checkAutoScrollCheckBox();
-        Assert.assertFalse(s.getAutoScrollCheckBoxValue());
-        ThreadingUtil.runOnGUI( () -> {
-            f.setVisible(false);
-            f.dispose();
-        });
+         // for Jemmy to work, we need the pane inside of a frame
+         JmriJFrame f = new JmriJFrame();
+         try{
+            pane.initComponents();
+         } catch(Exception ex) {
+           Assert.fail("Could not load pane: " + ex);
+         }
+         f.add(pane);
+         // set title if available
+         if (pane.getTitle() != null) {
+             f.setTitle(pane.getTitle());
+         }
+         f.pack();
+         f.setVisible(true);
+         Assert.assertTrue(s.getAutoScrollCheckBoxValue());
+         s.checkAutoScrollCheckBox();
+         Assert.assertFalse(s.getAutoScrollCheckBoxValue());
+         f.setVisible(false);
+         f.dispose();
     }
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
         JUnitUtil.initDefaultUserMessagePreferences();
         jmri.jmrix.ecos.EcosInterfaceScaffold tc = new jmri.jmrix.ecos.EcosInterfaceScaffold();
         memo = new jmri.jmrix.ecos.EcosSystemConnectionMemo(tc);
@@ -74,10 +65,6 @@ public class EcosMonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
     }
 
     @Override
-    @AfterEach
-    public void tearDown() {
-        panel = pane = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
-    }
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

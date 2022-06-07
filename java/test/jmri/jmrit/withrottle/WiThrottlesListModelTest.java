@@ -1,12 +1,11 @@
 package jmri.jmrit.withrottle;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of WiThrottlesListModel
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class WiThrottlesListModelTest {
 
@@ -17,12 +16,12 @@ public class WiThrottlesListModelTest {
         Assert.assertNotNull("exists", panel );
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
     
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
 

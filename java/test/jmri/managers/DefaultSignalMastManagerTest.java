@@ -4,19 +4,18 @@ import jmri.JmriException;
 import jmri.SignalMast;
 import jmri.implementation.AbstractSignalMast;
 import jmri.implementation.SignalMastRepeater;
+import jmri.implementation.VirtualSignalMast;
 import jmri.util.JUnitUtil;
 
 import static org.hamcrest.core.StringContains.containsString;
-
-import jmri.InstanceManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class DefaultSignalMastManagerTest extends AbstractProvidingManagerTestBase<jmri.SignalMastManager,SignalMast> {
 
@@ -99,26 +98,16 @@ public class DefaultSignalMastManagerTest extends AbstractProvidingManagerTestBa
         }
         jmri.util.JUnitAppender.assertErrorMessage("Signal repeater IM332:IM331 already exists the wrong way");
     }
-    
-    // No manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithNoPrefixNotASystemName() {}
-    
-    // No manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithPrefixNotASystemName() {}
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        l = new DefaultSignalMastManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
+        l = new DefaultSignalMastManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        l.dispose();
         l = null;
         JUnitUtil.tearDown();
     }

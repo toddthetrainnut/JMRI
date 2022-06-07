@@ -26,7 +26,6 @@ public class TrafficLock implements Lock {
     /**
      * @param signal SignalHeadSection at far end of this route
      * @param direction Setting that, if present in the far SignalHeadSection, means to lock
-     * @param beans bean setting array.
      */
     public TrafficLock(SignalHeadSection signal, CodeGroupThreeBits direction, BeanSetting[] beans) {
         this.farSignal = signal;
@@ -37,13 +36,13 @@ public class TrafficLock implements Lock {
     SignalHeadSection farSignal;
     CodeGroupThreeBits direction;
     BeanSetting[] beans;
-
+    
     /**
      * Test the lock conditions
      * @return True if lock is clear and operation permitted
      */
     @Override
-    public boolean isLockClear(LockLogger lockLogger) {
+    public boolean isLockClear() {
         if (beans != null) {
             // if route doesn't match, permitted
             for (BeanSetting bean : beans) {
@@ -61,12 +60,5 @@ public class TrafficLock implements Lock {
         lockLogger.setStatus(this, "");
         return true;
     }
-
-    @Override
-    public String toString() {
-        String retval = isLockClear(debugLockLogger) ? "clear " : "locked";
-        retval = retval+debugLockLogger.memory.getValue();
-        return retval;
-    }
-
+    
 }

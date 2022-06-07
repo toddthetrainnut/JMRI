@@ -1,14 +1,15 @@
 package jmri.jmrix.secsi.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * SerialSensorManagerXmlTest.java
  *
- * Test for the SerialSensorManagerXml class
+ * Description: tests for the SerialSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class SerialSensorManagerXmlTest {
       Assert.assertNotNull("SerialSensorManagerXml constructor",new SerialSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -2,6 +2,7 @@ package jmri.jmrit.ctc;
 
 import java.awt.event.ActionEvent;
 import jmri.util.swing.JmriAbstractAction;
+import jmri.util.swing.WindowInterface;
 
 /**
  * Swing action to create and register the CTC Run Time.
@@ -27,7 +28,10 @@ public class CtcRunAction extends JmriAbstractAction {
         }
         CTCMain _mCTCMain = new CTCMain();
         jmri.InstanceManager.setDefault(CTCMain.class, _mCTCMain);
-        _mCTCMain.startup();
+
+        // Set the file path
+        String filename = CTCFiles.getFullName("CTCSystem.xml");  // NOI18N
+        _mCTCMain.readDataFromXMLFile(filename);
     }
 
     // never invoked, because we overrode actionPerformed above

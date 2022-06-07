@@ -2,19 +2,16 @@ package jmri.jmrit.withrottle;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import jmri.InstanceManager;
 import jmri.NamedBeanHandleManager;
 import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of MultiThrottle
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class MultiThrottleTest {
 
@@ -177,10 +174,9 @@ public class MultiThrottleTest {
         Assert.assertTrue((Boolean)m.invoke(throttle, "L320"));
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
-        JUnitUtil.initRosterConfigManager();
         InstanceManager.setDefault(NamedBeanHandleManager.class, new NamedBeanHandleManager());
         InstanceManager.setDefault(WiThrottlePreferences.class, new WiThrottlePreferences());
         JUnitUtil.initDebugThrottleManager();
@@ -189,7 +185,7 @@ public class MultiThrottleTest {
         throttle = new MultiThrottle('A',tcls,cis);
     }
     
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         cis = null;
         tcls = null;

@@ -1,14 +1,13 @@
 package jmri.configurexml;
 
 import java.io.File;
-
 import jmri.ConfigureManager;
 import jmri.InstanceManager;
-import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Functional checks of loading basic configuration files. When done across
@@ -25,7 +24,7 @@ public class LoadAndCheckTest {
     /**
      * Test a file with current schema.
      *
-     * @throws Exception rethrows any exception
+     * @throws Exception
      */
     @Test
     public void testLoadFileTest() throws Exception {
@@ -33,7 +32,7 @@ public class LoadAndCheckTest {
         InstanceManager.getDefault(ConfigureManager.class)
                 .load(new File("java/test/jmri/configurexml/load/LoadFileTest.xml"));
 
-        // check existence of a few objects
+        // check existance of a few objects
         Assert.assertNotNull(InstanceManager.sensorManagerInstance().getSensor("IS1"));
         Assert.assertNull(InstanceManager.sensorManagerInstance().getSensor("no sensor"));
 
@@ -43,9 +42,6 @@ public class LoadAndCheckTest {
         Assert.assertNotNull(InstanceManager.memoryManagerInstance().getMemory("IM1"));
         Assert.assertNull(InstanceManager.memoryManagerInstance().getMemory("no memory"));
 
-        JUnitAppender.assertWarnMessage("Converting route system name IR1 to IO1");
-        JUnitAppender.assertWarnMessage("System names for 1 Routes changed; this may have operational impacts.");
-
     }
 
     @Test
@@ -54,7 +50,7 @@ public class LoadAndCheckTest {
         InstanceManager.getDefault(ConfigureManager.class)
                 .load(new File("java/test/jmri/configurexml/load/LoadMultipleSystems.xml"));
 
-        // check existence of a few objects
+        // check existance of a few objects
         Assert.assertNotNull(InstanceManager.sensorManagerInstance().getSensor("IS1"));
         Assert.assertNull(InstanceManager.sensorManagerInstance().getSensor("no sensor"));
 
@@ -72,7 +68,7 @@ public class LoadAndCheckTest {
         InstanceManager.getDefault(ConfigureManager.class)
                 .load(new java.io.File("java/test/jmri/configurexml/load/LoadFileTest295.xml"));
 
-        // check existence of a few objects
+        // check existance of a few objects
         Assert.assertNotNull(InstanceManager.sensorManagerInstance().getSensor("IS1"));
         Assert.assertNull(InstanceManager.sensorManagerInstance().getSensor("no sensor"));
 
@@ -82,12 +78,9 @@ public class LoadAndCheckTest {
         Assert.assertNotNull(InstanceManager.memoryManagerInstance().getMemory("IM1"));
         Assert.assertNull(InstanceManager.memoryManagerInstance().getMemory("no memory"));
 
-        JUnitAppender.assertWarnMessage("Converting route system name IR1 to IO1");
-        JUnitAppender.assertWarnMessage("System names for 1 Routes changed; this may have operational impacts.");
-
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -96,13 +89,8 @@ public class LoadAndCheckTest {
         JUnitUtil.initInternalLightManager();
         JUnitUtil.initInternalSensorManager();
         JUnitUtil.initMemoryManager();
-        System.setProperty("jmri.test.no-dialogs", "true");
     }
 
-    @AfterEach
-    public void tearDown() {
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.tearDown();
-        System.setProperty("jmri.test.no-dialogs", "false");
-    }
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

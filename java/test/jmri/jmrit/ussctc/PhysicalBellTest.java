@@ -2,14 +2,12 @@ package jmri.jmrit.ussctc;
 
 import jmri.util.JUnitUtil;
 import jmri.*;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for PhysicalBell class in the jmri.jmrit.ussctc package
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class PhysicalBellTest {
 
@@ -32,17 +30,19 @@ public class PhysicalBellTest {
     
     Turnout layoutTurnout;
     
-    @BeforeEach
+    // The minimal setup for log4J
+    @org.junit.Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
         JUnitUtil.initConfigureManager();
         JUnitUtil.initInternalTurnoutManager();
+        JUnitUtil.initShutDownManager();
         
         layoutTurnout = InstanceManager.getDefault(TurnoutManager.class).provideTurnout("IT1"); layoutTurnout.setUserName("Bell output");
     }
 
-    @AfterEach
+    @org.junit.After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

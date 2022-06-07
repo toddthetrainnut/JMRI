@@ -1,8 +1,8 @@
 package jmri.jmrix.rfid;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the RfidNetworkPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class RfidNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        RfidSystemConnectionMemo memo = new RfidSystemConnectionMemo();
@@ -24,7 +24,7 @@ public class RfidNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPor
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

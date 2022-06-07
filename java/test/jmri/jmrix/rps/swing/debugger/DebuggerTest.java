@@ -1,18 +1,17 @@
 package jmri.jmrix.rps.swing.debugger;
 
 import java.awt.GraphicsEnvironment;
-
 import javax.vecmath.Point3d;
-
 import jmri.jmrix.rps.Engine;
 import jmri.jmrix.rps.Measurement;
 import jmri.jmrix.rps.Reading;
 import jmri.jmrix.rps.Receiver;
 import jmri.jmrix.rps.RpsSystemConnectionMemo;
-
-import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.Assert;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.rps.swing.debugger package
@@ -50,18 +49,16 @@ public class DebuggerTest {
         f.dispose();
     }
 
-    @BeforeEach
+    @Before
     public void setUp(){
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
-        jmri.util.JUnitUtil.initRosterConfigManager();
 
         memo = new RpsSystemConnectionMemo();
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
-        jmri.util.JUnitUtil.clearShutDownManager();
         jmri.util.JUnitUtil.tearDown();
     }
 

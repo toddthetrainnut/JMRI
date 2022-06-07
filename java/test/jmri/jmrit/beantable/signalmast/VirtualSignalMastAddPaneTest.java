@@ -7,19 +7,16 @@ import jmri.*;
 import jmri.implementation.*;
 import jmri.util.*;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 import org.netbeans.jemmy.operators.*;
 
 /**
- * @author Bob Jacobsen Copyright 2018
+ * @author	Bob Jacobsen Copyright 2018
  */
 public class VirtualSignalMastAddPaneTest extends AbstractSignalMastAddPaneTestBase {
 
     /** {@inheritDoc} */
-    @Override
     protected SignalMastAddPane getOTT() { return new VirtualSignalMastAddPane(); }    
     
     @Test
@@ -67,7 +64,6 @@ public class VirtualSignalMastAddPaneTest extends AbstractSignalMastAddPaneTestB
 
         vp.setAspectNames(
             new jmri.implementation.DefaultSignalAppearanceMap("IM123") {
-                @Override
                 public Enumeration<String> getAspects() {
                     return java.util.Collections.enumeration(
                         java.util.Arrays.asList(
@@ -120,7 +116,6 @@ public class VirtualSignalMastAddPaneTest extends AbstractSignalMastAddPaneTestB
         
         vp.setAspectNames(
             new jmri.implementation.DefaultSignalAppearanceMap("IM123") {
-                @Override
                 public Enumeration<String> getAspects() { return mast.getAllKnownAspects().elements(); }
             }
                 , InstanceManager.getDefault(jmri.SignalSystemManager.class).getSystem("basic"));
@@ -158,15 +153,13 @@ public class VirtualSignalMastAddPaneTest extends AbstractSignalMastAddPaneTestB
         });
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initDefaultUserMessagePreferences();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

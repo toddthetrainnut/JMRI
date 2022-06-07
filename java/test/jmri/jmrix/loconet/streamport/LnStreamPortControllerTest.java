@@ -1,9 +1,8 @@
 package jmri.jmrix.loconet.streamport;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.After;
+import org.junit.Before;
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
 
 /**
@@ -16,7 +15,7 @@ public class LnStreamPortControllerTest extends jmri.jmrix.AbstractStreamPortCon
     private LocoNetSystemConnectionMemo memo;
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        memo = new LocoNetSystemConnectionMemo();
@@ -25,7 +24,7 @@ public class LnStreamPortControllerTest extends jmri.jmrix.AbstractStreamPortCon
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        memo.dispose();
        memo = null;

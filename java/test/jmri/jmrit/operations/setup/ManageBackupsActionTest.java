@@ -1,19 +1,18 @@
 package jmri.jmrit.operations.setup;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
 import jmri.jmrit.operations.OperationsTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ManageBackupsActionTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
-        ManageBackupsAction t = new ManageBackupsAction();
+        ManageBackupsAction t = new ManageBackupsAction("Test");
         Assert.assertNotNull("exists",t);
     }
 

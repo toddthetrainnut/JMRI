@@ -81,17 +81,17 @@ public class SplitTextVariableValue extends SplitVariableValue {
             padByteVal = (byte) Integer.parseUnsignedInt(padByteStr);
         }
         log.debug("stepOneActions");
-        log.debug("atest={}", atest);
-        log.debug("termByteStr=\"{}\",padByteStr=\"{}\"", termByteStr, padByteStr);
-        log.debug("termByteVal={},padByteVal={}", termByteVal, padByteVal);
+        log.debug("atest=" + atest);
+        log.debug("termByteStr=\"" + termByteStr + "\",padByteStr=\"" + padByteStr + "\"");
+        log.debug("termByteVal=" + termByteVal + ",padByteVal=" + padByteVal);
     }
 
     @Override
     public void stepTwoActions() {
         log.debug("stepTwoActions");
-        log.debug("atest={}", atest);
-        log.debug("termByteStr=\"{}\",padByteStr=\"{}\"", termByteStr, padByteStr);
-        log.debug("termByteVal={},padByteVal={}", termByteVal, padByteVal);
+        log.debug("atest=" + atest);
+        log.debug("termByteStr=\"" + termByteStr + "\",padByteStr=\"" + padByteStr + "\"");
+        log.debug("termByteVal=" + termByteVal + ",padByteVal=" + padByteVal);
         _columns = cvCount + 2; //update column width now we have a better idea
     }
 
@@ -137,8 +137,6 @@ public class SplitTextVariableValue extends SplitVariableValue {
         return ret; //fall through
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification="I18N of Error Message")
     void unsupportedCharset() {
         synchronized (this) {
             JOptionPane.showMessageDialog(new JFrame(), Bundle.getMessage("UnsupportedCharset", charSet, _name),
@@ -156,7 +154,7 @@ public class SplitTextVariableValue extends SplitVariableValue {
         // get new bytes from string
         byte[] newEntries = getBytesFromText(_textField.getText());
 
-        log.debug("getCvValsFromTextField>newEntries.length={}", newEntries.length);
+        log.debug("getCvValsFromTextField>newEntries.length=" + newEntries.length);
         int[] retVals = new int[cvCount];
 
         // convert to UnsignedInt in retVals
@@ -178,7 +176,7 @@ public class SplitTextVariableValue extends SplitVariableValue {
 
     /**
      * Contains byte-value specific code.
-     * <br>
+     * <br><br>
      * Calculates new value for _textField and invokes
      * {@link #setValue(String) setValue(newVal)} to make and notify the change
      *
@@ -193,21 +191,21 @@ public class SplitTextVariableValue extends SplitVariableValue {
             byteVals[i] = (byte) intVals[i];
         }
         String newVal = getTextFromBytes(byteVals);
-        log.debug("Variable={}; set value to '{}';length = {}", _name, newVal, newVal.length());
+        log.debug("Variable=" + _name + "; set value to '" + newVal + "';length = " + newVal.length());
         if (log.isDebugEnabled()) {
-            log.debug("Variable={}; set value to {}", _name, newVal);
+            log.debug("Variable=" + _name + "; set value to " + newVal);
         }
         log.debug("setValue(newVal)to {}", newVal);
         setValue(newVal);  // check for duplicate is done inside setValue
         log.debug("done setValue(newVal)to {}", newVal);
         if (log.isDebugEnabled()) {
-            log.debug("Variable={}; in property change after setValueFromString call", _name);
+            log.debug("Variable=" + _name + "; in property change after setValueFromString call");
         }
     }
 
     /**
      * Contains byte-value specific code.
-     * <br>
+     * <br><br>
      * firePropertyChange for "Value" with new and old contents of _textField
      */
     @Override
@@ -223,7 +221,7 @@ public class SplitTextVariableValue extends SplitVariableValue {
             log.debug("Value changed from '{}' to '{}", oldVal, newVal);
             // special care needed if _textField is shrinking
             _fieldShrink = (newVal.length() < oldVal.length());
-            log.debug("_fieldShrink={}", _fieldShrink);
+            log.debug("_fieldShrink=" + _fieldShrink);
             updatedTextField();
             prop.firePropertyChange("Value", oldVal, newVal);
         }
@@ -231,51 +229,52 @@ public class SplitTextVariableValue extends SplitVariableValue {
 
     /**
      * Contains byte-value specific code.
-     * <br>
-     * invokes {@link #exitField exitField()} to process text and
+     * <br><br>
+     * invokes {@link #updatedTextField updatedTextField()}
+     * <br><br>
      * firePropertyChange for "Value" with new contents of _textField
      *
      * @param e the action event
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        log.debug("Variable={}; actionPerformed", _name);
-        exitField();
+        if (log.isDebugEnabled()) {
+            log.debug("Variable=" + _name + "; actionPerformed");
+        }
+        byte[] newVal = getBytesFromText(_textField.getText());
+        updatedTextField();
+        prop.firePropertyChange("Value", null, newVal);
     }
 
     @Override
     public int getIntValue() {
-        log.error("getValue doesn't make sense for a split text value");
-        return 0;
-    }
-
-    @Override
-    public long getLongValue() {
-        log.error("getLongValue doesn't make sense for a split text value");
+        log.warn("getValue doesn't make sense for a split text value");
         return 0;
     }
 
     @Override
     public void setValue(String value) {
-        log.debug("Variable={}; enter setValue {}", _name, value);
+        if (log.isDebugEnabled()) {
+            log.debug("Variable=" + _name + "; enter setValue " + value);
+        }
         String oldVal = _textField.getText();
-        log.debug("Variable={}; setValue with new value {} old value {}", _name, value, oldVal);
+        if (log.isDebugEnabled()) {
+            log.debug("Variable=" + _name + "; setValue with new value " + value + " old value " + oldVal);
+        }
         _textField.setText(value);
-//        if (!oldVal.equals(value) || getState() == VariableValue.UNKNOWN) {
-//            actionPerformed(null);
-//        }
+        if (!oldVal.equals(value) || getState() == VariableValue.UNKNOWN) {
+            actionPerformed(null);
+        }
         prop.firePropertyChange("Value", oldVal, value);
-        log.debug("Variable={}; exit setValue {}", _name, value);
+        if (log.isDebugEnabled()) {
+            log.debug("Variable=" + _name + "; exit setValue " + value);
+
+        }
     }
 
     @Override
     public void setIntValue(int i) {
-        log.warn("setIntValue doesn't make sense for a split text value: {}", i);
-    }
-
-    @Override
-    public void setLongValue(long i) {
-        log.warn("setLongValue doesn't make sense for a split text value: {}", i);
+        log.warn("setIntValue doesn't make sense for a split text value: " + i);
     }
 
     // initialize logging

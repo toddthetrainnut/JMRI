@@ -4,6 +4,8 @@ import javax.swing.BorderFactory;
 
 import jmri.jmrit.operations.locations.tools.ChangeTrackTypeAction;
 import jmri.jmrit.operations.locations.tools.IgnoreUsedTrackAction;
+import jmri.jmrit.operations.locations.tools.ShowCarsByLocationAction;
+import jmri.jmrit.operations.locations.tools.ShowTrainsServingLocationAction;
 import jmri.jmrit.operations.locations.tools.TrackDestinationEditAction;
 
 /**
@@ -15,13 +17,7 @@ import jmri.jmrit.operations.locations.tools.TrackDestinationEditAction;
 public class InterchangeEditFrame extends TrackEditFrame {
 
     public InterchangeEditFrame() {
-        super(Bundle.getMessage("AddInterchange"));
-    }
-    
-    @Override
-    public void initComponents(Track track) {
-        setTitle(Bundle.getMessage("EditInterchange"));
-        initComponents(track.getLocation(), track);
+        super();
     }
 
     @Override
@@ -30,9 +26,11 @@ public class InterchangeEditFrame extends TrackEditFrame {
 
         super.initComponents(location, track);
 
-        _toolMenu.insert(new IgnoreUsedTrackAction(_track), TOOL_MENU_OFFSET);
-        _toolMenu.insert(new TrackDestinationEditAction(_track), TOOL_MENU_OFFSET + 1);
-        _toolMenu.insert(new ChangeTrackTypeAction(this), TOOL_MENU_OFFSET + 2);
+        _toolMenu.add(new IgnoreUsedTrackAction(this));
+        _toolMenu.add(new TrackDestinationEditAction(this));
+        _toolMenu.add(new ChangeTrackTypeAction(this));
+        _toolMenu.add(new ShowTrainsServingLocationAction(Bundle.getMessage("MenuItemShowTrainsTrack"), _location, _track));
+        _toolMenu.add(new ShowCarsByLocationAction(false, _location, _track));
         addHelpMenu("package.jmri.jmrit.operations.Operations_Interchange", true); // NOI18N
 
         // override text strings for tracks

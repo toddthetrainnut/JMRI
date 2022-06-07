@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @see jmri.jmrix.rps.Model
  * @see jmri.jmrix.rps.Measurement
  *
- * @author Bob Jacobsen Copyright (C) 2006, 2008
+ * @author	Bob Jacobsen Copyright (C) 2006, 2008
  */
 public class RpsTrackingPanel extends javax.swing.JPanel
         implements MeasurementListener {
@@ -91,10 +91,8 @@ public class RpsTrackingPanel extends javax.swing.JPanel
     }
 
     /**
-     * Sets the coordinates of the lower left corner of the screen/paper.
-     * Note this is different from the usual Swing coordinate system!
-     * @param x distance from left.
-     * @param y distance from bottom.
+     * Sets the coordinates of the lower left corner of the screen/paper. Note
+     * this is different from the usual Swing coordinate system!
      */
     public void setOrigin(double x, double y) {
         xorigin = x;
@@ -118,10 +116,8 @@ public class RpsTrackingPanel extends javax.swing.JPanel
     boolean showRegions = false;
 
     /**
-     * Sets the coordinates of the upper-right corner of the screen/paper.
-     * Note this is different from the usual Swing coordinate system!
-     * @param x distance from right.
-     * @param y distance from top.
+     * Sets the coordinates of the upper-right corner of the screen/paper. Note
+     * this is different from the usual Swing coordinate system!
      */
     public void setCoordMax(double x, double y) {
         xmax = x;
@@ -207,7 +203,6 @@ public class RpsTrackingPanel extends javax.swing.JPanel
 
     /**
      * Pick a color for the next set of measurement lines to draw
-     * @return Color for next line chosen via algorithm
      */
     Color nextColor() {
         int red = Math.min(255, ((measurementColor >> 2) & 0x1) * 255 / 1);

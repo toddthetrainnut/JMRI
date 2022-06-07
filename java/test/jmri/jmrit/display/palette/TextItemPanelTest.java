@@ -1,13 +1,13 @@
 package jmri.jmrit.display.palette;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrit.display.controlPanelEditor.ControlPanelEditor;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -26,23 +26,21 @@ public class TextItemPanelTest {
             ip = ItemPalette.getDefault("Test ItemPalette", es);
             ip.pack();
         });
-        TextItemPanel t = new TextItemPanel(ip, "test");
+        TextItemPanel t = new TextItemPanel(ip, "test", es);
         Assert.assertNotNull("exists", t);
         JUnitUtil.dispose(ip);
-        JUnitUtil.dispose(es);
    }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ip = null;
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

@@ -46,9 +46,6 @@ public abstract class AbstractMessage implements Message {
         System.arraycopy(m._dataChars, 0, _dataChars, 0, _nDataChars);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getElement(int n) {
         return _dataChars[n];
@@ -56,17 +53,11 @@ public abstract class AbstractMessage implements Message {
 
     // accessors to the bulk data
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNumDataElements() {
         return _nDataChars;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setElement(int n, int v) {
         _dataChars[n] = v;
@@ -102,8 +93,7 @@ public abstract class AbstractMessage implements Message {
     }
 
     /**
-     * Hash code from base data.
-     * @return hashcode from sum of elements.
+     * Hash code from base data
      */
     @Override
     public int hashCode() {

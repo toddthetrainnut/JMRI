@@ -16,21 +16,13 @@ import jmri.Throttle;
 import jmri.jmrit.roster.RosterIconFactory;
 import jmri.util.FileUtil;
 
-/**
- * A TableCellRender to graphicaly display an active throttles in a summary table
- * (see ThrottlesListPanel)
- * 
- * @author Lionel Jeanson - 2011
- * 
- */
-
 public class ThrottlesTableCellRenderer implements TableCellRenderer {
 
-    private static final ImageIcon FWD_ICN = new ImageIcon(FileUtil.findURL("resources/icons/throttles/dirFwdOn.png"));
-    private static final ImageIcon BCK_ICN = new ImageIcon(FileUtil.findURL("resources/icons/throttles/dirBckOn.png"));
-    private static final ImageIcon ESTOP_ICN = new ImageIcon(FileUtil.findURL("resources/icons/throttles/estop24.png"));
-    private static final RosterIconFactory ICN_FACT = new RosterIconFactory(32);
-    final static int LINE_HEIGHT = 42;
+    private static final ImageIcon fwdIcon = new ImageIcon(FileUtil.findURL("resources/icons/throttles/up-green.png"));
+    private static final ImageIcon bckIcon = new ImageIcon(FileUtil.findURL("resources/icons/throttles/down-green.png"));
+    private static final ImageIcon estopIcon = new ImageIcon(FileUtil.findURL("resources/icons/throttles/estop24.png"));
+    private static final RosterIconFactory iconFactory = new RosterIconFactory(32);
+    final static int height = 42;
 
     @Override
     public Component getTableCellRendererComponent(JTable jtable, Object value, boolean bln, boolean bln1, int i, int i1) {
@@ -45,7 +37,7 @@ public class ThrottlesTableCellRenderer implements TableCellRenderer {
         ImageIcon icon = null;
         String text;
         if (tf.getRosterEntry() != null) {
-            icon = ICN_FACT.getIcon(tf.getAddressPanel().getRosterEntry());
+            icon = iconFactory.getIcon(tf.getAddressPanel().getRosterEntry());
             text = tf.getAddressPanel().getRosterEntry().getId();
         } else if ((tf.getAddressPanel().getCurrentAddress() != null) && (tf.getAddressPanel().getThrottle() != null)) {
             switch (tf.getAddressPanel().getCurrentAddress().getNumber()) {
@@ -73,16 +65,16 @@ public class ThrottlesTableCellRenderer implements TableCellRenderer {
         retPanel.add(locoID, BorderLayout.CENTER);
 
         if (tf.getAddressPanel().getThrottle() != null) {
-            final ThrottlesPreferences preferences = InstanceManager.getDefault(ThrottlesPreferences.class);
             JPanel ctrlPanel = new JPanel();
             ctrlPanel.setLayout(new BorderLayout());
             Throttle thr = tf.getAddressPanel().getThrottle();
             JLabel dir = new JLabel();
-            if (preferences.isUsingExThrottle() && preferences.isUsingFunctionIcon()) {
+            if (InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingExThrottle()
+                    && InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingFunctionIcon()) {
                 if (thr.getIsForward()) {
-                    dir.setIcon(FWD_ICN);
+                    dir.setIcon(fwdIcon);
                 } else {
-                    dir.setIcon(BCK_ICN);
+                    dir.setIcon(bckIcon);
                 }
             } else {
                 if (thr.getIsForward()) {
@@ -93,16 +85,17 @@ public class ThrottlesTableCellRenderer implements TableCellRenderer {
             }
             dir.setVerticalAlignment(JLabel.CENTER);
             ctrlPanel.add(dir, BorderLayout.WEST);
-            if (preferences.isUsingExThrottle() && preferences.isUsingFunctionIcon()) {
+            if (InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingExThrottle()
+                    && InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingFunctionIcon()) {
                 if (thr.getSpeedSetting() == -1) {
                     JLabel estop = new JLabel();
-                    estop.setPreferredSize(new Dimension(64, LINE_HEIGHT - 8));
+                    estop.setPreferredSize(new Dimension(64, height - 8));
                     estop.setHorizontalAlignment(JLabel.CENTER);
-                    estop.setIcon(ESTOP_ICN);
+                    estop.setIcon(estopIcon);
                     ctrlPanel.add(estop, BorderLayout.CENTER);
                 } else {
                     JProgressBar speedBar = new javax.swing.JProgressBar();
-                    speedBar.setPreferredSize(new Dimension(64, LINE_HEIGHT - 8));
+                    speedBar.setPreferredSize(new Dimension(64, height - 8));
                     speedBar.setMinimum(0);
                     speedBar.setMaximum(100);
                     speedBar.setValue((int) (thr.getSpeedSetting() * 100f));

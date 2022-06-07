@@ -8,8 +8,6 @@ import jmri.Manager;
 import jmri.NamedBean;
 import jmri.NamedBeanHandle;
 import jmri.NamedBeanHandleManager;
-import jmri.configurexml.JmriConfigureXmlException;
-import jmri.configurexml.XmlAdapter;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -170,13 +168,12 @@ public abstract class AbstractNamedBeanManagerConfigXML extends jmri.configurexm
      * <p>
      * Package-level access to allow testing
      *
-     * @param <T>           The type of NamedBean being checked, i.e. Turnout, Sensor, etc
      * @param rawSystemName The proposed system name string, before
      *                      normalization
      * @param rawUserName   The proposed user name string, before normalization
      * @param manager       The NamedBeanManager that will be storing this
      */
-    <T extends NamedBean> void checkNameNormalization(@Nonnull String rawSystemName, String rawUserName, @Nonnull Manager<T> manager) {
+    void checkNameNormalization(@Nonnull String rawSystemName, String rawUserName, @Nonnull jmri.Manager manager) {
         // just check and log
         if (rawUserName != null) {
             String normalizedUserName = NamedBean.normalizeUserName(rawUserName);
@@ -185,7 +182,7 @@ public abstract class AbstractNamedBeanManagerConfigXML extends jmri.configurexm
                         rawUserName, rawSystemName, normalizedUserName);
             }
             if (normalizedUserName != null) {
-                NamedBean bean = manager.getByUserName(normalizedUserName);
+                NamedBean bean = manager.getBeanByUserName(normalizedUserName);
                 if (bean != null && !bean.getSystemName().equals(rawSystemName)) {
                     log.warn("User name \"{}\" already exists as system name \"{}\"", normalizedUserName, bean.getSystemName());
                 }
@@ -266,7 +263,7 @@ public abstract class AbstractNamedBeanManagerConfigXML extends jmri.configurexm
      * @param m    Manager used to check name for validity and existence
      * @return name if a matching NamedBean can be found or null
      */
-    public <T extends NamedBean> String checkedNamedBeanName(String name, T type, @Nonnull Manager<T> m) {
+    public <T extends NamedBean> String checkedNamedBeanName(String name, T type, @Nonnull Manager m) {
         if (name == null) {
             return null;
         }
@@ -406,8 +403,8 @@ public abstract class AbstractNamedBeanManagerConfigXML extends jmri.configurexm
                 Object value = null;
                 if (e.getChild("value") != null) {
                     cl = Class.forName(e.getChild("value").getAttributeValue("class"));
-                    ctor = cl.getConstructor(String.class);
-                    value = ctor.newInstance(e.getChild("value").getText());
+                    ctor = cl.getConstructor(new Class<?>[]{String.class});
+                    value = ctor.newInstance(new Object[]{e.getChild("value").getText()});
                 }
 
                 // store
@@ -420,35 +417,5 @@ public abstract class AbstractNamedBeanManagerConfigXML extends jmri.configurexm
         });
     }
 
-    /**
-     * Load all attribute properties from a list.
-     * TODO make abstract (remove logging) and move method to XmlAdapter so it can be used from PanelEditorXml et al
-     *
-     * @param list list of Elements read from xml
-     * @param perNode Top-level XML element containing the private, single-node elements of the description.
-     *                always null in current application, included to use for Element panel in jmri.jmrit.display
-     * @return true if the load was successful
-     */
-    boolean loadInAdapter(List<Element> list, Element perNode) {
-        boolean result = true;
-        for (Element item : list) {
-            // get the class, hence the adapter object to do loading
-            String adapterName = item.getAttribute("class").getValue();
-            log.debug("load via {}", adapterName);
-            try {
-                XmlAdapter adapter = (XmlAdapter) Class.forName(adapterName).getDeclaredConstructor().newInstance();
-                // and do it
-                adapter.load(item, perNode);
-            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
-                    | IllegalAccessException | java.lang.reflect.InvocationTargetException
-                    | JmriConfigureXmlException e) {
-                log.error("Exception while loading {}: {}", item.getName(), e, e);
-                result = false;
-            }
-        }
-        return result;
-    }
-
     private final static Logger log = LoggerFactory.getLogger(AbstractNamedBeanManagerConfigXML.class);
-
 }

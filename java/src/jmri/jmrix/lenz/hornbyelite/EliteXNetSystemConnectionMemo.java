@@ -33,6 +33,6 @@ public class EliteXNetSystemConnectionMemo extends XNetSystemConnectionMemo {
         }
     }
 
-    // private static final Logger log = LoggerFactory.getLogger(EliteXNetSystemConnectionMemo.class);
+    // private final static Logger log = LoggerFactory.getLogger(EliteXNetSystemConnectionMemo.class);
 
 }

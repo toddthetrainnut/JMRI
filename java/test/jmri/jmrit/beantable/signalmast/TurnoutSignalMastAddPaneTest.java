@@ -4,16 +4,18 @@ import jmri.InstanceManager;
 import jmri.implementation.*;
 import jmri.util.*;
 
-import org.junit.jupiter.api.*;
+import java.util.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * @author Bob Jacobsen Copyright 2018
+ * @author	Bob Jacobsen Copyright 2018
  */
 public class TurnoutSignalMastAddPaneTest extends AbstractSignalMastAddPaneTestBase {
 
     /** {@inheritDoc} */
-    @Override
     protected SignalMastAddPane getOTT() { return new TurnoutSignalMastAddPane(); }    
     
     @Test
@@ -36,15 +38,13 @@ public class TurnoutSignalMastAddPaneTest extends AbstractSignalMastAddPaneTestB
         JUnitAppender.assertErrorMessage("mast was wrong type: IF$xsm:basic:one-low($0001)-3t jmri.implementation.MatrixSignalMast");
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initDefaultUserMessagePreferences();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

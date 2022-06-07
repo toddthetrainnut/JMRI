@@ -144,7 +144,9 @@ public class BlockContentsIcon extends MemoryIcon {
         if (isEditable() && selectable) {
             popup.add(new JSeparator());
 
-            for (String key : map.keySet()) {
+            java.util.Iterator<String> iterator = map.keySet().iterator();
+            while (iterator.hasNext()) {
+                String key = iterator.next();
                 //String value = ((NamedIcon)map.get(key)).getName();
                 popup.add(new AbstractAction(key) {
                     @Override
@@ -261,7 +263,12 @@ public class BlockContentsIcon extends MemoryIcon {
     protected void edit() {
         makeIconEditorFrame(this, "Block", true, null); // NOI18N
         _iconEditor.setPickList(jmri.jmrit.picker.PickListModel.blockPickModelInstance());
-        ActionListener addIconAction = a -> editBlock();
+        ActionListener addIconAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                editBlock();
+            }
+        };
         _iconEditor.complete(addIconAction, false, true, true);
         _iconEditor.setSelection(getBlock());
     }

@@ -2,14 +2,15 @@ package jmri.jmrix.nce.packetgen;
 
 import jmri.jmrix.nce.NceMessage;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.nce.packetgen.NcePacketGenPanel class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class NcePacketGenPanelTest extends jmri.util.swing.JmriPanelTest {
 
@@ -36,7 +37,7 @@ public class NcePacketGenPanelTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         panel = new NcePacketGenPanel();
@@ -45,7 +46,7 @@ public class NcePacketGenPanelTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {        JUnitUtil.tearDown();    }
 
 }

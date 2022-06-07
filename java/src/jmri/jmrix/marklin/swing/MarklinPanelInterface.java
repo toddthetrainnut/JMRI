@@ -16,7 +16,6 @@ public interface MarklinPanelInterface {
      * <p>
      * This needs to be connected to the initContext() method in implementing
      * classes.
-     * @param memo system connection.
      */
     public void initComponents(MarklinSystemConnectionMemo memo);
 

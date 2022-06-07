@@ -70,8 +70,7 @@ public class ManuallySetRoute {
             if (protect.isThroughPathActive(i)) {
                 if (protect.getThroughPathSource(i) == face.getBlock()) {
                     jmri.Block found = protect.getThroughPathDestination(i);
-                    LayoutBlock lfound = lbm.getLayoutBlock(found);
-                    if (found.getState() == jmri.Block.UNOCCUPIED && lfound!=null && !lfound.getUseExtraColor()) {
+                    if (found.getState() == jmri.Block.UNOCCUPIED && !lbm.getLayoutBlock(found).getUseExtraColor()) {
                         return found;
                     }
                 }

@@ -3,11 +3,8 @@ package jmri;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Scale tests.
@@ -91,13 +88,14 @@ public class ScaleTest {
         jmri.util.JUnitAppender.assertWarnMessage("The ratio change for HO scale to 123.0 was rejected: Reason: Test Ratio Veto");
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

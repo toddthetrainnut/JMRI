@@ -6,29 +6,26 @@
 package jmri.managers;
 
 import java.beans.PropertyChangeListener;
-
-import jmri.JmriException;
 import jmri.Sensor;
 import jmri.SensorManager;
-import jmri.util.JUnitAppender;
-
-import org.junit.jupiter.api.*;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Abstract Base Class for SensorManager tests in specific jmrix packages. This
  * is not itself a test class, e.g. should not be added to a suite. Instead,
  * this forms the base for test classes, including providing some common tests
  *
- * @author Bob Jacobsen 2003, 2006, 2008, 2016
- * @author  Paul Bender Copyright(C) 2016
+ * @author	Bob Jacobsen 2003, 2006, 2008, 2016
+ * @author      Paul Bender Copyright(C) 2016
  */
 public abstract class AbstractSensorMgrTestBase extends AbstractProvidingManagerTestBase<SensorManager, Sensor> {
 
     // implementing classes must provide these abstract members:
     //
-    @BeforeEach
-    abstract public void setUp(); // load l with actual object; create scaffolds as needed
+    @Before
+    abstract public void setUp();    	// load l with actual object; create scaffolds as needed
 
     abstract public String getSystemName(int i);
 
@@ -77,26 +74,28 @@ public abstract class AbstractSensorMgrTestBase extends AbstractProvidingManager
     public void testDelete() {
         // create
         Sensor t = l.provide(getSystemName(getNumToTest1()));
-
+        
         // two-pass delete, details not really tested
-
+        
         try {
             l.deleteBean(t, "CanDelete");
         } catch (java.beans.PropertyVetoException e) {}
         try {
             l.deleteBean(t, "DoDelete");
         } catch (java.beans.PropertyVetoException e) {}
-
+        
         // check for bean
         Assert.assertNull("no bean", l.getBySystemName(getSystemName(getNumToTest1())));
         // check for lengths
+        Assert.assertEquals(0, l.getNamedBeanList().size());
         Assert.assertEquals(0, l.getNamedBeanSet().size());
+        Assert.assertEquals(0, l.getSystemNameAddedOrderList().size());
+        Assert.assertEquals(0, l.getSystemNameList().size());
+        Assert.assertEquals(0, l.getSystemNameArray().length);
+        jmri.util.JUnitAppender.suppressWarnMessage("Manager#getSystemNameArray() is deprecated");
         Assert.assertEquals(0, l.getObjectCount());
-
-        jmri.util.JUnitAppender.suppressWarnMessageStartsWith("getNamedBeanList");
-        jmri.util.JUnitAppender.suppressWarnMessageStartsWith("getSystemNameList");
-
     }
+
 
     @Test
     public void testDefaultSystemName() {
@@ -107,10 +106,9 @@ public abstract class AbstractSensorMgrTestBase extends AbstractProvidingManager
         Assert.assertEquals("system name correct ", t, l.getBySystemName(getSystemName(getNumToTest1())));
     }
 
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void testProvideFailure() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> l.provideSensor(""));
-        jmri.util.JUnitAppender.assertErrorMessage("Invalid system name for Sensor: System name must start with \"" + l.getSystemNamePrefix() + "\".");
+        l.provideSensor("");
     }
 
     @Test
@@ -160,10 +158,10 @@ public abstract class AbstractSensorMgrTestBase extends AbstractProvidingManager
     public void testUpperLower() {  // this is part of testing of (default) normalization
         Sensor t = l.provideSensor("" + getNumToTest2());
         String name = t.getSystemName();
-
+        
         int prefixLength = l.getSystemPrefix().length()+1;     // 1 for type letter
         String lowerName = name.substring(0, prefixLength)+name.substring(prefixLength, name.length()).toLowerCase();
-
+        
         Assert.assertEquals(t, l.getSensor(lowerName));
     }
 
@@ -175,24 +173,12 @@ public abstract class AbstractSensorMgrTestBase extends AbstractProvidingManager
         t1.setUserName("after");
         Sensor t2 = l.getByUserName("after");
         Assert.assertEquals("same object", t1, t2);
-        Assert.assertNull("no old object", l.getByUserName("before"));
+        Assert.assertEquals("no old object", null, l.getByUserName("before"));
     }
 
     @Test
     public void testPullResistanceConfigurable(){
        Assert.assertFalse("Pull Resistance Configurable", l.isPullResistanceConfigurable());
-    }
-
-    @Disabled("Sensor managers doesn't support auto system names")
-    @Test
-    @Override
-    public void testAutoSystemNames() {
-    }
-
-    @Test
-    public void TestGetEntryToolTip(){
-        Assert.assertNotNull("getEntryToolTip not null", l.getEntryToolTip());
-        Assert.assertTrue("Entry ToolTip Contains text",(l.getEntryToolTip().length()>5));
     }
 
     /**

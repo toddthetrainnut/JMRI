@@ -1,17 +1,20 @@
 package jmri.jmrit.operations.setup;
 
-import java.io.*;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.jmrit.XmlFile;
 import jmri.jmrit.operations.OperationsXml;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for backing up and restoring Operations working files. Derived
@@ -129,7 +132,7 @@ public abstract class BackupBase {
     public String[] getBackupSetList() {
         String[] setList = getBackupRoot().list();
         // no guarantee of order, so we need to sort
-        Arrays.sort(setList);
+        java.util.Arrays.sort(setList);
         return setList;
     }
 

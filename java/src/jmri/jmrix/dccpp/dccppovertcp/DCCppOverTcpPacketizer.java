@@ -14,8 +14,6 @@ import jmri.jmrix.dccpp.DCCppReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.concurrent.GuardedBy;
-
 /**
  * Converts Stream-based I/O to/from DCC++ messages. The "DCCppInterface" side
  * sends/receives DCCppMessage objects. The connection to a
@@ -37,7 +35,7 @@ import javax.annotation.concurrent.GuardedBy;
  * @author Alex Shepherd Copyright (C) 2003, 2006
  * @author Mark Underwood Copyright (C) 2015
  *
- * Based on jmri.jmrix.loconet.loconetovertcp.LnOverTcpPacketizer
+ * Based on LnOverTcpPacketizer
  *
  */
 // TODO: Consider ditching the LocoNet-inherited "RECEIVE" and "SEND" prefixes
@@ -67,8 +65,7 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
     /**
      * XmtHandler (a local class) object to implement the transmit thread
      */
-    @GuardedBy ("xmtHandler")
-    final protected Runnable xmtHandler;
+    protected Runnable xmtHandler;
 
     /**
      * RcvHandler (a local class) object to implement the receive thread
@@ -77,9 +74,11 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
 
     /**
      * Synchronized list used as a transmit queue.
+     * <p>
+     * This is public to allow access from the internal class(es) when compiling
+     * with Java 1.1
      */
-    @GuardedBy ("xmtHandler")
-    protected LinkedList<DCCppMessage> xmtList = new LinkedList<>();
+    public LinkedList<DCCppMessage> xmtList = new LinkedList<DCCppMessage>();
 
     @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Only used during system initialization")
     public DCCppOverTcpPacketizer(DCCppCommandStation cs) {
@@ -93,11 +92,14 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
     public DCCppNetworkPortController networkController = null;
 
     public boolean isXmtBusy() {
-        return networkController != null;
+        if (networkController == null) {
+            return false;
+        }
+        return true;
     }
 
     /**
-     * Make connection to existing DCCppNetworkPortController object.
+     * Make connection to existing DCCppPortnetworkController object.
      *
      * @param p Port networkController for connected. Save this for a later
      *          disconnect call
@@ -113,7 +115,7 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
     }
 
     /**
-     * Break connection to existing DCCppNetworkPortController object. Once broken,
+     * Break connection to existing LnPortnetworkController object. Once broken,
      * attempts to send via "message" member will fail.
      *
      * @param p previously connected port
@@ -140,12 +142,12 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
         // update statistics
         //transmittedMsgCount++;
 
-        log.debug("queue DCCpp packet: {}", m);
+        log.debug("queue DCCpp packet: {}", m.toString());
         // in an atomic operation, queue the request and wake the xmit thread
         try {
             synchronized (xmtHandler) {
                 xmtList.addLast(m);
-                xmtHandler.notifyAll();
+                xmtHandler.notify();
             }
         } catch (Exception e) {
             log.warn("passing to xmit: unexpected exception: ", e);
@@ -163,10 +165,10 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
         // make sure that the xmt priority is no lower than the current priority
         int xmtpriority = (Thread.MAX_PRIORITY - 1 > priority ? Thread.MAX_PRIORITY - 1 : Thread.MAX_PRIORITY);
         // start the XmtHandler in a thread of its own
-        Thread xmtThread;
-        synchronized (xmtHandler) { // never null at this point
-            xmtThread = new Thread(xmtHandler, "DCC++ transmit handler");
+        if (xmtHandler == null) {
+            xmtHandler = new XmtHandler();
         }
+        Thread xmtThread = new Thread(xmtHandler, "DCC++ transmit handler");
         log.debug("Xmt thread starts at priority {}", xmtpriority);
         xmtThread.setDaemon(true);
         xmtThread.setPriority(Thread.MAX_PRIORITY - 1);
@@ -185,7 +187,7 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
     /**
      * Captive class to handle incoming characters. This is a permanent loop,
      * looking for input messages in character form on the stream connected to
-     * the DCCppNetworkPortController via <code>connectPort</code>.
+     * the LnPortnetworkController via <code>connectPort</code>.
      */
     class RcvHandler implements Runnable {
 
@@ -250,7 +252,7 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
 
                     // BUG FIX: Incoming DCCppOverTCP messages are already formatted for DCC++ and don't
                     // need to be parsed. Indeed, trying to parse them will screw them up.
-                    // So instead, we de-deprecated the string constructor so that we can
+                    // So instead, we de-@Deprecated the string constructor so that we can
                     // directly create a DCCppReply from the incoming string without translation/parsing.
 
                     //  Note: the substring call below also strips off the "< >"
@@ -270,7 +272,7 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
                     //final DCCppPacketizer thisTc = trafficController;
                     // return a notification via the queue to ensure end
                     Runnable r = new Runnable() {
-                            final DCCppReply msgForLater = thisMsg;
+                            DCCppReply msgForLater = thisMsg;
 
                             @Override
                             public void run() {
@@ -287,7 +289,7 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
                     log.debug("EOFException, is DCC++ serial I/O using timeouts?");
                 } catch (java.io.IOException e) {
                     // fired when write-end of HexFile reaches end
-                    log.debug("IOException, should only happen with HexFile: ", e);
+                    log.debug("IOException, should only happen with HexFile: {}", e);
                     log.info("End of file");
                     //  disconnectPort(networkController);
                     return;
@@ -308,13 +310,13 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
         @Override
         public void run() {
 
-            while (!threadStopRequest) {   // loop until asked to stop
+            while (true) {   // loop permanently
                 // any input?
                 try {
                     // get content; failure is a NoSuchElementException
                     log.debug("check for input");
-                    DCCppMessage msg;
-                    synchronized (xmtHandler) {
+                    DCCppMessage msg = null;
+                    synchronized (this) {
                         msg = xmtList.removeFirst();
                     }
 
@@ -324,11 +326,11 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
                             //Commented out as the original LnPortnetworkController always returned true.
                             //if (!networkController.okToSend()) log.warn(DCCpp port not ready to receive"); // TCP, not RS232, so message is a real warning
                             log.debug("start write to network stream");
-                            StringBuilder packet = new StringBuilder(msg.length() + SEND_PREFIX.length() + 2);
+                            StringBuffer packet = new StringBuffer(msg.length() + SEND_PREFIX.length() + 2);
                             if (useOldPrefix) {
                                 packet.append(OLD_SEND_PREFIX);
                             }
-                            packet.append("<").append(msg.toString()).append(">");
+                            packet.append("<" + msg.toString() + ">");
                             if (log.isDebugEnabled()) { // avoid building a String when not needed
                                 log.debug("Write to LbServer: {}", packet.toString());
                             }
@@ -351,33 +353,6 @@ public class DCCppOverTcpPacketizer extends DCCppPacketizer {
 
                     log.debug("end wait");
                 }
-            }
-        }
-    }
-
-    /**
-     * Terminate the receive and transmit threads.
-     * <p>
-     * This is intended to be used only by testing subclasses.
-     */
-    @Override
-    public void terminateThreads() {
-        threadStopRequest = true;
-        if (xmtThread != null) {
-            xmtThread.interrupt();
-            try {
-                xmtThread.join();
-            } catch (InterruptedException ie){
-                // interrupted during cleanup.
-            }
-        }
-
-        if (rcvThread != null) {
-            rcvThread.interrupt();
-            try {
-                rcvThread.join();
-            } catch (InterruptedException ie){
-                // interrupted during cleanup.
             }
         }
     }

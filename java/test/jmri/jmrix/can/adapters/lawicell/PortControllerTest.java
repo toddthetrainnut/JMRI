@@ -2,8 +2,8 @@ package jmri.jmrix.can.adapters.lawicell;
 
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the PortController class.
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.*;
 public class PortControllerTest extends jmri.jmrix.AbstractSerialPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        CanSystemConnectionMemo memo = new CanSystemConnectionMemo();
@@ -36,7 +36,8 @@ public class PortControllerTest extends jmri.jmrix.AbstractSerialPortControllerT
 
             @Override
             public String[] validBaudRates(){
-                return new String[]{"9600"};
+               String[] retval = {"9600"};
+               return retval;
             }
 
             /**
@@ -52,7 +53,7 @@ public class PortControllerTest extends jmri.jmrix.AbstractSerialPortControllerT
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

@@ -1,16 +1,16 @@
 package jmri.jmrix.jmriclient;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JMRIClientReporterManagerTest.java
  *
- * Test for the jmri.jmrix.jmriclient.JMRIClientReporterManager
+ * Description:	tests for the jmri.jmrix.jmriclient.JMRIClientReporterManager
  * class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class JMRIClientReporterManagerTest extends jmri.managers.AbstractReporterMgrTestBase {
 
@@ -20,7 +20,8 @@ public class JMRIClientReporterManagerTest extends jmri.managers.AbstractReporte
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -32,9 +33,8 @@ public class JMRIClientReporterManagerTest extends jmri.managers.AbstractReporte
         l = new JMRIClientReporterManager(new JMRIClientSystemConnectionMemo(tc));
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

@@ -2,11 +2,11 @@ package jmri.server.json.reporter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -14,12 +14,12 @@ import org.junit.jupiter.api.*;
  */
 public class JsonReporterTest {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

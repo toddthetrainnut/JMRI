@@ -1,5 +1,6 @@
 package jmri.jmrix.xpa.configurexml;
 
+import jmri.jmrix.xpa.XpaTurnoutManager;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,60 +1,29 @@
 package jmri.jmrit.display.layoutEditor;
 
-import java.awt.Color;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
-import java.io.File;
-
-import jmri.*;
-import jmri.jmrit.display.*;
+import jmri.InstanceManager;
+import jmri.UserPreferencesManager;
+import jmri.jmrit.display.AbstractEditorTestBase;
+import jmri.jmrit.display.EditorFrameOperator;
 import jmri.util.*;
-import jmri.util.swing.JemmyUtil;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.QueueTool;
+import jmri.util.junit.rules.*;
+import org.junit.*;
+import org.junit.rules.*;
 import org.netbeans.jemmy.operators.JMenuOperator;
 
 /**
- * Test simple functioning of LayoutEditor.
+ * Test simple functioning of LayoutEditor
  *
  * @author Paul Bender Copyright (C) 2016
- * @author George Warner Copyright (C) 2019
- * @author Bob Jacobsen Copyright (C) 2020
  */
-@Timeout(10)
 public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
 
-    private EditorFrameOperator jfo;
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10); // 10 second timeout for methods in this test class.
 
-    @BeforeEach
-    @Override
-    public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initConfigureManager();
-        JUnitUtil.initLayoutBlockManager();
-        if (!GraphicsEnvironment.isHeadless()) {
-            e = new LayoutEditor("Layout Editor Test Layout");
-            e.setVisible(true);
-            jfo = new EditorFrameOperator(e);
-        }
-    }
-
-    @AfterEach
-    @Override
-    public void tearDown() {
-        if (e != null) {
-            jfo.closeFrameWithConfirmations();
-            e = null;
-        }
-        jmri.jmrit.display.EditorFrameOperator.clearEditorFrameOperatorThreads();
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
-        JUnitUtil.tearDown();
-    }
+    @Rule
+    public RetryRule retryRule = new RetryRule(2); // allow 2 retries
 
     @Test
     public void testStringCtor() {
@@ -72,51 +41,6 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
         JUnitUtil.dispose(e);
     }
 
-
-    @Test
-    @Disabled("Test fails to find and close dialog on Jenkins")
-    public void testSavePanel() {
-
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuFile"));
-
-        //delete this file so we won't get the "<xxx> exists... do you want to replace?" dialog.
-        new File("temp/Layout Editor Test Layout.xml").delete();
-
-        // test the file -> delete panel menu item
-        Thread misc1 = JemmyUtil.createModalDialogOperatorThread(
-                Bundle.getMessage("FileMenuItemStore"),
-                Bundle.getMessage("ButtonCancel"));  // NOI18N
-        jmo.pushMenu(Bundle.getMessage("MenuFile") + "/"
-                + Bundle.getMessage("FileMenuItemStore"), "/");
-        JUnitUtil.waitFor(() -> {
-            return !(misc1.isAlive());
-        }, "misc1 finished");
-
-        //clean up after ourselves...
-        new File("temp/Layout Editor Test Layout.xml").delete();
-    }
-
-    @Test
-    @Disabled("Test fails to find and close dialog on Jenkins")
-    public void testDeletePanel() {
-
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuFile"));
-
-        // test the file -> delete panel menu item
-        Thread misc1 = JemmyUtil.createModalDialogOperatorThread(
-                Bundle.getMessage("DeleteVerifyTitle"),
-                Bundle.getMessage("ButtonYesDelete"));  // NOI18N
-        jmo.pushMenu(Bundle.getMessage("MenuFile") + "/"
-                + Bundle.getMessage("DeletePanel"), "/");
-        JUnitUtil.waitFor(() -> {
-            return !(misc1.isAlive());
-        }, "misc1 finished");
-        JUnitUtil.dispose(e);
-        e = null; // prevent closing the window using the operator in shutDown.
-    }
-
     @Test
     public void testGetFinder() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
@@ -125,8 +49,6 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
     }
 
     @Test
-    @Override
-    @Disabled("failing to set size on appveyor")
     public void testSetSize() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         e.setSize(100, 100);
@@ -139,19 +61,18 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
     }
 
     @Test
-    @Disabled("Failing to set second zoom")
     public void testGetSetZoom() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         InstanceManager.getOptionalDefault(UserPreferencesManager.class).ifPresent((m) -> {
             m.setSaveAllowed(false); // prevent attempts to save while zooming in rest of test
         });
-        Assert.assertEquals("Get initial Zoom", 1.0, e.getZoom(), 0.0);
-
+        Assert.assertEquals("Zoom Get", 1.0, e.getZoom(), 0.0);
+        // note: Layout Editor won't allow zooms below 0.25
+        Assert.assertEquals("Zoom Set", 0.25, e.setZoom(0.1), 0.0);
         // note: Layout Editor won't allow zooms above 8.0.
-        e.setZoom(10.0);
-        Assert.assertEquals("Get Zoom after set above max", 8.0, e.getZoom(), 0.0);
-        e.setZoom(3.33);
-        Assert.assertEquals("Get Zoom After Set to 3.33", 3.33, e.getZoom(), 0.0);
+        Assert.assertEquals("Zoom Set", 8.0, e.setZoom(10.0), 0.0);
+        Assert.assertEquals("Zoom Set", 3.33, e.setZoom(3.33), 0.0);
+        Assert.assertEquals("Zoom Get", 3.33, e.getZoom(), 0.0);
     }
 
     @Test
@@ -221,14 +142,14 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
     public void testGetLayoutWidth() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 0
-        Assert.assertEquals("layout width", 0, e.gContext.getLayoutWidth());
+        Assert.assertEquals("layout width", 0, e.getLayoutWidth());
     }
 
     @Test
     public void testGetLayoutHeight() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 0
-        Assert.assertEquals("layout height", 0, e.gContext.getLayoutHeight());
+        Assert.assertEquals("layout height", 0, e.getLayoutHeight());
     }
 
     @Test
@@ -236,7 +157,7 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to screen width - 20
         int w = (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - 20);
-        Assert.assertEquals("window width", w, e.gContext.getWindowWidth());
+        Assert.assertEquals("window width", w, e.getWindowWidth());
     }
 
     @Test
@@ -244,21 +165,21 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to screen height - 120
         int h = (int) (Toolkit.getDefaultToolkit().getScreenSize().getHeight() - 120);
-        Assert.assertEquals("window height", h, e.gContext.getWindowHeight());
+        Assert.assertEquals("window height", h, e.getWindowHeight());
     }
 
     @Test
     public void testGetUpperLeftX() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 0
-        Assert.assertEquals("upper left X", 0, e.gContext.getUpperLeftX());
+        Assert.assertEquals("upper left X", 0, e.getUpperLeftX());
     }
 
     @Test
     public void testGetUpperLeftY() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 0
-        Assert.assertEquals("upper left Y", 0, e.gContext.getUpperLeftY());
+        Assert.assertEquals("upper left Y", 0, e.getUpperLeftY());
     }
 
     @Test
@@ -267,86 +188,86 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
         ThreadingUtil.runOnGUI(() -> {
             // set the panel dimensions to known values
             e.setLayoutDimensions(100, 100, 100, 100, 100, 100);
-            Assert.assertEquals("layout width after set", 100, e.gContext.getLayoutWidth());
-            Assert.assertEquals("layout height after set", 100, e.gContext.getLayoutHeight());
-            Assert.assertEquals("window width after set", 100, e.gContext.getWindowWidth());
-            Assert.assertEquals("window height after set", 100, e.gContext.getWindowHeight());
-            Assert.assertEquals("upper left X after set", 100, e.gContext.getUpperLeftX());
-            Assert.assertEquals("upper left Y after set", 100, e.gContext.getUpperLeftX());
+            Assert.assertEquals("layout width after set", 100, e.getLayoutWidth());
+            Assert.assertEquals("layout height after set", 100, e.getLayoutHeight());
+            Assert.assertEquals("window width after set", 100, e.getWindowWidth());
+            Assert.assertEquals("window height after set", 100, e.getWindowHeight());
+            Assert.assertEquals("upper left X after set", 100, e.getUpperLeftX());
+            Assert.assertEquals("upper left Y after set", 100, e.getUpperLeftX());
         });
     }
 
     @Test
     public void testSetGrideSize() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Assert.assertEquals("grid size after set", 100, e.gContext.setGridSize(100));
+        Assert.assertEquals("grid size after set", 100, e.setGridSize(100));
     }
 
     @Test
     public void testGetGrideSize() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 10.
-        Assert.assertEquals("grid size", 10, e.gContext.getGridSize());
+        Assert.assertEquals("grid size", 10, e.getGridSize());
     }
 
     @Test
     public void testGetMainlineTrackWidth() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 4.
-        Assert.assertEquals("mainline track width", 4, e.gContext.getMainlineTrackWidth());
+        Assert.assertEquals("mainline track width", 4, e.getMainlineTrackWidth());
     }
 
     @Test
     public void testSetMainlineTrackWidth() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // set to known value
-        e.gContext.setMainlineTrackWidth(10);
-        Assert.assertEquals("mainline track width after set", 10, e.gContext.getMainlineTrackWidth());
+        e.setMainlineTrackWidth(10);
+        Assert.assertEquals("mainline track width after set", 10, e.getMainlineTrackWidth());
     }
 
     @Test
     public void testGetSidelineTrackWidth() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 2.
-        Assert.assertEquals("side track width", 2, e.gContext.getSidelineTrackWidth());
+        Assert.assertEquals("side track width", 2, e.getSidelineTrackWidth());
     }
 
     @Test
     public void testSetSideTrackWidth() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // set to known value
-        e.gContext.setSidelineTrackWidth(10);
-        Assert.assertEquals("Side track width after set", 10, e.gContext.getSidelineTrackWidth());
+        e.setSidelineTrackWidth(10);
+        Assert.assertEquals("Side track width after set", 10, e.getSidelineTrackWidth());
     }
 
     @Test
     public void testGetXScale() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 1.
-        Assert.assertEquals("XScale", 1.0, e.gContext.getXScale(), 0.0);
+        Assert.assertEquals("XScale", 1.0, e.getXScale(), 0.0);
     }
 
     @Test
     public void testSetXScale() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // set to known value
-        e.gContext.setXScale(2.0);
-        Assert.assertEquals("XScale after set ", 2.0, e.gContext.getXScale(), 0.0);
+        e.setXScale(2.0);
+        Assert.assertEquals("XScale after set ", 2.0, e.getXScale(), 0.0);
     }
 
     @Test
     public void testGetYScale() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // defaults to 1.
-        Assert.assertEquals("YScale", 1.0, e.gContext.getYScale(), 0.0);
+        Assert.assertEquals("YScale", 1.0, e.getYScale(), 0.0);
     }
 
     @Test
     public void testSetYScale() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // set to known value
-        e.gContext.setYScale(2.0);
-        Assert.assertEquals("YScale after set ", 2.0, e.gContext.getYScale(), 0.0);
+        e.setYScale(2.0);
+        Assert.assertEquals("YScale after set ", 2.0, e.getYScale(), 0.0);
     }
 
     @Test
@@ -386,33 +307,6 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         e.setDefaultAlternativeTrackColor(ColorUtil.stringToColor(ColorUtil.ColorPink));
         Assert.assertEquals("Default Alternative Track Color after Set", ColorUtil.ColorPink, e.getDefaultAlternativeTrackColor());
-    }
-
-    @Test
-    public void testSetAllTracksToDefaultColors() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-
-        LayoutBlock layoutBlock = InstanceManager.getDefault(LayoutBlockManager.class).createNewLayoutBlock("ILB999", "Test Block");
-        Assert.assertNotNull("layoutBlock created", layoutBlock);
-
-        Assert.assertEquals("BlockTrackColor default", e.getDefaultTrackColorColor(), layoutBlock.getBlockTrackColor());
-        layoutBlock.setBlockTrackColor(Color.pink);
-        Assert.assertEquals("BlockTrackColor set to pink", Color.pink, layoutBlock.getBlockTrackColor());
-
-        Assert.assertEquals("BlockOccupiedColor default", e.getDefaultOccupiedTrackColorColor(), layoutBlock.getBlockOccupiedColor());
-        layoutBlock.setBlockOccupiedColor(Color.pink);
-        Assert.assertEquals("BlockOccupiedColor set to pink", Color.pink, layoutBlock.getBlockOccupiedColor());
-
-        Assert.assertEquals("BlockExtraColor default", e.getDefaultAlternativeTrackColorColor(), layoutBlock.getBlockExtraColor());
-        layoutBlock.setBlockExtraColor(Color.pink);
-        Assert.assertEquals("BlockExtraColor set to pink", Color.pink, layoutBlock.getBlockExtraColor());
-
-        int changed = e.setAllTracksToDefaultColors();
-        Assert.assertEquals("setAllTracksToDefaultColors changed one block", 1, changed);
-
-        Assert.assertEquals("BlockTrackColor back to default", e.getDefaultTrackColorColor(), layoutBlock.getBlockTrackColor());
-        Assert.assertEquals("BlockOccupiedColor back to default", e.getDefaultOccupiedTrackColorColor(), layoutBlock.getBlockOccupiedColor());
-        Assert.assertEquals("BlockExtraColor back to default", e.getDefaultAlternativeTrackColorColor(), layoutBlock.getBlockExtraColor());
     }
 
     @Test
@@ -870,46 +764,51 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
     }
 
     @Test
-    @Disabled("unreliable on CI servers")
     public void testSetHighlightSelectedBlockTrue() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         e.setHighlightSelectedBlock(true);
         // setHighlightSelectedBlock performs some GUI actions, so give
         // the AWT queue some time to clear.
-        new QueueTool().waitEmpty(100);
+        new org.netbeans.jemmy.QueueTool().waitEmpty(100);
         Assert.assertTrue("le.getHighlightSelectedBlock after setHighlightSelectedBlock(true)", e.getHighlightSelectedBlock());
     }
 
     @Test
-    @Disabled("unreliable on CI servers")
+    @Ignore("unreliable on CI servers")
     public void testSetHighlightSelectedBlockFalse() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         e.setHighlightSelectedBlock(false);
         // setHighlightSelectedBlock performs some GUI actions, so give
         // the AWT queue some time to clear.
-        new QueueTool().waitEmpty(100);
+        new org.netbeans.jemmy.QueueTool().waitEmpty(100);
         Assert.assertFalse("le.getHighlightSelectedBlock after setHighlightSelectedBlock(false)", e.getHighlightSelectedBlock());
     }
 
     @Test
     public void checkOptionsMenuExists() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        e.setVisible(true);
+        EditorFrameOperator jfo = new EditorFrameOperator(e);
         JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuOptions"));
         Assert.assertNotNull("Options Menu Exists", jmo);
-        Assert.assertEquals("Menu Item Count", 19, jmo.getItemCount());
+        Assert.assertEquals("Menu Item Count", 17, jmo.getItemCount());
     }
 
     @Test
     public void checkToolsMenuExists() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        e.setVisible(true);
+        EditorFrameOperator jfo = new EditorFrameOperator(e);
         JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuTools"));
         Assert.assertNotNull("Tools Menu Exists", jmo);
-        Assert.assertEquals("Tools Menu Item Count", 20, jmo.getItemCount());
+        Assert.assertEquals("Menu Item Count", 16, jmo.getItemCount());
     }
 
     @Test
     public void checkZoomMenuExists() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        e.setVisible(true);
+        EditorFrameOperator jfo = new EditorFrameOperator(e);
         JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuZoom"));
         Assert.assertNotNull("Zoom Menu Exists", jmo);
         Assert.assertEquals("Menu Item Count", 16, jmo.getItemCount());
@@ -918,6 +817,8 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
     @Test
     public void checkMarkerMenuExists() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        e.setVisible(true);
+        EditorFrameOperator jfo = new EditorFrameOperator(e);
         JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuMarker"));
         Assert.assertNotNull("Marker Menu Exists", jmo);
         Assert.assertEquals("Menu Item Count", 3, jmo.getItemCount());
@@ -926,94 +827,45 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
     @Test
     public void checkDispatcherMenuExists() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        e.setVisible(true);
+        EditorFrameOperator jfo = new EditorFrameOperator(e);
         JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuDispatcher"));
         Assert.assertNotNull("Dispatcher Menu Exists", jmo);
         Assert.assertEquals("Menu Item Count", 2, jmo.getItemCount());
     }
 
     @Test
-    @Disabled("Fails on AppVeyor, macOS and Windows 12/20/2019")
-    public void testToolBarPositionLeft() {
+    public void testToolBarPostionOptions() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        e.setVisible(true);
+        EditorFrameOperator jfo = new EditorFrameOperator(e);
         JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuOptions"));
 
-        //switch to Left
+        // try each possible option for toolbar location
+        //Top
         jmo.pushMenuNoBlock(Bundle.getMessage("MenuOptions") + "/"
                 + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
+                + Bundle.getMessage("ToolBarSideTop"), "/");
+
+        //Left
+        jmo.pushMenuNoBlock(Bundle.getMessage("MenuOptions") + "/"
+                + Bundle.getMessage("ToolBar") + "/"
                 + Bundle.getMessage("ToolBarSideLeft"), "/");
 
-        new EventTool().waitNoEvent(200);
-
-        //back to Top
-        jmo.pushMenu(Bundle.getMessage("MenuOptions") + "/"
-                + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
-                + Bundle.getMessage("ToolBarSideTop"), "/");
-    }
-
-    @Test
-    @Disabled("Fails on AppVeyor, macOS and Windows 12/20/2019")
-    public void testToolBarPositionBottom() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuOptions"));
-
-        //switch to Bottom
+        //Right
         jmo.pushMenuNoBlock(Bundle.getMessage("MenuOptions") + "/"
                 + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
-                + Bundle.getMessage("ToolBarSideBottom"), "/");
-
-        new EventTool().waitNoEvent(200);
-
-        //back to Top
-        jmo.pushMenu(Bundle.getMessage("MenuOptions") + "/"
-                + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
-                + Bundle.getMessage("ToolBarSideTop"), "/");
-    }
-
-    @Test
-    @Disabled("Fails on AppVeyor, macOS and Windows 12/20/2019")
-    public void testToolBarPositionRight() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuOptions"));
-
-        //switch to Right
-        jmo.pushMenuNoBlock(Bundle.getMessage("MenuOptions") + "/"
-                + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
                 + Bundle.getMessage("ToolBarSideRight"), "/");
 
-        new EventTool().waitNoEvent(200);
-
-        //back to Top
-        jmo.pushMenu(Bundle.getMessage("MenuOptions") + "/"
-                + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
-                + Bundle.getMessage("ToolBarSideTop"), "/");
-    }
-
-    @Test
-    @Disabled("Fails on AppVeyor, macOS and Windows 12/20/2019")
-    public void testToolBarPositionFloat() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        JMenuOperator jmo = new JMenuOperator(jfo, Bundle.getMessage("MenuOptions"));
-
-        //switch to Float
+        //Bottom
         jmo.pushMenuNoBlock(Bundle.getMessage("MenuOptions") + "/"
                 + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
-                + Bundle.getMessage("ToolBarSideFloat"), "/");
+                + Bundle.getMessage("ToolBarSideBottom"), "/");
 
-        // bring this window back to the front...
-        jfo.activate();
-
-        //back to Top
-        jmo.pushMenu(Bundle.getMessage("MenuOptions") + "/"
+        //float
+        jmo.pushMenuNoBlock(Bundle.getMessage("MenuOptions") + "/"
                 + Bundle.getMessage("ToolBar") + "/"
-                + Bundle.getMessage("ToolBarSide") + "/"
-                + Bundle.getMessage("ToolBarSideTop"), "/");
+                + Bundle.getMessage("ToolBarSideFloat"), "/");
     }
 
     @Test
@@ -1025,21 +877,26 @@ public class LayoutEditorTest extends AbstractEditorTestBase<LayoutEditor> {
         JUnitUtil.dispose(e);
     }
 
-    @Test
-    public void testScrollViewPort() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        javax.swing.JScrollPane scrollPane = e.getPanelScrollPane();
-        java.awt.Rectangle scrollBounds = scrollPane.getViewportBorderBounds();
-        int x = (int) scrollBounds.getX();
-        int y = (int) scrollBounds.getY();
-        int w = (int) scrollBounds.getWidth();
-        int h = (int) scrollBounds.getHeight();
-        // scrollBounds values are platform and OS dependent so specific values cannot be determined.
-        Assert.assertTrue("scroll bound x", x > 0);
-        Assert.assertTrue("scroll bound y", y > 0);
-        Assert.assertTrue("scroll bound w", w > 0);
-        Assert.assertTrue("scroll bound h", h > 0);
+    @Before
+    @Override
+    public void setUp() {
+        JUnitUtil.setUp();
+        JUnitUtil.resetProfileManager();
+        if (!GraphicsEnvironment.isHeadless()) {
+            e = new LayoutEditor("Layout Editor Test Layout");
+            jmri.InstanceManager.setDefault(LayoutBlockManager.class, new LayoutBlockManager());
+        }
     }
 
-//     private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LayoutEditorTest.class.getName());
+    @After
+    @Override
+    public void tearDown() {
+        if (e != null) {
+            JUnitUtil.dispose(e);
+            e = null;
+        }
+        JUnitUtil.tearDown();
+    }
+
+    // private final static Logger log = LoggerFactory.getLogger(LayoutEditorTest.class.getName());
 }

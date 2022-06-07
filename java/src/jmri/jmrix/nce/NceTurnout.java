@@ -79,11 +79,9 @@ public class NceTurnout extends AbstractTurnout {
         return numNtTurnouts;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    // Handle a request to change state by sending a turnout command
     @Override
-    protected void forwardCommandChangeToLayout(int newState) {
+    protected void forwardCommandChangeToLayout(int s) {
         // implementing classes will typically have a function/listener to get
         // updates from the layout, which will then call
         //  public void firePropertyChange(String propertyName,
@@ -92,19 +90,19 @@ public class NceTurnout extends AbstractTurnout {
         // _once_ if anything has changed state (or set the commanded state directly)
 
         // sort out states
-        if ((newState & Turnout.CLOSED) != 0) {
+        if ((s & Turnout.CLOSED) != 0) {
             // first look for the double case, which we can't handle
-            if ((newState & Turnout.THROWN) != 0) {
+            if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN {}", newState);
+                log.error("Cannot command both CLOSED and THROWN " + s);
                 return;
             } else {
                 // send a CLOSED command
-                sendMessage(!getInverted());
+                sendMessage(true ^ getInverted());
             }
         } else {
             // send a THROWN command
-            sendMessage(getInverted());
+            sendMessage(false ^ getInverted());
         }
     }
 
@@ -114,8 +112,11 @@ public class NceTurnout extends AbstractTurnout {
      */
     @Override
     protected void turnoutPushbuttonLockout(boolean pushButtonLockout) {
-            log.debug("Send command to {} Pushbutton {}{}",
-                    pushButtonLockout ? "Lock" : "Unlock", prefix, _number);
+        if (log.isDebugEnabled()) {
+            log.debug("Send command to "
+                    + (pushButtonLockout ? "Lock" : "Unlock")
+                    + " Pushbutton " + prefix + _number);
+        }
 
         byte[] bl = PushbuttonPacket.pushbuttonPkt(prefix, _number, pushButtonLockout);
         NceMessage m = NceMessage.sendPacketMessage(tc, bl);
@@ -241,12 +242,12 @@ public class NceTurnout extends AbstractTurnout {
             byte[] bl = NceBinaryCommand.accDecoder(_number, closed);
 
             if (log.isDebugEnabled()) {
-                log.debug("Command: {} {} {} {} {}",
-                        Integer.toHexString(0xFF & bl[0]),
-                        Integer.toHexString(0xFF & bl[1]),
-                        Integer.toHexString(0xFF & bl[2]),
-                        Integer.toHexString(0xFF & bl[3]),
-                        Integer.toHexString(0xFF & bl[4]));
+                log.debug("Command: "
+                        + Integer.toHexString(0xFF & bl[0])
+                        + " " + Integer.toHexString(0xFF & bl[1])
+                        + " " + Integer.toHexString(0xFF & bl[2])
+                        + " " + Integer.toHexString(0xFF & bl[3])
+                        + " " + Integer.toHexString(0xFF & bl[4]));
             }
 
             NceMessage m = NceMessage.createBinaryMessage(tc, bl);
@@ -258,10 +259,10 @@ public class NceTurnout extends AbstractTurnout {
             byte[] bl = NmraPacket.accDecoderPkt(_number, closed);
 
             if (log.isDebugEnabled()) {
-                log.debug("packet: {} {} {}",
-                        Integer.toHexString(0xFF & bl[0]),
-                        Integer.toHexString(0xFF & bl[1]),
-                        Integer.toHexString(0xFF & bl[2]));
+                log.debug("packet: "
+                        + Integer.toHexString(0xFF & bl[0])
+                        + " " + Integer.toHexString(0xFF & bl[1])
+                        + " " + Integer.toHexString(0xFF & bl[2]));
             }
 
             NceMessage m = NceMessage.sendPacketMessage(tc, bl);
@@ -271,5 +272,4 @@ public class NceTurnout extends AbstractTurnout {
     }
 
     private final static Logger log = LoggerFactory.getLogger(NceTurnout.class);
-
 }

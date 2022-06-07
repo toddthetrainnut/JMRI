@@ -1,5 +1,6 @@
 package jmri.jmrix.dccpp.network;
 
+import java.util.ResourceBundle;
 import jmri.jmrix.dccpp.DCCppCommandStation;
 import jmri.jmrix.dccpp.DCCppInitializationManager;
 import jmri.jmrix.dccpp.DCCppNetworkPortController;
@@ -78,6 +79,18 @@ public class DCCppEthernetAdapter extends DCCppNetworkPortController {
         
         new DCCppInitializationManager(this.getSystemConnectionMemo());
     }
+    
+    /**
+     * Local method to do specific configuration.
+     */
+    @Deprecated
+    static public DCCppEthernetAdapter instance() {
+        if (mInstance == null) {
+            mInstance = new DCCppEthernetAdapter();
+        }
+        return mInstance;
+    }
+    volatile static DCCppEthernetAdapter mInstance = null;
     
     /**
      * Set up the keepAliveTimer, and start it.

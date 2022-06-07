@@ -1,22 +1,27 @@
 package jmri.profile;
 
 import java.io.File;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ProfileConfigurationTest {
 
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+
+
     @Test
-    public void testCTor(@TempDir File folder) throws java.io.IOException {
-        File profileFolder = new File(folder, "test");
+    public void testCTor() throws java.io.IOException {
+        File profileFolder = new File(folder.newFolder(Profile.PROFILE), "test");
         Profile instance = new Profile("test", "test", profileFolder);
         instance.setName("saved");
 
@@ -24,12 +29,13 @@ public class ProfileConfigurationTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

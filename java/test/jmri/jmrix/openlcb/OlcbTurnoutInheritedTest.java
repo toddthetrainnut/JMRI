@@ -5,9 +5,7 @@ import jmri.util.PropertyChangeListenerScaffold;
 import jmri.implementation.AbstractTurnoutTestBase;
 import jmri.Turnout;
 import jmri.jmrix.can.CanMessage;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests inherited from the abstract turnout test base, specialized for the OlcbTurnout. This is
@@ -19,14 +17,12 @@ import org.junit.jupiter.api.*;
 public class OlcbTurnoutInheritedTest extends AbstractTurnoutTestBase {
     OlcbTestInterface tif;
     int baselineListeners;
-    protected PropertyChangeListenerScaffold l;
+    protected PropertyChangeListenerScaffold l; 
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-       // this test is run separately because it leaves a lot of threads behind
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
         tif = new OlcbTestInterface();
         tif.waitForStartup();
         baselineListeners = tif.iface.numMessageListeners();
@@ -36,13 +32,9 @@ public class OlcbTurnoutInheritedTest extends AbstractTurnoutTestBase {
         l = new PropertyChangeListenerScaffold();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        if (Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning") == false) {
-            tif.dispose();
-            tif = null;
-        }
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+        tif.dispose();
         JUnitUtil.tearDown();
     }
 
@@ -52,13 +44,13 @@ public class OlcbTurnoutInheritedTest extends AbstractTurnoutTestBase {
     }
 
     @Override
-    public void checkThrownMsgSent() {
+    public void checkThrownMsgSent() throws InterruptedException {
         tif.flush();
         tif.assertSentMessage(":X195B4C4CN0102030405060708;");
     }
 
     @Override
-    public void checkClosedMsgSent() {
+    public void checkClosedMsgSent() throws InterruptedException {
         tif.flush();
         tif.assertSentMessage(":X195B4C4CN0102030405060709;");
     }
@@ -73,14 +65,14 @@ public class OlcbTurnoutInheritedTest extends AbstractTurnoutTestBase {
 
         t.setState(Turnout.THROWN);
         tif.flush();
-        JUnitUtil.waitFor( () -> l.getPropertyChanged());
+        JUnitUtil.waitFor( () -> { return l.getPropertyChanged(); });
 
         Assert.assertEquals(Turnout.THROWN, t.getCommandedState());
         Assert.assertEquals(Turnout.THROWN, t.getKnownState());
 
         t.setState(Turnout.CLOSED);
         tif.flush();
-        JUnitUtil.waitFor( () -> l.getPropertyChanged());
+        JUnitUtil.waitFor( () -> { return l.getPropertyChanged(); });
 
         Assert.assertEquals(Turnout.CLOSED, t.getCommandedState());
         Assert.assertEquals(Turnout.CLOSED, t.getKnownState());

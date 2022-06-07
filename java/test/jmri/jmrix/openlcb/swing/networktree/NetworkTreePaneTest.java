@@ -1,10 +1,10 @@
 package jmri.jmrix.openlcb.swing.networktree;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
+import org.junit.Before;
+import org.junit.Test;
 import jmri.jmrix.can.TestTrafficController;
 
 /**
@@ -22,24 +22,20 @@ public class NetworkTreePaneTest {
         Assert.assertNotNull("Pane object non-null", p);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
 
         memo  = new jmri.jmrix.openlcb.OlcbSystemConnectionMemo();
-        tc = new TestTrafficController();
+        TestTrafficController tc = new TestTrafficController();
         memo.setTrafficController(tc);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
-        memo = null;
-        tc.terminateThreads();
-        tc = null;
         jmri.util.JUnitUtil.resetWindows(false, false);
         JUnitUtil.tearDown();
-
     }
 }

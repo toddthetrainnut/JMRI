@@ -21,8 +21,8 @@ public class EliteConnectionTypeList implements jmri.jmrix.ConnectionTypeList {
         String[] tempList = new String[masterList.length + 1];
         tempList[0] = "jmri.jmrix.lenz.hornbyelite.ConnectionConfig";
         int x = 1;
-        for (String s : masterList) {
-            tempList[x] = s;
+        for (int i = 0; i < masterList.length; i++) {
+            tempList[x] = masterList[i];
             x++;
         }
         return tempList;

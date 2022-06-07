@@ -1,13 +1,10 @@
 package jmri.jmrit.display;
 
 import java.awt.event.MouseEvent;
-import java.util.Objects;
-
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +16,6 @@ import org.slf4j.LoggerFactory;
 public class PositionableJComponent extends JComponent implements Positionable {
 
     protected Editor _editor = null;
-
-    private String _id;            // user's Id or null if no Id
 
     private ToolTip _tooltip;
     private boolean _showTooltip = true;
@@ -57,20 +52,6 @@ public class PositionableJComponent extends JComponent implements Positionable {
         pos.setEditable(isEditable());
         pos.updateSize();
         return pos;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setId(String id) throws Positionable.DuplicateIdException {
-        if (Objects.equals(this._id, id)) return;
-        _editor.positionalIdChange(this, id);
-        this._id = id;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getId() {
-        return _id;
     }
 
     @Override
@@ -158,7 +139,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         int oldDisplayLevel = _displayLevel;
         _displayLevel = l;
         if (oldDisplayLevel != l) {
-            log.debug("Changing label display level from {} to {}", oldDisplayLevel, _displayLevel);
+            log.debug("Changing label display level from " + oldDisplayLevel + " to " + _displayLevel);
             _editor.displayLevelChange(this);
         }
     }
@@ -325,8 +306,8 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return getHeight();
     }
 
-    /*
-     ************** end Positionable methods *********************
+    /**
+     * ************** end Positionable methods *********************
      */
     /**
      * Removes this object from display and persistance

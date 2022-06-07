@@ -6,15 +6,14 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.List;
-
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-
 import jmri.progdebugger.ProgDebugger;
 import jmri.util.CvUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the {@link SplitDateTimeVariableValue} class.
@@ -80,7 +79,7 @@ public class SplitDateTimeVariableValueTest extends AbstractVariableValueTestBas
 
     @Override
     void setReadOnlyValue(VariableValue var, String val) {
-        ((SplitVariableValue) var).setLongValue(Integer.parseInt(val));
+        ((SplitVariableValue) var).setValue(Integer.parseInt(val));
     }
 
     @Override
@@ -98,32 +97,27 @@ public class SplitDateTimeVariableValueTest extends AbstractVariableValueTestBas
     @Override
     @Test
     public void testVariableValueCreate() {
-    } // mask is ignored by splitAddress tests
+    }// mask is ignored by splitAddre
 
     @Override
     @Test
     public void testVariableFromCV() {
-    } // low CV is upper part of address
-
-    @Override
-    @Test
-    public void testVariableValueTwinMask() {
-    } // mask is ignored
+    }     // low CV is upper part of address
 
     @Override
     @Test
     public void testVariableValueRead() {
-    } // due to multi-cv nature of splitAddress tests
+    } // due to multi-cv nature of SplitAddr
 
     @Override
     @Test
     public void testVariableValueWrite() {
-    } // due to multi-cv nature of splitAddress tests
+    } // due to multi-cv nature of SplitAddr
 
     @Override
     @Test
     public void testVariableCvWrite() {
-    } // due to multi-cv nature of splitAddress tests
+    }    // due to multi-cv nature of SplitAddr
 
     @Override
     @Test
@@ -336,14 +330,12 @@ public class SplitDateTimeVariableValueTest extends AbstractVariableValueTestBas
     }
 
     // from here down is testing infrastructure
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         super.setUp();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         super.tearDown();
     }

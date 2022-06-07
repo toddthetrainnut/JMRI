@@ -1,18 +1,20 @@
 package jmri.util.swing;
 
 import java.awt.GraphicsEnvironment;
+import javax.swing.JFrame;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
+import org.junit.rules.Timeout;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
  *
  * @author Paul Bender Copyright (C) 2017
  */
-@Timeout(10)
 public class ExceptionDisplayFrameTest {
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10); // 10 second timeout for methods in this test class.
 
     @Test
     public void testCTor() {
@@ -25,7 +27,7 @@ public class ExceptionDisplayFrameTest {
     }
 
     @Test
-    @Disabled("The JDialogOperator is having trouble finding the dialog")
+    @Ignore("The JDialogOperator is having trouble finding the dialog")
     public void testSetVisible() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         Exception ex = new Exception("Test");
@@ -45,12 +47,13 @@ public class ExceptionDisplayFrameTest {
         JUnitUtil.dispose(dialog);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

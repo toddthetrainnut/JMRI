@@ -1,10 +1,8 @@
 package jmri.jmrit.roster.swing.speedprofile;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -12,22 +10,20 @@ import org.junit.jupiter.api.*;
  */
 public class SpeedProfileFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new SpeedProfileFrame();
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new SpeedProfileFrame();
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         super.tearDown();
     }
 

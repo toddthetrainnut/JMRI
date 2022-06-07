@@ -2,9 +2,9 @@ package jmri.jmrit.catalog;
 
 import java.awt.Container;
 import java.awt.GraphicsEnvironment;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import jmri.util.JUnitUtil;
+import org.junit.*;
+import org.netbeans.jemmy.QueueTool;
 
 import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
@@ -12,7 +12,7 @@ import jmri.util.JUnitUtil;
 /**
  *
  * @author pete cressman
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class DirectorySearcherTest {
 
@@ -34,14 +34,14 @@ public class DirectorySearcherTest {
         JUnitUtil.pressButton(pane, "Cancel");
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
     }
 

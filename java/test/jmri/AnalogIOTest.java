@@ -1,14 +1,12 @@
 package jmri;
 
 import jmri.implementation.AbstractNamedBean;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the Light class
  *
- * @author Daniel Bergqvist Copyright (C) 2018
+ * @author	Daniel Bergqvist Copyright (C) 2018
  */
 public class AnalogIOTest {
 
@@ -32,12 +30,12 @@ public class AnalogIOTest {
                 "Relative".equals(AnalogIO.AbsoluteOrRelative.RELATIVE.toString()));
     }
     
-    @BeforeEach
+    @Before
     public void setUp() {
           jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
           jmri.util.JUnitUtil.tearDown();
     }
@@ -58,16 +56,6 @@ public class AnalogIOTest {
 
         @Override
         public int getState() {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public void setState(double value) throws JmriException {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public double getState(double v) {
             throw new UnsupportedOperationException("Not supported.");
         }
 

@@ -1,7 +1,5 @@
 package jmri.util;
 
-import java.util.Comparator;
-
 import jmri.NamedBean;
 
 /**
@@ -23,7 +21,10 @@ import jmri.NamedBean;
  * 
  * @param <B> supported type of NamedBean
  */
-public class NamedBeanComparator <B extends NamedBean> implements Comparator<B> {
+public class NamedBeanComparator <B extends NamedBean> implements java.util.Comparator<B> {
+
+    public NamedBeanComparator() {
+    }
 
     @Override
     public int compare(B n1, B n2) {

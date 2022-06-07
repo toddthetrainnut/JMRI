@@ -2,21 +2,20 @@ package jmri.jmrit.display;
 
 import java.awt.event.WindowListener;
 import java.awt.GraphicsEnvironment;
-
 import javax.swing.JPanel;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.JFrame;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Base class for tests for Positionable objects.
+ * Base class for tests for Positionable objects. 
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 abstract public class PositionableTestBase {
 
@@ -26,21 +25,17 @@ abstract public class PositionableTestBase {
     /**
      * Must call first in overriding method if overridden.
      */
-    @BeforeEach
+    @Before
     @OverridingMethodsMustInvokeSuper
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        JUnitUtil.initInternalLightManager();
-        JUnitUtil.initInternalSensorManager();
-        JUnitUtil.initInternalTurnoutManager();
-        JUnitUtil.initReporterManager();
     }
 
     /**
      * Must call last in overriding method if overridden.
      */
-    @AfterEach
+    @After
     @OverridingMethodsMustInvokeSuper
     public void tearDown() {
         // now close panel window, if it exists
@@ -60,8 +55,6 @@ abstract public class PositionableTestBase {
         JUnitUtil.resetWindows(false, false);  // don't log here.  should be from this class.
         editor = null;
         p = null;
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 
@@ -99,7 +92,7 @@ abstract public class PositionableTestBase {
     public void testGetAndSetToolTip() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         Assert.assertNull("default tool tip", p.getToolTip());
-        p.setToolTip(new ToolTip("hello",0,0,null));
+        p.setToolTip(new ToolTip("hello",0,0));
         Assert.assertNotNull("tool tip after set", p.getToolTip());
     }
 
@@ -146,7 +139,6 @@ abstract public class PositionableTestBase {
         Editor es = new EditorScaffold();
         p.setEditor(es);
         Assert.assertEquals("Editor",es,p.getEditor());
-        JUnitUtil.dispose(es);
     }
 
     @Test
@@ -154,7 +146,7 @@ abstract public class PositionableTestBase {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         p.deepClone();
 
-        // this next line is consistently failing (on all object types).
+        // this next line is consistently failing (on all object types).  
         // It should pass.
         //Assert.assertFalse("clone object (not content) equality", p.equals(p));
 
@@ -180,7 +172,7 @@ abstract public class PositionableTestBase {
         p.setScale(5.0D);
         Assert.assertEquals("Scale",5.0D,p.getScale(),0.0);
     }
-
+    
     @Test
     public void testGetAndSetRotationDegrees(){
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
@@ -213,7 +205,7 @@ abstract public class PositionableTestBase {
     }
 
     @Test
-    public void testShow() throws Positionable.DuplicateIdException {
+    public void testShow() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         JFrame jf = new jmri.util.JmriJFrame("Positionable Target Panel");

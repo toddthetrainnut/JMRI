@@ -2,19 +2,17 @@ package jmri.jmrix.nce;
 
 import jmri.DccLocoAddress;
 import jmri.util.JUnitUtil;
-import jmri.InstanceManager;
-import jmri.jmrit.consisttool.ConsistPreferencesManager;
-import jmri.util.junit.annotations.*;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * NceConsistTest.java
  *
- * Test for the jmri.jmrix.nce.NceConsist class
+ * Description:	tests for the jmri.jmrix.nce.NceConsist class
  *
- * @author Paul Bender Copyright (C) 2016,2017
+ * @author	Paul Bender Copyright (C) 2016,2017
  */
 
 public class NceConsistTest extends jmri.implementation.AbstractConsistTestBase {
@@ -78,25 +76,11 @@ public class NceConsistTest extends jmri.implementation.AbstractConsistTestBase 
         Assert.assertFalse("Direction in Advanced Consist",c.getLocoDirection(B));
     }
 
-    @Test
-    @Disabled("Remove requires response from command station")
-    @ToDo("re-write parent class test here and include simulated command station response") 
-    public void checkRemoveWithGetRosterIDAdvanced(){
-    }
-
-    @Test
-    @Disabled("Remove requires response from command station")
-    @ToDo("re-write parent class test here and include simulated command station response") 
-    public void checkAddRemoveWithRosterUpdateAdvanced(){
-    }
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        InstanceManager.setDefault(ConsistPreferencesManager.class,new ConsistPreferencesManager());
         // prepare an interface
         nnis = new NceInterfaceScaffold();
         memo = new NceSystemConnectionMemo();
@@ -110,12 +94,11 @@ public class NceConsistTest extends jmri.implementation.AbstractConsistTestBase 
         nnis.sendTestReply(new NceReply(nnis,"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"),null);
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         c.dispose();
         c = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

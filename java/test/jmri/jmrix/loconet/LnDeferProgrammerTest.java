@@ -4,8 +4,10 @@ import jmri.ProgListener;
 import jmri.ProgrammingMode;
 import jmri.util.JUnitUtil;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Large parts are copied from SlotManagerTest; combining these would be good.
@@ -200,7 +202,8 @@ public class LnDeferProgrammerTest {
     ProgListener lstn;
     int releaseTestDelay = 150; // probably needs to be at least 150, see SlotManager.postProgDelay
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
@@ -219,7 +222,7 @@ public class LnDeferProgrammerTest {
                 startedShortTimer = true;
             }
             @Override
-            protected synchronized void stopTimer() {
+            protected void stopTimer() {
                 super.stopTimer();
                 stoppedTimer = true;
             }
@@ -241,9 +244,8 @@ public class LnDeferProgrammerTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        slotmanager.dispose();
         JUnitUtil.tearDown();
     }
 

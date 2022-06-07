@@ -2,11 +2,11 @@ package jmri.jmrix.pi.configurexml;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -14,13 +14,13 @@ import org.junit.jupiter.api.*;
  */
 public class RaspberryPiClassMigrationTest {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetInstanceManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.resetInstanceManager();
         JUnitUtil.tearDown();

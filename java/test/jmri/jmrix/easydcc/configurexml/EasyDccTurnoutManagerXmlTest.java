@@ -1,9 +1,10 @@
 package jmri.jmrix.easydcc.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the EasyDccTurnoutManagerXml class
@@ -17,12 +18,13 @@ public class EasyDccTurnoutManagerXmlTest {
       Assert.assertNotNull("EasyDccTurnoutManagerXml constructor", new EasyDccTurnoutManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

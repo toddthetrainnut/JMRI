@@ -39,15 +39,9 @@ public class LnDeferProgrammer implements Programmer {
     /** {@inheritDoc} */
     @Override
     public void readCV(String CV, ProgListener p) throws ProgrammerException {
-        readCV(CV, p, 0);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void readCV(String CV, ProgListener p, int startVal) throws ProgrammerException {
         SlotManager m = memo.getSlotManager();
         if (m!=null) {
-            m.readCV(CV, p, startVal);
+            m.readCV(CV, p);
         } else {
             log.warn("readCV called without a SlotManager");
         }
@@ -183,7 +177,6 @@ public class LnDeferProgrammer implements Programmer {
         }
     }
 
-    @Nonnull
     @Override
     public String decodeErrorCode(int i) {
         SlotManager m = memo.getSlotManager();
@@ -196,6 +189,6 @@ public class LnDeferProgrammer implements Programmer {
     }
 
     // initialize logging
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LnDeferProgrammer.class);
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SlotManager.class);
 
 }

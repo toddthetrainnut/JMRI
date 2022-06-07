@@ -157,7 +157,6 @@ public class EditorPane extends javax.swing.JPanel implements TreeSelectionListe
 
     /**
      * Add the instructions to the tree
-     * @param buff Buffer to add
      */
     void addSdf(SdfBuffer buff) {
         //DefaultMutableTreeNode newNode = null;

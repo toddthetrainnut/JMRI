@@ -36,9 +36,8 @@ public class SerialNode extends AbstractNode {
     // operational instance variables (should not be preserved between runs)
 
     /**
-     * Assumes a node address of 1, and a node type of 0.
-     * If this constructor is used, actual node address must be set using setNodeAddress.
-     * @param tc serial traffic controller.
+     * Assumes a node address of 1, and a node type of 0. If this constructor is
+     * used, actual node address must be set using setNodeAddress.
      */
     public SerialNode(SerialTrafficController tc) {
         this(1, 0, tc);
@@ -49,7 +48,6 @@ public class SerialNode extends AbstractNode {
      *
      * @param address Address of node on serial bus (0-99)
      * @param type 0 (ignored)
-     * @param tc system traffic controller.
      */
     public SerialNode(int address, int type, SerialTrafficController tc) {
         // set address 
@@ -81,8 +79,7 @@ public class SerialNode extends AbstractNode {
     }
 
     /**
-     * Get this node's address.
-     * @return node address.
+     * Get this node's address
      */
     public int getAddress() {
         return _address;
@@ -110,8 +107,6 @@ public class SerialNode extends AbstractNode {
 
     boolean warned = false;
 
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value = "SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification = "only logging 1st warning string passed")
     void warn(String s) {
         if (warned) {
             return;

@@ -1,15 +1,15 @@
 package jmri.jmrix.mrc;
 
 import java.util.Date;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MrcTrafficListenerFilterTest {
 
@@ -20,13 +20,10 @@ public class MrcTrafficListenerFilterTest {
         memo.setMrcTrafficController(tc);
         jmri.InstanceManager.store(memo, MrcSystemConnectionMemo.class);
         MrcTrafficListener tl = new MrcTrafficListener(){
-           @Override
            public void notifyXmit(Date timestamp, MrcMessage m){
            }
-           @Override
            public void notifyRcv(Date timestamp, MrcMessage m){
            }
-           @Override
            public void notifyFailedXmit(Date timestamp, MrcMessage m){
            }
         };
@@ -34,12 +31,13 @@ public class MrcTrafficListenerFilterTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

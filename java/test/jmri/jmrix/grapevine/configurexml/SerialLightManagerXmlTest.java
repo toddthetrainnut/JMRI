@@ -1,9 +1,10 @@
 package jmri.jmrix.grapevine.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the SerialLightManagerXml class
@@ -17,12 +18,13 @@ public class SerialLightManagerXmlTest {
       Assert.assertNotNull("SerialLightManagerXml constructor", new SerialLightManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

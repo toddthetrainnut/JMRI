@@ -33,6 +33,7 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
     protected void getInstance() {
         if(adapter == null) {
            adapter = new NetworkDriverAdapter();
+           adapter.configure(); // sets the memo and traffic controller.
         }
     }
 

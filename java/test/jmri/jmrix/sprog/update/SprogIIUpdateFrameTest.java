@@ -1,23 +1,22 @@
 package jmri.jmrix.sprog.update;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.sprog.SprogSystemConnectionMemo;
 import jmri.jmrix.sprog.SprogTrafficControlScaffold;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SprogIIUpdateFrameTest extends jmri.util.JmriJFrameTestBase {
 
     private SprogTrafficControlScaffold stcs = null;
     private SprogSystemConnectionMemo m = null;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -25,25 +24,16 @@ public class SprogIIUpdateFrameTest extends jmri.util.JmriJFrameTestBase {
         stcs = new SprogTrafficControlScaffold(m);
         m.setSprogTrafficController(stcs);
         m.configureCommandStation();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new SprogIIUpdateFrame(m);
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new SprogIIUpdateFrame(m);
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        // we need to close window before the Traffic Controller.
-        if(frame!=null) {
-           JUnitUtil.dispose(frame); // frame dispose stops Update timer.
-        }
-        frame = null;
         m.getSlotThread().interrupt();
-        JUnitUtil.waitFor(() -> {return m.getSlotThread().getState() == Thread.State.TERMINATED;}, "Slot thread failed to stop");
-        m.dispose();
         stcs.dispose();
-        m = null;
-        stcs = null;
         super.tearDown();
     }
 

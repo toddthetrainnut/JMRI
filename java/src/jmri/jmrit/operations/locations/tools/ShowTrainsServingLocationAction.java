@@ -1,9 +1,7 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import jmri.jmrit.operations.locations.Location;
 import jmri.jmrit.operations.locations.Track;
 
@@ -11,12 +9,12 @@ import jmri.jmrit.operations.locations.Track;
  * Action to create the ShowTrainsServingLocationFrame.
  *
  * @author Daniel Boudreau Copyright (C) 2014
+ * 
  */
 public class ShowTrainsServingLocationAction extends AbstractAction {
 
-    public ShowTrainsServingLocationAction(Location location, Track track) {
-        super(track == null ? Bundle.getMessage("MenuItemShowTrainsLocation")
-                : Bundle.getMessage("MenuItemShowTrainsTrack"));
+    public ShowTrainsServingLocationAction(String title, Location location, Track track) {
+        super(title);
         _location = location;
         _track = track;
         setEnabled(_location != null);

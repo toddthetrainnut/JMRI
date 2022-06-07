@@ -3,12 +3,14 @@ package jmri.jmrix.dccpp;
 import jmri.*;
 import jmri.util.JUnitUtil;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class DCCppTurnoutManagerTest {
     // Note: this doesn't use the usual test pattern for turnouts, which
@@ -21,7 +23,7 @@ public class DCCppTurnoutManagerTest {
 
         DCCppSystemConnectionMemo memo = new DCCppSystemConnectionMemo(tc);
 
-        DCCppTurnoutManager tm = new DCCppTurnoutManager(memo);
+        DCCppTurnoutManager tm = new DCCppTurnoutManager(tc,memo.getSystemPrefix());
         Assert.assertNotNull("exists",tm);
     }
 
@@ -31,7 +33,7 @@ public class DCCppTurnoutManagerTest {
 
         DCCppSystemConnectionMemo memo = new DCCppSystemConnectionMemo(tc);
 
-        DCCppTurnoutManager tm = new DCCppTurnoutManager(memo);
+        DCCppTurnoutManager tm = new DCCppTurnoutManager(tc,memo.getSystemPrefix());
         
         Turnout t = tm.provideTurnout("DT0");
         Assert.assertNotNull("exists",t);
@@ -44,7 +46,7 @@ public class DCCppTurnoutManagerTest {
 
         DCCppSystemConnectionMemo memo = new DCCppSystemConnectionMemo(tc);
 
-        DCCppTurnoutManager tm = new DCCppTurnoutManager(memo);
+        DCCppTurnoutManager tm = new DCCppTurnoutManager(tc,memo.getSystemPrefix());
         
         Turnout t = tm.provideTurnout("DT10");
         Assert.assertNotNull("exists",t);
@@ -52,17 +54,15 @@ public class DCCppTurnoutManagerTest {
         
     }
     
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.resetWindows(false,false); // shouldn't be necessary, can't see where windows are created
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(DCCppTurnoutManagerTest.class);

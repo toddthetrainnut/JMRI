@@ -6,65 +6,89 @@ import jmri.PowerManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.Instant;
-import jmri.beans.PropertyChangeSupport;
-import jmri.SystemConnectionMemo;
 
 /**
  * Base PowerManager implementation for controlling layout power.
  * <p>
  * These are registered when they are added to the InstanceManager
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2003, 2010
- * @author Randall Wood Copyright 2020
- * @param <M> the type of SystemConnectionMemo supported by this PowerManager
+ * @author	Bob Jacobsen Copyright (C) 2001, 2003, 2010
  */
-abstract public class AbstractPowerManager<M extends SystemConnectionMemo> extends PropertyChangeSupport implements PowerManager {
+abstract public class AbstractPowerManager implements PowerManager {
 
-    protected final M memo;
-    /**
-     * Note that all changes must fire a property change with the old and new values
-     */
-    protected int power = UNKNOWN;
+    public AbstractPowerManager(jmri.jmrix.SystemConnectionMemo memo) {
+        this.userName = memo.getUserName();
+        TimeKeeper tk = new TimeKeeper();
+        addPropertyChangeListener(tk);
+    }
+
+    private int powerState = UNKNOWN;
     private Instant lastOn;
 
-    public AbstractPowerManager(M memo) {
-        this.memo = memo;
-        TimeKeeper tk = new TimeKeeper();
-        AbstractPowerManager.this.addPropertyChangeListener(tk);
+    /** {@inheritDoc} */
+    @Override
+    public String getUserName() {
+        return userName;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    String userName;
+
+    // to hear of changes
+    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
+
+    /** {@inheritDoc} */
     @Override
-    public int getPower() {
-        return power;
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setPower(int state) throws JmriException {
-        int old = power;
-        power = state;
-        firePowerPropertyChange(old, power);
+    protected void firePropertyChange(String p, Object old, Object n) {
+        pcs.firePropertyChange(p, old, n);
     }
 
     /** {@inheritDoc} */
     @Override
-    public final String getUserName() {
-        return memo.getUserName();
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return pcs.getPropertyChangeListeners(propertyName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
     }
 
     // a class for listening for power state changes
     public class TimeKeeper implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent e) {
-            if (POWER.equals(e.getPropertyName())) {
-                int newPowerState = getPower();
-                if (newPowerState != power) {
-                    power = newPowerState;
+            if ("Power".equals(e.getPropertyName())) {
+                int newPowerState;
+                try {
+                    newPowerState = getPower();
+                } catch (JmriException ex) {
+                    return;
+                }
+                if (newPowerState != powerState) {
+                    powerState = newPowerState;
                     if (newPowerState == ON) {
                         lastOn = Instant.now();
                     }
@@ -72,7 +96,7 @@ abstract public class AbstractPowerManager<M extends SystemConnectionMemo> exten
             }
         }
     }
-
+    
     /**
      * Returns the amount of time since the layout was last powered up,
      * in milliseconds. If the layout has not been powered up as far as
@@ -86,15 +110,5 @@ abstract public class AbstractPowerManager<M extends SystemConnectionMemo> exten
         }
         return Instant.now().toEpochMilli() - lastOn.toEpochMilli();
     }
-
-    /**
-     * Fires a {@link java.beans.PropertyChangeEvent} for the power state using
-     * property name "power".
-     *
-     * @param old the old power state
-     * @param current the new power state
-     */
-    protected final void firePowerPropertyChange(int old, int current) {
-        firePropertyChange(POWER, old, current);
-    }
+    
 }

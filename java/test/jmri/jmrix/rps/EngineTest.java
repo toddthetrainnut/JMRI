@@ -1,12 +1,14 @@
 package jmri.jmrix.rps;
 
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * JUnit tests for the rps.Engine class.
  *
- * @author Bob Jacobsen Copyright 2008
+ * @author	Bob Jacobsen Copyright 2008
  */
 public class EngineTest {
 
@@ -23,12 +25,12 @@ public class EngineTest {
         Assert.assertEquals("number", 3, e.getMaxReceiverNumber());
     }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         jmri.util.JUnitUtil.setUp();
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         jmri.util.JUnitUtil.tearDown();
    }

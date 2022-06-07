@@ -1,8 +1,10 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Bob Jacobsen Copyright (C) 2002
@@ -10,7 +12,7 @@ import org.junit.jupiter.api.*;
  */
 public class LnPacketizerStrictTest extends LnPacketizerTest {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -18,7 +20,7 @@ public class LnPacketizerStrictTest extends LnPacketizerTest {
         lnp = new LnPacketizerStrict(memo);
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         lnp = null;

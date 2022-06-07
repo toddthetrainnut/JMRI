@@ -1,21 +1,20 @@
 package jmri.jmrix.ieee802154.swing.packetgen;
 
 import java.awt.GraphicsEnvironment;
-
+import jmri.jmrix.ieee802154.IEEE802154TrafficController;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of PacketGenFrame
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class PacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
 
     // private IEEE802154TrafficController tc = null;
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -37,11 +36,10 @@ public class PacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         // tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 }

@@ -1,18 +1,18 @@
 package jmri.jmrix.rfid.merg.concentrator;
 
 import jmri.Sensor;
-import jmri.jmrix.rfid.RfidSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * ConcentratorSensorManagerTest.java
- * <p>
- * Test for the ConcentratorSensorManager class
  *
- * @author Paul Bender Copyright (C) 2012,2016
+ * Description:	tests for the ConcentratorSensorManager class
+ *
+ * @author	Paul Bender Copyright (C) 2012,2016
  */
 public class ConcentratorSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
 
@@ -23,59 +23,35 @@ public class ConcentratorSensorManagerTest extends jmri.managers.AbstractSensorM
         return "RS" + i;
     }
 
+
     @Test
     public void testCtor() {
         Assert.assertNotNull(l);
     }
 
-    @Test
-    public void testAlphaSystemName() {
-        Sensor t = l.provide("RSA");
-        Assert.assertNotNull(t);
-    }
-
-    // test not applicable as minimal validation
-    @Test
-    @Override
-    public void testMakeSystemNameWithNoPrefixNotASystemName() {
-    }
-
-    // test not applicable as minimal validation
-    @Test
-    @Override
-    public void testMakeSystemNameWithPrefixNotASystemName() {
-    }
-
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        RfidSystemConnectionMemo memo = new RfidSystemConnectionMemo();
-        tc = new ConcentratorTrafficController(memo, "A-H") {
-            @Override
-            public void sendInitString() {
-            }
+        tc = new ConcentratorTrafficController(new ConcentratorSystemConnectionMemo(),"A-H"){
+           @Override
+           public void sendInitString(){
+           }
         };
-        memo.setRfidTrafficController(tc);
-        memo.setSystemPrefix("R");
-        l = new ConcentratorSensorManager(tc.getAdapterMemo()) {
+        l = new ConcentratorSensorManager(tc,"R"){
             @Override
-            public void message(jmri.jmrix.rfid.RfidMessage m) {
-            }
+            public void message(jmri.jmrix.rfid.RfidMessage m){}
 
             @Override
-            public synchronized void reply(jmri.jmrix.rfid.RfidReply m) {
-            }
+            public void reply(jmri.jmrix.rfid.RfidReply m){}
 
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        tc.terminateThreads();
         tc = null;
         JUnitUtil.tearDown();
-
     }
 
 }

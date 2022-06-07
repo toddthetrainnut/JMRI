@@ -6,7 +6,7 @@ import java.util.EventListener;
  * A listener interface for a class requesting a DccThrottle from the
  * ThrottleManager.
  * <p>
- * Implementing classes used the methods here as part of the throttle request and initialization process as described shown in
+ * Implementing classes used the methods here as part of the throttle request and initilization process as described shown in
  * <img src="doc-files/ThrottleListener-Sequence.png" alt="Throttle initialization sequence UML diagram">
  *
  * <hr>
@@ -46,17 +46,26 @@ public interface ThrottleListener extends EventListener {
     }
     
     /**
-     * Get notification that a throttle has been found as requested.
+     * Get notification that a throttle request requires is in use by another
+     * device, and a "steal" may be required.
+     * @deprecated since 4.15.7; use
+     * #notifyDecisionRequired(LocoAddress, DecisionType) instead
+     */
+    @Deprecated
+    public void notifyStealThrottleRequired(LocoAddress address);
+
+    /**
+     * Get notification that a throttle has been found as you requested.
      *
-     * @param t the throttle with the requested address
+     * @param t An instantiation of the DccThrottle with the address requested.
      */
     public void notifyThrottleFound(DccThrottle t);
 
     /**
-     * Get notification that an attempt to request a throttle has failed.
+     * Get notification that an attempt to request a throttle has failed
      *
-     * @param address address of the failed request
-     * @param reason  failure cause
+     * @param address LocoAddress of the failed loco request.
+     * @param reason  The reason why the throttle request failed.
      */
     public void notifyFailedThrottleRequest(LocoAddress address, String reason);
     

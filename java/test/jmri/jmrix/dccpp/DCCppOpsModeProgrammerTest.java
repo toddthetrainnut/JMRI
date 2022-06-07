@@ -1,17 +1,15 @@
 package jmri.jmrix.dccpp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * DCCppOpsModeProgrammerTest.java
- * <p>
- * Test for the jmri.jmrix.dccpp.DCCppOpsModeProgrammer class
  *
- * @author Paul Bender
- * @author Mark Underwood (C) 2015
+ * Description:	tests for the jmri.jmrix.dccpp.DCCppOpsModeProgrammer class
+ *
+ * @author	Paul Bender
+ * @author	Mark Underwood (C) 2015
  */
 public class DCCppOpsModeProgrammerTest extends jmri.jmrix.AbstractOpsModeProgrammerTestBase {
 
@@ -22,25 +20,23 @@ public class DCCppOpsModeProgrammerTest extends jmri.jmrix.AbstractOpsModeProgra
         Assert.assertTrue("can read", programmer.getCanRead());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // infrastructure objects
         DCCppInterfaceScaffold tc = new DCCppInterfaceScaffold(new DCCppCommandStation());
 
         DCCppOpsModeProgrammer t = new DCCppOpsModeProgrammer(5, tc);
-        programmer = t;
+	    programmer = t;
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        programmer = null;
-        JUnitUtil.resetWindows(false, false);
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+	    programmer = null;
         JUnitUtil.tearDown();
-
     }
 
 }

@@ -1,15 +1,9 @@
 package jmri.jmrix.qsi;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
-
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
 import jmri.GlobalProgrammerManager;
 import jmri.InstanceManager;
-import jmri.NamedBean;
-import jmri.jmrix.DefaultSystemConnectionMemo;
 import jmri.managers.DefaultProgrammerManager;
-import jmri.util.NamedBeanComparator;
 
 /**
  * Lightweight class to denote that a system is active, and provide general
@@ -18,14 +12,15 @@ import jmri.util.NamedBeanComparator;
  * Objects of specific subtypes are registered in the instance manager to
  * activate their particular system.
  *
- * @author Kevin Dickerson Copyright (C) 2012
- * @author Bob Jacobsen Copyright (C) 2010
+ * @author	Kevin Dickerson Copyright (C) 2012
+ * @author	Bob Jacobsen Copyright (C) 2010
  */
-public class QsiSystemConnectionMemo extends DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class QsiSystemConnectionMemo extends jmri.jmrix.SystemConnectionMemo {
 
     public QsiSystemConnectionMemo(QsiTrafficController st) {
         super("Q", "Quantum Programmer");
         this.st = st;
+        register();
         InstanceManager.store(this, QsiSystemConnectionMemo.class); // also register as specific type
         InstanceManager.store(cf = new jmri.jmrix.qsi.swing.QsiComponentFactory(this),
         jmri.jmrix.swing.ComponentFactory.class);
@@ -44,7 +39,6 @@ public class QsiSystemConnectionMemo extends DefaultSystemConnectionMemo impleme
 
     /**
      * Provides access to the TrafficController for this particular connection.
-     * @return the QSI traffic controller.
      */
     public QsiTrafficController getQsiTrafficController() {
         return st;
@@ -56,11 +50,46 @@ public class QsiSystemConnectionMemo extends DefaultSystemConnectionMemo impleme
     private QsiTrafficController st;
 
     /**
-     * Provide a menu with all items attached to this system connection.
-     * @return new QSIMenu.
+     * Provide a menu with all items attached to this system connection
      */
     public javax.swing.JMenu getMenu() {
         return new QSIMenu("QSI",this);
+    }
+
+    /**
+     * Configure the programming manager and "command station" objects
+     */
+    public void configureCommandStation() {
+
+    }
+
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        }
+        if (type.equals(jmri.GlobalProgrammerManager.class)) {
+            return getProgrammerManager().isGlobalProgrammerAvailable();
+        }
+        if (type.equals(jmri.AddressedProgrammerManager.class)) {
+            return getProgrammerManager().isAddressedModePossible();
+        }
+        return false; // nothing, by default
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.GlobalProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+        if (T.equals(jmri.AddressedProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+        return null; // nothing, by default
     }
 
     /**
@@ -68,29 +97,26 @@ public class QsiSystemConnectionMemo extends DefaultSystemConnectionMemo impleme
      * manager config in one place.
      */
     public void configureManagers() {
-        store(getProgrammerManager(), jmri.AddressedProgrammerManager.class);
         InstanceManager.store(getProgrammerManager(), jmri.AddressedProgrammerManager.class);
-        store(getProgrammerManager(), GlobalProgrammerManager.class);
         InstanceManager.store(getProgrammerManager(), GlobalProgrammerManager.class);
-        register();
     }
 
+    private DefaultProgrammerManager programmerManager;
+
     public DefaultProgrammerManager getProgrammerManager() {
-        return (DefaultProgrammerManager) classObjectMap.computeIfAbsent(DefaultProgrammerManager.class,(Class<?> c) -> new DefaultProgrammerManager(new QsiProgrammer(this),this));
+        if (programmerManager == null) {
+            programmerManager = new jmri.managers.DefaultProgrammerManager(new jmri.jmrix.qsi.QsiProgrammer(this), this);
+        }
+        return programmerManager;
     }
 
     public void setProgrammerManager(DefaultProgrammerManager p) {
-        store(p,DefaultProgrammerManager.class);
+        programmerManager = p;
     }
 
     @Override
     protected ResourceBundle getActionModelResourceBundle() {
         return ResourceBundle.getBundle("jmri.jmrix.qsi.QsiActionListBundle");
-    }
-
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
     }
 
     @Override

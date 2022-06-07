@@ -3,7 +3,7 @@ package jmri.jmrit.display.switchboardEditor;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Locale;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -21,9 +21,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * @author Bob Jacobsen Copyright (C) 2012
  * @since 3.3.1
  */
-public class Bundle extends jmri.jmrit.display.Bundle {
+public class Bundle extends jmri.jmrit.display.controlPanelEditor.Bundle {
 
-    @CheckForNull
+    @Nullable
     private static final String name = null; // No local resources
 
     //
@@ -80,7 +80,7 @@ public class Bundle extends jmri.jmrit.display.Bundle {
     private final static Bundle b = new Bundle();
 
     @Override
-    @CheckForNull
+    @Nullable
     protected String bundleName() {
         return name;
     }

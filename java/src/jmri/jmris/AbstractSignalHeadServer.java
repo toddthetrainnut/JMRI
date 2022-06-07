@@ -5,7 +5,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import jmri.InstanceManager;
 import jmri.JmriException;
 import jmri.SignalHead;
@@ -23,8 +22,8 @@ abstract public class AbstractSignalHeadServer {
     private final HashMap<String, SignalHeadListener> signalHeads;
     private static final Logger log = LoggerFactory.getLogger(AbstractSignalHeadServer.class);
 
-    public AbstractSignalHeadServer(){
-        signalHeads = new HashMap<>();
+    public AbstractSignalHeadServer() {
+        signalHeads = new HashMap<String, SignalHeadListener>();
     }
 
     /*
@@ -69,7 +68,7 @@ abstract public class AbstractSignalHeadServer {
             signalHead = InstanceManager.getDefault(jmri.SignalHeadManager.class).getSignalHead(signalHeadName);
             if (signalHead == null) {
                 // only log, since this may be from a remote system
-                log.error("SignalHead {} is not available.", signalHeadName);
+                log.error("SignalHead " + signalHeadName + " is not available.");
             } else {
                 if (signalHead.getAppearance() != signalHeadState || signalHead.getHeld()) {
                     if (signalHeadState == SignalHead.HELD) {
@@ -87,7 +86,7 @@ abstract public class AbstractSignalHeadServer {
                 }
             }
         } catch (Exception ex) {
-            log.error("Exception setting signalHead {} appearance:", signalHeadName, ex);
+            log.error("Exception setting signalHead " + signalHeadName + " appearance:", ex);
         }
     }
 
@@ -178,7 +177,7 @@ abstract public class AbstractSignalHeadServer {
                 } catch (IOException ie) {
                     // if we get an error, de-register
                     if (log.isDebugEnabled()) {
-                        log.debug("Unable to send status, removing listener from signalHead {}", name);
+                        log.debug("Unable to send status, removing listener from signalHead " + name);
                     }
                     signalHead.removePropertyChangeListener(this);
                     removeSignalHeadFromList(name);

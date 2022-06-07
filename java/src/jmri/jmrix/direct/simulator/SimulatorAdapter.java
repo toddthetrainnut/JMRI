@@ -5,13 +5,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Arrays;
 
 import jmri.jmrix.direct.DirectSystemConnectionMemo;
 import jmri.jmrix.direct.Message;
 import jmri.jmrix.direct.PortController; // no special xSimulatorController
 import jmri.jmrix.direct.Reply;
 import jmri.jmrix.direct.TrafficController;
-import jmri.util.ImmediatePipedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,12 +58,12 @@ public class SimulatorAdapter extends PortController implements Runnable {
     @Override
     public String openPort(String portName, String appName) {
         try {
-            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeI = new PipedOutputStream();
             log.debug("tempPipeI created");
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
             log.debug("inpipe created {}", inpipe != null);
-            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeO = new PipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {
@@ -216,14 +216,15 @@ public class SimulatorAdapter extends PortController implements Runnable {
             Reply r;
             if (log.isDebugEnabled()) {
                 StringBuffer buf = new StringBuffer();
+                buf.append("Direct Simulator Thread received message: ");
                 if (m != null) {
                     for (int i = 0; i < m.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & m.getElement(i))).append(" ");
+                        buf.append(Integer.toHexString(0xFF & m.getElement(i)) + " ");
                     }
                 } else {
                     buf.append("null message buffer");
                 }
-                log.trace("Direct Simulator Thread received message:  {}", buf); // generates a lot of traffic
+                log.trace(buf.toString()); // generates a lot of traffic
             }
             if (m != null) {
                 r = generateReply(m);
@@ -231,10 +232,11 @@ public class SimulatorAdapter extends PortController implements Runnable {
                     writeReply(r);
                     if (log.isDebugEnabled()) {
                         StringBuffer buf = new StringBuffer();
+                        buf.append("Direct Simulator Thread sent reply: ");
                         for (int i = 0; i < r.getNumDataElements(); i++) {
-                            buf.append(Integer.toHexString(0xFF & r.getElement(i))).append(" ");
+                            buf.append(Integer.toHexString(0xFF & r.getElement(i)) + " ");
                         }
-                        log.debug("Direct Simulator Thread sent reply: {}", buf);
+                        log.debug(buf.toString());
                     }
                 }
             }
@@ -280,13 +282,12 @@ public class SimulatorAdapter extends PortController implements Runnable {
                 reply.setElement(0, addr | 0x80);
                 reply.setElement(1, 0); // pretend speed 0
                 // no parity
-                log.debug("Reply generated {}", reply);
                 break;
 
             default:
                 reply = null;
-                log.debug("Message ignored");
         }
+        log.debug(reply == null ? "Message ignored" : "Reply generated " + reply.toString());
         return (reply);
     }
 

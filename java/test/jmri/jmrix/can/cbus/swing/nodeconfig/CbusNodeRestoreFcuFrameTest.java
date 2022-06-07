@@ -1,15 +1,16 @@
 package jmri.jmrix.can.cbus.swing.nodeconfig;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.cbus.CbusPreferences;
 import jmri.jmrix.can.cbus.node.CbusNodeTableDataModel;
+import jmri.util.JmriJFrame;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 
@@ -48,9 +49,13 @@ public class CbusNodeRestoreFcuFrameTest extends jmri.util.JmriJFrameTestBase {
         // Ask to close window
         jfo.requestClose();
         
+        jfo = null;
+        t = null;
         
         nodeModel.dispose();
+        nodeModel = null;
         mainpane.dispose();
+        mainpane = null;
         
     }
     
@@ -61,7 +66,7 @@ public class CbusNodeRestoreFcuFrameTest extends jmri.util.JmriJFrameTestBase {
     CanSystemConnectionMemo memo;
 
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -73,10 +78,10 @@ public class CbusNodeRestoreFcuFrameTest extends jmri.util.JmriJFrameTestBase {
 
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        memo.dispose();
+        
         memo = null;
         super.tearDown();
     }

@@ -3,7 +3,9 @@ package jmri.jmrix.can.cbus.swing;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -36,8 +38,6 @@ public class CbusEventHighlightPanel extends JPanel {
 
     /**
      * Create a new instance of CbusEventHighlightPanel.
-     * @param highlightFrame Parent Frame
-     * @param index Index position in parent Frame
      */
     public CbusEventHighlightPanel(CbusEventHighlightFrame highlightFrame, int index) {
         super();
@@ -69,9 +69,9 @@ public class CbusEventHighlightPanel extends JPanel {
         
         eventnumberspinner.setToolTipText(Bundle.getMessage("EvLowfieldTooltip"));
         evPane.add(eventnumberspinner);
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(eventnumberspinner, "#");
-        eventnumberspinner.setEditor(editor);
-        JFormattedTextField fieldEv = (JFormattedTextField) editor.getComponent(0);
+        
+        JComponent compEv = eventnumberspinner.getEditor();
+        JFormattedTextField fieldEv = (JFormattedTextField) compEv.getComponent(0);
         DefaultFormatter formatterEv = (DefaultFormatter) fieldEv.getFormatter();
         fieldEv.setColumns(2);
         formatterEv.setCommitsOnValidEdit(true);
@@ -90,9 +90,8 @@ public class CbusEventHighlightPanel extends JPanel {
         nnEnButton.setToolTipText(Bundle.getMessage("EnableNodeTooltip"));
         nnPane.add(nnEnButton);
 
-        JSpinner.NumberEditor neditor = new JSpinner.NumberEditor(nodenumberspinner, "#");
-        nodenumberspinner.setEditor(neditor);
-        JFormattedTextField fieldNd = (JFormattedTextField) neditor.getComponent(0);
+        JComponent compNd = nodenumberspinner.getEditor();
+        JFormattedTextField fieldNd = (JFormattedTextField) compNd.getComponent(0);
         DefaultFormatter formatterNd = (DefaultFormatter) fieldNd.getFormatter();
         fieldNd.setColumns(2);
         formatterNd.setCommitsOnValidEdit(true); 
@@ -140,46 +139,70 @@ public class CbusEventHighlightPanel extends JPanel {
 
         this.add(directionPane);
         
-        eventnumberspinner.addChangeListener((ChangeEvent e) -> {
-            if ( evEnButton.isSelected() ) {
-                setoptions();
+        eventnumberspinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if ( evEnButton.isSelected() ) {
+                    setoptions();
+                }
             }
         });
         
-        nodenumberspinner.addChangeListener((ChangeEvent e) -> {
-            if ( nnEnButton.isSelected() ) {
+        nodenumberspinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if ( nnEnButton.isSelected() ) {
+                    setoptions();
+                }
+            }
+        });
+        
+        // update if already active
+        nnEnButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
                 setoptions();
             }
         });
         
         // update if already active
-        nnEnButton.addActionListener((java.awt.event.ActionEvent e) -> {
-            setoptions();
-        });
-        
-        // update if already active
-        evEnButton.addActionListener((java.awt.event.ActionEvent e) -> {
-            setoptions();
+        evEnButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setoptions();
+            }
         });
 
         // update if already active
-        onButton.addActionListener((java.awt.event.ActionEvent e) -> {
-            setoptions();
+        onButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setoptions();
+            }
         });
         
         // update if already active
-        offButton.addActionListener((java.awt.event.ActionEvent e) -> {
-            setoptions();
+        offButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setoptions();
+            }
         });
         
         // update if already active
-        inButton.addActionListener((java.awt.event.ActionEvent e) -> {
-            setoptions();
+        inButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setoptions();
+            }
         });
         
         // update if already active
-        outButton.addActionListener((java.awt.event.ActionEvent e) -> {
-            setoptions();
+        outButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setoptions();
+            }
         });
 
     }

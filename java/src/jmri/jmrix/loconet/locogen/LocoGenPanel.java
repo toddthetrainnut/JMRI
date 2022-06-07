@@ -92,7 +92,12 @@ public class LocoGenPanel extends jmri.jmrix.loconet.swing.LnPanel
             pane1.add(sendButton);
             pane1.add(Box.createVerticalGlue());
 
-            sendButton.addActionListener(this::sendButtonActionPerformed);
+            sendButton.addActionListener(new java.awt.event.ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    sendButtonActionPerformed(e);
+                }
+            });
 
             add(pane1);
         }
@@ -119,7 +124,12 @@ public class LocoGenPanel extends jmri.jmrix.loconet.swing.LnPanel
         pane2.add(mRunButton); // starts a new row in layout
         add(pane2);
 
-        mRunButton.addActionListener(this::runButtonActionPerformed);
+        mRunButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                runButtonActionPerformed(e);
+            }
+        });
     }
 
     /**
@@ -133,9 +143,7 @@ public class LocoGenPanel extends jmri.jmrix.loconet.swing.LnPanel
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        memo.getLnTrafficController().sendLocoNetMessage(createPacket(input));
+        memo.getLnTrafficController().sendLocoNetMessage(createPacket(packetTextField.getText()));
     }
 
     // control sequence operation
@@ -144,7 +152,7 @@ public class LocoGenPanel extends jmri.jmrix.loconet.swing.LnPanel
     javax.swing.Timer timer = null;
 
     /**
-     * Internal routine to handle timer starts and restarts
+     * Internal routine to handle timer starts {@literal &} restarts
      *
      * @param delay in mSec
      */
@@ -250,7 +258,7 @@ public class LocoGenPanel extends jmri.jmrix.loconet.swing.LnPanel
     }
 
     /**
-     * Create a well-formed LocoNet packet from a String.
+     * Create a well-formed LocoNet packet from a String
      * <p>
      * Well-formed generally means a space-separated string of hex values of
      * two characters each, as defined in

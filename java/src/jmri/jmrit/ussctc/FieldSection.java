@@ -10,7 +10,6 @@ public interface FieldSection<To extends Enum<To>, From extends Enum<From>> {
 
     /**
      * Provide the transferred value to the field unit at the end of the code-send operation.
-     * @param value transfer value.
      */
     public void codeValueDelivered(To value);    
     

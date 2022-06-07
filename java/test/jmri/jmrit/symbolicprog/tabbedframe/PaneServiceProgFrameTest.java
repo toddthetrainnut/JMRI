@@ -1,18 +1,16 @@
 package jmri.jmrit.symbolicprog.tabbedframe;
 
 import java.awt.GraphicsEnvironment;
-import java.awt.event.WindowEvent;
-
 import jmri.jmrit.decoderdefn.DecoderFile;
 import jmri.jmrit.roster.RosterEntry;
-import jmri.util.JUnitUtil;
-
 import org.jdom2.DocType;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -27,24 +25,23 @@ public class PaneServiceProgFrameTest {
         DecoderFile df = new DecoderFile("NMRA", "", "NMRA standard CV definitions", "0", "255",
                 "NMRA standard CV definitions", "0NMRA.xml", 16, 3, root);
         RosterEntry re = new RosterEntry();
-        PaneServiceProgFrame t = new PaneServiceProgFrame(df, re, "test frame", "programmers/Basic.xml", p);
-        Assert.assertNotNull("exists", t);
-        t.dispatchEvent(new WindowEvent(t, WindowEvent.WINDOW_CLOSING));
+        PaneServiceProgFrame t = new PaneServiceProgFrame(df,re,"test frame", "programmers/Basic.xml",p);
+        Assert.assertNotNull("exists",t);
+        t.dispose();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDebugProgrammerManager();
+        jmri.util.JUnitUtil.setUp();
+        jmri.util.JUnitUtil.resetProfileManager();
+        jmri.util.JUnitUtil.initDebugProgrammerManager();
         setupDoc();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
     // variables for the test XML structures
@@ -105,7 +102,10 @@ public class PaneServiceProgFrameTest {
                         )
                 )
         ); // end of adding contents
+
+        return;
     }
 
     // private final static Logger log = LoggerFactory.getLogger(PaneServiceProgFrameTest.class.getName());
+
 }

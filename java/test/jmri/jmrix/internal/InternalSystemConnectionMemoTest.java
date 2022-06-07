@@ -1,28 +1,27 @@
 package jmri.jmrix.internal;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class InternalSystemConnectionMemoTest extends SystemConnectionMemoTestBase<InternalSystemConnectionMemo> {
+public class InternalSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         scm = new InternalSystemConnectionMemo();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(InternalSystemConnectionMemoTest.class);
+
 }

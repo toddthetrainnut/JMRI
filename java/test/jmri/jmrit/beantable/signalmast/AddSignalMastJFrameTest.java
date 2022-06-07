@@ -1,10 +1,8 @@
 package jmri.jmrit.beantable.signalmast;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -12,7 +10,8 @@ import org.junit.jupiter.api.*;
  */
 public class AddSignalMastJFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -23,7 +22,7 @@ public class AddSignalMastJFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();

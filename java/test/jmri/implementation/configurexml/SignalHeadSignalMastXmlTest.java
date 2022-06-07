@@ -1,14 +1,15 @@
 package jmri.implementation.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * SignalHeadSignalMastXmlTest.java
  *
- * Test for the SignalHeadSignalMastXml class
+ * Description: tests for the SignalHeadSignalMastXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class SignalHeadSignalMastXmlTest {
       Assert.assertNotNull("SignalHeadSignalMastXml constructor",new SignalHeadSignalMastXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

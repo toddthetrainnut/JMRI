@@ -1,31 +1,31 @@
 package jmri.jmrix.loconet.pr2;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.After;
+import org.junit.Before;
 import jmri.jmrix.loconet.LocoNetInterfaceScaffold;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class PR2SystemConnectionMemoTest extends SystemConnectionMemoTestBase<PR2SystemConnectionMemo> {
+public class PR2SystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
        JUnitUtil.setUp();
-       scm = new PR2SystemConnectionMemo();
-       LocoNetInterfaceScaffold lnis = new LocoNetInterfaceScaffold(scm);
-       scm.setLnTrafficController(lnis);
-       scm.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100,false,false,false,false);
-       scm.configureManagers();
+       PR2SystemConnectionMemo memo = new PR2SystemConnectionMemo();
+       LocoNetInterfaceScaffold lnis = new LocoNetInterfaceScaffold(memo);
+       memo.setLnTrafficController(lnis);
+       memo.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100,false,false,false);
+       memo.configureManagers();
+       scm = memo;
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         scm.dispose();
         JUnitUtil.tearDown();

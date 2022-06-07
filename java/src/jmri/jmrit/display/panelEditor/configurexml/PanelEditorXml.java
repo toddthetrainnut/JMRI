@@ -4,21 +4,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.List;
-
 import javax.swing.JFrame;
-
-import org.jdom2.Attribute;
-import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.ConfigureManager;
 import jmri.InstanceManager;
 import jmri.configurexml.AbstractXmlAdapter;
 import jmri.configurexml.XmlAdapter;
-import jmri.jmrit.display.EditorManager;
+import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
 import jmri.jmrit.display.panelEditor.PanelEditor;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handle configuration for {@link PanelEditor} panes.
@@ -68,9 +65,10 @@ public class PanelEditorXml extends AbstractXmlAdapter {
         // include contents
         List<Positionable> contents = p.getContents();
         if (log.isDebugEnabled()) {
-            log.debug("N elements: {}", contents.size());
+            log.debug("N elements: " + contents.size());
         }
-        for (Positionable sub : contents) {
+        for (int i = 0; i < contents.size(); i++) {
+            Positionable sub = contents.get(i);
             if (sub != null && sub.storeItem()) {
                 try {
                     Element e = jmri.configurexml.ConfigXmlManager.elementFromObject(sub);
@@ -86,19 +84,20 @@ public class PanelEditorXml extends AbstractXmlAdapter {
         return panel;
     }
 
+    @Override
+    public void load(Element element, Object o) {
+        log.error("Invalid method called");
+    }
+
     /**
      * Create a PanelEditor object, then register and fill it, then pop it in a
-     * JFrame.
+     * JFrame
      *
      * @param shared Top level Element to unpack.
      * @return true if successful
      */
     @Override
     public boolean load(Element shared, Element perNode) {
-        if (java.awt.GraphicsEnvironment.isHeadless()) {
-            return true;
-        }
-
         boolean result = true;
         Attribute a;
         // find coordinates
@@ -129,23 +128,24 @@ public class PanelEditorXml extends AbstractXmlAdapter {
             name = shared.getAttribute("name").getValue();
         }
         // confirm that panel hasn't already been loaded
-        if (InstanceManager.getDefault(EditorManager.class).contains(name)) {
+        if (InstanceManager.getDefault(PanelMenu.class).isPanelNameUsed(name)) {
             log.warn("File contains a panel with the same name ({}) as an existing panel", name);
             result = false;
         }
 
         // If available, override location and size with machine dependent values
-        if (!InstanceManager.getDefault(jmri.util.gui.GuiLafPreferencesManager.class).isEditorUseOldLocSize()) {
+        if (!InstanceManager.getDefault(apps.gui.GuiLafPreferencesManager.class).isEditorUseOldLocSize()) {
             jmri.UserPreferencesManager prefsMgr = InstanceManager.getNullableDefault(jmri.UserPreferencesManager.class);
             if (prefsMgr != null) {
+                String windowFrameRef = name;
 
-                java.awt.Point prefsWindowLocation = prefsMgr.getWindowLocation(name);
+                java.awt.Point prefsWindowLocation = prefsMgr.getWindowLocation(windowFrameRef);
                 if (prefsWindowLocation != null) {
                     x = (int) prefsWindowLocation.getX();
                     y = (int) prefsWindowLocation.getY();
                 }
 
-                java.awt.Dimension prefsWindowSize = prefsMgr.getWindowSize(name);
+                java.awt.Dimension prefsWindowSize = prefsMgr.getWindowSize(windowFrameRef);
                 if (prefsWindowSize != null && prefsWindowSize.getHeight() != 0 && prefsWindowSize.getWidth() != 0) {
                     height = (int) prefsWindowSize.getHeight();
                     width = (int) prefsWindowSize.getWidth();
@@ -157,19 +157,57 @@ public class PanelEditorXml extends AbstractXmlAdapter {
         panel.setTitle();
         panel.getTargetFrame().setLocation(x, y);
         panel.getTargetFrame().setSize(width, height);
-        //Panel already added to EditorManager with new PanelEditor(name)
-//        InstanceManager.getDefault(EditorManager.class).add(panel);
+        InstanceManager.getDefault(PanelMenu.class).addEditorPanel(panel);
 
         // Load editor option flags. This has to be done before the content
         // items are loaded, to preserve the individual item settings
-        panel.setAllEditable(!shared.getAttributeValue("editable","yes").equals("no"));
-        panel.setAllPositionable(!shared.getAttributeValue("positionable","yes").equals("no"));
-        //panel.setShowCoordinates(shared.getAttributeValue("showcoordinates","no").equals("yes"));
-        panel.setAllShowToolTip(!shared.getAttributeValue("showtooltips","yes").equals("no"));
-        panel.setAllControlling(!shared.getAttributeValue("controlling", "yes").equals("no"));
-        panel.setShowHidden(shared.getAttributeValue("hide","no").equals("yes"));
-        panel.setPanelMenuVisible(!shared.getAttributeValue("panelmenu","yes").equals("no"));
-        panel.setScroll(shared.getAttributeValue("scrollable","both"));
+        boolean value = true;
+        if ((a = shared.getAttribute("editable")) != null && a.getValue().equals("no")) {
+            value = false;
+        }
+        panel.setAllEditable(value);
+
+        value = true;
+        if ((a = shared.getAttribute("positionable")) != null && a.getValue().equals("no")) {
+            value = false;
+        }
+        panel.setAllPositionable(value);
+
+        /*
+         value = false;
+         if ((a = element.getAttribute("showcoordinates"))!=null && a.getValue().equals("yes"))
+         value = true;
+         panel.setShowCoordinates(value);
+         */
+        value = true;
+        if ((a = shared.getAttribute("showtooltips")) != null && a.getValue().equals("no")) {
+            value = false;
+        }
+        panel.setAllShowToolTip(value);
+
+        value = true;
+        if ((a = shared.getAttribute("controlling")) != null && a.getValue().equals("no")) {
+            value = false;
+        }
+        panel.setAllControlling(value);
+
+        value = false;
+        if ((a = shared.getAttribute("hide")) != null && a.getValue().equals("yes")) {
+            value = true;
+        }
+        panel.setShowHidden(value);
+
+        value = true;
+        if ((a = shared.getAttribute("panelmenu")) != null && a.getValue().equals("no")) {
+            value = false;
+        }
+        panel.setPanelMenuVisible(value);
+
+        String state = "both";
+        if ((a = shared.getAttribute("scrollable")) != null) {
+            state = a.getValue();
+        }
+        panel.setScroll(state);
 
         // set color if needed
         try {
@@ -185,11 +223,12 @@ public class PanelEditorXml extends AbstractXmlAdapter {
         panel.initView();
 
         // load the contents with their individual option settings
-        List<Element> panelItems = shared.getChildren();
-        for (Element item : panelItems) {
+        List<Element> items = shared.getChildren();
+        for (int i = 0; i < items.size(); i++) {
             // get the class, hence the adapter object to do loading
+            Element item = items.get(i);
             String adapterName = item.getAttribute("class").getValue();
-            log.debug("load via {}", adapterName);
+            log.debug("load via " + adapterName);
             try {
                 XmlAdapter adapter = (XmlAdapter) Class.forName(adapterName).getDeclaredConstructor().newInstance();
                 // and do it
@@ -198,7 +237,8 @@ public class PanelEditorXml extends AbstractXmlAdapter {
                     result = false;
                 }
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
-                    | jmri.configurexml.JmriConfigureXmlException | java.lang.reflect.InvocationTargetException e) {
+                    | jmri.configurexml.JmriConfigureXmlException
+                    | java.lang.reflect.InvocationTargetException e) {
                 log.error("Exception while loading {}", item.getName(), e);
                 result = false;
             }

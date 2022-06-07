@@ -3,16 +3,15 @@ package jmri.jmrix.ieee802154.xbee;
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.models.XBee16BitAddress;
 import com.digi.xbee.api.models.XBee64BitAddress;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import com.digi.xbee.api.models.XBeeProtocol;
+import org.junit.*;
 
 /**
  * XBeeNodeTest.java
  *
- * Test for the jmri.jmrix.ieee802154.xbee.XBeeNode class
+ * Description:	tests for the jmri.jmrix.ieee802154.xbee.XBeeNode class
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class XBeeNodeTest{
 
@@ -163,19 +162,18 @@ public class XBeeNodeTest{
         Assert.assertEquals("Global Transmit Address",node.getXBeeAddress64(),node.getPreferedTransmitAddress());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         tc = new XBeeInterfaceScaffold();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ((XBeeInterfaceScaffold)tc).dispose();
         tc = null;
-        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         jmri.util.JUnitUtil.tearDown();
-
     }
 
 }

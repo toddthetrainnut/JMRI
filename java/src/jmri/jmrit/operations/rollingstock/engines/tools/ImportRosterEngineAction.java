@@ -1,7 +1,6 @@
 package jmri.jmrit.operations.rollingstock.engines.tools;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -11,8 +10,8 @@ import javax.swing.AbstractAction;
  */
 public class ImportRosterEngineAction extends AbstractAction {
 
-    public ImportRosterEngineAction() {
-        super(Bundle.getMessage("MenuItemImportRoster"));
+    public ImportRosterEngineAction(String actionName) {
+        super(actionName);
     }
 
     @Override

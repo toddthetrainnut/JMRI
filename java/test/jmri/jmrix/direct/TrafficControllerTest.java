@@ -1,9 +1,10 @@
 package jmri.jmrix.direct;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the TrafficController class
@@ -19,7 +20,7 @@ public class TrafficControllerTest {
        Assert.assertNotNull("exists", tc);
     }
 
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
 
@@ -27,7 +28,7 @@ public class TrafficControllerTest {
        tc = new TrafficController(m);
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

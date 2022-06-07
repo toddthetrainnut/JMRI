@@ -1,11 +1,7 @@
 package jmri.jmrit.display.configurexml;
 
 import java.io.File;
-import java.util.stream.Stream;
-
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.runners.Parameterized;
 
 /**
  * Test that configuration files can be read and then stored again consistently.
@@ -23,18 +19,12 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 public class LoadAndStoreTest extends jmri.configurexml.LoadAndStoreTestBase {
 
-    public static Stream<Arguments> data() {
+    @Parameterized.Parameters(name = "{0} (pass={1})")
+    public static Iterable<Object[]> data() {
         return getFiles(new File("java/test/jmri/jmrit/display/configurexml"), false, true);
     }
 
-    @ParameterizedTest(name = "{index}: {0} (pass={1})")
-    @MethodSource("data")
-    public void loadAndStoreTest(File file, boolean pass) throws Exception {
-        super.loadLoadStoreFileCheck(file);
+    public LoadAndStoreTest(File file, boolean pass) {
+        super(file, pass, SaveType.Config, false);
     }
-
-    public LoadAndStoreTest() {
-        super(SaveType.Config, false);
-    }
-
 }

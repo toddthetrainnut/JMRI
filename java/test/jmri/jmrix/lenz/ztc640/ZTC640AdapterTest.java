@@ -1,14 +1,15 @@
 package jmri.jmrix.lenz.ztc640;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * ZTC640AdapterTest.java
  *
- * Test for the jmri.jmrix.lenz.ztc640.ZTC640Adapter class
+ * Description: tests for the jmri.jmrix.lenz.ztc640.ZTC640Adapter class
  *
  * @author Paul Bender
  */
@@ -20,12 +21,12 @@ public class ZTC640AdapterTest {
         Assert.assertNotNull(a);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

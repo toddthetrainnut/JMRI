@@ -1,24 +1,22 @@
 package jmri.jmrix.ecos.swing.packetgen;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Test simple functioning of PacketGenPanel
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class PacketGenPanelTest extends jmri.util.swing.JmriPanelTest {
 
     jmri.jmrix.ecos.EcosSystemConnectionMemo memo = null;
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
         JUnitUtil.initDefaultUserMessagePreferences();
         memo = new jmri.jmrix.ecos.EcosSystemConnectionMemo();
 
@@ -28,10 +26,7 @@ public class PacketGenPanelTest extends jmri.util.swing.JmriPanelTest {
         helpTarget = "package.jmri.jmrix.ecos.swing.packetgen.PacketGenFrame";
     }
 
-    @AfterEach
+    @After
     @Override
-    public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
-    }
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

@@ -1,17 +1,18 @@
 package jmri.jmrix.dccpp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * DCCppProgrammerManagerTest.java
  *
- * Test for the jmri.jmrix.dccpp.DCCppProgrammerManager class
+ * Description:	tests for the jmri.jmrix.dccpp.DCCppProgrammerManager class
  *
- * @author Paul Bender
- * @author Mark Underwood (C) 2015
+ * @author	Paul Bender
+ * @author	Mark Underwood (C) 2015
  */
 public class DCCppProgrammerManagerTest {
 
@@ -19,21 +20,17 @@ public class DCCppProgrammerManagerTest {
     public void testCtor() {
         // infrastructure objects
         DCCppInterfaceScaffold tc = new DCCppInterfaceScaffold(new DCCppCommandStation());
-        DCCppProgrammer dccprogrammer = new DCCppProgrammer(tc);
 
-        DCCppProgrammerManager t = new DCCppProgrammerManager(dccprogrammer, new DCCppSystemConnectionMemo(tc));
-        Assertions.assertNotNull(t, "exists");
-
-        dccprogrammer.dispose();
-        tc.terminateThreads();
+        DCCppProgrammerManager t = new DCCppProgrammerManager(new DCCppProgrammer(tc), new DCCppSystemConnectionMemo(tc));
+        Assert.assertNotNull(t);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

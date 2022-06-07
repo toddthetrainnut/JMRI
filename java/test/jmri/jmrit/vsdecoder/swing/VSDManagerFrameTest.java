@@ -1,10 +1,8 @@
 package jmri.jmrit.vsdecoder.swing;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -12,24 +10,18 @@ import org.junit.jupiter.api.*;
  */
 public class VSDManagerFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new VSDManagerFrame();
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new VSDManagerFrame();
+	}
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-
-        // this created an audio manager, clean that up
-        jmri.InstanceManager.getDefault(jmri.AudioManager.class).cleanup();
-        JUnitUtil.removeMatchingThreads("VSDecoderManagerThread");
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
+        jmri.util.JUnitAppender.suppressWarnMessage("Initialised Null audio system - no sounds will be available.");
         super.tearDown();
     }
 

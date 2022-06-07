@@ -53,7 +53,6 @@ public class DccSignalMast extends AbstractSignalMast {
     }
 
     private String mastType = "F$dsm";
-    private boolean useAddressOffSet = false;
 
     protected void configureFromName(String systemName) {
         // split out the basic information
@@ -87,7 +86,7 @@ public class DccSignalMast extends AbstractSignalMast {
         mast = mast.substring(0, mast.indexOf("("));
         log.trace("In configureFromName setMastType to {}", mast);
         setMastType(mast);
-
+        
         String tmp = parts[2].substring(parts[2].indexOf("(") + 1, parts[2].indexOf(")"));
         try {
             dccSignalDecoderAddress = Integer.parseInt(tmp);
@@ -154,44 +153,24 @@ public class DccSignalMast extends AbstractSignalMast {
     @Override
     public void setAspect(@Nonnull String aspect) {
         if (appearanceToOutput.containsKey(aspect) && appearanceToOutput.get(aspect) != -1) {
-            if (getLit()) {
-                if (useAddressOffSet) {
-                    c.sendPacket(NmraPacket.accSignalDecoderPkt(dccSignalDecoderAddress, appearanceToOutput.get(aspect)), packetSendCount);
-                } else {
-                    c.sendPacket(NmraPacket.altAccSignalDecoderPkt(dccSignalDecoderAddress, appearanceToOutput.get(aspect)), packetSendCount);
-                }
-            }
+            c.sendPacket(NmraPacket.altAccSignalDecoderPkt(dccSignalDecoderAddress, appearanceToOutput.get(aspect)), packetSendCount);
         } else {
             log.warn("Trying to set aspect ({}) that has not been configured on mast {}", aspect, getDisplayName());
         }
         super.setAspect(aspect);
     }
 
-
-    public void useAddressOffSet(boolean boo) {
-        useAddressOffSet = boo;
-    }
-
-    public boolean useAddressOffSet() {
-        return useAddressOffSet;
-    }
-
-
     @Override
     public void setLit(boolean newLit) {
         if (!allowUnLit() || newLit == getLit()) {
             return;
         }
-        super.setLit(newLit);
         if (newLit) {
             setAspect(getAspect());
         } else {
-            if (useAddressOffSet) {
-                c.sendPacket(NmraPacket.accSignalDecoderPkt(dccSignalDecoderAddress, unLitId), packetSendCount);
-            } else {
-                c.sendPacket(NmraPacket.altAccSignalDecoderPkt(dccSignalDecoderAddress, unLitId), packetSendCount);
-            }
+            c.sendPacket(NmraPacket.altAccSignalDecoderPkt(dccSignalDecoderAddress, unLitId), packetSendCount);
         }
+        super.setLit(newLit);
     }
 
     int unLitId = 31;
@@ -240,7 +219,7 @@ public class DccSignalMast extends AbstractSignalMast {
     }
 
     /**
-     * Get the number of times the packet should be sent to the track.
+     * get the number of times the packet should be sent to the track.
      *
      * @return the count.
      */

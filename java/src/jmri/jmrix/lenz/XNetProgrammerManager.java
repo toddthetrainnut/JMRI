@@ -13,7 +13,7 @@ import jmri.managers.DefaultProgrammerManager;
  */
 public class XNetProgrammerManager extends DefaultProgrammerManager {
 
-    protected XNetTrafficController tc;
+    protected XNetTrafficController tc = null;
 
     public XNetProgrammerManager(Programmer pProgrammer, XNetSystemConnectionMemo memo) {
         super(pProgrammer, memo);

@@ -1,7 +1,8 @@
 package apps;
 
-import static jmri.util.gui.GuiLafPreferencesManager.MIN_FONT_SIZE;
+import static apps.gui.GuiLafPreferencesManager.MIN_FONT_SIZE;
 
+import apps.gui.GuiLafPreferencesManager;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -28,8 +29,7 @@ import jmri.InstanceManager;
 import jmri.profile.Profile;
 import jmri.profile.ProfileManager;
 import jmri.swing.PreferencesPanel;
-import jmri.util.gui.GuiLafPreferencesManager;
-import jmri.util.swing.JComboBoxUtil;
+import jmri.util.swing.SwingSettings;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -37,7 +37,7 @@ import org.openide.util.lookup.ServiceProvider;
  * <p>
  * Provides GUI configuration for SWING LAF by displaying radio buttons for each
  * LAF implementation available. This information is then persisted separately
- * by the {@link jmri.util.gui.GuiLafPreferencesManager}.
+ * by {@link apps.configurexml.GuiLafConfigPaneXml}
  * <p>
  * Locale default language and country is also considered a GUI (and perhaps
  * LAF) configuration item.
@@ -54,13 +54,13 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
     /**
      * Smallest font size shown to a user ({@value}).
      *
-     * @see GuiLafPreferencesManager#MIN_FONT_SIZE
+     * @see apps.gui.GuiLafPreferencesManager#MIN_FONT_SIZE
      */
     public static final int MIN_DISPLAYED_FONT_SIZE = MIN_FONT_SIZE;
     /**
      * Largest font size shown to a user ({@value}).
      *
-     * @see GuiLafPreferencesManager#MAX_FONT_SIZE
+     * @see apps.gui.GuiLafPreferencesManager#MAX_FONT_SIZE
      */
     public static final int MAX_DISPLAYED_FONT_SIZE = 20;
 
@@ -72,9 +72,7 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
     public JCheckBox mouseEvent;
     private JComboBox<Integer> fontSizeComboBox;
     public JCheckBox graphicStateDisplay;
-    public JCheckBox tabbedOblockEditor;
     public JCheckBox editorUseOldLocSizeDisplay;
-    public JCheckBox force100percentScaling;
 
     public GuiLafConfigPane() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -87,13 +85,7 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
         add(p);
         doGraphicState(p = new JPanel());
         add(p);
-        doTabbedOblockEditor(p = new JPanel());
-        add(p);
         doEditorUseOldLocSize(p = new JPanel());
-        add(p);
-        doForce100percentScaling(p = new JPanel());
-        add(p);
-        doMaxComboRows(p = new JPanel());
         add(p);
         doToolTipDismissDelay(p = new JPanel());
         add(p);
@@ -102,6 +94,7 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
     void doClickSelection(JPanel panel) {
         panel.setLayout(new FlowLayout());
         mouseEvent = new JCheckBox(ConfigBundle.getMessage("GUIButtonNonStandardRelease"));
+        mouseEvent.setSelected(SwingSettings.getNonStandardMouseEvent());
         mouseEvent.addItemListener((ItemEvent e) -> {
             InstanceManager.getDefault(GuiLafPreferencesManager.class).setNonStandardMouseEvent(mouseEvent.isSelected());
         });
@@ -118,17 +111,6 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
         panel.add(graphicStateDisplay);
     }
 
-    void doTabbedOblockEditor(JPanel panel) {
-        panel.setLayout(new FlowLayout());
-        tabbedOblockEditor = new JCheckBox(ConfigBundle.getMessage("GUITabbedOblockEditor"));
-        tabbedOblockEditor.setSelected(InstanceManager.getDefault(GuiLafPreferencesManager.class).isOblockEditTabbed());
-        tabbedOblockEditor.setToolTipText(ConfigBundle.getMessage("GUIToolTipTabbedEdit"));
-        tabbedOblockEditor.addItemListener((ItemEvent e) -> {
-            InstanceManager.getDefault(GuiLafPreferencesManager.class).setOblockEditTabbed(tabbedOblockEditor.isSelected());
-        });
-        panel.add(tabbedOblockEditor);
-    }
-
     void doEditorUseOldLocSize(JPanel panel) {
         panel.setLayout(new FlowLayout());
         editorUseOldLocSizeDisplay = new JCheckBox(ConfigBundle.getMessage("GUIUseOldLocSize"));
@@ -137,19 +119,6 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
             InstanceManager.getDefault(GuiLafPreferencesManager.class).setEditorUseOldLocSize(editorUseOldLocSizeDisplay.isSelected());
         });
         panel.add(editorUseOldLocSizeDisplay);
-    }
-
-    void doForce100percentScaling(JPanel panel) {
-        jmri.util.EarlyInitializationPreferences eip =
-                jmri.util.EarlyInitializationPreferences.getInstance();
-
-        panel.setLayout(new FlowLayout());
-        force100percentScaling = new JCheckBox(ConfigBundle.getMessage("GUIForce100percentScaling"));
-        force100percentScaling.setSelected(eip.getGUIForce100percentScaling());
-        force100percentScaling.addItemListener((ItemEvent e) -> {
-            eip.setGUIForce100percentScaling(force100percentScaling.isSelected());
-        });
-        panel.add(force100percentScaling);
     }
 
     void doLAF(JPanel panel) {
@@ -189,7 +158,6 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
         // add JComboBoxen for language and country
         panel.setLayout(new FlowLayout());
         panel.add(localeBox);
-        JComboBoxUtil.setupComboBoxMaxRows(localeBox);
 
         // create object to find locales in new Thread
         Runnable r = () -> {
@@ -249,8 +217,6 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
         panel.add(fontSizeUoM);
         panel.add(resetButton);
 
-        JComboBoxUtil.setupComboBoxMaxRows(fontSizeComboBox);
-
         fontSizeComboBox.addActionListener((ActionEvent e) -> {
             manager.setFontSize((int) fontSizeComboBox.getSelectedItem());
         });
@@ -259,21 +225,6 @@ public final class GuiLafConfigPane extends JPanel implements PreferencesPanel {
                 fontSizeComboBox.setSelectedItem(manager.getDefaultFontSize());
             }
         });
-    }
-
-    private JSpinner maxComboRowsSpinner;
-
-    public void doMaxComboRows(JPanel panel) {
-        GuiLafPreferencesManager manager = InstanceManager.getDefault(GuiLafPreferencesManager.class);
-        JLabel maxComboRowsLabel = new JLabel(ConfigBundle.getMessage("GUIMaxComboRows"));
-        maxComboRowsSpinner = new JSpinner(new SpinnerNumberModel(manager.getMaxComboRows(), 0, 999, 1));
-        this.maxComboRowsSpinner.addChangeListener((ChangeEvent e) -> {
-            manager.setMaxComboRows((int) maxComboRowsSpinner.getValue());
-        });
-        this.maxComboRowsSpinner.setToolTipText(ConfigBundle.getMessage("GUIMaxComboRowsToolTip"));
-        maxComboRowsLabel.setToolTipText(this.maxComboRowsSpinner.getToolTipText());
-        panel.add(maxComboRowsLabel);
-        panel.add(maxComboRowsSpinner);
     }
 
     private JSpinner toolTipDismissDelaySpinner;

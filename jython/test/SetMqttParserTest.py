@@ -1,8 +1,8 @@
 # Test the SetMqttParser.py script
 import jmri
 
-m = jmri.jmrix.mqtt.MqttTurnoutManager(jmri.jmrix.mqtt.MqttSystemConnectionMemo())
+m = jmri.jmrix.mqtt.MqttTurnoutManager(None, "M");
 jmri.InstanceManager.setDefault(jmri.jmrix.mqtt.MqttTurnoutManager, m)
 
-execfile("jython/MQTT/SetMqttParser.py")
+execfile("jython/SetMqttParser.py")
 

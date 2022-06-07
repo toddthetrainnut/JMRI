@@ -1,20 +1,19 @@
 package jmri.jmrit.symbolicprog;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
+import org.junit.Before;
+import org.junit.Test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-
 import jmri.util.FileUtil;
-
 import javax.swing.JLabel;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class CsvImporterTest {
 
@@ -49,12 +48,13 @@ public class CsvImporterTest {
         
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

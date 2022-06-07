@@ -10,7 +10,7 @@ import javax.swing.JList;
 
 /**
  *
- * @author Randall Wood
+ * @author rhwood
  */
 public interface ListCellEditor<E> extends CellEditor {
 

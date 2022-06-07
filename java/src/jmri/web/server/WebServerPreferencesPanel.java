@@ -4,14 +4,12 @@ package jmri.web.server;
  * @author Steve Todd Copyright (C) 2011
  * @author Randall Wood Copyright (C) 2012, 2014, 2016
  */
-import jmri.util.startup.PerformActionModel;
-import jmri.util.startup.StartupActionsManager;
-
+import apps.PerformActionModel;
+import apps.StartupActionsManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
-
 import javax.swing.GroupLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -20,12 +18,11 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle;
 import javax.swing.SpinnerNumberModel;
-
 import jmri.InstanceManager;
 import jmri.swing.PreferencesPanel;
-
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
@@ -59,7 +56,8 @@ public class WebServerPreferencesPanel extends JPanel implements PreferencesPane
         port.setEditor(new JSpinner.NumberEditor(port, "#"));
         port.setToolTipText(Bundle.getMessage("ToolTipPort")); // NOI18N
 
-        bindingGroup.addBinding(Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, preferences, ELProperty.create("${port}"), port, BeanProperty.create("value")));
+        Binding binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, preferences, ELProperty.create("${port}"), port, BeanProperty.create("value"));
+        bindingGroup.addBinding(binding);
 
         portLabel.setText(Bundle.getMessage("LabelPort")); // NOI18N
         portLabel.setToolTipText(Bundle.getMessage("ToolTipPort")); // NOI18N
@@ -69,7 +67,8 @@ public class WebServerPreferencesPanel extends JPanel implements PreferencesPane
             readonlyPower.setToolTipText(Bundle.getMessage(readonlyPower.isSelected() ? "ToolTipReadonlyPowerTrue" : "ToolTipReadonlyPowerFalse"));
         });
 
-        bindingGroup.addBinding(Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, preferences, ELProperty.create("${readonlyPower}"), readonlyPower, BeanProperty.create("selected")));
+        binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, preferences, ELProperty.create("${readonlyPower}"), readonlyPower, BeanProperty.create("selected"));
+        bindingGroup.addBinding(binding);
 
         startup.setSelected(this.isStartupAction());
         startup.setText(Bundle.getMessage("LabelStartup")); // NOI18N

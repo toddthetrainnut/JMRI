@@ -2,16 +2,12 @@ package jmri.managers;
 
 import jmri.IdTag;
 import jmri.IdTagManager;
-import jmri.InstanceManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.managers.DefaultIdTagManager class.
  *
- * @author Matthew Harris Copyright (C) 2011
+ * @author	Matthew Harris Copyright (C) 2011
  */
 public class DefaultIdTagManagerTest extends AbstractProvidingManagerTestBase<IdTagManager,IdTag> {
 
@@ -115,18 +111,9 @@ public class DefaultIdTagManagerTest extends AbstractProvidingManagerTestBase<Id
         Assert.assertFalse("Non-matching IdTag returned via provideTag by user name", t1.equals(m.provideIdTag("Test Tag 2")));
         Assert.assertFalse("Non-matching IdTag returned via provideTag by tag ID", t1.equals(m.provideIdTag("0413275FCA")));
     }
-    
-    // No manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithNoPrefixNotASystemName() {}
 
-    // No manager-specific system name validation at present    
-    @Test
-    @Override
-    public void testMakeSystemNameWithPrefixNotASystemName() {}
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetInstanceManager();
@@ -137,7 +124,7 @@ public class DefaultIdTagManagerTest extends AbstractProvidingManagerTestBase<Id
         l = getManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         l = null;
         jmri.util.JUnitUtil.tearDown();
@@ -146,7 +133,7 @@ public class DefaultIdTagManagerTest extends AbstractProvidingManagerTestBase<Id
     // Override init method so as not to load file
     // nor register shutdown task during tests.
     protected DefaultIdTagManager getManager() {
-        return new DefaultIdTagManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class)) {
+        return new DefaultIdTagManager() {
             @Override
             public void init() {
             }

@@ -1,43 +1,36 @@
 package jmri.jmrix;
 
-import jmri.swing.PreferencesPanelTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class JmrixConfigPaneTest extends PreferencesPanelTestBase<JmrixConfigPane> {
+public class JmrixConfigPaneTest {
 
-    @BeforeEach
+    @Test
+    public void testCreateNew() {
+        JmrixConfigPane t = JmrixConfigPane.createNewPanel();
+        Assert.assertNotNull("exists",t);
+    }
+
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.initConnectionConfigManager();
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
-        prefsPanel = JmrixConfigPane.createNewPanel();
     }
 
-    @Override
-    @Test
-    public void isPersistant() {
-        assertThat(prefsPanel.isPersistant()).isTrue();
+    @After
+    public void tearDown() {
+        JUnitUtil.tearDown();
     }
 
-    @Override
-    @Test
-    public void isDirty() {
-        assertThat(prefsPanel.isDirty()).isTrue();
-    }
-
-    @Override
-    @Test
-    public void isRestartRequired() {
-        assertThat(prefsPanel.isRestartRequired()).isTrue();
-    }
     // private final static Logger log = LoggerFactory.getLogger(JmrixConfigPaneTest.class);
+
 }

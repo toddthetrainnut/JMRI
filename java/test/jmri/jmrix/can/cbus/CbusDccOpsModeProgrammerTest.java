@@ -2,34 +2,31 @@ package jmri.jmrix.can.cbus;
 
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class CbusDccOpsModeProgrammerTest extends jmri.jmrix.AbstractOpsModeProgrammerTestBase {
 
-    private TrafficControllerScaffold tcis;
-    
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        tcis = new TrafficControllerScaffold();
-        CbusDccOpsModeProgrammer t = new CbusDccOpsModeProgrammer(100,true,tcis);
+        CbusDccOpsModeProgrammer t = new CbusDccOpsModeProgrammer(100,true,new TrafficControllerScaffold());
         programmer = t;
     }
-    
-    @AfterEach
+
+    @After
     @Override
     public void tearDown() {
         programmer = null;
-        tcis.terminateThreads();
-        tcis = null;
         JUnitUtil.tearDown();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(CbusDccOpsModeProgrammerTest.class);

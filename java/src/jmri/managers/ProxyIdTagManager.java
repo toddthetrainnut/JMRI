@@ -1,28 +1,23 @@
 package jmri.managers;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.SortedSet;
-
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import jmri.IdTag;
 import jmri.IdTagManager;
 import jmri.Manager;
 import jmri.Reporter;
-import jmri.InstanceManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Implementation of a IdTagManager that can serve as a proxy for multiple
  * system-specific implementations.
  *
- * @author Bob Jacobsen Copyright (C) 2010, 2018
- * @author Dave Duchamp Copyright (C) 2004
- * @author Paul Bender Copyright (C) 2019
+ * @author	Bob Jacobsen Copyright (C) 2010, 2018
+ * @author	Dave Duchamp Copyright (C) 2004
+ * @author	Paul Bender Copyright (C) 2019
  */
-public class ProxyIdTagManager extends AbstractProvidingProxyManager<IdTag>
+public class ProxyIdTagManager extends AbstractProxyManager<IdTag>
         implements IdTagManager {
 
     public ProxyIdTagManager() {
@@ -36,35 +31,22 @@ public class ProxyIdTagManager extends AbstractProvidingProxyManager<IdTag>
 
     @Override
     public void init() {
-        if (!isInitialised()) {
-            getDefaultManager();
+        if(!isInitialised()){
+           getDefaultManager();
         }
     }
 
     @Override
     public boolean isInitialised() {
-        return defaultManager!= null &&
-                getManagerList().stream().noneMatch(o->((IdTagManager)o).isInitialised());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public Manager<IdTag> getDefaultManager() {
-        if(defaultManager != getInternalManager()){
-           defaultManager = getInternalManager();
-        }
-        return defaultManager;
+        return (jmri.InstanceManager.getDefault(IdTagManager.class) != null);
     }
 
     @Override
     protected AbstractManager<IdTag> makeInternalManager() {
         // since this really is an internal tracking mechanisim,
         // build the new manager and add it here.
-        DefaultIdTagManager tagMan = new DefaultIdTagManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
-        InstanceManager.setIdTagManager(tagMan);
+        DefaultIdTagManager tagMan = new DefaultIdTagManager();
+        jmri.InstanceManager.setIdTagManager(tagMan);
         return tagMan;
     }
 
@@ -73,36 +55,19 @@ public class ProxyIdTagManager extends AbstractProvidingProxyManager<IdTag>
      *
      * @return Null if nothing by that name exists
      */
-    @CheckForNull
     @Override
-    public IdTag getIdTag(@Nonnull String name) {
-        init();
+    public IdTag getIdTag(String name) {
         return super.getNamedBean(name);
     }
 
+    @Override
+    protected IdTag makeBean(int i, String systemName, String userName) {
+        return ((IdTagManager) getMgr(i)).newIdTag(systemName, userName);
+    }
+
+    @Override
     /** {@inheritDoc} */
-    @Override
-    @Nonnull
-    public SortedSet<IdTag> getNamedBeanSet() {
-        init();
-        return super.getNamedBeanSet();
-    }
-
-    @Nonnull
-    @Override
-    protected IdTag makeBean(Manager<IdTag> manager, String systemName, String userName) throws IllegalArgumentException{
-        init();
-        return ((IdTagManager) manager).newIdTag(systemName, userName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public IdTag provide(@Nonnull String name) throws IllegalArgumentException {
-        return provideIdTag(name);
-    }
+    public IdTag provide(@Nonnull String name) throws IllegalArgumentException { return provideIdTag(name); }
 
     /**
      * Locate via user name, then system name if needed. If that fails, create a
@@ -113,14 +78,34 @@ public class ProxyIdTagManager extends AbstractProvidingProxyManager<IdTag>
      * @return Never null under normal circumstances
      */
     @Override
-    @Nonnull
-    public IdTag provideIdTag(@Nonnull String name) throws IllegalArgumentException {
-        init();
+    public IdTag provideIdTag(String name) throws IllegalArgumentException {
         return super.provideNamedBean(name);
     }
 
     /**
-     * Get an instance with the specified system and user names. Note that
+     * Locate an instance based on a system name. Returns null if no instance
+     * already exists.
+     *
+     * @return requested IdTag object or null if none exists
+     */
+    @Override
+    public IdTag getBySystemName(String systemName) {
+        return super.getBeanBySystemName(systemName);
+    }
+
+    /**
+     * Locate an instance based on a user name. Returns null if no instance
+     * already exists.
+     *
+     * @return requested Turnout object or null if none exists
+     */
+    @Override
+    public IdTag getByUserName(String userName) {
+        return super.getBeanByUserName(userName);
+    }
+
+    /**
+     * Return an instance with the specified system and user names. Note that
      * two calls with the same arguments will get the same instance; there is
      * only one IdTag object representing a given physical light and therefore
      * only one with a specific system or user name.
@@ -148,31 +133,42 @@ public class ProxyIdTagManager extends AbstractProvidingProxyManager<IdTag>
      * @return requested IdTag object (never null)
      */
     @Override
-    @Nonnull
-    public IdTag newIdTag(@Nonnull String systemName, String userName) throws IllegalArgumentException {
-        init();
+    public IdTag newIdTag(String systemName, String userName) {
         return newNamedBean(systemName, userName);
     }
 
-    @CheckForNull
     @Override
-    public IdTag getByTagID(@Nonnull String tagID) {
-        init();
+    public IdTag getByTagID(String tagID) {
         return getBySystemName(makeSystemName(tagID));
     }
 
+    /**
+     * Validate system name format. Locate a system specfic IdTagManager based on
+     * a system name.
+     *
+     * @return if a manager is found, return its determination of validity of
+     * system name format. Return INVALID if no manager exists.
+     */
     @Override
-    @Nonnull
-    public String getBeanTypeHandled(boolean plural) {
-        return Bundle.getMessage(plural ? "BeanNameIdTags" : "BeanNameIdTag");
+    public NameValidity validSystemNameFormat(String systemName) {
+        int i = matchTentative(systemName);
+        if (i >= 0) {
+            return ((IdTagManager) getMgr(i)).validSystemNameFormat(systemName);
+        }
+        return NameValidity.INVALID;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Class<IdTag> getNamedBeanClass() {
-        return IdTag.class;
+    public String getEntryToolTip() {
+        return "Enter a number from 1 to 9999"; // Basic number format help
+    }
+
+    @Override
+    public String getBeanTypeHandled(boolean plural) {
+        return Bundle.getMessage(plural ? "BeanNameIdTags" : "BeanNameIdTag");
     }
 
     private boolean stateSaved = false;
@@ -180,18 +176,16 @@ public class ProxyIdTagManager extends AbstractProvidingProxyManager<IdTag>
     @Override
     public void setStateStored(boolean state) {
         stateSaved = state;
-        for (Manager<IdTag> mgr : getManagerList()) {
-            ((IdTagManager) mgr).setStateStored(state);
+        for( Manager<IdTag> mgr: getManagerList()){
+            ((IdTagManager)mgr).setStateStored(state);
         }
     }
 
     @Override
     public boolean isStateStored() {
-        stateSaved = true;
-        for (Manager<IdTag> mgr: getManagerList()) {
-            if(!((IdTagManager) mgr).isStateStored()) {
-                stateSaved = false;
-                break;
+        for( Manager<IdTag> mgr: getManagerList()){
+            if(!((IdTagManager)mgr).isStateStored()){
+               return false;
             }
         }
         return stateSaved;
@@ -202,31 +196,24 @@ public class ProxyIdTagManager extends AbstractProvidingProxyManager<IdTag>
     @Override
     public void setFastClockUsed(boolean fastClock) {
         useFastClock = fastClock;
-        for (Manager<IdTag> mgr : getManagerList()) {
-            ((IdTagManager) mgr).setFastClockUsed(fastClock);
+        for( Manager<IdTag> mgr: getManagerList()){
+            ((IdTagManager)mgr).setFastClockUsed(fastClock);
         }
     }
 
     @Override
     public boolean isFastClockUsed() {
-        useFastClock = true;
-        for (Manager<IdTag> mgr: getManagerList()) {
-            if (!((IdTagManager) mgr).isFastClockUsed()) {
-               useFastClock = false;
-               break;
+        for( Manager<IdTag> mgr: getManagerList()){
+            if(!((IdTagManager)mgr).isFastClockUsed()){
+               return false;
             }
         }
         return useFastClock;
     }
 
     @Override
-    @Nonnull
-    public List<IdTag> getTagsForReporter(@Nonnull Reporter reporter, long threshold) {
-        init();
+    public List<IdTag> getTagsForReporter(Reporter reporter, long threshold) {
         List<IdTag> out = new ArrayList<>();
-        for (Manager<IdTag> mgr: getManagerList()) {
-            out.addAll(((IdTagManager)mgr).getTagsForReporter(reporter, threshold));
-        }
         return out;
     }
 

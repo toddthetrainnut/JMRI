@@ -1,15 +1,15 @@
 package jmri.jmrit.display.palette;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.controlPanelEditor.ControlPanelEditor;
 import jmri.jmrit.picker.PickListModel;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -28,22 +28,20 @@ public class MemoryItemPanelTest {
             ip = ItemPalette.getDefault("test palette", editor);
             ip.pack();
         });
-        MemoryItemPanel t = new MemoryItemPanel(ip, "IM01", "", tableModel);
+        MemoryItemPanel t = new MemoryItemPanel(ip, "IM01", "", tableModel, editor);
         Assert.assertNotNull("exists", t);
         JUnitUtil.dispose(ip);
-        JUnitUtil.dispose(editor);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

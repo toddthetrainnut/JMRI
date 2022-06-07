@@ -1,9 +1,10 @@
 package jmri.jmrix;
 
+import java.util.List;
+import jmri.ProgListener;
 import jmri.ProgrammingMode;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import jmri.util.JUnitUtil;
+import org.junit.*;
 
 /**
  * Base JUnit tests for the Operations Mode Programmers derived from
@@ -29,13 +30,15 @@ abstract public class AbstractOpsModeProgrammerTestBase extends jmri.AddressedPr
     }
     
     @Override
-    @Test
+    @Test(expected=java.lang.IllegalArgumentException.class)
     public void testSetGetMode() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> programmer.setMode(ProgrammingMode.REGISTERMODE));
+        programmer.setMode(ProgrammingMode.REGISTERMODE);
+        Assert.assertEquals("Check mode matches set", ProgrammingMode.REGISTERMODE,
+                programmer.getMode());        
     }
     
     // must set the value of programmer in setUp.
-    @BeforeEach
+    @Before
     @Override
     abstract public void setUp();
 

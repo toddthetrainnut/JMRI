@@ -2,9 +2,10 @@ package jmri.jmrix.can.adapters.gridconnect.canrs;
 
 import jmri.jmrix.can.CanReply;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.can.adapters.gridconnect.canrs.MergReply class
@@ -110,28 +111,6 @@ public class MergReplyTest extends jmri.jmrix.AbstractMessageTestBase {
         Assert.assertEquals("el 1", 0x63, r.getElement(0));
     }
 
-    @Test
-    public void testZeroLengthRtr() {
-        MergReply g = new MergReply(":SB0F0R;");
-        CanReply r = g.createReply();
-        
-        Assert.assertEquals("rtr", true, r.isRtr());
-        Assert.assertEquals("extended", false, r.isExtended());
-        Assert.assertEquals("header", 1415, r.getHeader());
-        Assert.assertEquals("num elements", 0, r.getNumDataElements());
-    }
-
-    @Test
-    public void testZeroLengthStandard() {
-        MergReply g = new MergReply(":SB180N;");
-        CanReply r = g.createReply();
-        
-        Assert.assertEquals("rtr", false, r.isRtr());
-        Assert.assertEquals("extended", false, r.isExtended());
-        Assert.assertEquals("header", 1420, r.getHeader());
-        Assert.assertEquals("num elements", 0, r.getNumDataElements());
-    }
-    
     // Left shift a standard header from CBUS specific format
     public int unMungeStdHeader(int h) {
         return (h >> 5);
@@ -142,17 +121,17 @@ public class MergReplyTest extends jmri.jmrix.AbstractMessageTestBase {
         return (((h >> 3) & 0x1FFC0000) | (h & 0x3FFFF));
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = new MergReply(":S1260N12345678;");
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        m = null;
+	m = null;
         JUnitUtil.tearDown();
     }
 }

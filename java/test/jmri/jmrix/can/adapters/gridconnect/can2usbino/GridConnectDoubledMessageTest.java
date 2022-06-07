@@ -2,9 +2,10 @@ package jmri.jmrix.can.adapters.gridconnect.can2usbino;
 
 import jmri.jmrix.can.CanMessage;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.can.adapters.gridconnect.GridConnectDoubledMessage class
@@ -50,8 +51,8 @@ public class GridConnectDoubledMessageTest extends jmri.jmrix.AbstractMessageTes
         Assert.assertEquals("standard format 2 byte", "!X00000123R12345678;", g.toString());
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
@@ -67,9 +68,9 @@ public class GridConnectDoubledMessageTest extends jmri.jmrix.AbstractMessageTes
         m = g = new GridConnectDoubledMessage(msg);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = g = null;
+	m = g = null;
         JUnitUtil.tearDown();
     }
 }

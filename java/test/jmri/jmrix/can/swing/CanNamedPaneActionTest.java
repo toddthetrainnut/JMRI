@@ -1,17 +1,19 @@
 package jmri.jmrix.can.swing;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.can.CanSystemConnectionMemo;
+import jmri.jmrix.can.TestTrafficController;
+import jmri.jmrix.can.TrafficController;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class CanNamedPaneActionTest {
 
@@ -27,7 +29,8 @@ public class CanNamedPaneActionTest {
         jf.dispose();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -36,7 +39,7 @@ public class CanNamedPaneActionTest {
         m.setSystemPrefix("ABC");
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         m = null;
         JUnitUtil.tearDown();

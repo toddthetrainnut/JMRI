@@ -1,14 +1,15 @@
 package jmri.jmrix.loconet.spjfile;
 
 import jmri.jmrit.Sound;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * Tests for the jmri.jmrix.loconet.spjfile package
  *
- * @author Bob Jacobsen Copyright (C) 2006
+ * @author	Bob Jacobsen Copyright (C) 2006
  */
 public class SpjFileTest {
 
@@ -57,12 +58,12 @@ public class SpjFileTest {
     }
 
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

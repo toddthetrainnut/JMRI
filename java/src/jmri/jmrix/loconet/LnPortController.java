@@ -39,7 +39,6 @@ public abstract class LnPortController extends jmri.jmrix.AbstractSerialPortCont
      * intervals, but it might also stick off if something goes wrong.
      * <p>
      * Provide a default implementation for the MS100, etc.
-     *
      * @return _always_ true, as we rely on the queueing in the port itself
      */
     public boolean okToSend() {
@@ -50,14 +49,13 @@ public abstract class LnPortController extends jmri.jmrix.AbstractSerialPortCont
 
     protected boolean mTurnoutNoRetry = false;
     protected boolean mTurnoutExtraSpace = false;
-    protected boolean mInterrogateAtStart = true;
+
     protected boolean mTranspondingAvailable = false;
 
     protected LnCommandStationType[] commandStationTypes = {
         LnCommandStationType.COMMAND_STATION_DCS100,
         LnCommandStationType.COMMAND_STATION_DCS240,
         LnCommandStationType.COMMAND_STATION_DCS210,
-        LnCommandStationType.COMMAND_STATION_DCS210PLUS,
         LnCommandStationType.COMMAND_STATION_DCS200,
         LnCommandStationType.COMMAND_STATION_DCS050,
         LnCommandStationType.COMMAND_STATION_DCS051,
@@ -79,7 +77,7 @@ public abstract class LnPortController extends jmri.jmrix.AbstractSerialPortCont
     }
 
     // There are also "PR3 standalone programmer" and "Stand-alone LocoNet" in pr3/PR3Adapter
-    // and "PR2 standalone programmer" in pr2/Pr2Adapter
+    // and "PR2 standalone programmer" in pr2/Pr2Adaper
     /**
      * Set config info from a name, which needs to be one of the valid ones.
      * @param name the name of the command station type
@@ -119,12 +117,6 @@ public abstract class LnPortController extends jmri.jmrix.AbstractSerialPortCont
         log.debug("transponding available: {}", mTranspondingAvailable); // NOI18N
     }
     
-    public void setInterrogateOnStart(String value) {
-        // default (most common state) is on, so just check for No
-        mInterrogateAtStart = !(value.equals("No") || value.equals(Bundle.getMessage("ButtonNo")));
-        log.debug("tInterrogate on Start: {}", mInterrogateAtStart); // NOI18N
-    }
-
     @Override
     public LocoNetSystemConnectionMemo getSystemConnectionMemo() {
         return (LocoNetSystemConnectionMemo) super.getSystemConnectionMemo();

@@ -29,16 +29,15 @@ public class PacketGenFrame extends jmri.jmrix.swing.AbstractPacketGenFrame {
      */
     @Override
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        if (packetTextField.getSelectedItem() != null) {
-            tc.sendXNetMessage(createPacket(packetTextField.getSelectedItem().toString()), null);
-        }
+        tc.sendXNetMessage(createPacket(packetTextField.getSelectedItem().toString()), null);
     }
 
     XNetMessage createPacket(String s) {
         if (s.equals("")) {
             return null; // message cannot be empty
         }
-        return new XNetMessage(s);
+        XNetMessage m = new XNetMessage(s);
+        return m;
     }
 
     // connect to the TrafficController

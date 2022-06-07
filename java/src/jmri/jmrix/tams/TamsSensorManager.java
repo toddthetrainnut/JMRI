@@ -1,7 +1,7 @@
 package jmri.jmrix.tams;
 
 import java.util.Hashtable;
-import javax.annotation.Nonnull;
+import javax.swing.JOptionPane;
 import jmri.JmriException;
 import jmri.Sensor;
 import org.slf4j.Logger;
@@ -30,69 +30,50 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
     public int maxSE; //Will hold the highest value of board number x 2 and we use this value to determine to tell the Tams MC how many S88 half-modules to poll
 
     public TamsSensorManager(TamsSystemConnectionMemo memo) {
-        super(memo);
-        init();
-    }
-
-    private void init() {
-        TamsTrafficController tc = getMemo().getTrafficController();
+        this.memo = memo;
+        tc = memo.getTrafficController();
         //Connect to the TrafficManager
         tc.addTamsListener(this);
         TamsMessage tm = TamsMessage.setXSR();//auto reset after reading S88
         tc.sendTamsMessage(tm, this);
-        log.debug("Sending TamsMessage = {} , isBinary = {} and replyType = {}",
-                tm.toString(), tm.isBinary(), tm.getReplyType());
+        log.debug("Sending TamsMessage = " + tm.toString() + " , isBinary = " + tm.isBinary() + " and replyType = " + tm.getReplyType());
         //Add polling for sensor state changes
         tm = TamsMessage.getXEvtSen(); //reports only sensors with changed states
         //tc.sendTamsMessage(tm, this);
         tc.addPollMessage(tm, this);
-        log.debug("TamsMessage added to poll queue = {} {} and replyType = {}",
-                jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(0) & 0xFF, ""),
-                jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(1) & 0xFF, ""),
-                tm.getReplyType());
+        log.debug("TamsMessage added to poll queue = " + jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(0) & 0xFF, "") + " " + jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(1) & 0xFF, "") + " and replyType = " + tm.getReplyType());
     }
 
+    TamsSystemConnectionMemo memo;
+    TamsTrafficController tc;
     //The hash table simply holds the object number against the TamsSensor ref.
     private final Hashtable<Integer, Hashtable<Integer, TamsSensor>> _ttams = new Hashtable<>(); // stores known Tams Obj
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public TamsSystemConnectionMemo getMemo() {
-        return (TamsSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return memo.getSystemPrefix();
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * System name is normalized to ensure uniqueness.
-     * @throws IllegalArgumentException when SystemName can't be converted
-     */
     @Override
-    @Nonnull
-    protected Sensor createNewSensor(@Nonnull String systemName, String userName) throws IllegalArgumentException {
-        TamsTrafficController tc = getMemo().getTrafficController();
+    public Sensor createNewSensor(String systemName, String userName) {
         TamsSensor s = new TamsSensor(systemName, userName);
         log.debug("Creating new TamsSensor: {}", systemName);
         if (systemName.contains(":")) {
-            int board;
-            int channel;
+            int board = 0;
+            int channel = 0;
 
-            String curAddress = systemName.substring(getSystemPrefix().length() + 1);
+            String curAddress = systemName.substring(getSystemPrefix().length() + 1, systemName.length());
             int seperator = curAddress.indexOf(':');
             try {
                 board = Integer.parseInt(curAddress.substring(0, seperator));
-                log.debug("Creating new TamsSensor with board: {}", board);
+                log.debug("Creating new TamsSensor with board: " + board);
                 if (!_ttams.containsKey(board)) {
                     _ttams.put(board, new Hashtable<>());
-                    //log.debug("_ttams: {}", _ttams.toString());
+                    //log.debug("_ttams: " + _ttams.toString());
                 }
             } catch (NumberFormatException ex) {
-                throw new IllegalArgumentException("Unable to convert " +  // NOI18N
-                        systemName.substring(getSystemPrefix().length() + 1) +
-                        " into the Module and port format of nn:xx"); // NOI18N
+                log.error("Unable to convert {} into the Module and port format of nn:xx", curAddress);
+                return null;
             }
             Hashtable<Integer, TamsSensor> sensorList = _ttams.get(board);
             try {
@@ -101,13 +82,12 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
                     sensorList.put(channel, s);
                 }
             } catch (NumberFormatException ex) {
-                throw new IllegalArgumentException("Unable to convert " +  // NOI18N
-                        systemName.substring(getSystemPrefix().length() + 1) +
-                        " into the Module and port format of nn:xx"); // NOI18N
+                log.error("Unable to convert {} into the Module and port format of nn:xx", curAddress);
+                return null;
             }
             if ((board * 2) > maxSE) {//Check if newly defined board number is higher than what we know
                 maxSE = board * 2;//adjust xSE and inform Tams MC
-                log.debug("Changed xSE to {}", maxSE);
+                log.debug("Changed xSE to " + maxSE);
                 TamsMessage tm = new TamsMessage("xSE " + Integer.toString(maxSE));
                 tm.setBinary(false);
                 tm.setReplyType('S');
@@ -120,15 +100,18 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
         tc.sendTamsMessage(tm, this);
         tm = TamsMessage.getXEvtSen(); //reports only sensors with changed states
         tc.sendTamsMessage(tm, this);
-        log.debug("Returning this sensor: {}", s.toString());
+        log.debug("Returning this sensor: " + s.toString());
         return s;
     }
 
     @Override
-    @Nonnull
-    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException {
+    public String createSystemName(String curAddress, String prefix) throws JmriException {
         if (!curAddress.contains(":")) {
-            throw new JmriException("Hardware Address passed should be past in the form 'Module:port', was " + curAddress);
+            log.error("Unable to convert {} into the Module and port format of nn:xx", curAddress);
+            JOptionPane.showMessageDialog(null, Bundle.getMessage("WarningModuleAddress"),
+                    Bundle.getMessage("WarningTitle"), JOptionPane.ERROR_MESSAGE);
+            // TODO prevent further execution, return error flag
+            throw new JmriException("Hardware Address passed should be past in the form 'Module:port'");
         }
 
         //Address format passed is in the form of board:channel or T:turnout address
@@ -136,16 +119,22 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
         try {
             board = Integer.parseInt(curAddress.substring(0, seperator));
         } catch (NumberFormatException ex) {
-            throw new JmriException("First part of "+curAddress+" in front of : should be a number");
+            log.error("First part of {} in front of : should be a number", curAddress);
+            throw new JmriException("Module Address passed should be a number");
         }
         try {
             port = Integer.parseInt(curAddress.substring(seperator + 1));
         } catch (NumberFormatException ex) {
-            throw new JmriException("Port Address, Second part of "+curAddress+" after : should be a number");
+            log.error("Second part of {} after : should be a number", curAddress);
+            throw new JmriException("Port Address passed should be a number");
         }
 
         if (port == 0 || port > 16) {
-            throw new JmriException("Port number in "+curAddress+" must be between 1 and 16");
+            log.error("Port number must be between 1 and 16");
+            JOptionPane.showMessageDialog(null, Bundle.getMessage("WarningPortRangeXY", 1, 16),
+                    Bundle.getMessage("WarningTitle"), JOptionPane.ERROR_MESSAGE);
+            // TODO prevent further execution, return error flag
+            throw new JmriException("Port number must be between 1 and 16");
         }
         StringBuilder sb = new StringBuilder();
         sb.append(getSystemPrefix());
@@ -157,20 +146,54 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
         return sb.toString();
     }
 
-    /**
-     * Validates to contain at least 1 number . . .
-     * <p>
-     * TODO: add custom TamsSensor validation.
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull java.util.Locale locale) throws jmri.NamedBean.BadSystemNameException {
-        return validateTrimmedMin1NumberSystemNameFormat(name,locale);
-    }
-
     int board = 0;
     int port = 0;
+
+    @Override
+    public String getNextValidAddress(String curAddress, String prefix) {
+
+        String tmpSName;
+
+        try {
+            tmpSName = createSystemName(curAddress, prefix);
+        } catch (JmriException ex) {
+            jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).showInfoMessage(Bundle.getMessage("ErrorTitle"),
+                    Bundle.getMessage("ErrorConvertNumberX", curAddress), "" + ex, "", true, false);
+            return null;
+        }
+
+        //Check to determine if the systemName is in use, return null if it is,
+        //otherwise return the next valid address.
+        Sensor s = getBySystemName(tmpSName);
+        if (s != null) {
+            port++;
+            while (port < 17) {
+                try {
+                    tmpSName = createSystemName(board + ":" + port, prefix);
+                } catch (JmriException e) {
+                    log.error("Error creating system name for {}:{}", board, port);
+                }
+                s = getBySystemName(tmpSName);
+                if (s == null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(board);
+                    sb.append(":");
+                    //Little work around to pad single digit address out.
+                    padPortNumber(port, sb);
+                    return sb.toString();
+                }
+                port++;
+            }
+            return null;
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(board);
+            sb.append(":");
+            //Little work around to pad single digit address out.
+            padPortNumber(port, sb);
+            return sb.toString();
+        }
+    }
 
     void padPortNumber(int portNo, StringBuilder sb) {
         if (portNo < 10) {
@@ -187,7 +210,7 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
      * @return true
      */
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return true;
     }
 
@@ -195,31 +218,30 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
     @Override
     public void reply(TamsReply r) {
         //log.debug("ReplyType = " + tm.getReplyType() + ", Binary? = " +  tm.isBinary()+ ", OneByteReply = " + tm.getReplyOneByte());
-        if (getMemo().getTrafficController().replyType == 'S') {//Only handle Sensor events
+        if (TamsTrafficController.replyType == 'S') {//Only handle Sensor events
             log.debug("*** Tams Sensor Reply ***");
-            if ( getMemo().getTrafficController().replyBinary ) {
-                log.debug("Reply to binary command = {}", r );
-                if ((r.getNumDataElements() > 1) && (r.getElement(0) > 0x00)) {
-                    // Here we break up a long sensor related TamsReply into individual S88 module status'
-                    int numberOfReplies = r.getNumDataElements() / 3;
-                    //log.debug("Incoming Reply = ");
-                    //for (int i = 0; i < r.getNumDataElements(); i++) {
-                        //log.debug("Byte " + i + " = " + jmri.util.StringUtil.appendTwoHexFromInt(r.getElement(i) & 0xFF, ""));
-                    //}
-                    //log.debug("length of reply = " + r.getNumDataElements() + " & number of replies = " + numberOfReplies);
-                    for (int i = 0; i < numberOfReplies; i++) {
-                        //create a new TamsReply and pass it to the decoder
-                        TamsReply tr = new TamsReply();
-                        tr.setBinary(true);
-                        tr.setElement(0, r.getElement(3 * i));
-                        tr.setElement(1, r.getElement(3 * i + 1));
-                        tr.setElement(2, r.getElement(3 * i + 2));
-                        log.debug("Going to pass this to the decoder = {} {} {}",
-                                tr.getElement(0), tr.getElement(1), tr.getElement(2));
-                        //The decodeSensorState will do the actual decoding of each individual S88 port
-                        decodeSensorState(tr);
-                    }
-                }
+            if (TamsTrafficController.replyBinary) {
+                log.debug("Reply to binary command = " + r.toString());
+                    if ((r.getNumDataElements() > 1) && (r.getElement(0) > 0x00)) { 
+                        //Here we break up a long sensor related TamsReply into individual S88 module status'
+                        int numberOfReplies = r.getNumDataElements() / 3;
+                        //log.debug("Incoming Reply = ");
+                        for (int i = 0; i < r.getNumDataElements(); i++) {
+                            //log.debug("Byte " + i + " = " + jmri.util.StringUtil.appendTwoHexFromInt(r.getElement(i) & 0xFF, ""));
+                        }
+                        //log.debug("length of reply = " + r.getNumDataElements() + " & number of replies = " + numberOfReplies);
+                        for (int i = 0; i < numberOfReplies; i++) {
+                            //create a new TamsReply and pass it to the decoder
+                            TamsReply tr = new TamsReply();
+                            tr.setBinary(true);
+                            tr.setElement(0, r.getElement(3 * i));                                
+                            tr.setElement(1, r.getElement(3 * i + 1));
+                            tr.setElement(2, r.getElement(3 * i + 2));
+                            log.debug("Going to pass this to the decoder = " + tr.getElement(0) + " " + tr.getElement(1) + " " + tr.getElement(2));
+                            //The decodeSensorState will do the actual decoding of each individual S88 port
+                            decodeSensorState(tr);
+                        }
+                    }                   
             }
         }
     }
@@ -235,41 +257,37 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
         //byte 2 = bits 1 to 8
         //byte 3 = bits 9 to 16
         String sensorprefix = getSystemPrefix() + "S" + r.getElement(0) + ":";
-        log.debug("Decoding sensor: {}", sensorprefix);
-        log.debug("Lower Byte: {}", r.getElement(1));
-        log.debug("Upper Byte: {}", r.getElement(2));
+        log.debug("Decoding sensor: " + sensorprefix);
+        log.debug("Lower Byte: " + r.getElement(1));
+        log.debug("Upper Byte: " + r.getElement(2));
         Hashtable<Integer, TamsSensor> sensorList = _ttams.get(board);
         int i = (r.getElement(1) & 0xff) << 8;//first 8 ports in second element of the reply
-        log.debug("i after loading first byte= {}", Integer.toString(i,2));
+        log.debug("i after loading first byte= " + Integer.toString(i,2));
         i = i + (r.getElement(2) & 0xff);//first 8 ports in third element of the reply
-        log.debug("i after loading second byte= {}", Integer.toString(i,2));
+        log.debug("i after loading second byte= " + Integer.toString(i,2));
         int mask = 0b1000000000000000;
-        for (int j = 1; j <= 16; j++) {
+        for (int port = 1; port <= 16; port++) {
             int result = i & mask;
-            //log.debug("mask= {}", Integer.toString(mask, 2));
-            //log.debug("result= {}", Integer.toString(result, 2));
+            //log.debug("mask= " + Integer.toString(mask,2));
+            //log.debug("result= " + Integer.toString(result,2));
             if (sensorList != null) {
-                TamsSensor ms = sensorList.get(j);
-                log.debug("ms: {}", ms);
+                TamsSensor ms = sensorList.get(port);
+                log.debug("ms: " + ms);
                 if (ms == null) {
                     log.debug("ms = NULL!");
                     StringBuilder sb = new StringBuilder();
                     sb.append(sensorprefix);
                     //Little work around to pad single digit address out.
-                    padPortNumber(j, sb);
-                    try {
-                        ms = (TamsSensor) provideSensor(sb.toString());
-                    } catch (Exception e){
-                        log.warn("Could not provide Sensor {}: {}",sb.toString(),e.getLocalizedMessage());
-                    }
+                    padPortNumber(port, sb);
+                    ms = (TamsSensor) provideSensor(sb.toString());
                 }
                 if (ms != null) {
                     log.debug("ms = exists and is not null");
                     if (result == 0) {
                         ms.setOwnState(Sensor.INACTIVE);
-                        log.debug("{}{} INACTIVE", sensorprefix, j);
+                        log.debug(sensorprefix + port + " INACTIVE");
                     } else {
-                        log.debug("{}{} ACTIVE", sensorprefix, j);
+                        log.debug(sensorprefix + port + " ACTIVE");
                         ms.setOwnState(Sensor.ACTIVE);
                     }
                 }
@@ -278,13 +296,5 @@ public class TamsSensorManager extends jmri.managers.AbstractSensorManager imple
         }
         log.debug("sensor decoding is done");
     }
-
-    @Override
-    public void dispose() {
-        getMemo().getTrafficController().removePollMessage(TamsMessage.getXEvtSen(), this);
-        getMemo().getTrafficController().removeTamsListener(this);
-        super.dispose();
-    }
-
     private final static Logger log = LoggerFactory.getLogger(TamsSensorManager.class);
 }

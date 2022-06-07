@@ -1,29 +1,29 @@
 package jmri.jmrix.srcp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * SRCPTrafficControllerTest.java
  *
- * Test for the jmri.jmrix.srcp.SRCPTrafficController class
+ * Description:	tests for the jmri.jmrix.srcp.SRCPTrafficController class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class SRCPTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficControllerTest {
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         tc = new SRCPTrafficController();
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 }

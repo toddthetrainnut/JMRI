@@ -1,10 +1,8 @@
 package jmri.jmrit.entryexit;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -12,20 +10,22 @@ import org.junit.jupiter.api.*;
  */
 public class AddEntryExitPairFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new AddEntryExitPairFrame();
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new AddEntryExitPairFrame();
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(AddEntryExitPairFrameTest.class);
+
 }

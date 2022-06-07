@@ -1,19 +1,13 @@
 package jmri.jmrix.openlcb.swing.send;
 
 import java.awt.GraphicsEnvironment;
-
-import jmri.InstanceManager;
-import jmri.jmrix.can.CanSystemConnectionMemo;
-import jmri.jmrix.openlcb.OlcbSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import jmri.jmrix.can.TestTrafficController;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
-import org.mockito.Mockito;
-
-import static org.assertj.core.api.Java6Assertions.assertThat;
 
 /**
  * @author Bob Jacobsen Copyright 2013
@@ -25,24 +19,25 @@ public class OpenLcbCanSendActionTest {
     jmri.jmrix.can.TrafficController tc;
 
     @Test
-    @DisabledIfSystemProperty(named ="java.awt.headless", matches ="true")
     public void testCtor() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         OpenLcbCanSendAction h = new OpenLcbCanSendAction();
-        assertThat(h).withFailMessage("Action object non-null").isNotNull();
+        Assert.assertNotNull("Action object non-null", h);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        memo = Mockito.mock(OlcbSystemConnectionMemo.class);
-        InstanceManager.setDefault(CanSystemConnectionMemo.class,memo);
+
+        memo  = new jmri.jmrix.openlcb.OlcbSystemConnectionMemo();
+        TestTrafficController tc = new TestTrafficController();
+        memo.setTrafficController(tc);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo = null;
         JUnitUtil.tearDown();
-
     }
 }

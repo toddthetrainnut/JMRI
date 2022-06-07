@@ -1,18 +1,13 @@
 package jmri.jmrix.nce.consist;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.jmrix.nce.NceBinaryCommand;
 import jmri.jmrix.nce.NceMessage;
 import jmri.jmrix.nce.NceReply;
@@ -20,6 +15,8 @@ import jmri.jmrix.nce.NceTrafficController;
 import jmri.util.FileUtil;
 import jmri.util.StringUtil;
 import jmri.util.swing.TextFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Restores NCE consists from a text file defined by NCE.
@@ -210,7 +207,8 @@ public class NceConsistRestore extends Thread implements jmri.jmrix.nce.NceListe
         }
         if (replyLen == REPLY_1) {
             // Looking for proper response
-            if (r.getElement(0) != NceMessage.NCE_OKAY) {
+            int recChar = r.getElement(0);
+            if (recChar != '!') {
                 log.error("reply incorrect");
             }
         }

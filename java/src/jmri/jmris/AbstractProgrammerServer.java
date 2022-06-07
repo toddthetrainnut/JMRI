@@ -100,7 +100,7 @@ abstract public class AbstractProgrammerServer implements jmri.ProgListener {
     @Override
     public void programmingOpReply(int value, int status) {
         if (log.isDebugEnabled()) {
-            log.debug("programmingOpReply called with value {} and status {}", value, status);
+            log.debug("programmingOpReply called with value " + value + " and status " + status);
         }
         try {
             sendStatus(lastCV, value, status);

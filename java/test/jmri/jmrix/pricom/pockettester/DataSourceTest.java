@@ -2,14 +2,12 @@ package jmri.jmrix.pricom.pockettester;
 
 import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * JUnit tests for the DataSource class
  *
- * @author Bob Jacobsen Copyright 2005
+ * @author	Bob Jacobsen Copyright 2005
  */
 public class DataSourceTest {
 
@@ -35,7 +33,7 @@ public class DataSourceTest {
         f.nextLine(message);
         Assert.assertTrue("pass misc ", !message.equals(f.version.getText()));
 
-        message = TestConstants.version;
+        message = PackageTest.version;
         f.nextLine(message);
         Assert.assertTrue("show version ", message.equals(f.version.getText()));
 
@@ -43,15 +41,16 @@ public class DataSourceTest {
     }
 
     // avoid spurious error messages
-    @BeforeEach
+    @Before
     public void setup() {
+        JUnitUtil.setUp();
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
 
         DataSource.existingInstance = null;
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         JUnitUtil.tearDown();
     }

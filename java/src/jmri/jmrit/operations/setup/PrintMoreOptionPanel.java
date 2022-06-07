@@ -1,14 +1,16 @@
 package jmri.jmrit.operations.setup;
 
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
-
-import javax.swing.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.trains.TrainManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame for user edit of additional manifest print options
@@ -18,7 +20,7 @@ import jmri.jmrit.operations.trains.TrainManager;
  */
 public class PrintMoreOptionPanel extends OperationsPreferencesPanel {
 
-    private static final Logger log = LoggerFactory.getLogger(PrintMoreOptionPanel.class);
+    private static final Logger log = LoggerFactory.getLogger(OperationsSetupFrame.class);
 
     // labels
     // major buttons
@@ -75,6 +77,8 @@ public class PrintMoreOptionPanel extends OperationsPreferencesPanel {
 
         // setup buttons
         addButtonAction(saveButton);
+
+        initMinimumSize(new Dimension(Control.panelWidth300, Control.panelHeight400));
     }
 
     // Save buttons

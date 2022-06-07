@@ -82,15 +82,14 @@ public class LoadXmlThrottlesLayoutAction extends AbstractAction {
     }
 
     /**
-     * Parse the XML file and create ThrottleFrames.
-     * @return  true if throttle loaded successfully, else false.
+     * Parse the XML file and create ThrottleFrames. Returns true if throttle
+     * loaded successfully.
+     *
      * @param f The XML file containing throttles.
-     * @throws java.io.IOException on error.
      */
     public boolean loadThrottlesLayout(java.io.File f) throws java.io.IOException {
         try {
             ThrottlePrefs prefs = new ThrottlePrefs();
-            prefs.setValidate(XmlFile.Validate.CheckDtdThenSchema);
             Element root = prefs.rootFromFile(f);
             List<Element> throttles = root.getChildren("ThrottleFrame");
             ThrottleFrameManager tfManager = InstanceManager.getDefault(ThrottleFrameManager.class);
@@ -106,7 +105,9 @@ public class LoadXmlThrottlesLayoutAction extends AbstractAction {
                 throttles = root.getChildren("ThrottleWindow");
                 for (Element e : throttles) {
                     SwingUtilities.invokeLater(() -> {
-                        tfManager.createThrottleWindow(e).setVisible(true);
+                        ThrottleWindow tw = tfManager.createThrottleWindow();
+                        tw.setXml(e);
+                        tw.setVisible(true);
                     });
                 }
                 Element tlp = root.getChild("ThrottlesListPanel");
@@ -116,9 +117,6 @@ public class LoadXmlThrottlesLayoutAction extends AbstractAction {
             }
         } catch (org.jdom2.JDOMException ex) {
             log.warn("Loading Throttles exception", ex);
-            jmri.configurexml.ConfigXmlManager.creationErrorEncountered(
-                    null, "parsing file " + f.getName(),
-                    "Parse error", null, null, ex);
             return false;
         }
         return true;

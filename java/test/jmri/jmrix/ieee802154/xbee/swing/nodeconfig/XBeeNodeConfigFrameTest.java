@@ -5,14 +5,12 @@ import jmri.jmrix.ieee802154.xbee.XBeeConnectionMemo;
 import jmri.jmrix.ieee802154.xbee.XBeeInterfaceScaffold;
 import jmri.jmrix.ieee802154.xbee.XBeeTrafficController;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of XBeeNodeConfigFrame
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class XBeeNodeConfigFrameTest extends jmri.util.JmriJFrameTestBase {
 
@@ -26,8 +24,7 @@ public class XBeeNodeConfigFrameTest extends jmri.util.JmriJFrameTestBase {
         Assert.assertEquals("title","Configure XBee Nodes",frame.getTitle());
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -41,12 +38,10 @@ public class XBeeNodeConfigFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {        
         tc = null;
         m = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 }

@@ -1,12 +1,15 @@
 package jmri.jmrix.xpa;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
- * Tests for the jmri.jmrix.xpa.XpaMessage class
+ * XpaMessageTest.java
+ *
+ * Description: tests for the jmri.jmrix.xpa.XpaMessage class
  *
  * @author Paul Bender
  */
@@ -109,7 +112,7 @@ public class XpaMessageTest {
         XpaMessage m = XpaMessage.getIncSpeedMsg(65, 5);
         Assert.assertNotNull("String Constructor Succeeded", m);
         Assert.assertEquals("length", s.length(), m.getNumDataElements());
-        Assert.assertEquals("content", s, m.toString());
+        Assert.assertTrue("content", s.equals(m.toString()));
     }
 
     @Test
@@ -118,7 +121,7 @@ public class XpaMessageTest {
         XpaMessage m = XpaMessage.getDecSpeedMsg(65, 5);
         Assert.assertNotNull("String Constructor Succeeded", m);
         Assert.assertEquals("length", s.length(), m.getNumDataElements());
-        Assert.assertEquals("content", s, m.toString());
+        Assert.assertTrue("content", s.equals(m.toString()));
     }
 
     @Test
@@ -176,12 +179,12 @@ public class XpaMessageTest {
         Assert.assertTrue("content", s.equals(m.toString()));
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,18 +1,21 @@
 package jmri.jmrix.easydcc;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class EasyDccOpsModeProgrammerTest extends jmri.jmrix.AbstractOpsModeProgrammerTestBase {
 
     private EasyDccSystemConnectionMemo _memo;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -22,7 +25,7 @@ public class EasyDccOpsModeProgrammerTest extends jmri.jmrix.AbstractOpsModeProg
         programmer = p;
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         _memo.getTrafficController().terminateThreads();

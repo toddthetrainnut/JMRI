@@ -1,7 +1,7 @@
 package jmri;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  * Test simple functioning of DccLocoAddress

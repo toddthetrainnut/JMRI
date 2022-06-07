@@ -2,11 +2,11 @@ package jmri.util;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Randall Wood
+ * @author rhwood
  */
 public class I18NTest {
 
@@ -50,12 +50,13 @@ public class I18NTest {
      }
      */
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

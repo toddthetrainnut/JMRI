@@ -4,19 +4,21 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import javax.swing.JButton;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 import jmri.InstanceManager;
 import jmri.UserPreferencesManager;
 import org.slf4j.Logger;
@@ -58,9 +60,12 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
         if (init) {
             return;
         }
-        hostNameField.addActionListener(e -> {
-            adapter.setHostName(hostNameField.getText());
-            p.setComboBoxLastSelection(adapter.getClass().getName() + ".hostname", hostNameField.getText());
+        hostNameField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                adapter.setHostName(hostNameField.getText());
+                p.setComboBoxLastSelection(adapter.getClass().getName() + ".hostname", hostNameField.getText());
+            }
         });
         hostNameField.addKeyListener(new KeyListener() {
             @Override
@@ -77,11 +82,14 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
             public void keyTyped(KeyEvent keyEvent) {
             }
         });
-        portField.addActionListener(e -> {
-            try {
-                adapter.setPort(Integer.parseInt(portField.getText()));
-            } catch (NumberFormatException ex) {
-                log.warn("Could not parse port attribute");
+        portField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    adapter.setPort(Integer.parseInt(portField.getText()));
+                } catch (java.lang.NumberFormatException ex) {
+                    log.warn("Could not parse port attribute");
+                }
             }
         });
 
@@ -104,7 +112,12 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
             }
         });
 
-        adNameField.addActionListener(e -> adapter.setAdvertisementName(adNameField.getText()));
+        adNameField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                adapter.setAdvertisementName(adNameField.getText());
+            }
+        });
 
         adNameField.addKeyListener(new KeyListener() {
             @Override
@@ -121,7 +134,12 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
             }
         });
 
-        serviceTypeField.addActionListener(e -> adapter.setServiceType(serviceTypeField.getText()));
+        serviceTypeField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                adapter.setServiceType(serviceTypeField.getText());
+            }
+        });
 
         serviceTypeField.addKeyListener(new KeyListener() {
             @Override
@@ -138,42 +156,61 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
             }
         });
 
-        options.entrySet().forEach(entry -> {
+        for (Map.Entry<String, Option> entry : options.entrySet()) {
             final String item = entry.getKey();
             if (entry.getValue().getComponent() instanceof JComboBox) {
                 ((JComboBox<?>) entry.getValue().getComponent()).addActionListener((ActionEvent e) -> {
-                    log.debug("option combo box changed to {}", options.get(item).getItem());
                     adapter.setOptionState(item, options.get(item).getItem());
-                });
-            } else if (entry.getValue().getComponent() instanceof JTextField) {
-                // listen for enter
-                ((JTextField) entry.getValue().getComponent()).addActionListener((ActionEvent e) -> {
-                    log.debug("option text field changed to {}", options.get(item).getItem());
-                    adapter.setOptionState(item, options.get(item).getItem());
-                });
-                // listen for key press so you don't have to hit enter
-                (entry.getValue().getComponent()).addKeyListener(new KeyListener() {
-                    @Override
-                    public void keyPressed(KeyEvent keyEvent) {
-                    }
-
-                    @Override
-                    public void keyReleased(KeyEvent keyEvent) {
-                        adapter.setOptionState(item, options.get(item).getItem());
-                    }
-
-                    @Override
-                    public void keyTyped(KeyEvent keyEvent) {
-                    }
                 });
             }
-        });
+        }
 
-        addNameEntryCheckers(adapter);
+        if (adapter.getSystemConnectionMemo() != null) {
+            systemPrefixField.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!adapter.getSystemConnectionMemo().setSystemPrefix(systemPrefixField.getText())) {
+                        JOptionPane.showMessageDialog(null, Bundle.getMessage("ConnectionPrefixDialog", systemPrefixField.getText()));
+                        systemPrefixField.setValue(adapter.getSystemConnectionMemo().getSystemPrefix());
+                    }
+                }
+            });
+            systemPrefixField.addFocusListener(new FocusListener() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    if (!adapter.getSystemConnectionMemo().setSystemPrefix(systemPrefixField.getText())) {
+                        JOptionPane.showMessageDialog(null, Bundle.getMessage("ConnectionPrefixDialog", systemPrefixField.getText()));
+                        systemPrefixField.setValue(adapter.getSystemConnectionMemo().getSystemPrefix());
+                    }
+                }
 
-        // set/change delay interval between (actually before) output (Turnout) commands
-        outputIntervalSpinner.addChangeListener(e -> adapter.getSystemConnectionMemo().setOutputInterval((Integer) outputIntervalSpinner.getValue()));
+                @Override
+                public void focusGained(FocusEvent e) {
+                }
+            });
+            connectionNameField.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!adapter.getSystemConnectionMemo().setUserName(connectionNameField.getText())) {
+                        JOptionPane.showMessageDialog(null, Bundle.getMessage("ConnectionNameDialog", connectionNameField.getText()));
+                        connectionNameField.setText(adapter.getSystemConnectionMemo().getUserName());
+                    }
+                }
+            });
+            connectionNameField.addFocusListener(new FocusListener() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    if (!adapter.getSystemConnectionMemo().setUserName(connectionNameField.getText())) {
+                        JOptionPane.showMessageDialog(null, Bundle.getMessage("ConnectionNameDialog", connectionNameField.getText()));
+                        connectionNameField.setText(adapter.getSystemConnectionMemo().getUserName());
+                    }
+                }
 
+                @Override
+                public void focusGained(FocusEvent e) {
+                }
+            });
+        }
         init = true;
     }
 
@@ -181,15 +218,15 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
     public void updateAdapter() {
         if (adapter.getMdnsConfigure()) {
             // set the hostname if it is not blank
-            if (!(hostNameField.getText().isEmpty())) {
+            if (!(hostNameField.getText().equals(""))) {
                 adapter.setHostName(hostNameField.getText());
             }
             // set the advertisement name if it is not blank
-            if (!(adNameField.getText().isEmpty())) {
+            if (!(adNameField.getText().equals(""))) {
                 adapter.setAdvertisementName(adNameField.getText());
             }
             // set the Service Type if it is not blank.
-            if (!(serviceTypeField.getText().isEmpty())) {
+            if (!(serviceTypeField.getText().equals(""))) {
                 adapter.setServiceType(serviceTypeField.getText());
             }
             // and get the host IP and port number
@@ -199,11 +236,11 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
             adapter.setHostName(hostNameField.getText());
             adapter.setPort(Integer.parseInt(portField.getText()));
         }
-        options.entrySet().forEach(entry -> {
+        for (Map.Entry<String, Option> entry : options.entrySet()) {
             adapter.setOptionState(entry.getKey(), entry.getValue().getItem());
-        });
+        }
         if (adapter.getSystemConnectionMemo() != null && !adapter.getSystemConnectionMemo().setSystemPrefix(systemPrefixField.getText())) {
-            systemPrefixField.setText(adapter.getSystemConnectionMemo().getSystemPrefix());
+            systemPrefixField.setValue(adapter.getSystemConnectionMemo().getSystemPrefix());
             connectionNameField.setText(adapter.getSystemConnectionMemo().getUserName());
         }
     }
@@ -219,11 +256,6 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
     protected JLabel adNameFieldLabel;
     protected JTextField serviceTypeField = new JTextField(15);
     protected JLabel serviceTypeFieldLabel;
-
-    protected SpinnerNumberModel intervalSpinner = new SpinnerNumberModel(250, 0, 10000, 1); // 10 sec max seems long enough
-    protected JSpinner outputIntervalSpinner = new JSpinner(intervalSpinner);
-    protected JLabel outputIntervalLabel;
-    protected JButton outputIntervalReset = new JButton(Bundle.getMessage("ButtonReset"));
 
     protected NetworkPortAdapter adapter = null;
 
@@ -266,23 +298,13 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
             String[] optionsAvailable = adapter.getOptions();
             options.clear();
             for (String i : optionsAvailable) {
-                if (adapter.isOptionTypeText(i) ) {
-                    JTextField opt = new JTextField(15);
-                    opt.setText(adapter.getOptionState(i));
-                    options.put(i, new Option(adapter.getOptionDisplayName(i), opt, adapter.isOptionAdvanced(i)));
-                } else if (adapter.isOptionTypePassword(i) ) {
-                    JTextField opt = new JPasswordField(15);
-                    opt.setText(adapter.getOptionState(i));
-                    options.put(i, new Option(adapter.getOptionDisplayName(i), opt, adapter.isOptionAdvanced(i)));
-                } else {
-                    JComboBox<String> opt = new JComboBox<>(adapter.getOptionChoices(i));
-                    opt.setSelectedItem(adapter.getOptionState(i));
+                JComboBox<String> opt = new JComboBox<String>(adapter.getOptionChoices(i));
+                opt.setSelectedItem(adapter.getOptionState(i));
                 
-                    // check that it worked
-                    checkOptionValueValidity(i, opt);
+                // check that it worked
+                checkOptionValueValidity(i, opt);
                 
-                    options.put(i, new Option(adapter.getOptionDisplayName(i), opt, adapter.isOptionAdvanced(i)));
-                }
+                options.put(i, new Option(adapter.getOptionDisplayName(i), opt, adapter.isOptionAdvanced(i)));
             }
         }
 
@@ -291,7 +313,7 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
         }
 
         if (adapter.getSystemConnectionMemo() != null) {
-            systemPrefixField.setText(adapter.getSystemConnectionMemo().getSystemPrefix());
+            systemPrefixField.setValue(adapter.getSystemConnectionMemo().getSystemPrefix());
             connectionNameField.setText(adapter.getSystemConnectionMemo().getUserName());
             NUMOPTIONS = NUMOPTIONS + 2;
         }
@@ -300,7 +322,7 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
         hostNameField.setText(adapter.getHostName());
         hostNameFieldLabel = new JLabel(Bundle.getMessage("HostFieldLabel"));
         hostNameField.setToolTipText(Bundle.getMessage("HostFieldToolTip"));
-        if (adapter.getHostName() == null || adapter.getHostName().isEmpty()) {
+        if (adapter.getHostName() == null || adapter.getHostName().equals("")) {
             hostNameField.setText(p.getComboBoxLastSelection(adapter.getClass().getName() + ".hostname"));
             adapter.setHostName(hostNameField.getText());
         }
@@ -322,29 +344,27 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
         serviceTypeFieldLabel = new JLabel(Bundle.getMessage("ServiceTypeFieldLabel"));
         serviceTypeFieldLabel.setEnabled(false);
 
-        // connection (memo) specific output command delay option, calls jmri.jmrix.SystemConnectionMemo#setOutputInterval(int)
-        outputIntervalLabel = new JLabel(Bundle.getMessage("OutputIntervalLabel"));
-        outputIntervalSpinner.setToolTipText(Bundle.getMessage("OutputIntervalTooltip",
-                adapter.getSystemConnectionMemo().getDefaultOutputInterval(),adapter.getManufacturer()));
-        JTextField field = ((JSpinner.DefaultEditor) outputIntervalSpinner.getEditor()).getTextField();
-        field.setColumns(6);
-        outputIntervalSpinner.setMaximumSize(outputIntervalSpinner.getPreferredSize()); // set spinner JTextField width
-        outputIntervalSpinner.setValue(adapter.getSystemConnectionMemo().getOutputInterval());
-        outputIntervalSpinner.setEnabled(true);
-        outputIntervalReset.addActionListener((ActionEvent event) -> {
-            outputIntervalSpinner.setValue(adapter.getSystemConnectionMemo().getDefaultOutputInterval());
-            adapter.getSystemConnectionMemo().setOutputInterval(adapter.getSystemConnectionMemo().getDefaultOutputInterval());
-        });
-
         showAutoConfig.setFont(showAutoConfig.getFont().deriveFont(9f));
         showAutoConfig.setForeground(Color.blue);
-        showAutoConfig.addItemListener(e -> setAutoNetworkConfig());
+        showAutoConfig.addItemListener(
+                new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                setAutoNetworkConfig();
+            }
+        });
         showAutoConfig.setSelected(adapter.getMdnsConfigure());
         setAutoNetworkConfig();
 
         showAdvanced.setFont(showAdvanced.getFont().deriveFont(9f));
         showAdvanced.setForeground(Color.blue);
-        showAdvanced.addItemListener(e -> showAdvancedItems());
+        showAdvanced.addItemListener(
+                new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                showAdvancedItems();
+            }
+        });
         showAdvancedItems();
 
         init = false;  // need to reload action listeners
@@ -433,17 +453,6 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
                     i++;
                 }
             }
-            // interval config field
-            cR.gridy = i;
-            cL.gridy = i;
-            gbLayout.setConstraints(outputIntervalLabel, cL);
-            _details.add(outputIntervalLabel);
-            JPanel intervalPanel = new JPanel();
-            gbLayout.setConstraints(intervalPanel, cR);
-            intervalPanel.add(outputIntervalSpinner);
-            intervalPanel.add(outputIntervalReset);
-            _details.add(intervalPanel);
-            i++;
         }
         cL.gridwidth = 2;
         for (JComponent item : additionalItems) {
@@ -497,12 +506,6 @@ abstract public class AbstractNetworkConnectionConfig extends AbstractConnection
         return false;
     }
 
-    /**
-     * Determine whether to display port in Advanced options.
-     * <p>
-     * Default in Abstract Net Conn Config. Abstract True.
-     * @return true to display port in advanced options.
-     */
     public boolean isPortAdvanced() {
         return true;
     }

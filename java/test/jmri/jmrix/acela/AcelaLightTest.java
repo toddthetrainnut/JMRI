@@ -1,14 +1,15 @@
 package jmri.jmrix.acela;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * AcelaLightTest.java
  *
- * Test for the AcelaLight class
+ * Description: tests for the AcelaLight class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -29,7 +30,8 @@ public class AcelaLightTest {
       Assert.assertNotNull("AcelaLight Constructor",new AcelaLight("AL2","Test Turnout", _memo ));
     }
 
-    @BeforeEach
+   // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tcis = new AcelaTrafficControlScaffold();
@@ -39,11 +41,9 @@ public class AcelaLightTest {
         jmri.InstanceManager.setLightManager(l);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

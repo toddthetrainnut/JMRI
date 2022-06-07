@@ -1,7 +1,6 @@
 package jmri.implementation;
 
 import jmri.Audio;
-import jmri.InstanceManager;
 
 /**
  * Base implementation of the Audio class.
@@ -45,24 +44,19 @@ public abstract class AbstractAudio extends AbstractNamedBean implements Audio {
         Object _old = this._state;
         this._state = newState;
         stateChanged((Integer) _old);
-        firePropertyChange("State", _old, _state); // NOI18N
+        firePropertyChange("State", _old, _state); //NOI18N
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + " (" + this.getSystemName() + ")"; //NOI18N
     }
 
     /**
      * Abstract method that concrete classes will implement to perform necessary
      * cleanup routines.
-     * <p>
-     * This method is now included in dispose(). The caller can
-     * call dispose() to cleanup and deregister an audio object.
      */
     abstract protected void cleanup();
-
-    @Override
-    public void dispose() {
-        InstanceManager.getDefault(jmri.AudioManager.class).deregister(this);
-        cleanup();
-        super.dispose();
-    }
 
     /**
      * Static method to round a float value to the specified number of decimal

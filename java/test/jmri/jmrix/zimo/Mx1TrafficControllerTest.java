@@ -1,9 +1,10 @@
 package jmri.jmrix.zimo;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the Mx1TrafficController class
@@ -20,7 +21,7 @@ public class Mx1TrafficControllerTest {
        Assert.assertNotNull("exists",tc);
     }
 
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        tc = new Mx1TrafficController(){
@@ -31,7 +32,7 @@ public class Mx1TrafficControllerTest {
        };
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

@@ -6,15 +6,12 @@
 package jmri.jmrix.openlcb;
 
 import jmri.Light;
-import jmri.LightControl;
 import jmri.implementation.AbstractLight;
 import org.openlcb.OlcbInterface;
 import org.openlcb.implementations.BitProducerConsumer;
 import org.openlcb.implementations.VersionedValueListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 
 /**
  *
@@ -45,14 +42,17 @@ public class OlcbLight extends AbstractLight {
         OlcbAddress a = new OlcbAddress(address);
         OlcbAddress[] v = a.split();
         if (v == null) {
-            log.error("Did not find usable system name: {}", address);
+            log.error("Did not find usable system name: " + address);
             return;
         }
-        if (v.length == 2) {
-            addrOn = v[0];
-            addrOff = v[1];
-        } else {
-            log.error("Can't parse OpenLCB Light system name: {}", address);
+        switch (v.length) {
+            case 2:
+                addrOn = v[0];
+                addrOff = v[1];
+                break;
+            default:
+                log.error("Can't parse OpenLCB Light system name: " + address);
+                return;
         }
     }
     
@@ -88,9 +88,11 @@ public class OlcbLight extends AbstractLight {
         if (lightListener==null){
             return;
         }
-        lightControlList.stream().forEach(LightControl::activateLightControl);
-        mActive = true; // set flag for control listeners
         _finishedLoad = true;
+        lightControlList.stream().forEach((lc) -> {
+            lc.activateLightControl();
+        });
+        mActive = true; // set flag for control listeners
     }
     
     /** {@inheritDoc} */
@@ -130,10 +132,10 @@ public class OlcbLight extends AbstractLight {
     
     /** {@inheritDoc} */
     @Override
-    public void setProperty(@Nonnull String key, Object value) {
+    public void setProperty(String key, Object value) {
         Object old = getProperty(key);
         super.setProperty(key, value);
-        if (value.equals(old)) return;
+        if (old != null && value.equals(old)) return;
         if (pc == null) return;
         finishLoad();
     }

@@ -2,6 +2,7 @@ package jmri.jmrit.roster;
 
 import java.util.HashMap;
 import javax.swing.ImageIcon;
+import jmri.InstanceManager;
 import jmri.InstanceManagerAutoDefault;
 
 /**

@@ -32,8 +32,6 @@ public class IEEE802154Reply extends jmri.jmrix.AbstractMRReply {
      * matching to a node ).  The type and position of the sender 
      * address is indicated in the control byte.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
-        justification = "Would take significant rework")
     public byte[] getDestinationAddress() {
         int destinationMode = getDestinationAddressMode();
         //int sourceMode = getSourceAddressMode(); // not used
@@ -79,8 +77,6 @@ public class IEEE802154Reply extends jmri.jmrix.AbstractMRReply {
      * matching to a node ).  The type and position of the sender 
      * address is indicated in the control byte.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
-        justification = "Would take significant rework")
     public byte[] getSourceAddr() {
         int destinationMode = getDestinationAddressMode();
         int sourceMode = getSourceAddressMode();
@@ -139,8 +135,6 @@ public class IEEE802154Reply extends jmri.jmrix.AbstractMRReply {
      * @return the payload associated with the reply.  The position
      * of the data is determined from the control byte.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
-        justification = "Would take significant rework")
     public byte[] getPayload() {
         int destinationMode = getDestinationAddressMode();
         int sourceMode = getSourceAddressMode();

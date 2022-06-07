@@ -1,7 +1,5 @@
 package jmri.jmrix.jmriclient;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
 import jmri.Light;
 
 /**
@@ -14,45 +12,37 @@ import jmri.Light;
  */
 public class JMRIClientLightManager extends jmri.managers.AbstractLightManager {
 
+    private JMRIClientSystemConnectionMemo memo = null;
+    private String prefix = null;
+
     public JMRIClientLightManager(JMRIClientSystemConnectionMemo memo) {
-        super(memo);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public JMRIClientSystemConnectionMemo getMemo() {
-        return (JMRIClientSystemConnectionMemo) memo;
+        this.memo = memo;
+        this.prefix = memo.getSystemPrefix();
     }
 
     @Override
-    @Nonnull
-    protected Light createNewLight(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public String getSystemPrefix() {
+        return prefix;
+    }
+
+    @Override
+    public Light createNewLight(String systemName, String userName) {
         Light t;
-        int addr = Integer.parseInt(systemName.substring(getSystemNamePrefix().length()));
-        t = new JMRIClientLight(addr, getMemo());
+        int addr = Integer.parseInt(systemName.substring(prefix.length() + 1));
+        t = new JMRIClientLight(addr, memo);
         t.setUserName(userName);
         return t;
     }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format returns 'true' if system
+     * name has a valid format, else returns 'false'
      */
     @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
-        return (systemName.startsWith(getSystemNamePrefix())
-                && Integer.parseInt(systemName.substring(getSystemNamePrefix().length())) > 0) ? NameValidity.VALID : NameValidity.INVALID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull Locale locale) {
-        return super.validateIntegerSystemNameFormat(name, 0, Integer.MAX_VALUE, locale);
+    public NameValidity validSystemNameFormat(String systemName) {
+        return ((systemName.startsWith(prefix + "l")
+                || systemName.startsWith(prefix + "L"))
+                && Integer.parseInt(systemName.substring(prefix.length() + 1)) > 0) ? NameValidity.VALID : NameValidity.INVALID;
     }
 
     /**
@@ -62,7 +52,7 @@ public class JMRIClientLightManager extends jmri.managers.AbstractLightManager {
      * Abstract Light class
      */
     @Override
-    public boolean validSystemNameConfig(@Nonnull String systemName) {
+    public boolean validSystemNameConfig(String systemName) {
         return (true);
     }
 

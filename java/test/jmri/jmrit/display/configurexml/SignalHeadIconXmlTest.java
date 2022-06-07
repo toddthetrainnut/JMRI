@@ -1,14 +1,15 @@
 package jmri.jmrit.display.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * SignalHeadIconXmlTest.java
  *
- * Test for the SignalHeadIconXml class
+ * Description: tests for the SignalHeadIconXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,13 +20,13 @@ public class SignalHeadIconXmlTest {
       Assert.assertNotNull("SignalHeadIconXml constructor",new SignalHeadIconXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.initInternalSignalHeadManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

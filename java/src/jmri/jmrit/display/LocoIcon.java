@@ -143,8 +143,8 @@ public class LocoIcon extends PositionableLabel {
         JMenu iconMenu = new JMenu(Bundle.getMessage("LocoColor"));
         locoButtonGroup = new ButtonGroup();
         String[] colors = getLocoColors();
-        for (String color : colors) {
-            addLocoMenuEntry(iconMenu, color);
+        for (int i = 0; i < colors.length; i++) {
+            addLocoMenuEntry(iconMenu, colors[i]);
         }
         return iconMenu;
     }
@@ -178,7 +178,7 @@ public class LocoIcon extends PositionableLabel {
     }
 
     public void setLocoColor(String color) {
-        log.debug("Set loco color to {}", color);
+        log.debug("Set loco color to " + color);
         if (color.equals(WHITE)) {
             super.updateIcon(white);
             _locoColor = Color.WHITE;
@@ -212,7 +212,8 @@ public class LocoIcon extends PositionableLabel {
     }
 
     public static String[] getLocoColors() {
-        return new String[]{WHITE, GREEN, GRAY, RED, BLUE, YELLOW};
+        String[] colors = {WHITE, GREEN, GRAY, RED, BLUE, YELLOW};
+        return colors;
     }
     
     public Color getLocoColor() {
@@ -315,9 +316,9 @@ public class LocoIcon extends PositionableLabel {
     @Override
     public void doMouseReleased(MouseEvent event) {
         List<Positionable> selections = _editor.getSelectedItems(event);
-        for (Positionable selection : selections) {
-            if (selection instanceof IndicatorTrack) {
-                IndicatorTrack t = (IndicatorTrack) selection;
+        for (int i = 0; i < selections.size(); i++) {
+            if (selections.get(i) instanceof IndicatorTrack) {
+                IndicatorTrack t = (IndicatorTrack) selections.get(i);
                 jmri.jmrit.logix.OBlock block = t.getOccBlock();
                 if (block != null) {
                     block.setMarkerForeground(getForeground());
@@ -328,8 +329,9 @@ public class LocoIcon extends PositionableLabel {
                     if (name == null || name.length() == 0) {
                         name = getUnRotatedText();
                     }
-                    InstanceManager.getDefault(TrackerTableAction.class).markNewTracker(block, name, this);
-                    dock();
+                    if (InstanceManager.getDefault(TrackerTableAction.class).markNewTracker(block, name) != null) {
+                        dock();
+                    }
                 }
                 break;
             }

@@ -2,10 +2,6 @@ package jmri.jmrit.operations.automation.actions;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsManager;
 import jmri.jmrit.operations.OperationsTestCase;
@@ -13,10 +9,12 @@ import jmri.jmrit.operations.automation.AutomationItem;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.jmrit.operations.trains.excel.TrainCustomSwitchList;
 import jmri.util.JUnitOperationsUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class RunSwitchListActionTest extends OperationsTestCase {
 
@@ -105,9 +103,6 @@ public class RunSwitchListActionTest extends OperationsTestCase {
 
         // confirm file exists
         Assert.assertTrue(InstanceManager.getDefault(TrainCustomSwitchList.class).excelFileExists());
-        
-        JUnitOperationsUtil.checkOperationsShutDownTask();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(RunSwitchListActionTest.class);

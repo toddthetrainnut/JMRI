@@ -1,12 +1,10 @@
 package jmri.jmrit.display.configurexml;
 
-import jmri.configurexml.JmriConfigureXmlException;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.LocoIcon;
 import jmri.jmrit.roster.Roster;
 import jmri.jmrit.roster.RosterEntry;
-
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,11 +58,9 @@ public class LocoIconXml extends PositionableLabelXml {
      *
      * @param element Top level Element to unpack.
      * @param o       an Editor as an Object
-     * @throws JmriConfigureXmlException when a error prevents creating the objects as as
-     *                   required by the input XML
      */
     @Override
-    public void load(Element element, Object o) throws JmriConfigureXmlException {
+    public void load(Element element, Object o) {
         Editor ed = (Editor) o;
         LocoIcon l = new LocoIcon(ed);
 
@@ -73,14 +69,14 @@ public class LocoIconXml extends PositionableLabelXml {
         try {
             textName = element.getAttribute("text").getValue();
         } catch (Exception e) {
-            log.error("failed to get loco text attribute", e);
+            log.error("failed to get loco text attribute ex= " + e);
         }
         String name = "error";
         NamedIcon icon;
         try {
             name = element.getAttribute("icon").getValue();
         } catch (Exception e) {
-            log.error("failed to get icon attribute", e);
+            log.error("failed to get icon attribute ex= " + e);
         }
         if (name.equals("yes")) {
             icon = loadIcon(l, "icon", element, "LocoIcon", ed);
@@ -89,7 +85,7 @@ public class LocoIconXml extends PositionableLabelXml {
             if (icon == null) {
                 icon = ed.loadFailed("LocoIcon", name);
                 if (icon == null) {
-                    log.info("LocoIcon icon removed for url= {}", name);
+                    log.info("LocoIcon icon removed for url= " + name);
                     return;
                 }
             }
@@ -102,7 +98,7 @@ public class LocoIconXml extends PositionableLabelXml {
             l.setDockingLocation(x, y);
             //           l.dock();
         } catch (Exception e) {
-            log.warn("failed to get docking location", e);
+            log.warn("failed to get docking location= " + e);
         }
 
         String rosterId = null;
@@ -111,14 +107,14 @@ public class LocoIconXml extends PositionableLabelXml {
             RosterEntry entry = Roster.getDefault().entryFromTitle(rosterId);
             l.setRosterEntry(entry);
         } catch (Exception e) {
-            log.debug("no roster entry for {}", rosterId, e);
+            log.debug("no roster entry for " + rosterId + ", ex= " + e);
         }
         ed.putLocoIcon(l, textName);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.MARKERS, element);
         loadTextInfo(l, element);
 
-        l.init();  // to detect "background" color for use in Tracker, examine icon file
+        l.init();  // to detect "background" color for use in Tracker, examine icon file 
     }
 
     private final static Logger log = LoggerFactory.getLogger(LocoIconXml.class);

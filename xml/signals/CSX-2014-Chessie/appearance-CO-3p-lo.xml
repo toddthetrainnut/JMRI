@@ -22,12 +22,6 @@
       <authorinitials>ST</authorinitials>
       <revremark>Initial Version</revremark>
     </revision>
-    <revision>
-        <revnumber>1.1</revnumber>
-        <date>2019-12-30</date>
-        <authorinitials>BM</authorinitials>
-        <revremark>Corrected typo and removed ourAspect values which cannot be displayed by this mast type</revremark>
-     </revision>    
   </revhistory>
   <aspecttable>CSX-2014-Chessie</aspecttable>
   <name>Single head permissive color light dwarf signal</name>
@@ -116,7 +110,7 @@
     </aspectMapping>
     <aspectMapping>
       <advancedAspect>Medium Approach</advancedAspect>
-      <ourAspect>Clear</ourAspect>
+      <ourAspect>Approach Slow</ourAspect>
     </aspectMapping>
     <aspectMapping>
       <advancedAspect>Slow Clear</advancedAspect>
@@ -129,7 +123,7 @@
     <aspectMapping>
       <advancedAspect>Restricting</advancedAspect>
       <ourAspect>Approach</ourAspect>
-      <ourAspect>Restricted Proceed</ourAspect>
+      <ourAspect>Restricting</ourAspect>
     </aspectMapping>
     <aspectMapping>
       <advancedAspect>Restricted Proceed</advancedAspect>

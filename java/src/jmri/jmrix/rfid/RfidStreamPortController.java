@@ -3,8 +3,13 @@ package jmri.jmrix.rfid;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import jmri.jmrix.AbstractStreamPortController;
+import jmri.jmrix.rfid.RfidPortController;
+import jmri.jmrix.rfid.RfidProtocol;
+import jmri.jmrix.rfid.RfidSystemConnectionMemo;
+import jmri.jmrix.rfid.RfidTrafficController;
 import jmri.jmrix.rfid.generic.standalone.StandaloneReporterManager;
 import jmri.jmrix.rfid.generic.standalone.StandaloneSensorManager;
+import jmri.jmrix.rfid.generic.standalone.StandaloneSystemConnectionMemo;
 import jmri.jmrix.rfid.generic.standalone.StandaloneTrafficController;
 import jmri.jmrix.rfid.merg.concentrator.ConcentratorReporterManager;
 import jmri.jmrix.rfid.merg.concentrator.ConcentratorSensorManager;
@@ -16,6 +21,7 @@ import jmri.jmrix.rfid.protocol.olimex.OlimexRfidProtocol;
 import jmri.jmrix.rfid.protocol.parallax.ParallaxRfidProtocol;
 import jmri.jmrix.rfid.protocol.seeedstudio.SeeedStudioRfidProtocol;
 import org.slf4j.Logger;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -24,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * NOTE: This currently only supports the standalone RFID interfaces.
  * <p>
  *
- * @author Paul Bender Copyright (C) 2014
+ * @author	Paul Bender Copyright (C) 2014
  */
 public class RfidStreamPortController extends AbstractStreamPortController implements RfidInterface {
 
@@ -67,18 +73,17 @@ public class RfidStreamPortController extends AbstractStreamPortController imple
                 // create a Generic Stand-alone port controller
                 log.debug("Create Generic Standalone SpecificTrafficController"); // NOI18N
                 control = new StandaloneTrafficController(this.getSystemConnectionMemo());
-                this.getSystemConnectionMemo().setRfidTrafficController(control);
                 this.getSystemConnectionMemo().configureManagers(
-                        new StandaloneSensorManager(this.getSystemConnectionMemo()),
-                        new StandaloneReporterManager(this.getSystemConnectionMemo()));
+                        new StandaloneSensorManager(control, this.getSystemPrefix()),
+                        new StandaloneReporterManager(control, this.getSystemPrefix()));
                 break;
             case "MERG Concentrator": // NOI18N
                 // create a MERG Concentrator port controller
                 log.debug("Create MERG Concentrator SpecificTrafficController"); // NOI18N
                 control = new ConcentratorTrafficController(this.getSystemConnectionMemo(), getOptionState(option2Name));
                 this.getSystemConnectionMemo().configureManagers(
-                        new ConcentratorSensorManager(this.getSystemConnectionMemo()),
-                        new ConcentratorReporterManager(this.getSystemConnectionMemo()));
+                        new ConcentratorSensorManager(control, this.getSystemPrefix()),
+                        new ConcentratorReporterManager(control, this.getSystemPrefix()));
                 break;
             default:
                 // no connection at all - warn
@@ -86,8 +91,8 @@ public class RfidStreamPortController extends AbstractStreamPortController imple
                 // create a Generic Stand-alone port controller
                 control = new StandaloneTrafficController(this.getSystemConnectionMemo());
                 this.getSystemConnectionMemo().configureManagers(
-                        new StandaloneSensorManager(this.getSystemConnectionMemo()),
-                        new StandaloneReporterManager(this.getSystemConnectionMemo()));
+                        new StandaloneSensorManager(control, this.getSystemPrefix()),
+                        new StandaloneReporterManager(control, this.getSystemPrefix()));
                 break;
         }
 
@@ -154,8 +159,8 @@ public class RfidStreamPortController extends AbstractStreamPortController imple
         this.getSystemConnectionMemo().setRfidTrafficController(control);
         control.setAdapterMemo(this.getSystemConnectionMemo());
         this.getSystemConnectionMemo().configureManagers(
-                new StandaloneSensorManager(this.getSystemConnectionMemo()),
-                new StandaloneReporterManager(this.getSystemConnectionMemo()));
+                new StandaloneSensorManager(control, this.getSystemPrefix()),
+                new StandaloneReporterManager(control, this.getSystemPrefix()));
         control.connectPort(this);
     }
 

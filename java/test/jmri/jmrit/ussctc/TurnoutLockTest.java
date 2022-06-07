@@ -2,15 +2,13 @@ package jmri.jmrit.ussctc;
 
 import jmri.*;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 
 /**
  * Tests for OccupancyLock classes in the jmri.jmrit.ussctc package
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class TurnoutLockTest {
 
@@ -23,7 +21,7 @@ public class TurnoutLockTest {
 
         t.setCommandedState(Turnout.CLOSED);
 
-        Assert.assertTrue(lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(lock.isLockClear());
     }
 
     @Test
@@ -35,7 +33,7 @@ public class TurnoutLockTest {
 
         t.setCommandedState(Turnout.THROWN);
 
-        Assert.assertTrue(! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(! lock.isLockClear());
     }
 
     @Test
@@ -47,7 +45,7 @@ public class TurnoutLockTest {
 
         t.setCommandedState(Turnout.CLOSED);
 
-        Assert.assertTrue(! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(! lock.isLockClear());
     }
 
     @Test
@@ -59,10 +57,11 @@ public class TurnoutLockTest {
 
         t.setCommandedState(Turnout.CLOSED);
 
-        Assert.assertTrue(! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(! lock.isLockClear());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -70,7 +69,7 @@ public class TurnoutLockTest {
         JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

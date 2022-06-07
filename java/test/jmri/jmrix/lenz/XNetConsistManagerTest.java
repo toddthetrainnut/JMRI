@@ -1,39 +1,39 @@
 package jmri.jmrix.lenz;
 
-import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * XNetConsistManagerTest.java
  *
- * Test for the jmri.jmrix.lenz.XNetConsistManager class
+ * Description:	tests for the jmri.jmrix.lenz.XNetConsistManager class
  *
- * @author Paul Bender Copyright (C) 2012,2017
+ * @author	Paul Bender Copyright (C) 2012,2017
  */
 public class XNetConsistManagerTest extends jmri.implementation.AbstractConsistManagerTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
-        JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp();
         XNetInterfaceScaffold tc = new XNetInterfaceScaffold(new LenzCommandStation());
         cm = new XNetConsistManager(new XNetSystemConnectionMemo(tc));
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         cm = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
     @Test
     @Override
     public void testIsCommandStationConsistPossible(){
-       // true for XpressNet
+       // true for XPressNet
        Assert.assertTrue("CS Consist Possible",cm.isCommandStationConsistPossible());
     }
 

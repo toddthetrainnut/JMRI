@@ -1,6 +1,7 @@
 package jmri.jmrit.display;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
@@ -79,7 +80,12 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
         if (showIdItem == null) {
             showIdItem = new JCheckBoxMenuItem("Show ID");
             showIdItem.setSelected(false);
-            showIdItem.addActionListener(e -> toggleID(showIdItem.isSelected()));
+            showIdItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    toggleID(showIdItem.isSelected());
+                }
+            });
         }
         popup.add(showIdItem);
 
@@ -208,6 +214,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
 
         updateSize();
         revalidate();
+        return;
     }
 
     @Override

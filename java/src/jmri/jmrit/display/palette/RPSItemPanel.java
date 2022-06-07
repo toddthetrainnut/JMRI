@@ -5,11 +5,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.HashMap;
-
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import jmri.jmrit.catalog.DragJLabel;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
@@ -20,23 +16,13 @@ import org.slf4j.LoggerFactory;
 
 public class RPSItemPanel extends FamilyItemPanel {
 
-    public RPSItemPanel(DisplayFrame parentFrame, String type, String family) {
-        super(parentFrame, type, family);
+    public RPSItemPanel(DisplayFrame parentFrame, String type, String family, Editor editor) {
+        super(parentFrame, type, family, editor);
     }
 
     @Override
-    protected JPanel instructions() {
-        JPanel blurb = new JPanel();
-        blurb.setLayout(new BoxLayout(blurb, BoxLayout.Y_AXIS));
-        blurb.add(new JLabel(Bundle.getMessage("DragIconPanel")));
-        JPanel panel = new JPanel();
-        panel.add(blurb);
-        return panel;
-    }
-
-    @Override
-    protected String getDisplayKey() {
-        return "active";
+    protected void makeDndIconPanel(HashMap<String, NamedIcon> iconMap, String displayKey) {
+        super.makeDndIconPanel(iconMap, "active");
     }
 
     /*
@@ -71,14 +57,16 @@ public class RPSItemPanel extends FamilyItemPanel {
                 log.debug("IconDragJLabel.getTransferData");
             }
             if (flavor.isMimeTypeEqual(Editor.POSITIONABLE_FLAVOR)) {
-                RpsPositionIcon r = new RpsPositionIcon(_frame.getEditor());
+                RpsPositionIcon r = new RpsPositionIcon(_editor);
                 r.setActiveIcon(new NamedIcon(iconMap.get("active")));
                 r.setErrorIcon(new NamedIcon(iconMap.get("error")));
                 r.setSize(r.getPreferredSize().width, r.getPreferredSize().height);
                 r.setLevel(Editor.SENSORS);
                 return r;                
             } else if (DataFlavor.stringFlavor.equals(flavor)) {
-                return _itemType + " icons";
+                StringBuilder sb = new StringBuilder(_itemType);
+                sb.append(" icons");
+                return  sb.toString();
             }
             return null;
         }

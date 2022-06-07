@@ -1,14 +1,15 @@
 package jmri.jmrit.vsdecoder.listener;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of ListeningSpot
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class ListeningSpotTest {
 
@@ -18,11 +19,11 @@ public class ListeningSpotTest {
         Assert.assertNotNull("exists", s);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {        JUnitUtil.tearDown();    }
 }

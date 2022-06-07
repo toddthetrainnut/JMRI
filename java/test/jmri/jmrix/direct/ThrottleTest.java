@@ -1,13 +1,14 @@
 package jmri.jmrix.direct;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
 
@@ -345,7 +346,6 @@ public class ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup4 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup4() {
     }
 
@@ -353,12 +353,11 @@ public class ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup5 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup5() {
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         JUnitUtil.initDebugCommandStation();
@@ -372,8 +371,7 @@ public class ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
         instance = new Throttle(new jmri.DccLocoAddress(5, false), cs);
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         jmri.util.JUnitAppender.suppressWarnMessage("Only single transmissions currently available");
         JUnitUtil.tearDown();

@@ -27,10 +27,10 @@ import org.slf4j.LoggerFactory;
 public class SingleTurnoutSignalHead extends DefaultSignalHead implements PropertyChangeListener {
 
     /**
-     * Ctor including user name.
+     * Ctor using only a system name.
      *
-     * @param sys  system name for head
-     * @param user userName user name for head
+     * @param sys  system name for haed
+     * @param user userName user name for mast
      * @param lit  named bean for turnout switching the Lit property
      * @param on   Appearance constant from {@link jmri.SignalHead} for the
      *             output on (Turnout thrown) appearance
@@ -43,9 +43,9 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
     }
 
     /**
-     * Ctor using only a system name.
+     * Ctor including user name.
      *
-     * @param sys system name for head
+     * @param sys system name for haed
      * @param lit named bean for turnout switching the Lit property
      * @param on  Appearance constant from {@link jmri.SignalHead} for the
      *            output on (Turnout thrown) appearance
@@ -84,8 +84,8 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
         }
     }
 
-    private int mOnAppearance = DARK;
-    private int mOffAppearance = LUNAR;
+    int mOnAppearance = DARK;
+    int mOffAppearance = LUNAR;
 
     /**
      * Holds the last state change we commanded our underlying turnout.
@@ -100,7 +100,7 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
     @Override
     protected void updateOutput() {
         // assumes that writing a turnout to an existing state is cheap!
-        if (!mLit) {
+        if (mLit == false) {
             setTurnoutState(Turnout.CLOSED);
         } else if (!mFlashOn && (mAppearance == mOnAppearance * 2)) {
             setTurnoutState(Turnout.CLOSED);
@@ -127,7 +127,7 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
         super.dispose();
     }
 
-    private NamedBeanHandle<Turnout> mOutput;
+    NamedBeanHandle<Turnout> mOutput;
 
     public int getOnAppearance() {
         return mOnAppearance;
@@ -138,13 +138,13 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
     }
 
     public void setOnAppearance(int on) {
-        int old = mOnAppearance;
+        int old = on;
         mOnAppearance = on;
         firePropertyChange("ValidStatesChanged", old, on);
     }
 
     public void setOffAppearance(int off) {
-        int old = mOffAppearance;
+        int old = off;
         mOffAppearance = off;
         firePropertyChange("ValidStatesChanged", old, off);
     }
@@ -163,9 +163,6 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int[] getValidStates() {
         int[] validStates;
@@ -174,7 +171,7 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
             validStates[0] = mOnAppearance;
             validStates[1] = mOffAppearance;
             return validStates;
-        } if (mOnAppearance == DARK || mOffAppearance == DARK) { // we can make flashing with Dark only
+        } else if (mOnAppearance == DARK || mOffAppearance == DARK) { // we can make flashing with Dark only
             validStates = new int[3];
         } else {
             validStates = new int[2];
@@ -194,70 +191,69 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
         return validStates;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String[] getValidStateKeys() {
-        String[] validStateKeys = new String[getValidStates().length];
-        int i = 0;
-        // use the logic coded in getValidStates()
-        for (int state : getValidStates()) {
-            validStateKeys[i++] = getSignalColorKey(state);
-        }
-        return validStateKeys;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String[] getValidStateNames() {
-        String[] validStateNames = new String[getValidStates().length];
-        int i = 0;
-        // use the logic coded in getValidStates()
-        for (int state : getValidStates()) {
-            validStateNames[i++] = getSignalColorName(state);
+        String[] validStateName;
+        if (mOnAppearance == mOffAppearance) {
+            validStateName = new String[2];
+            validStateName[0] = getSignalColour(mOnAppearance);
+            validStateName[1] = getSignalColour(mOffAppearance);
+            return validStateName;
         }
-        return validStateNames;
+        if (mOnAppearance == DARK || mOffAppearance == DARK) {
+            validStateName = new String[3];
+        } else {
+            validStateName = new String[2];
+        }
+        int x = 0;
+        validStateName[x] = getSignalColour(mOnAppearance);
+        x++;
+        if (mOffAppearance == DARK) {
+            validStateName[x] = getSignalColour((mOnAppearance * 2));  // makes flashing
+            x++;
+        }
+        validStateName[x] = getSignalColour(mOffAppearance);
+        x++;
+        if (mOnAppearance == DARK) {
+            validStateName[x] = getSignalColour((mOffAppearance * 2));  // makes flashing
+        }
+        return validStateName;
     }
 
     @SuppressWarnings("fallthrough")
     @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH")
-    private String getSignalColorKey(int mAppearance) {
+    private String getSignalColour(int mAppearance) {
         switch (mAppearance) {
             case SignalHead.RED:
-                return "SignalHeadStateRed";
+                return Bundle.getMessage("SignalHeadStateRed");
             case SignalHead.FLASHRED:
-                return "SignalHeadStateFlashingRed";
+                return Bundle.getMessage("SignalHeadStateFlashingRed");
             case SignalHead.YELLOW:
-                return "SignalHeadStateYellow";
+                return Bundle.getMessage("SignalHeadStateYellow");
             case SignalHead.FLASHYELLOW:
-                return "SignalHeadStateFlashingYellow";
+                return Bundle.getMessage("SignalHeadStateFlashingYellow");
             case SignalHead.GREEN:
-                return "SignalHeadStateGreen";
+                return Bundle.getMessage("SignalHeadStateGreen");
             case SignalHead.FLASHGREEN:
-                return "SignalHeadStateFlashingGreen";
+                return Bundle.getMessage("SignalHeadStateFlashingGreen");
             case SignalHead.LUNAR:
-                return "SignalHeadStateLunar";
+                return Bundle.getMessage("SignalHeadStateLunar");
             case SignalHead.FLASHLUNAR:
-                return "SignalHeadStateFlashingLunar";
+                return Bundle.getMessage("SignalHeadStateFlashingLunar");
             default:
                 log.warn("Unexpected appearance: {}", mAppearance);
             // go dark by falling through
             case SignalHead.DARK:
-                return "SignalHeadStateDark";
+                return Bundle.getMessage("SignalHeadStateDark");
         }
-    }
-
-    private String getSignalColorName(int mAppearance) {
-        return Bundle.getMessage(getSignalColorKey(mAppearance));
     }
 
     @Override
     boolean isTurnoutUsed(Turnout t) {
         return getOutput() != null && t.equals(getOutput().getBean());
     }
+
+    private final static Logger log = LoggerFactory.getLogger(SingleTurnoutSignalHead.class);
 
     /* (non-Javadoc)
      * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
@@ -269,8 +265,8 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
             int newTurnoutValue = ((Integer) evt.getNewValue());
             /*String oldTurnoutString = turnoutToString(mTurnoutCommandedState);
             String newTurnoutString = turnoutToString(newTurnoutValue);
-            log.warn("signal {}: underlying turnout changed. last set state {}, current turnout state {}, current appearance {}",
-             this.mUserName, oldTurnoutString, newTurnoutString, getSignalColour(mAppearance));*/
+            log.warn("signal " + this.mUserName + ": underlying turnout changed. last set state " +
+            oldTurnoutString + ", current turnout state " + newTurnoutString + ", current appearance " + getSignalColour(mAppearance));*/
             if (mTurnoutCommandedState != newTurnoutValue) {
                 // The turnout state has changed against what we commanded.
                 int oldAppearance = mAppearance;
@@ -291,7 +287,4 @@ public class SingleTurnoutSignalHead extends DefaultSignalHead implements Proper
             }
         }
     }
-
-    private final static Logger log = LoggerFactory.getLogger(SingleTurnoutSignalHead.class);
-
 }

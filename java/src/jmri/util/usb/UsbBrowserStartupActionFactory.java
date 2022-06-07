@@ -1,25 +1,25 @@
 package jmri.util.usb;
 
-import jmri.util.startup.AbstractStartupActionFactory;
-import jmri.util.startup.StartupActionFactory;
+import apps.startup.AbstractStartupActionFactory;
+import apps.startup.StartupActionFactory;
 import java.util.Locale;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * {@link jmri.util.startup.StartupActionFactory} for the
+ * {@link apps.startup.StartupActionFactory} for the
  * {@link jmri.util.usb.UsbBrowserAction}.
  *
  * @author Randall Wood Copyright (C) 2017
  */
 @ServiceProvider(service = StartupActionFactory.class)
-public final class UsbBrowserStartupActionFactory extends AbstractStartupActionFactory {
+public class UsbBrowserStartupActionFactory extends AbstractStartupActionFactory {
 
     @Override
     public String getTitle(Class<?> clazz, Locale locale) throws IllegalArgumentException {
-        if (clazz.equals(UsbBrowserAction.class)) {
-            return Bundle.getMessage(locale, "StartUsbBrowserAction"); // NOI18N
+        if (!clazz.equals(UsbBrowserAction.class)) {
+            throw new IllegalArgumentException();
         }
-        throw new IllegalArgumentException(clazz.getName() + " is not supported by " + this.getClass().getName());
+        return Bundle.getMessage(locale, "StartUsbBrowserAction"); // NOI18N
     }
 
     @Override

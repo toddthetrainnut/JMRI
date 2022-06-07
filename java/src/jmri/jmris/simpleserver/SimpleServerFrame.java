@@ -1,13 +1,13 @@
 package jmri.jmris.simpleserver;
 
-import jmri.InstanceManager;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 /**
- * Frame displaying start/stop buttons for the JMRI Simple Server.
+ * Frame displaying start/stop buttons for the JMRI server.
  *
  * @author Paul Bender Copyright (C) 2009
  */
@@ -32,16 +32,32 @@ public class SimpleServerFrame extends jmri.util.JmriJFrame {
         pack();
 
         // install start button handler
-        startButton.addActionListener(a -> startSimpleServer());
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                startSimpleServer();
+            }
+        }
+        );
 
         // install stop button handler
-        stopButton.addActionListener(a -> stopSimpleServer());
+        stopButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                stopSimpleServer();
+            }
+        }
+        );
 
         // install close button handler
-        closeButton.addActionListener(a -> {
-            setVisible(false);
-            dispose();
-        });
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                setVisible(false);
+                dispose();
+            }
+        }
+        );
 
     }
 
@@ -55,12 +71,18 @@ public class SimpleServerFrame extends jmri.util.JmriJFrame {
         dispose();
     }
 
+    @Override
+    public void dispose() {
+        // take apart the JFrame
+        super.dispose();
+    }
+
     public void startSimpleServer() {
-        InstanceManager.getDefault(SimpleServer.class).start();
+        jmri.InstanceManager.getDefault(SimpleServer.class).start();
     }
 
     public void stopSimpleServer() {
-        InstanceManager.getDefault(SimpleServer.class).stop();
+        jmri.InstanceManager.getDefault(SimpleServer.class).stop();
     }
 
 }

@@ -2,19 +2,19 @@ package jmri.jmrit.display.layoutEditor;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.geom.Point2D;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of LayoutTurntable
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
-public class LayoutTurntableTest extends LayoutTrackTest {
+public class LayoutTurntableTest {
 
     LayoutEditor layoutEditor = null;
     LayoutTurntable lt = null;
@@ -35,8 +35,8 @@ public class LayoutTurntableTest extends LayoutTrackTest {
     }
 
     // from here down is testing infrastructure
-    @BeforeEach
-    public void setUp() {
+    @Before
+    public void setUp() throws Exception {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
 
@@ -45,19 +45,17 @@ public class LayoutTurntableTest extends LayoutTrackTest {
             layoutEditor = new LayoutEditor();
             Assert.assertNotNull("LayoutEditor not null", layoutEditor);
 
-            lt = new LayoutTurntable("My Turntable", layoutEditor); // new Point2D.Double(50.0, 100.0),
+            lt = new LayoutTurntable("My Turntable", new Point2D.Double(50.0, 100.0), layoutEditor);
         }
     }
 
-    @AfterEach
-    public void tearDown() {
+    @After
+    public void tearDown() throws Exception {
         if(layoutEditor!=null){
            JUnitUtil.dispose(layoutEditor);
         }
         lt = null;
         layoutEditor = null;
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 }

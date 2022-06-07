@@ -2,9 +2,7 @@ package jmri.jmrit.display;
 
 import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of DisplayFrame
@@ -22,7 +20,7 @@ public class DisplayFrameTest extends jmri.util.JmriJFrameTestBase {
         JUnitUtil.dispose(df2);
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -32,7 +30,7 @@ public class DisplayFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();

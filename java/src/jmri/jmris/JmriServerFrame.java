@@ -1,7 +1,5 @@
 package jmri.jmris;
 
-import jmri.InstanceManager;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
@@ -34,16 +32,32 @@ public class JmriServerFrame extends jmri.util.JmriJFrame {
         pack();
 
         // install start button handler
-        startButton.addActionListener(a -> startServer());
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                startServer();
+            }
+        }
+        );
 
         // install stop button handler
-        stopButton.addActionListener(a -> stopServer());
+        stopButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                stopServer();
+            }
+        }
+        );
 
         // install close button handler
-        closeButton.addActionListener(a -> {
-            setVisible(false);
-            dispose();
-        });
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                setVisible(false);
+                dispose();
+            }
+        }
+        );
 
     }
 
@@ -64,11 +78,11 @@ public class JmriServerFrame extends jmri.util.JmriJFrame {
     }
 
     public void startServer() {
-        InstanceManager.getDefault(JmriServer.class).start();
+        jmri.InstanceManager.getDefault(JmriServer.class).start();
     }
 
     public void stopServer() {
-        InstanceManager.getDefault(JmriServer.class).stop();
+        jmri.InstanceManager.getDefault(JmriServer.class).stop();
     }
 
 }

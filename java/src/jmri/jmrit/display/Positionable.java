@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
-import jmri.JmriException;
 
 /**
  * Defines display objects.
@@ -40,63 +39,49 @@ import jmri.JmriException;
  */
 public interface Positionable extends Cloneable {
 
-    /**
-     * Sets the Id of this Positionable
-     * @param id the id or null if no id
-     * @throws jmri.jmrit.display.Positionable.DuplicateIdException if another
-     *         Positionable in the editor already has this id
-     */
-    void setId(String id) throws Positionable.DuplicateIdException;
+    public void setPositionable(boolean enabled);
 
-    /**
-     * Gets the Id of this Positionable
-     * @return id the id or null if no id
-     */
-    String getId();
+    public boolean isPositionable();
 
-    void setPositionable(boolean enabled);
+    public void setEditable(boolean enabled);
 
-    boolean isPositionable();
+    public boolean isEditable();
 
-    void setEditable(boolean enabled);
+    public void setShowToolTip(boolean set);
 
-    boolean isEditable();
+    public boolean showToolTip();
 
-    void setShowToolTip(boolean set);
+    public void setToolTip(ToolTip tip);
 
-    boolean showToolTip();
+    public ToolTip getToolTip();
 
-    void setToolTip(ToolTip tip);
+    public void setViewCoordinates(boolean enabled);
 
-    ToolTip getToolTip();
+    public boolean getViewCoordinates();
 
-    void setViewCoordinates(boolean enabled);
+    public void setControlling(boolean enabled);
 
-    boolean getViewCoordinates();
+    public boolean isControlling();
 
-    void setControlling(boolean enabled);
+    public void setHidden(boolean enabled);
 
-    boolean isControlling();
+    public boolean isHidden();
 
-    void setHidden(boolean enabled);
+    public void showHidden();
 
-    boolean isHidden();
+    public int getDisplayLevel();
 
-    void showHidden();
+    public void setDisplayLevel(int l);
 
-    int getDisplayLevel();
+    public Editor getEditor();
 
-    void setDisplayLevel(int l);
+    public void setEditor(Editor ed);
 
-    Editor getEditor();
+    public void updateSize();
 
-    void setEditor(Editor ed);
+    public int maxWidth();
 
-    void updateSize();
-
-    int maxWidth();
-
-    int maxHeight();
+    public int maxHeight();
 
     /**
      * Make a deep copy of Positional object. Implementation should create a new
@@ -115,7 +100,7 @@ public interface Positionable extends Cloneable {
      *
      * @return the copy
      */
-    Positionable deepClone();
+    public Positionable deepClone();
 
     /**
      * Get the name of the positional as a String. This is often the display
@@ -123,7 +108,7 @@ public interface Positionable extends Cloneable {
      *
      * @return the name to display
      */
-    String getNameString();
+    public String getNameString();
 
     /**
      * Add additional menu items to the menu.
@@ -131,7 +116,7 @@ public interface Positionable extends Cloneable {
      * @param popup the menu to add the menu items to
      * @return true if adding items; false otherwise
      */
-    boolean setRotateOrthogonalMenu(JPopupMenu popup);
+    public boolean setRotateOrthogonalMenu(JPopupMenu popup);
 
     /**
      * Add additional menu items to the menu.
@@ -139,7 +124,7 @@ public interface Positionable extends Cloneable {
      * @param popup the menu to add the menu items to
      * @return true if adding items; false otherwise
      */
-    boolean setRotateMenu(JPopupMenu popup);
+    public boolean setRotateMenu(JPopupMenu popup);
 
     /**
      * Add additional menu items to the menu.
@@ -147,7 +132,7 @@ public interface Positionable extends Cloneable {
      * @param popup the menu to add the menu items to
      * @return true if adding items; false otherwise
      */
-    boolean setScaleMenu(JPopupMenu popup);
+    public boolean setScaleMenu(JPopupMenu popup);
 
     /**
      * Add additional menu items to the menu.
@@ -155,7 +140,7 @@ public interface Positionable extends Cloneable {
      * @param popup the menu to add the menu items to
      * @return true if adding items; false otherwise
      */
-    boolean setEditIconMenu(JPopupMenu popup);
+    public boolean setEditIconMenu(JPopupMenu popup);
 
     /**
      * Add additional menu items to the menu.
@@ -163,7 +148,7 @@ public interface Positionable extends Cloneable {
      * @param popup the menu to add the menu items to
      * @return true if adding items; false otherwise
      */
-    boolean setEditItemMenu(JPopupMenu popup);
+    public boolean setEditItemMenu(JPopupMenu popup);
 
     /**
      * Add additional menu items to the menu.
@@ -171,7 +156,7 @@ public interface Positionable extends Cloneable {
      * @param popup the menu to add the menu items to
      * @return true if adding items; false otherwise
      */
-    boolean setDisableControlMenu(JPopupMenu popup);
+    public boolean setDisableControlMenu(JPopupMenu popup);
 
     /**
      * Add additional menu items to the menu.
@@ -179,28 +164,28 @@ public interface Positionable extends Cloneable {
      * @param popup the menu to add the menu items to
      * @return true if adding items; false otherwise
      */
-    boolean setTextEditMenu(JPopupMenu popup);
+    public boolean setTextEditMenu(JPopupMenu popup);
 
-    boolean showPopUp(JPopupMenu popup);
+    public boolean showPopUp(JPopupMenu popup);
 
-    void setScale(double s);
+    public void setScale(double s);
 
-    double getScale();
+    public double getScale();
 
-    void rotate(int deg);
+    public void rotate(int deg);
 
-    int getDegrees();
+    public int getDegrees();
 
-    JComponent getTextComponent();
+    public JComponent getTextComponent();
 
-    void remove();
+    public void remove();
 
     /**
      * Check if a permanent copy of this Positionable should be stored.
      *
      * @return true if this Positionable should be stored; false otherwise
      */
-    boolean storeItem();
+    public boolean storeItem();
 
     /**
      * Use the 'Standard' presentation of the popup menu items. The editor will
@@ -209,87 +194,81 @@ public interface Positionable extends Cloneable {
      *
      * @return true if Editor may add the standardpopup menu items
      */
-    boolean doViemMenu();
+    public boolean doViemMenu();
 
     /**
      * Utility to handle Margins, Borders and other common popup items
      *
      * @return null if these item do not apply
      */
-    PositionablePopupUtil getPopupUtility();
+    public PositionablePopupUtil getPopupUtility();
 
-    void setPopupUtility(PositionablePopupUtil tu);
+    public void setPopupUtility(PositionablePopupUtil tu);
 
-    jmri.NamedBean getNamedBean();
+    public jmri.NamedBean getNamedBean();
 
     // Mouse-handling events.  See
     // Editor class for more information on how these are used.
-    void doMousePressed(MouseEvent event);
+    public void doMousePressed(MouseEvent event);
 
-    void doMouseReleased(MouseEvent event);
+    public void doMouseReleased(MouseEvent event);
 
-    void doMouseClicked(MouseEvent event);
+    public void doMouseClicked(MouseEvent event);
 
-    void doMouseDragged(MouseEvent event);
+    public void doMouseDragged(MouseEvent event);
 
-    void doMouseMoved(MouseEvent event);
+    public void doMouseMoved(MouseEvent event);
 
-    void doMouseEntered(MouseEvent event);
+    public void doMouseEntered(MouseEvent event);
 
-    void doMouseExited(MouseEvent event);
+    public void doMouseExited(MouseEvent event);
 
     // The following are common for all JComponents
-    Rectangle getBounds(Rectangle r);
+    public Rectangle getBounds(Rectangle r);
 
-    boolean contains(int x, int y);
+    public boolean contains(int x, int y);
 
-    int getX();
+    public int getX();
 
-    int getY();
+    public int getY();
 
-    Point getLocation();
+    public Point getLocation();
 
-    void setLocation(int x, int y);
+    public void setLocation(int x, int y);
 
-    void setLocation(Point p);
+    public void setLocation(Point p);
 
-    void setSize(int width, int height);
+    public void setSize(int width, int height);
 
-    void setVisible(boolean b);
+    public void setVisible(boolean b);
 
-    int getWidth();
+    public int getWidth();
 
-    int getHeight();
+    public int getHeight();
 
-    Container getParent();
+    public Container getParent();
 
-    void setOpaque(boolean isOpaque);
+    public void setOpaque(boolean isOpaque);
 
-    boolean isOpaque();
+    public boolean isOpaque();
 
-    void setBackground(Color bg);
+    public void setBackground(Color bg);
 
-    Color getBackground();
+    public Color getBackground();
 
-    void setForeground(Color bg);
+    public void setForeground(Color bg);
 
-    Color getForeground();
+    public Color getForeground();
 
-    Font getFont();
+    public Font getFont();
 
-    void setBorder(Border border);
+    public void setBorder(Border border);
 
-    Dimension getPreferredSize();
+    public Dimension getPreferredSize();
 
-    void invalidate();
+    public void invalidate();
 
-    void repaint();
+    public void repaint();
 
-    boolean requestFocusInWindow();
-
-
-
-    public static class DuplicateIdException extends JmriException {
-    }
-
+    public boolean requestFocusInWindow();
 }

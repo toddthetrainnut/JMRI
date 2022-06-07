@@ -1,31 +1,30 @@
 package jmri.jmrit.logix;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class WarrantTableActionTest {
-    WarrantTableAction wta;
 
     @Test
     public void testCTor() {
-        assertThat(wta).withFailMessage("exists").isNotNull();
+        WarrantTableAction t = new WarrantTableAction("Test");
+        Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        wta = WarrantTableAction.getDefault();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

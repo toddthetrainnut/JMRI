@@ -7,9 +7,9 @@ import javax.swing.JComponent;
  */
 public class BeanEditItem {
 
-    JComponent component;
-    String description;
     String help;
+    String description;
+    JComponent component;
 
     /**
      * Create the item structure to be added. If the component and description

@@ -36,7 +36,12 @@ public class PR3Adapter extends LocoBufferAdapter {
     @Override
     protected void setSerialPort(SerialPort activeSerialPort) throws UnsupportedCommOperationException {
         // find the baud rate value, configure comm options
-        int baud = currentBaudNumber(mBaudRate);
+        int baud = 57600;  // default, but also defaulted in the initial value of selectedSpeed
+        for (int i = 0; i < validBaudNumbers().length; i++) {
+            if (validBaudRates()[i].equals(mBaudRate)) {
+                baud = validBaudNumbers()[i];
+            }
+        }
         activeSerialPort.setSerialPortParams(baud, SerialPort.DATABITS_8,
                 SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 
@@ -47,7 +52,11 @@ public class PR3Adapter extends LocoBufferAdapter {
         }
         configureLeadsAndFlowControl(activeSerialPort, flow);
 
-        log.info("PR3 adapter{}{} RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN, activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=", activeSerialPort.getFlowControlMode());
+        log.info("PR3 adapter"
+                + (activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=")
+                + activeSerialPort.getFlowControlMode()
+                + " RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT
+                + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN);
     }
 
     /**
@@ -78,7 +87,7 @@ public class PR3Adapter extends LocoBufferAdapter {
             this.getSystemConnectionMemo().setLnTrafficController(packets);
             // do the common manager config
             this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);  // never transponding!
+                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);  // never transponding!
             this.getSystemConnectionMemo().configureManagersPR2();
 
             // start operation
@@ -97,7 +106,6 @@ public class PR3Adapter extends LocoBufferAdapter {
             // MS100 modes - connecting to a separate command station
             // get transponding option
             setTranspondingAvailable(getOptionState("TranspondingPresent"));
-            setInterrogateOnStart(getOptionState("InterrogateOnStart"));
             // connect to a packetizing traffic controller
             LnPacketizer packets = getPacketizer(getOptionState(option4Name));
             packets.connectPort(this);
@@ -108,7 +116,7 @@ public class PR3Adapter extends LocoBufferAdapter {
             this.getSystemConnectionMemo().setLnTrafficController(packets);
             // do the common manager config
             this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);
+                    mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);
 
             this.getSystemConnectionMemo().configureManagersMS100();
 
@@ -148,11 +156,6 @@ public class PR3Adapter extends LocoBufferAdapter {
         return new int[]{57600};
     }
 
-    @Override
-    public int defaultBaudIndex() {
-        return 0;
-    }
-
     // Option 1 does flow control, inherited from LocoBufferAdapter
 
     /**
@@ -185,5 +188,4 @@ public class PR3Adapter extends LocoBufferAdapter {
     }
 
     private final static Logger log = LoggerFactory.getLogger(PR3Adapter.class);
-
 }

@@ -3,6 +3,8 @@ package jmri.jmrix.easydcc.simulator;
 import jmri.jmrix.easydcc.EasyDccSystemConnectionMemo;
 import jmri.jmrix.easydcc.EasyDccTrafficController;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Converts Stream-based I/O to/from EasyDcc messages. The "EasyDccInterface"

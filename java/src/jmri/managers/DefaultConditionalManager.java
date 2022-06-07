@@ -1,9 +1,13 @@
 package jmri.managers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nonnull;
 import jmri.Conditional;
 import jmri.ConditionalManager;
 import jmri.InstanceManager;
@@ -11,7 +15,6 @@ import jmri.Logix;
 import jmri.implementation.DefaultConditional;
 import jmri.implementation.SensorGroupConditional;
 import jmri.jmrit.sensorgroup.SensorGroupFrame;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,13 +41,18 @@ import org.slf4j.LoggerFactory;
 public class DefaultConditionalManager extends AbstractManager<Conditional>
         implements ConditionalManager {
 
-    public DefaultConditionalManager(InternalSystemConnectionMemo memo) {
-        super(memo);
+    public DefaultConditionalManager() {
+        super();
     }
 
     @Override
     public int getXMLOrder() {
         return jmri.Manager.CONDITIONALS;
+    }
+
+    @Override
+    public String getSystemPrefix() {
+        return "I";
     }
 
     @Override
@@ -223,11 +231,17 @@ public class DefaultConditionalManager extends AbstractManager<Conditional>
         }
 
         Conditional c = null;
-        for (Conditional chkC : getNamedBeanSet()) {
+        Conditional chkC = null;
+
+        for (String cName : getSystemNameList()) {
+            chkC = getBySystemName(cName);
+            if (chkC == null) {
+                continue;
+            }
             if (key.equals(chkC.getUserName())) {
                 if (c == null) {
                     // Save first match
-                    c = chkC;
+                    c = getBySystemName(chkC.getSystemName());
                     continue;
                 }
                 // Found a second match, give up
@@ -286,40 +300,40 @@ public class DefaultConditionalManager extends AbstractManager<Conditional>
     }
 
     /**
-     * Create a named bean set for conditionals.  This requires special logic since conditional
-     * beans are not registered.
-     * @since 4.17.5
-     * @return a sorted named bean set of conditionals.
+     * Get a list of all Conditional system names
+     * Overrides the bean method
+     * @since 4.7.4
+     * @deprecated 4.11.5 - use direct access via 
+     *                  {@link #getNamedBeanSet} 
+     * @return a list of conditional system names regardless of parent Logix
      */
+    @Deprecated // 4.11.5
     @Override
-    @Nonnull
-    public SortedSet<Conditional> getNamedBeanSet() {
-        TreeSet<Conditional> conditionals = new TreeSet<>(new jmri.util.NamedBeanComparator<>());
+    public List<String> getSystemNameList() {
+        List<String> nameList = new ArrayList<>();
 
         jmri.LogixManager logixManager = InstanceManager.getDefault(jmri.LogixManager.class);
         for (Logix lgx : logixManager.getNamedBeanSet()) {
             for (int i = 0; i < lgx.getNumConditionals(); i++) {
-                Conditional cdl = getBySystemName(lgx.getConditionalByNumberOrder(i));
-                if (cdl != null) {
-                    conditionals.add(cdl);
-                }
+                nameList.add(lgx.getConditionalByNumberOrder(i));
             }
         }
-        return Collections.unmodifiableSortedSet(conditionals);
+        Collections.sort(nameList);
+        return nameList;
+    }
+
+    static DefaultConditionalManager _instance = null;
+
+    static public DefaultConditionalManager instance() {
+        if (_instance == null) {
+            _instance = new DefaultConditionalManager();
+        }
+        return (_instance);
     }
 
     @Override
-    @Nonnull
     public String getBeanTypeHandled(boolean plural) {
         return Bundle.getMessage(plural ? "BeanNameConditionals" : "BeanNameConditional");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Class<Conditional> getNamedBeanClass() {
-        return Conditional.class;
     }
 
     // --- Conditional Where Used processes ---

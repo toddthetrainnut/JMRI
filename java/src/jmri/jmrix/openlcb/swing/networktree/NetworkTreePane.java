@@ -56,7 +56,11 @@ public class NetworkTreePane extends jmri.util.swing.JmriPanel implements CanLis
         treePane = new TreePane();
         treePane.setPreferredSize(new Dimension(300, 300));
 
-        treePane.initComponents(memo.get(MimicNodeStore.class), memo.get(Connection.class), memo.get(NodeID.class), new ActionLoader(memo)
+        treePane.initComponents(
+                (MimicNodeStore) memo.get(MimicNodeStore.class),
+                (Connection) memo.get(Connection.class),
+                (NodeID) memo.get(NodeID.class),
+                new ActionLoader(memo.get(OlcbInterface.class))
         );
         add(treePane);
 
@@ -81,6 +85,9 @@ public class NetworkTreePane extends jmri.util.swing.JmriPanel implements CanLis
         return "OpenLCB Network Tree";
     }
 
+    protected void init() {
+    }
+
     @Override
     public void dispose() {
         memo.getTrafficController().removeCanListener(this);
@@ -94,24 +101,24 @@ public class NetworkTreePane extends jmri.util.swing.JmriPanel implements CanLis
     public synchronized void reply(CanReply l) {  // receive a reply and log it
     }
 
-    //private final static Logger log = LoggerFactory.getLogger(NetworkTreePane.class);
+    @SuppressWarnings("unused")
+    private final static Logger log = LoggerFactory.getLogger(NetworkTreePane.class);
 
     /**
      * Nested class to open specific windows when proper tree element is picked.
      */
-    private static class ActionLoader extends NodeTreeRep.SelectionKeyLoader {
+    private class ActionLoader extends NodeTreeRep.SelectionKeyLoader {
 
         private final ClientActions actions;
 
-        ActionLoader(CanSystemConnectionMemo memo) {
-            OlcbInterface iface = memo.get(OlcbInterface.class);
-            actions = new ClientActions(iface, memo);
+        ActionLoader(OlcbInterface iface) {
+            actions = new ClientActions(iface);
             this.store = iface.getNodeStore();
             this.mcs = iface.getMemoryConfigurationService();
         }
 
-        final MimicNodeStore store;
-        final MemoryConfigurationService mcs;
+        MimicNodeStore store;
+        MemoryConfigurationService mcs;
 
         @Override
         public NodeTreeRep.SelectionKey cdiKey(String name, NodeID node) {

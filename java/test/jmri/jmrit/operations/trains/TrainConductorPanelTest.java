@@ -1,7 +1,7 @@
 package jmri.jmrit.operations.trains;
 
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * Tests for the TrainConductorPanel class
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.*;
  */
 public class TrainConductorPanelTest extends jmri.jmrit.operations.CommonConductorYardmasterPanelTest {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();

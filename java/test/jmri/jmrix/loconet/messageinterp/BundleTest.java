@@ -2,7 +2,7 @@ package jmri.jmrix.loconet.messageinterp;
 
 import java.util.Locale;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.loconet.messageinterp.Bundle class.
@@ -33,9 +33,13 @@ public class BundleTest {
         Assert.assertEquals("Set Global (Track) Power to 'Force Idle, Broadcast Emergency STOP'.\n", Bundle.getMessage("LN_MSG_IDLE"));
     }
 
-    @Test
-    public void testBadKeyMessage() {
-        Assert.assertThrows(java.util.MissingResourceException.class, () -> Bundle.getMessage("FFFFFTTTTTTT"));
+    @Test public void testBadKeyMessage() {
+        try {
+            Bundle.getMessage("FFFFFTTTTTTT");
+        } catch (java.util.MissingResourceException e) {
+            return;
+        } // OK
+        Assert.fail("No exception thrown");
     }
 
     @Test public void testGoodKeyMessageArg() {
@@ -43,9 +47,13 @@ public class BundleTest {
         Assert.assertEquals("Request status of switch SystemName (UserName).\n", Bundle.getMessage("LN_MSG_SW_STATE", "SystemName", "UserName"));
     }
 
-    @Test
-    public void testBadKeyMessageArg() {
-        Assert.assertThrows(java.util.MissingResourceException.class, () -> Bundle.getMessage("FFFFFTTTTTTT", new Object[]{}));
+    @Test public void testBadKeyMessageArg() {
+        try {
+            Bundle.getMessage("FFFFFTTTTTTT", new Object[]{});
+        } catch (java.util.MissingResourceException e) {
+            return;
+        } // OK
+        Assert.fail("No exception thrown");
     }
 
     @Test public void testLocaleMessage() {

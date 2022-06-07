@@ -1,13 +1,13 @@
 package jmri.jmrix.loconet.hexfile;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 
 import jmri.*;
 import jmri.jmrix.debugthrottle.DebugThrottleManager;
 import jmri.jmrix.loconet.LnCommandStationType;
 import jmri.jmrix.loconet.LnPacketizer;
-import jmri.jmrix.loconet.LocoNetListener;
-import jmri.jmrix.loconet.LocoNetMessage;
 import jmri.managers.DefaultProgrammerManager;
 import jmri.util.JmriJFrame;
 
@@ -15,18 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Frame to inject LocoNet messages from a hex file and (optionally) mock a response to specific Discover
- * messages. This is a sample frame that drives a test App. It controls reading from a .hex file, feeding
- * the information to a LocoMonFrame (monitor) and connecting to a LocoGenFrame (for
- * manually sending commands). Pane includes a checkbox to turn on simulated replies, see {@link LnHexFilePort}.
- * Note that running a simulated LocoNet connection, {@link HexFileFrame#configure()} will substitute the
- * {@link jmri.progdebugger.ProgDebugger} for the {@link jmri.jmrix.loconet.LnOpsModeProgrammer}
- * overriding the readCV and writeCV methods.
+ * Frame to inject LocoNet messages from a hex file. This is a sample frame that
+ * drives a test App. It controls reading from a .hex file, feeding the
+ * information to a LocoMonFrame (monitor) and connecting to a LocoGenFrame (for
+ * sending a few commands).
  *
  * @author Bob Jacobsen Copyright 2001, 2002
- * @author Egbert Broerse 2017, 2021
+ * @author i18n Egbert Broerse 2017
  */
-public class HexFileFrame extends JmriJFrame implements LocoNetListener {
+public class HexFileFrame extends JmriJFrame {
 
     // member declarations
     javax.swing.JButton openHexFileButton = new javax.swing.JButton();
@@ -34,10 +31,8 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
     javax.swing.JButton jButton1 = new javax.swing.JButton();
     javax.swing.JTextField delayField = new javax.swing.JTextField(5);
     javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-    JCheckBox simReplyBox = new JCheckBox(Bundle.getMessage("SimReplyBox"));
-
-    private int maxSlots = 10;  //maximum addresses that can be acquired at once, this default will be overridden by config
-    private int slotsInUse = 0;
+    
+    private int connectedAddresses = 0;
 
     // to find and remember the log file
     final javax.swing.JFileChooser inputFileChooser;
@@ -82,8 +77,7 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
         jLabel1.setText(Bundle.getMessage("FieldDelay"));
         jLabel1.setVisible(true);
 
-        simReplyBox.setToolTipText(Bundle.getMessage("SimReplyTip"));
-        setTitle(Bundle.getMessage("TitleLocoNetSimulator", getAdapter().getUserName()));
+        setTitle(Bundle.getMessage("TitleLocoNetSimulator"));
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
         JPanel pane1 = new JPanel();
@@ -104,21 +98,30 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
         pane3.add(jButton1);
         getContentPane().add(pane3);
 
-        JPanel pane4 = new JPanel();
-        pane4.add(simReplyBox);
-        getContentPane().add(pane4);
-        InstanceManager.getOptionalDefault(UserPreferencesManager.class).ifPresent((prefMgr) -> {
-            simReplyBox.setSelected(prefMgr.getSimplePreferenceState("simReply"));
-            port.simReply(simReplyBox.isSelected()); // update state in adapter
+        openHexFileButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                openHexFileButtonActionPerformed(e);
+            }
         });
-
-        openHexFileButton.addActionListener(this::openHexFileButtonActionPerformed);
-        filePauseButton.addActionListener(this::filePauseButtonActionPerformed);
-        jButton1.addActionListener(this::jButton1ActionPerformed);
-        delayField.addActionListener(this::delayFieldActionPerformed);
-        simReplyBox.addActionListener(this::simReplyActionPerformed);
-
-        pack();
+        filePauseButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                filePauseButtonActionPerformed(e);
+            }
+        });
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                jButton1ActionPerformed(e);
+            }
+        });
+        delayField.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                delayFieldActionPerformed(e);
+            }
+        });
     }
 
     boolean connected = false;
@@ -126,8 +129,8 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
     @Override
     @InvokeOnGuiThread
     public void dispose() {
-        // leaves the LocoNet Packetizer (e.g. the simulated connection) running
-        // so that the application can keep pretending to run with the window closed.
+        // leaves the LocoNet Packetizer (e.g. the simulated connection)
+        // running so that the application can keep pretending to run with the window closed.
         super.dispose();
     }
 
@@ -170,42 +173,29 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
 
         // do the common manager config
         port.getSystemConnectionMemo().configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS100, // full featured by default
-                false, false, false, false);
+                false, false, false);
         port.getSystemConnectionMemo().configureManagers();
-        jmri.SensorManager sm = port.getSystemConnectionMemo().getSensorManager();
-        if (sm != null) {
-            if ( sm instanceof LnSensorManager) {
-                ((LnSensorManager) sm).setDefaultSensorState(port.getOptionState("SensorDefaultState")); // NOI18N
-            } else {
-                log.info("SensorManager referenced by port is not an LnSensorManager. Have not set the default sensor state.");
-            }
-        }
-        //get the maxSlots value from the connection options
-        try {
-            maxSlots = Integer.parseInt(port.getOptionState("MaxSlots"));
-        } catch (NumberFormatException e) {
-            //ignore missing or invalid option and leave at the default value
+        if (port.getSystemConnectionMemo().getSensorManager() instanceof LnSensorManager) {
+            LnSensorManager LnSensorManager = (LnSensorManager) port.getSystemConnectionMemo().getSensorManager();
+            LnSensorManager.setDefaultSensorState(port.getOptionState("SensorDefaultState")); // NOI18N
+        } else {
+            log.info("SensorManager referenced by port is not an LnSensorManager. Have not set the default sensor state.");
         }
 
         // Install a debug programmer, replacing the existing LocoNet one
-        // Note that this needs to be repeated for the DefaultManagers, if one is set to HexFile (Ln Sim)
-        // see jmri.jmrix.loconet.hexfile.HexFileSystemConnectionMemo
-        log.debug("HexFileFrame called");
         DefaultProgrammerManager ep = port.getSystemConnectionMemo().getProgrammerManager();
         port.getSystemConnectionMemo().setProgrammerManager(
                 new jmri.progdebugger.DebugProgrammerManager(port.getSystemConnectionMemo()));
         if (port.getSystemConnectionMemo().getProgrammerManager().isAddressedModePossible()) {
-            log.debug("replacing AddressedProgrammer in Hex");
             jmri.InstanceManager.store(port.getSystemConnectionMemo().getProgrammerManager(), jmri.AddressedProgrammerManager.class);
         }
         if (port.getSystemConnectionMemo().getProgrammerManager().isGlobalProgrammerAvailable()) {
-            log.debug("replacing GlobalProgrammer in Hex");
             jmri.InstanceManager.store(port.getSystemConnectionMemo().getProgrammerManager(), GlobalProgrammerManager.class);
         }
         jmri.InstanceManager.deregister(ep, jmri.AddressedProgrammerManager.class);
         jmri.InstanceManager.deregister(ep, jmri.GlobalProgrammerManager.class);
 
-        // Install a debug throttle manager and override
+        // Install a debug throttle manager and override 
         DebugThrottleManager tm = new DebugThrottleManager(port.getSystemConnectionMemo() ) {
             /**
              * Only address 128 and above can be a long address
@@ -222,34 +212,28 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
                     failedThrottleRequest(a, "LocoAddress " + a + " is not a DccLocoAddress");
                     return;
                 }
+                connectedAddresses++;
                 DccLocoAddress address = (DccLocoAddress) a;
-
-                //check for slot limit exceeded
-                if (slotsInUse >= maxSlots) {
-                    log.warn("SLOT MAX of {} reached. Throttle {} not added. Current slotsInUse={}", maxSlots, a, slotsInUse);
-                    failedThrottleRequest(address, "SLOT MAX of " + maxSlots + " reached");
+                //create some testing situations
+                if (connectedAddresses > 5) {
+                    log.warn("SLOT MAX of 5 exceeded");
+                    failedThrottleRequest(address, "SLOT MAX of 5 exceeded");
                     return;
                 }
-
-                slotsInUse++;
-                log.debug("Throttle {} requested. slotsInUse={}, maxSlots={}", a, slotsInUse, maxSlots);
+                // otherwise, continue with setup
                 super.requestThrottleSetup(a, control);
             }
 
             @Override
             public boolean disposeThrottle(DccThrottle t, jmri.ThrottleListener l) {
-                if (slotsInUse > 0) slotsInUse--;
-                log.debug("Throttle {} disposed. slotsInUse={}, maxSlots={}", t, slotsInUse, maxSlots);
+                connectedAddresses--;
                 return super.disposeThrottle(t, l);
-            }
+            }    
         };
 
         port.getSystemConnectionMemo().setThrottleManager(tm);
         jmri.InstanceManager.setThrottleManager(
                 port.getSystemConnectionMemo().getThrottleManager());
-
-        // start listening for messages
-        port.getSystemConnectionMemo().getLnTrafficController().addLocoNetListener(~0, this);
 
         // start operation of packetizer
         packets.startThreads();
@@ -257,30 +241,20 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
         sourceThread.start();
     }
 
+    @SuppressWarnings("deprecation")  // Thread.suspend() not being removed
     public void filePauseButtonActionPerformed(java.awt.event.ActionEvent e) {
-        port.suspendReading(true);
+        sourceThread.suspend();
     }
 
+    @SuppressWarnings("deprecation")  // Thread.resume() not being removed
     public void jButton1ActionPerformed(java.awt.event.ActionEvent e) {  // resume button
-        port.suspendReading(false);
+        sourceThread.resume();
     }
 
     public void delayFieldActionPerformed(java.awt.event.ActionEvent e) {
         // if the hex file has been started, change its delay
         if (port != null) {
             port.setDelay(Integer.parseInt(delayField.getText()));
-        }
-    }
-
-    @Override
-    public synchronized void message(LocoNetMessage m) {
-        //log.debug("HexFileFrame heard message {}", m.toMonitorString());
-        if (port.simReply()) {
-            LocoNetMessage reply = LnHexFilePort.generateReply(m);
-            if (reply != null) {
-                packets.sendLocoNetMessage(reply);
-                //log.debug("message reply forwarded to port");
-            }
         }
     }
 
@@ -294,13 +268,6 @@ public class HexFileFrame extends JmriJFrame implements LocoNetListener {
         return port;
     }
     private LnHexFilePort port = null;
-
-    public void simReplyActionPerformed(java.awt.event.ActionEvent e) {  // resume button
-        port.simReply(simReplyBox.isSelected());
-        InstanceManager.getOptionalDefault(UserPreferencesManager.class).ifPresent((prefMgr) -> {
-            prefMgr.setSimplePreferenceState("simReply", simReplyBox.isSelected());
-        });
-    }
 
     private final static Logger log = LoggerFactory.getLogger(HexFileFrame.class);
 

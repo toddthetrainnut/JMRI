@@ -57,7 +57,7 @@ public class CopyRosterItemAction extends AbstractRosterItemAction {
         log.debug("doTransfer starts");
 
         // ensure preferences will be found
-        FileUtil.createDirectory(Roster.getDefault().getRosterFilesLocation());
+        FileUtil.createDirectory(LocoFile.getFileLocation());
 
         // locate the file
         //File f = new File(mFullFromFilename);
@@ -67,7 +67,7 @@ public class CopyRosterItemAction extends AbstractRosterItemAction {
         try {
             lroot = lf.rootFromName(mFullFromFilename);
         } catch (Exception e) {
-            log.error("Exception while loading loco XML file: {}", mFullFromFilename, e);
+            log.error("Exception while loading loco XML file: " + mFullFromFilename + " exception: " + e);
             return false;
         }
 
@@ -83,7 +83,7 @@ public class CopyRosterItemAction extends AbstractRosterItemAction {
 
         // transfer the contents to a new file
         LocoFile newLocoFile = new LocoFile();
-        File fout = new File(Roster.getDefault().getRosterFilesLocation() + mToEntry.getFileName());
+        File fout = new File(LocoFile.getFileLocation() + mToEntry.getFileName());
         newLocoFile.writeFile(fout, lroot, mToEntry);
 
         return true;

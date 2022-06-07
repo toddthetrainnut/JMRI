@@ -9,7 +9,6 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import jmri.DccThrottle;
 import jmri.LocoAddress;
-import jmri.Throttle;
 import jmri.jmrit.roster.RosterEntry;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -99,15 +98,15 @@ public class SpeedPanel extends JInternalFrame implements java.beans.PropertyCha
      */
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
-        if (e.getPropertyName().equals(Throttle.SPEEDSETTING)) {
+        if (e.getPropertyName().equals("SpeedSetting")) {
             currentThrottleVol = ((Float) e.getNewValue()).floatValue();
             scaleSpeedLabel.setText(updateSpeedLabel(useSpeedProfile, currentThrottleVol, currentIsForward));
-        } else if (e.getPropertyName().equals(Throttle.ISFORWARD)) {
+        } else if (e.getPropertyName().equals("IsForward")) {
             currentIsForward = (boolean) e.getNewValue();
             scaleSpeedLabel.setText(updateSpeedLabel(useSpeedProfile, currentThrottleVol, currentIsForward));
         }
         if (log.isDebugEnabled()) {
-            log.debug("Property change event received {} / {}", e.getPropertyName(), e.getNewValue());
+            log.debug("Property change event received " + e.getPropertyName() + " / " + e.getNewValue());
         }
     }
 
@@ -151,7 +150,7 @@ public class SpeedPanel extends JInternalFrame implements java.beans.PropertyCha
         this.throttle.addPropertyChangeListener(this);
         if (log.isDebugEnabled()) {
             jmri.DccLocoAddress Address = (jmri.DccLocoAddress) throttle.getLocoAddress();
-            log.debug("new address is {}", Address.toString());
+            log.debug("new address is " + Address.toString());
         }
 
         useSpeedProfile = false;  //posit false
@@ -211,5 +210,5 @@ public class SpeedPanel extends JInternalFrame implements java.beans.PropertyCha
     }
 
     // initialize logging
-    private final static Logger log = LoggerFactory.getLogger(SpeedPanel.class);
+    private final static Logger log = LoggerFactory.getLogger(ControlPanel.class);
 }

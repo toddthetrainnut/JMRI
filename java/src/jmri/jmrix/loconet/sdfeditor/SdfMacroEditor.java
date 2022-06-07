@@ -82,8 +82,6 @@ public abstract class SdfMacroEditor extends JPanel {
 
     /**
      * Return an editor object for a SdfMacro type.
-     * @param inst macro instance.
-     * @return editor according to macro type.
      */
     static public SdfMacroEditor attachEditor(SdfMacro inst) {
 

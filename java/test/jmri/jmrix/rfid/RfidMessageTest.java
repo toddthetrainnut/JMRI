@@ -1,33 +1,36 @@
 package jmri.jmrix.rfid;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * RfidMessageTest.java
- * <p>
- * Test for the jmri.jmrix.rfid.RfidMessage class
  *
- * @author Paul Bender Copyright (C) 2012,2016
+ * Description:	tests for the jmri.jmrix.rfid.RfidMessage class
+ *
+ * @author	Paul Bender Copyright (C) 2012,2016
  */
 public class RfidMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
-    @BeforeEach
-    @Override
+
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        m = new RfidMessage(20) {
-            @Override
-            public String toMonitorString() {
-                return "";
-            }
+        m = new RfidMessage(20){
+           @Override
+           public String toMonitorString(){
+               return "";
+           }
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = null;
+	m = null;
         JUnitUtil.tearDown();
     }
 

@@ -1,14 +1,11 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-import jmri.SpeedStepMode;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class Ib1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
 
@@ -36,8 +33,8 @@ public class Ib1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     @Test
     @Override
     public void testGetSpeedStepMode() {
-        SpeedStepMode expResult = SpeedStepMode.NMRA_DCC_28;
-        SpeedStepMode result = instance.getSpeedStepMode();
+        int expResult = 2;
+        int result = instance.getSpeedStepMode();
         Assert.assertEquals(expResult, result);
     }
 
@@ -59,9 +56,9 @@ public class Ib1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     @Override
     public void testGetSpeed_float() {
         // set speed step mode to 128.
-        instance.setSpeedStepMode(jmri.SpeedStepMode.NMRA_DCC_128);
+        instance.setSpeedStepMode(jmri.DccThrottle.SpeedStepMode128);
         Assert.assertEquals("Full Speed", 127, ((LocoNetThrottle)instance).intSpeed(1.0F));
-        float incre = 1.0f / 126.0f;
+        float incre = 0.007874016f;
         float speed = incre;
         // Cannot get speeedStep 1. range is 2 to 127
         int i = 2;
@@ -413,7 +410,7 @@ public class Ib1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
         Assert.assertEquals(expResult, result);
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -425,7 +422,7 @@ public class Ib1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
         instance = new Ib1Throttle(memo,new LocoNetSlot(5));
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         ((Ib1ThrottleManager)jmri.InstanceManager.getDefault(jmri.ThrottleManager.class)).dispose();

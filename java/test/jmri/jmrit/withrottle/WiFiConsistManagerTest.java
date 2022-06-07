@@ -1,24 +1,24 @@
 package jmri.jmrit.withrottle;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of WiFiConsistManager
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class WiFiConsistManagerTest extends jmri.implementation.AbstractConsistManagerTestBase {
 
-    @Test
+    @Test(expected=NullPointerException.class)
     public void testCTorThrowsNPE() {
-        JUnitUtil.resetInstanceManager();
-        Assert.assertThrows(NullPointerException.class, () -> new WiFiConsistManager());
+        JUnitUtil.setUp();
+        cm = new WiFiConsistManager();
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -26,7 +26,7 @@ public class WiFiConsistManagerTest extends jmri.implementation.AbstractConsistM
         cm = new WiFiConsistManager();
     }
     
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         JUnitUtil.tearDown();

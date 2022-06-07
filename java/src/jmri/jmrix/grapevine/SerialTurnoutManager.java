@@ -1,7 +1,5 @@
 package jmri.jmrix.grapevine;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
 import jmri.JmriException;
 import jmri.Turnout;
 import jmri.managers.AbstractTurnoutManager;
@@ -18,48 +16,45 @@ import org.slf4j.LoggerFactory;
  */
 public class SerialTurnoutManager extends AbstractTurnoutManager {
 
-    public SerialTurnoutManager(GrapevineSystemConnectionMemo memo) {
-        super(memo);
+    GrapevineSystemConnectionMemo memo = null;
+
+    public SerialTurnoutManager(GrapevineSystemConnectionMemo _memo) {
+       memo = _memo;
     }
 
     /**
-     * {@inheritDoc}
+     * Return the Grapevine system prefix.
      */
     @Override
-    @Nonnull
-    public GrapevineSystemConnectionMemo getMemo() {
-        return (GrapevineSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return memo.getSystemPrefix();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
-        String prefix = getSystemPrefix();
+    public Turnout createNewTurnout(String systemName, String userName) {
+        String prefix = memo.getSystemPrefix();
         // validate the system name, and normalize it
         String sName = SerialAddress.normalizeSystemName(systemName, prefix);
-        if (sName.isEmpty()) {
+        if (sName.equals("")) {
             // system name is not valid
-            throw new IllegalArgumentException("Cannot create System Name from " + systemName);
+            return null;
         }
         // does this turnout already exist
         Turnout t = getBySystemName(sName);
         if (t != null) {
-            return t;
+            return null;
         }
         // check under alternate name
         String altName = SerialAddress.convertSystemNameToAlternate(sName, prefix);
         t = getBySystemName(altName);
         if (t != null) {
-            return t;
+            return null;
         }
         // create the turnout
-        t = new SerialTurnout(sName, userName, getMemo());
+        t = new SerialTurnout(sName, userName, memo);
 
         // does system name correspond to configured hardware
-        if (!SerialAddress.validSystemNameConfig(sName, 'T', getMemo().getTrafficController())) {
+        if (!SerialAddress.validSystemNameConfig(sName, 'T', memo.getTrafficController())) {
             // system name does not correspond to configured hardware
             log.warn("Turnout '{}' refers to an undefined Serial Node.", sName);
         }
@@ -67,14 +62,23 @@ public class SerialTurnoutManager extends AbstractTurnoutManager {
         return t;
     }
 
+    /**
+     *
+     * @deprecated  Since JMRI 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
+     */
+    @Deprecated
+    static public SerialTurnoutManager instance() {
+        return null;
+    }
+
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return false; // Turnout address format is more than a simple number.
     }
 
     /** {@inheritDoc} */
     @Override
-    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException {
+    public String createSystemName(String curAddress, String prefix) throws JmriException {
         String tmpSName = prefix + "T" + curAddress;
 
         if (curAddress.contains(":")) {
@@ -105,25 +109,62 @@ public class SerialTurnoutManager extends AbstractTurnoutManager {
         return (tmpSName);
     }
 
-    private int nCard = 0;
-    private int bitNum = 0;
-    private int nNode = 0;
+    int nCard = 0;
+    int bitNum = 0;
+    int nNode = 0;
 
     /**
-     * {@inheritDoc}
+     * Return the next valid free turnout hardware address.
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull Locale locale) {
-        return SerialAddress.validateSystemNameFormat(name, this, locale);
+    public String getNextValidAddress(String curAddress, String prefix) throws JmriException {
+
+        String tmpSName = "";
+        try {
+            tmpSName = createSystemName(curAddress, prefix);
+        } catch (JmriException ex) {
+            throw ex;
+        }
+
+        // If the hardware address passed does not already exist then this can
+        // be considered the next valid address.
+        Turnout t = getBySystemName(tmpSName);
+        if (t == null) {
+            return Integer.toString(nNode) + Integer.toString((nCard + bitNum));
+            //return ""+nNode+(nCard+bitNum);
+        }
+
+        // The Number of Output Bits of the previous turnout will help determine the next
+        // valid address.
+        bitNum = bitNum + t.getNumberOutputBits();
+        // Check to determine if the systemName is in use, return null if it is,
+        // otherwise return the next valid address.
+        tmpSName = prefix + "T" + nNode + (nCard + bitNum);
+        t = getBySystemName(tmpSName);
+        if (t != null) {
+            for (int x = 1; x < 10; x++) {
+                bitNum = bitNum + t.getNumberOutputBits();
+                tmpSName = prefix + "T" + nNode + (nCard + bitNum);
+                t = getBySystemName(tmpSName);
+                if (t == null) {
+                    return Integer.toString(nNode) + Integer.toString((nCard + bitNum));
+                }
+            }
+            return null;
+        } else {
+            return Integer.toString(nNode) + Integer.toString((nCard + bitNum));
+        }
     }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format.
+     *
+     * @return 'true' if system name has a valid format,
+     * else returns 'false'
      */
     @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
-        return SerialAddress.validSystemNameFormat(systemName, typeLetter(), getSystemPrefix());
+    public NameValidity validSystemNameFormat(String systemName) {
+        return (SerialAddress.validSystemNameFormat(systemName, 'T', getSystemPrefix()));
     }
 
     /**

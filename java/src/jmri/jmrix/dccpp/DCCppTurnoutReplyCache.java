@@ -49,7 +49,9 @@ public class DCCppTurnoutReplyCache implements DCCppListener {
         }
         try {
             if (messageCache[pNumber] != null) {
-                log.debug("Message for turnout {} cached.", pNumber);
+                if (log.isDebugEnabled()) {
+                    log.debug("Message for turnout " + pNumber + " cached.");
+                }
                 turnout.message(messageCache[pNumber]);
             } else {
   // TODO: Make sure this doesn't break under a no-feedback model.
@@ -95,15 +97,17 @@ public class DCCppTurnoutReplyCache implements DCCppListener {
     // listen for turnouts, creating them as needed
     @Override
     synchronized public void message(DCCppReply l) {
+        if (log.isDebugEnabled()) {
+            log.debug("received message: " + l);
+        }
         if (l.isTurnoutReply()) {
-            log.debug("received message: {}", l);
-            // cache the message for later requests
-            messageCache[l.getTOIDInt()] = l;
-            messagePending[l.getTOIDInt()] = false;
+     // cache the message for later requests
+     messageCache[l.getTOIDInt()] = l;
+     messagePending[l.getTOIDInt()] = false;
         }
     }
 
-    // Listen for the outgoing messages (to the command station)
+    // listen for the messages to the LI100/LI101
     @Override
     public void message(DCCppMessage l) {
     }
@@ -111,7 +115,9 @@ public class DCCppTurnoutReplyCache implements DCCppListener {
     // Handle a timeout notification
     @Override
     public void notifyTimeout(DCCppMessage msg) {
-        log.debug("Notified of timeout on message '{}'", msg);
+        if (log.isDebugEnabled()) {
+            log.debug("Notified of timeout on message" + msg.toString());
+        }
     }
 
     private final static Logger log = LoggerFactory.getLogger(DCCppTurnoutReplyCache.class);

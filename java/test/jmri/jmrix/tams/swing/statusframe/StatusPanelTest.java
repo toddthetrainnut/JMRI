@@ -1,14 +1,15 @@
 package jmri.jmrix.tams.swing.statusframe;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of StatusPanel
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class StatusPanelTest {
 
@@ -19,11 +20,11 @@ public class StatusPanelTest {
         Assert.assertNotNull("exists", action);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {        JUnitUtil.tearDown();    }
 }

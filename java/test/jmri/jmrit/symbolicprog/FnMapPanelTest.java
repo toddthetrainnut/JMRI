@@ -1,19 +1,18 @@
 package jmri.jmrit.symbolicprog;
 
 import java.util.List;
-
 import javax.swing.JLabel;
-
 import jmri.util.JUnitUtil;
-
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Base for tests of classes inheriting from FnMapPanel abstract class
  *
- * @author Bob Jacobsen, Copyright 2009
+ * @author	Bob Jacobsen, Copyright 2009
  */
 public class FnMapPanelTest {
 
@@ -48,13 +47,14 @@ public class FnMapPanelTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.initDebugProgrammerManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

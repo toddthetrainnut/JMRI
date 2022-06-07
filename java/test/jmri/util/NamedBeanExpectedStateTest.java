@@ -3,11 +3,12 @@ package jmri.util;
 import jmri.InstanceManager;
 import jmri.Sensor;
 import jmri.SensorManager;
-
-import org.junit.jupiter.api.AfterAll;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -18,21 +19,21 @@ public class NamedBeanExpectedStateTest {
     public NamedBeanExpectedStateTest() {
     }
 
-    @BeforeAll
+    @BeforeClass
     public static void setUpClass() {
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDownClass() {
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

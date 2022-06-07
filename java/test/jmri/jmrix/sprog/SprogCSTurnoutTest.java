@@ -1,9 +1,10 @@
 package jmri.jmrix.sprog;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for SprogCSTurnout.
@@ -39,8 +40,9 @@ public class SprogCSTurnoutTest extends jmri.implementation.AbstractTurnoutTestB
         Assert.assertEquals("controller listeners remaining", 1, numListeners());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
@@ -58,11 +60,9 @@ public class SprogCSTurnoutTest extends jmri.implementation.AbstractTurnoutTestB
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         m.getSlotThread().interrupt();
-        m.dispose();
-        JUnitUtil.waitFor(() -> { return !m.getSlotThread().isAlive(); });
         stcs.dispose();
         JUnitUtil.tearDown();
     }

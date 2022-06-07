@@ -3,8 +3,9 @@ package jmri.jmrix.oaktree;
 import jmri.Manager.NameValidity;
 import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
@@ -16,7 +17,7 @@ import org.junit.Assert;
 public class SerialAddressTest {
 
     @Test
-    public void testValidSystemNameFormat() {
+    public void testValidateSystemNameFormat() {
         Assert.assertTrue("valid format - OL2",
                 NameValidity.VALID == SerialAddress.validSystemNameFormat("OL2", 'L', "O"));
         Assert.assertTrue("valid format - OL0B2",
@@ -226,18 +227,16 @@ public class SerialAddressTest {
 
     private OakTreeSystemConnectionMemo memo = null;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new OakTreeSystemConnectionMemo();
         memo.setTrafficController(new SerialTrafficControlScaffold(memo)); // important for successful getTrafficController()
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

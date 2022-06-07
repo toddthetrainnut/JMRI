@@ -2,9 +2,10 @@ package jmri.progdebugger;
 
 import jmri.ProgListener;
 import jmri.Programmer;
-
+import org.junit.Test;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,17 +25,17 @@ public class DebugProgrammerTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
         };
         p.writeCV("4", 12, l);
         waitReply();
-        log.debug("readValue is {}", readValue);
+        log.debug("readValue is " + readValue);
         p.readCV("4", l);
         waitReply();
-        log.debug("readValue is {}", readValue);
+        log.debug("readValue is " + readValue);
         Assert.assertEquals("read back", 12, readValue);
     }
 
@@ -53,7 +54,7 @@ public class DebugProgrammerTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -77,12 +78,12 @@ public class DebugProgrammerTest {
         replied = false;
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

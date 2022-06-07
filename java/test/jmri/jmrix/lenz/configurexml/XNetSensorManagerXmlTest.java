@@ -1,14 +1,15 @@
 package jmri.jmrix.lenz.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * XNetSensorManagerXmlTest.java
  *
- * Test for the XNetSensorManagerXml class
+ * Description: tests for the XNetSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class XNetSensorManagerXmlTest {
       Assert.assertNotNull("XNetSensorManagerXml constructor",new XNetSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -5,17 +5,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-
 import javax.swing.JComboBox;
-
-import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.InstanceManagerAutoDefault;
 import jmri.InstanceManagerAutoInitialize;
-import jmri.beans.PropertyChangeSupport;
 import jmri.jmrit.operations.locations.Location;
 import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.operations.locations.LocationManagerXml;
@@ -23,6 +16,9 @@ import jmri.jmrit.operations.locations.Track;
 import jmri.jmrit.operations.rollingstock.cars.CarRoads;
 import jmri.jmrit.operations.rollingstock.cars.CarTypes;
 import jmri.jmrit.operations.setup.Control;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages schedules.
@@ -30,7 +26,7 @@ import jmri.jmrit.operations.setup.Control;
  * @author Bob Jacobsen Copyright (C) 2003
  * @author Daniel Boudreau Copyright (C) 2008, 2013
  */
-public class ScheduleManager extends PropertyChangeSupport implements InstanceManagerAutoDefault, InstanceManagerAutoInitialize, PropertyChangeListener {
+public class ScheduleManager implements InstanceManagerAutoDefault, InstanceManagerAutoInitialize, PropertyChangeListener {
 
     public static final String LISTLENGTH_CHANGED_PROPERTY = "scheduleListLength"; // NOI18N
 
@@ -38,6 +34,18 @@ public class ScheduleManager extends PropertyChangeSupport implements InstanceMa
     }
 
     private int _id = 0;
+
+    /**
+     * Get the default instance of this class.
+     *
+     * @return the default instance of this class
+     * @deprecated since 4.9.2; use
+     * {@link jmri.InstanceManager#getDefault(java.lang.Class)} instead
+     */
+    @Deprecated
+    public static synchronized ScheduleManager instance() {
+        return InstanceManager.getDefault(ScheduleManager.class);
+    }
 
     public void dispose() {
         _scheduleHashTable.clear();
@@ -309,9 +317,9 @@ public class ScheduleManager extends PropertyChangeSupport implements InstanceMa
         JComboBox<LocationTrackPair> box = new JComboBox<>();
         // search all spurs for that use schedule
         for (Location location : InstanceManager.getDefault(LocationManager.class).getLocationsByNameList()) {
-            for (Track spur : location.getTracksByNameList(Track.SPUR)) {
+            for (Track spur : location.getTrackByNameList(Track.SPUR)) {
                 if (spur.getScheduleId().equals(schedule.getId())) {
-                    LocationTrackPair ltp = new LocationTrackPair(spur);
+                    LocationTrackPair ltp = new LocationTrackPair(location, spur);
                     box.addItem(ltp);
                 }
             }
@@ -355,10 +363,20 @@ public class ScheduleManager extends PropertyChangeSupport implements InstanceMa
         }
     }
 
+    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
+
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
     protected void setDirtyAndFirePropertyChange(String p, Object old, Object n) {
         // set dirty
         InstanceManager.getDefault(LocationManagerXml.class).setDirty(true);
-        firePropertyChange(p, old, n);
+        pcs.firePropertyChange(p, old, n);
     }
 
     private final static Logger log = LoggerFactory.getLogger(ScheduleManager.class);

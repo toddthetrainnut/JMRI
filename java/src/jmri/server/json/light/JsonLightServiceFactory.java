@@ -17,17 +17,17 @@ public class JsonLightServiceFactory implements JsonServiceFactory<JsonLightHttp
 
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{LIGHT, LIGHTS};
     }
 
     @Override
-    public JsonLightSocketService getSocketService(JsonConnection connection, String version) {
+    public JsonLightSocketService getSocketService(JsonConnection connection) {
         return new JsonLightSocketService(connection);
     }
 
     @Override
-    public JsonLightHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonLightHttpService getHttpService(ObjectMapper mapper) {
         return new JsonLightHttpService(mapper);
     }
 

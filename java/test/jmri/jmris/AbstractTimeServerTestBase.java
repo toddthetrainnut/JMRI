@@ -1,11 +1,9 @@
 package jmri.jmris;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Common tests for classes derived from jmri.jmris.AbstractTimeServer class
@@ -18,7 +16,7 @@ abstract public class AbstractTimeServerTestBase {
 
     @Test
     public void testCtor() {
-        assertThat(a).isNotNull();
+        Assert.assertNotNull(a);
     }
 
     @Test
@@ -26,15 +24,18 @@ abstract public class AbstractTimeServerTestBase {
         jmri.Timebase t = jmri.InstanceManager.getDefault(jmri.Timebase.class);
         int n = t.getMinuteChangeListeners().length;
         a.listenToTimebase(true);
-        assertThat(t.getMinuteChangeListeners().length).withFailMessage("added listener").isEqualTo(n + 1);
+        Assert.assertEquals("added listener", n + 1, t.getMinuteChangeListeners().length);
         a.listenToTimebase(false);
-        assertThat(t.getMinuteChangeListeners().length).withFailMessage("removed listener").isEqualTo(n);
+        Assert.assertEquals("removed listener", n, t.getMinuteChangeListeners().length);
     }
 
     @Test
     public void sendErrorStatusTest() {
-        Throwable thrown = catchThrowable( () -> a.sendErrorStatus());
-        assertThat(thrown).withFailMessage("failed sending status").isNull();
+        try {
+            a.sendErrorStatus();
+        } catch (java.io.IOException ioe) {
+            Assert.fail("failed sending status");
+        }
         confirmErrorStatusSent();
     }
 
@@ -45,8 +46,11 @@ abstract public class AbstractTimeServerTestBase {
 
     @Test
     public void sendStatusTest() {
-        Throwable thrown = catchThrowable( () -> a.sendErrorStatus());
-        assertThat(thrown).withFailMessage("failed sending status").isNull();
+        try {
+            a.sendErrorStatus();
+        } catch (java.io.IOException ioe) {
+            Assert.fail("failed sending status");
+        }
         confirmStatusSent();
     }
 
@@ -68,21 +72,21 @@ abstract public class AbstractTimeServerTestBase {
      * confirm the timebase was started; class under test may send client status
      */
     public void confirmTimeStarted() {
-        assertThat(jmri.InstanceManager.getDefault(jmri.Timebase.class).getRun()).withFailMessage("Timebase started").isTrue();
+        Assert.assertTrue("Timebase started", jmri.InstanceManager.getDefault(jmri.Timebase.class).getRun());
     }
 
     /**
      * confirm the timebase was stoped; class under test may send client status
      */
     public void confirmTimeStopped() {
-        assertThat(jmri.InstanceManager.getDefault(jmri.Timebase.class).getRun()).withFailMessage("Timebase stopped").isFalse();
+        Assert.assertFalse("Timebase stopped", jmri.InstanceManager.getDefault(jmri.Timebase.class).getRun());
     }
 
-    @BeforeEach
+    @Before
     // derived classes must configure the TimeServer variable (a)
     abstract public void setUp();
 
-    @AfterEach
+    @After
     // derived classes must clean up the TimeServer variable (a)
     abstract public void tearDown();
 

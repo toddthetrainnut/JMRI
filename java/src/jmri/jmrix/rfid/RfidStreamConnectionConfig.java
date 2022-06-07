@@ -21,7 +21,6 @@ public class RfidStreamConnectionConfig extends jmri.jmrix.AbstractStreamConnect
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p stream port controller.
      */
     public RfidStreamConnectionConfig(jmri.jmrix.AbstractStreamPortController p) {
         super(p);

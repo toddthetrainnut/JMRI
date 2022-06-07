@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * "current value gt 3".
  * <p>
  * You can also check whether the value "exists" (value of 1) or not (value of
- * 0). Comparisons with the value of a non-existent variable always fail.
+ * 0). Comparisons with the value of a non-existant variable always fail.
  *
  * @author Bob Jacobsen Copyright (C) 2010, 2014
  *
@@ -49,7 +49,7 @@ public abstract class ArithmeticQualifier extends AbstractQualifier {
         super(watchedVal);
 
         this.test = Test.decode(relation);
-        this.value = Integer.toUnsignedLong(value);
+        this.value = value;
     }
 
     @Override
@@ -58,37 +58,28 @@ public abstract class ArithmeticQualifier extends AbstractQualifier {
             return valueOfExistsLogic();
         }
 
-        return availableStateFromValue(watchedVal.getLongValue());
+        return availableStateFromValue(watchedVal.getIntValue());
     }
 
     @Override
-    protected boolean availableStateFromValue(Object now) {
+    protected boolean availableStateFromValue(int now) {
         if (returnFromExistsLogic()) {
             return valueOfExistsLogic();
         }
 
-        long nowVal = 0;
-        if (now instanceof Integer) {
-            nowVal = Integer.toUnsignedLong((int) now);
-        } else if (now instanceof Long) {
-            nowVal = (Long) now;
-        }
-
-        int compare = Long.compareUnsigned(nowVal, value);
-
         switch (test) {
             case GE:
-                return compare >= 0;
+                return now >= value;
             case LE:
-                return compare <= 0;
+                return now <= value;
             case GT:
-                return compare > 0;
+                return now > value;
             case LT:
-                return compare < 0;
+                return now < value;
             case EQ:
-                return compare == 0;
+                return now == value;
             case NE:
-                return compare != 0;
+                return now != value;
             default:
                 log.error("Unexpected switch value: {}", test);
                 return false;
@@ -101,7 +92,7 @@ public abstract class ArithmeticQualifier extends AbstractQualifier {
         setWatchedAvailable(currentDesiredState());
     }
 
-    long value;
+    int value;
 
     private boolean returnFromExistsLogic() {
         if (test == Test.EXISTS) {
@@ -125,16 +116,16 @@ public abstract class ArithmeticQualifier extends AbstractQualifier {
             }
             return false;
         }
-        // here it's an arithmetic op on a variable
+        // here it's an arithmetic op on a variable  
         if (watchedVal == null) {
             if (!warnedDoesntExist) {
                 warnedDoesntExist = true;
-                log.error("Arithmetic {} operation when watched value doesn't exist", test);
+                log.error("Arithmetic " + test + " operation when watched value doesn't exist");
             }
             return true;  // this determines default for what happens when qualifier (watched) Variable isn't present
         }
         return false;  // should never be reached, because should only be invoked after returnFromExistsLogic() == true
     }
 
-    private final static Logger log = LoggerFactory.getLogger(ArithmeticQualifier.class);
+    private final static Logger log = LoggerFactory.getLogger(VariableTableModel.class);
 }

@@ -1,6 +1,8 @@
 package jmri.jmrit.tracker;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import jmri.Block;
 import jmri.InstanceManager;
@@ -9,7 +11,7 @@ import jmri.MemoryManager;
 /**
  * Tests for the MemoryTracker class
  *
- * @author Bob Jacobsen Copyright (C) 2006
+ * @author	Bob Jacobsen Copyright (C) 2006
  */
 public class MemoryTrackerTest {
 
@@ -22,12 +24,12 @@ public class MemoryTrackerTest {
         new MemoryTracker(new Block("dummy"), "");
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

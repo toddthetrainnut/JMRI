@@ -1,17 +1,18 @@
 package jmri.jmrix.roco.z21.simulator;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Z21SimulatorLocoDataTest.java
  * 
- * Test for the jmri.jmrix.roco.z21.simulator.z21SimulatorLocoData
+ * Description:	tests for the jmri.jmrix.roco.z21.simulator.z21SimulatorLocoData
  * class
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class Z21SimulatorLocoDataTest {
         
@@ -39,12 +40,13 @@ public class Z21SimulatorLocoDataTest {
         Assert.assertEquals("speed byte",0x03,a.getSpeed());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

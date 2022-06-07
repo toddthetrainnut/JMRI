@@ -40,12 +40,6 @@
         <authorinitials>PŠ</authorinitials>
         <revremark>Aspect 26 Unlit</revremark>
     </revision>    
-    <revision>
-        <revnumber>4</revnumber>
-        <date>2020-08-25</date>
-        <authorinitials>PŠ</authorinitials>
-        <revremark>Panel indicators JOP, Speed names</revremark>
-    </revision>    
   </revhistory>
 
   <aspects>
@@ -99,7 +93,7 @@
       <reference>Aspect 16</reference>
       <comment>Očekávejte rychlost 40 km/h</comment>
       <speed>Normal</speed>
-      <speed2>Slow</speed2>
+      <speed2>40 km/h</speed2>
       <route>Normal</route>
       <dccAspect>3</dccAspect>
     </aspect>
@@ -112,7 +106,7 @@
       <reference>Aspect 16</reference>
       <comment>Očekávejte rychlost 60 km/h</comment>
       <speed>Normal</speed>
-      <speed2>Medium</speed2>
+      <speed2>60 km/h</speed2>
       <route>Normal</route>
       <dccAspect>4</dccAspect>
     </aspect>
@@ -125,7 +119,7 @@
       <reference>Aspect 12</reference>
       <comment>Očekávejte rychlost 80 km/h</comment>
       <speed>Normal</speed>
-      <speed2>Limited</speed2>
+      <speed2>80 km/h</speed2>
       <route>Normal</route>
       <dccAspect>5</dccAspect>
     </aspect>
@@ -137,7 +131,7 @@
       <description>Lower light yellow, upper light green</description>
       <reference>Aspect 11</reference>
       <comment>Rychlost 40 km/h, potom volno</comment>
-      <speed>Slow</speed>
+      <speed>40 km/h</speed>
       <speed2>Normal</speed2>
       <route>Diverging</route>
       <dccAspect>6</dccAspect>
@@ -150,7 +144,7 @@
       <description>Lower light yellow, upper light yellow</description>
       <reference>Aspect 23</reference>
       <comment>Rychlost 40 km/h a výstraha</comment>
-      <speed>Slow</speed>
+      <speed>40 km/h</speed>
       <speed2>Stop</speed2>
       <route>Diverging</route>
       <dccAspect>7</dccAspect>
@@ -163,8 +157,8 @@
       <description>Lower light yellow, upper light yellow flashing</description>
       <reference>Aspect 19</reference>
       <comment>Rychlost 40 km/h, potom 40 km/h</comment>
-      <speed>Slow</speed>
-      <speed2>Slow</speed2>
+      <speed>40 km/h</speed>
+      <speed2>40 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>8</dccAspect>
     </aspect>
@@ -176,8 +170,8 @@
       <description>Lower light yellow, upper light yellow quickly flashing</description>
       <reference>Aspect 19</reference>
       <comment>Rychlost 40 km/h, potom 60 km/h</comment>
-      <speed>Slow</speed>
-      <speed2>Medium</speed2>
+      <speed>40 km/h</speed>
+      <speed2>60 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>9</dccAspect>
     </aspect>
@@ -189,8 +183,8 @@
       <description>Lower light yellow, upper light green flashing</description>
       <reference>Aspect 15</reference>
       <comment>Rychlost 40 km/h, potom 80 km/h</comment>
-      <speed>Slow</speed>
-      <speed2>Limited</speed2>
+      <speed>40 km/h</speed>
+      <speed2>80 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>10</dccAspect>
     </aspect>
@@ -202,7 +196,7 @@
       <description>Lower light yellow with yellow strip, upper light green</description>
       <reference>Aspect 10</reference>
       <comment>Rychlost 60 km/h, potom volno</comment>
-      <speed>Medium</speed>
+      <speed>60 km/h</speed>
       <speed2>Normal</speed2>
       <route>Diverging</route>
       <dccAspect>11</dccAspect>
@@ -215,7 +209,7 @@
       <description>Lower light yellow with yellow strip, upper light yellow</description>
       <reference>Aspect 22</reference>
       <comment>Rychlost 60 km/h a výstraha</comment>
-      <speed>Medium</speed>
+      <speed>60 km/h</speed>
       <speed2>Stop</speed2>
       <route>Diverging</route>
       <dccAspect>12</dccAspect>
@@ -228,8 +222,8 @@
       <description>Lower light yellow with yellow strip, upper light yellow flashing</description>
       <reference>Aspect 18</reference>
       <comment>Rychlost 60 km/h, potom 40 km/h</comment>
-      <speed>Medium</speed>
-      <speed2>Slow</speed2>
+      <speed>60 km/h</speed>
+      <speed2>40 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>13</dccAspect>
     </aspect>
@@ -241,8 +235,8 @@
       <description>Lower light yellow with yellow strip, upper light yellow quickly flashing</description>
       <reference>Aspect 19</reference>
       <comment>Rychlost 60 km/h, potom 60 km/h</comment>
-      <speed>Medium</speed>
-      <speed2>Medium</speed2>
+      <speed>60 km/h</speed>
+      <speed2>60 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>14</dccAspect>
     </aspect>
@@ -254,8 +248,8 @@
       <description>Lower light yellow with yellow strip, upper light green flashing</description>
       <reference>Aspect 14</reference>
       <comment>Rychlost 60 km/h, potom 80 km/h</comment>
-      <speed>Medium</speed>
-      <speed2>Limited</speed2>
+      <speed>60 km/h</speed>
+      <speed2>80 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>15</dccAspect>
     </aspect>
@@ -267,7 +261,7 @@
       <description>Lower light yellow with green strip, upper light green</description>
       <reference>Aspect 9</reference>
       <comment>Rychlost 80 km/h, potom volno</comment>
-      <speed>Limited</speed>
+      <speed>80 km/h</speed>
       <speed2>Normal</speed2>
       <route>Diverging</route>
       <dccAspect>16</dccAspect>
@@ -280,7 +274,7 @@
       <description>Lower light yellow with green strip, upper light yellow</description>
       <reference>Aspect 21</reference>
       <comment>Rychlost 80 km/h a výstraha</comment>
-      <speed>Limited</speed>
+      <speed>80 km/h</speed>
       <speed2>Stop</speed2>
       <route>Diverging</route>
       <dccAspect>17</dccAspect>
@@ -293,8 +287,8 @@
       <description>Lower light yellow with green strip, upper light yellow flashing</description>
       <reference>Aspect 17</reference>
       <comment>Rychlost 80 km/h, potom 40 km/h</comment>
-      <speed>Limited</speed>
-      <speed2>Slow</speed2>
+      <speed>80 km/h</speed>
+      <speed2>40 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>18</dccAspect>
     </aspect>
@@ -306,8 +300,8 @@
       <description>Lower light yellow with green strip, upper light yellow quickly flashing</description>
       <reference>Aspect 17</reference>
       <comment>Rychlost 80 km/h, potom 60 km/h</comment>
-      <speed>Limited</speed>
-      <speed2>Medium</speed2>
+      <speed>80 km/h</speed>
+      <speed2>60 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>19</dccAspect>
     </aspect>
@@ -319,8 +313,8 @@
       <description>Lower light yellow with green strip, upper light green flashing</description>
       <reference>Aspect 13</reference>
       <comment>Rychlost 80 km/h, potom 80 km/h</comment>
-      <speed>Limited</speed>
-      <speed2>Limited</speed2>
+      <speed>80 km/h</speed>
+      <speed2>80 km/h</speed2>
       <route>Diverging</route>
       <dccAspect>20</dccAspect>
     </aspect>
@@ -359,7 +353,7 @@
       <reference>Aspect 27</reference>
       <comment>Opakovaná očekávejte rychlost 40 km/h</comment>
       <speed>Normal</speed>
-      <speed2>Slow</speed2>
+      <speed2>40 km/h</speed2>
       <route>Normal</route>
       <dccAspect>23</dccAspect>
     </aspect>
@@ -372,7 +366,7 @@
       <reference>Aspect 28</reference>
       <comment>Opakovaná očekávejte rychlost 60 km/h</comment>
       <speed>Normal</speed>
-      <speed2>Medium</speed2>
+      <speed2>60 km/h</speed2>
       <route>Normal</route>
       <dccAspect>24</dccAspect>
     </aspect>
@@ -385,7 +379,7 @@
       <reference>Aspect 29</reference>
       <comment>Opakovaná očekávejte rychlost 80 km/h</comment>
       <speed>Normal</speed>
-      <speed2>Limited</speed2>
+      <speed2>80 km/h</speed2>
       <route>Normal</route>
       <dccAspect>25</dccAspect>
     </aspect>
@@ -495,9 +489,6 @@
 	<imagetype type="ESP žzb"/>
 	<imagetype type="ESP žzbz"/>
 	<imagetype type="ESP žčb"/>
-	
-	<imagetype type="JOP hlavní"/>
-	<imagetype type="JOP seřaďovací"/>
 	
   </imagetypes>
 

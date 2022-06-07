@@ -33,6 +33,8 @@ public class SerialDriverAdapter extends PortController {
 
     @Override
     public String openPort(String portName, String appName) {
+        String[] baudRates = validBaudRates();
+        int[] baudValues = validBaudValues();
         // open the port, check ability to set moderators
         try {
             // get and open the primary port
@@ -43,10 +45,15 @@ public class SerialDriverAdapter extends PortController {
                 return handlePortBusy(p, portName, log);
             }
 
-            // try to set it for communication via SerialDriver
+            // try to set it for comunication via SerialDriver
             try {
                 // find the baud rate value, configure comm options
-                int baud = currentBaudNumber(mBaudRate);
+                int baud = baudValues[0];  // default, but also defaulted in the initial value of selectedSpeed
+                for (int i = 0; i < baudRates.length; i++) {
+                    if (baudRates[i].equals(mBaudRate)) {
+                        baud = baudValues[i];
+                    }
+                }
                 activeSerialPort.setSerialPortParams(baud, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             } catch (UnsupportedCommOperationException e) {
                 log.error("Cannot set serial parameters on port {}: {}", portName, e.getMessage());
@@ -70,7 +77,14 @@ public class SerialDriverAdapter extends PortController {
 
             // report status?
             if (log.isInfoEnabled()) {
-                log.info("{} port opened at {} baud, sees  DTR: {} RTS: {} DSR: {} CTS: {}  CD: {}", portName, activeSerialPort.getBaudRate(), activeSerialPort.isDTR(), activeSerialPort.isRTS(), activeSerialPort.isDSR(), activeSerialPort.isCTS(), activeSerialPort.isCD());
+                log.info(portName + " port opened at "
+                        + activeSerialPort.getBaudRate() + " baud, sees "
+                        + " DTR: " + activeSerialPort.isDTR()
+                        + " RTS: " + activeSerialPort.isRTS()
+                        + " DSR: " + activeSerialPort.isDSR()
+                        + " CTS: " + activeSerialPort.isCTS()
+                        + "  CD: " + activeSerialPort.isCD()
+                );
             }
 
             opened = true;
@@ -83,11 +97,12 @@ public class SerialDriverAdapter extends PortController {
         }
 
         return null; // indicates OK return
+
     }
 
     /**
      * Set up all of the other objects to operate with a CAN RS adapter
-     * connected to this port.
+     * connected to this port
      */
     @Override
     public void configure() {
@@ -149,9 +164,18 @@ public class SerialDriverAdapter extends PortController {
         return Arrays.copyOf(validSpeeds, validSpeeds.length);
     }
 
+    public int[] validBaudValues() {
+        return Arrays.copyOf(validSpeedValues, validSpeedValues.length);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Migration method
+     */
     @Override
     public int[] validBaudNumbers() {
-        return Arrays.copyOf(validSpeedValues, validSpeedValues.length);
+        return validBaudValues();
     }
 
     protected String[] validSpeeds = new String[]{Bundle.getMessage("Baud57600"),
@@ -159,11 +183,6 @@ public class SerialDriverAdapter extends PortController {
             Bundle.getMessage("Baud250000"), Bundle.getMessage("Baud333333"),
             Bundle.getMessage("Baud460800"), Bundle.getMessage("Baud500000")};
     protected int[] validSpeedValues = new int[]{57600, 115200, 230400, 250000, 333333, 460800, 500000};
-
-    @Override
-    public int defaultBaudIndex() {
-        return 0;
-    }
 
     // private control members
     private boolean opened = false;

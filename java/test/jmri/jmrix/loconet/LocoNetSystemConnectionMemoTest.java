@@ -1,32 +1,35 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the LocoNetSystemConnectionMemo class
  *
  * @author Paul Bender Copyright (C) 2016
  */
-public class LocoNetSystemConnectionMemoTest extends LnSystemConnectionMemoTestBase<LocoNetSystemConnectionMemo> {
+public class LocoNetSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
+
+    private LocoNetSystemConnectionMemo memo;
 
     @Override
-    @BeforeEach
-    public void setUp() {
-        super.setUp();
-        scm = new LocoNetSystemConnectionMemo();
-        LocoNetInterfaceScaffold lnis = new LocoNetInterfaceScaffold(scm);
-        scm.setLnTrafficController(lnis);
-        scm.configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS100, false, false, false, false);
-        scm.configureManagers();
+    @Before
+    public void setUp(){
+       JUnitUtil.setUp();
+       memo = new LocoNetSystemConnectionMemo();
+       LocoNetInterfaceScaffold lnis = new LocoNetInterfaceScaffold(memo);
+       memo.setLnTrafficController(lnis);
+       memo.configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS100, false, false, false);
+       memo.configureManagers();
+       scm = memo;
     }
 
     @Override
-    @AfterEach
-    public void tearDown() {
-        scm.dispose();
-        super.tearDown();
+    @After
+    public void tearDown(){
+       memo.dispose();
+       JUnitUtil.tearDown();
     }
 
 }

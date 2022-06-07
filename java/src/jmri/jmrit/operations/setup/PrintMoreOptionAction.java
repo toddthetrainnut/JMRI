@@ -2,7 +2,6 @@ package jmri.jmrit.operations.setup;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -15,7 +14,11 @@ import javax.swing.AbstractAction;
 public class PrintMoreOptionAction extends AbstractAction {
 
     public PrintMoreOptionAction() {
-        super(Bundle.getMessage("TitlePrintMoreOptions"));
+        this(Bundle.getMessage("TitlePrintMoreOptions"));
+    }
+
+    public PrintMoreOptionAction(String s) {
+        super(s);
     }
 
     PrintMoreOptionFrame f = null;

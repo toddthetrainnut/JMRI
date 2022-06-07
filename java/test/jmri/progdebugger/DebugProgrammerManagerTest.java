@@ -2,13 +2,15 @@ package jmri.progdebugger;
 
 import jmri.*;
 
+import org.junit.Test;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * Test the DebugProgrammerManager class.
  *
- * @author Bob Jacobsen Copyright 2002
+ * @author	Bob Jacobsen Copyright 2002
  */
 public class DebugProgrammerManagerTest {
 
@@ -80,12 +82,12 @@ public class DebugProgrammerManagerTest {
                         .getAddressedProgrammer(true, 777) == p);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
         jmri.util.JUnitUtil.tearDown();
     }

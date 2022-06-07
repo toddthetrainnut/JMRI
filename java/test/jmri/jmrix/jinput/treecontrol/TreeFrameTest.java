@@ -1,20 +1,18 @@
 package jmri.jmrix.jinput.treecontrol;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of TreeFrame
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class TreeFrameTest extends jmri.util.JmriJFrameTestBase {
 
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -23,10 +21,9 @@ public class TreeFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {        
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        super.tearDown();    
+       super.tearDown();    
     }
 }

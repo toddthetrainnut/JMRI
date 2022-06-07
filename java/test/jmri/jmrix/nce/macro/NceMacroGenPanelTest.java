@@ -1,19 +1,19 @@
 package jmri.jmrix.nce.macro;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Test simple functioning of NceMacroGenPanel
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class NceMacroGenPanelTest extends jmri.util.swing.JmriPanelTest {
 
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         panel = new NceMacroGenPanel();
@@ -22,6 +22,6 @@ public class NceMacroGenPanelTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {        JUnitUtil.tearDown();    }
 }

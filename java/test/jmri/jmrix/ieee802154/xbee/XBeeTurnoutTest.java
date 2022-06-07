@@ -3,14 +3,17 @@ package jmri.jmrix.ieee802154.xbee;
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.models.XBee16BitAddress;
 import com.digi.xbee.api.models.XBee64BitAddress;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Tests for the jmri.jmrix.ieee802154.xbee.XBeeTurnout class
+ * XBeeTurnoutTest.java
  *
- * @author Paul Bender
+ * Description:	tests for the jmri.jmrix.ieee802154.xbee.XBeeTurnout class
+ *
+ * @author	Paul Bender
  */
 public class XBeeTurnoutTest {
 
@@ -71,13 +74,14 @@ public class XBeeTurnoutTest {
         Assert.assertNotNull("exists", s);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         tc = new XBeeInterfaceScaffold();
         memo = new XBeeConnectionMemo();
         memo.setSystemPrefix("A");
-        memo.setTurnoutManager(new XBeeTurnoutManager(memo));
+        memo.setTurnoutManager(new XBeeTurnoutManager(tc, "A"));
         tc.setAdapterMemo(memo);
         byte pan[] = {(byte) 0x00, (byte) 0x42};
         byte uad[] = {(byte) 0x00, (byte) 0x02};
@@ -91,12 +95,10 @@ public class XBeeTurnoutTest {
         tc.registerNode(node);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         tc.terminate();
-        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         jmri.util.JUnitUtil.tearDown();
-
     }
 
 }

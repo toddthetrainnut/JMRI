@@ -13,8 +13,7 @@ public class NoFeedbackTurnoutOperationConfig extends CommonTurnoutOperationConf
 
     /**
      * Create the config JPanel, if there is one, to configure this operation
-     * type.
-     * @param op turnout operation.
+     * type
      */
     public NoFeedbackTurnoutOperationConfig(TurnoutOperation op) {
         super(op);

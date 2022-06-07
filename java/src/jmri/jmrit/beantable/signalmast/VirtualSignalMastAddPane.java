@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 
 import jmri.*;
 import jmri.implementation.*;
+import jmri.util.*;
 
 import org.openide.util.lookup.ServiceProvider;
 
@@ -24,11 +25,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class VirtualSignalMastAddPane extends SignalMastAddPane {
 
     public VirtualSignalMastAddPane() {
-        initPanel();
-    }
-    
-    final void initPanel() {
-        
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         // lit/unlit controls
         JPanel p = new JPanel();
@@ -132,11 +128,11 @@ public class VirtualSignalMastAddPane extends SignalMastAddPane {
                     + ":" + mastname.substring(11, mastname.length() - 4);
             name += "($" + (paddedNumber.format(VirtualSignalMast.getLastRef() + 1)) + ")";
             currentMast = new VirtualSignalMast(name);
-            if (!username.isEmpty()) {
+            if (!username.equals("")) {
                 currentMast.setUserName(username);
             }
             currentMast.setMastType(mastname.substring(11, mastname.length() - 4));
-            InstanceManager.getDefault(SignalMastManager.class).register(currentMast);
+            InstanceManager.getDefault(jmri.SignalMastManager.class).register(currentMast);
         }
 
         // load a new or existing mast

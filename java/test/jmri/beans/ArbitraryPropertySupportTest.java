@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /**
  *
- * @author Randall Wood
+ * @author rhwood
  */
 public class ArbitraryPropertySupportTest {
 

@@ -78,7 +78,7 @@ public class XBeeSensor extends AbstractSensor implements IIOSampleReceiveListen
                    }
                    pin = Integer.parseInt(systemName.substring(seperator + 1));
                } catch (NumberFormatException ex) {
-                   log.debug("Unable to convert {} into the cab and input format of nn:xx", systemName);
+                   log.debug("Unable to convert " + systemName + " into the cab and input format of nn:xx");
                }
            } else {
                try {
@@ -88,11 +88,14 @@ public class XBeeSensor extends AbstractSensor implements IIOSampleReceiveListen
                    // calculate the pin to examine
                    pin = ((address) % 10);
                } catch (NumberFormatException ex) {
-                   log.debug("Unable to convert {} Hardware Address to a number", systemName);
+                   log.debug("Unable to convert " + systemName + " Hardware Address to a number");
                }
            }
            if (log.isDebugEnabled()) {
-               log.debug("Created Sensor {} (NodeIdentifier {} ,D{})", systemName, nodeIdentifier, pin);
+               log.debug("Created Sensor " + systemName
+                    + " (NodeIdentifier " + nodeIdentifier
+                    + " ,D" + pin
+                    + ")");
            }
 
            // register to hear XBee IO Sample events.

@@ -1,8 +1,8 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the XNetSimulatorPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class XNetSimulatorPortControllerTest extends jmri.jmrix.AbstractSerialPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        XNetInterfaceScaffold tc = new XNetInterfaceScaffold(new LenzCommandStation());
@@ -56,10 +56,9 @@ public class XNetSimulatorPortControllerTest extends jmri.jmrix.AbstractSerialPo
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+       JUnitUtil.tearDown();
     }
 
 }

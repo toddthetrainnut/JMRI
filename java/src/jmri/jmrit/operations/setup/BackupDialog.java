@@ -1,23 +1,29 @@
 package jmri.jmrit.operations.setup;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.text.MessageFormat;
-
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.jmrit.operations.OperationsXml;
 import jmri.util.swing.ExceptionContext;
 import jmri.util.swing.ExceptionDisplayFrame;
 import jmri.util.swing.UnexpectedExceptionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BackupDialog extends JDialog {
 
@@ -181,10 +187,7 @@ public class BackupDialog extends JDialog {
 
             // check to see if files are dirty
             if (OperationsXml.areFilesDirty()) {
-                if (Setup.isAutoSaveEnabled()) {
-                    OperationsXml.save();
-                }
-                else if (JOptionPane
+                if (JOptionPane
                         .showConfirmDialog(
                                 this,
                                 Bundle.getMessage("OperationsFilesModified"),

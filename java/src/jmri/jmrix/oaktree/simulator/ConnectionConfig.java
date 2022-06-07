@@ -1,5 +1,6 @@
 package jmri.jmrix.oaktree.simulator;
 
+import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import jmri.jmrix.oaktree.OakTreeSystemConnectionMemo;
@@ -24,7 +25,6 @@ public class ConnectionConfig extends jmri.jmrix.AbstractSimulatorConnectionConf
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p Serial port adapter.
      */
     public ConnectionConfig(jmri.jmrix.SerialPortAdapter p) {
         super(p);

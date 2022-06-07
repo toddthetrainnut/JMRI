@@ -1,8 +1,8 @@
 package jmri.jmrix.cmri.serial;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the SerialNetworkPortAdapter class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class SerialNetworkPortAdapterTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        jmri.jmrix.cmri.CMRISystemConnectionMemo memo = new jmri.jmrix.cmri.CMRISystemConnectionMemo();
@@ -24,7 +24,7 @@ public class SerialNetworkPortAdapterTest extends jmri.jmrix.AbstractNetworkPort
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

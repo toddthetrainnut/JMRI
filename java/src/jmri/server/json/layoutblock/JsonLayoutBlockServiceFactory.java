@@ -18,17 +18,17 @@ public class JsonLayoutBlockServiceFactory implements JsonServiceFactory<JsonLay
 
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{LAYOUTBLOCK, LAYOUTBLOCKS};
     }
 
     @Override
-    public JsonLayoutBlockSocketService getSocketService(JsonConnection connection, String version) {
+    public JsonLayoutBlockSocketService getSocketService(JsonConnection connection) {
         return new JsonLayoutBlockSocketService(connection);
     }
 
     @Override
-    public JsonLayoutBlockHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonLayoutBlockHttpService getHttpService(ObjectMapper mapper) {
         return new JsonLayoutBlockHttpService(mapper);
     }
 

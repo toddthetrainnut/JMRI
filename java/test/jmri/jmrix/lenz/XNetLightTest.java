@@ -1,14 +1,14 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * Tests for the {@link jmri.jmrix.lenz.XNetLight} class.
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class XNetLightTest extends jmri.implementation.AbstractLightTestBase {
 
@@ -33,20 +33,20 @@ public class XNetLightTest extends jmri.implementation.AbstractLightTestBase {
         Assert.assertEquals("OFF state", jmri.Light.OFF, t.getState());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
         xnis = new XNetInterfaceScaffold(new LenzCommandStation());
-        XNetLightManager xlm = new XNetLightManager(xnis.getSystemConnectionMemo());
+        XNetLightManager xlm = new XNetLightManager(xnis, "X");
 
         t = new XNetLight(xnis, xlm, "XL21");
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

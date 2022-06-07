@@ -1,13 +1,14 @@
 package jmri.jmrix.zimo;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class Mx1TurnoutTest {
 
@@ -15,11 +16,12 @@ public class Mx1TurnoutTest {
 
     @Test
     public void testCTor() {
-        Mx1Turnout t = new Mx1Turnout(5, tc, "Z");
-        Assert.assertNotNull("exists", t);
+        Mx1Turnout t = new Mx1Turnout(5,tc,"Z");
+        Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tc = new Mx1TrafficController(){
@@ -33,7 +35,7 @@ public class Mx1TurnoutTest {
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

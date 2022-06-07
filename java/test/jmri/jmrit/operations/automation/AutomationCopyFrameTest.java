@@ -1,16 +1,14 @@
 package jmri.jmrit.operations.automation;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 public class AutomationCopyFrameTest extends OperationsTestCase {
 
@@ -25,17 +23,16 @@ public class AutomationCopyFrameTest extends OperationsTestCase {
 
         f.setVisible(true);
 
-        JemmyUtil.enterClickAndLeaveThreadSafe(f.copyButton);
+        JemmyUtil.enterClickAndLeave(f.copyButton);
         // dialog window requesting name for automation should appear
         JemmyUtil.pressDialogButton(f, Bundle.getMessage("CanNotCopyAutomation"), Bundle.getMessage("ButtonOK"));
-        JemmyUtil.waitFor(f);
-        
+
         // enter a name for the automation
         f.automationNameTextField.setText("Name of new automation");
-        JemmyUtil.enterClickAndLeaveThreadSafe(f.copyButton);
+        JemmyUtil.enterClickAndLeave(f.copyButton);
         // dialog window requesting automation to copy should appear
         JemmyUtil.pressDialogButton(f, Bundle.getMessage("CanNotCopyAutomation"), Bundle.getMessage("ButtonOK"));
-        JemmyUtil.waitFor(f);
+
         JUnitUtil.dispose(f);
     }
 
@@ -57,18 +54,17 @@ public class AutomationCopyFrameTest extends OperationsTestCase {
 
         copyFrame.setVisible(true);
 
-        JemmyUtil.enterClickAndLeaveThreadSafe(copyFrame.copyButton);
+        JemmyUtil.enterClickAndLeave(copyFrame.copyButton);
         // dialog window requesting name for automation should appear
         JemmyUtil.pressDialogButton(copyFrame, Bundle.getMessage("CanNotCopyAutomation"), Bundle.getMessage("ButtonOK"));
-        JemmyUtil.waitFor(copyFrame);
-        
+
         // enter a name for the automation
         copyFrame.automationNameTextField.setText("Name of new automation 2");
-        JemmyUtil.enterClickAndLeaveThreadSafe(copyFrame.copyButton);
+        JemmyUtil.enterClickAndLeave(copyFrame.copyButton);
+
         // dialog window requesting automation to copy should appear
         JemmyUtil.pressDialogButton(copyFrame, Bundle.getMessage("CanNotCopyAutomation"), Bundle.getMessage("ButtonOK"));
-        JemmyUtil.waitFor(copyFrame);
-        
+
         // still only one automation
         Assert.assertEquals("Number of automations", 1, manager.getSize());
 

@@ -9,7 +9,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import jmri.jmrix.AbstractPortController;
-import jmri.util.ImmediatePipedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +40,10 @@ final public class XBeeIOStream extends AbstractPortController {
         super(tc.getAdapterMemo());
         remoteXBee = node.getXBee();
         try {
-            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeI = new PipedOutputStream();
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
-            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeO = new PipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {

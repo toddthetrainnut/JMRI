@@ -1,12 +1,10 @@
 package jmri.jmrit.display;
 
 import java.awt.GraphicsEnvironment;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
- * Test simple functioning of PositionableIcon.
+ * Test simple functioning of PositionableIcon
  * 
  * @author Paul Bender Copyright (C) 2016
  */
@@ -18,7 +16,7 @@ public class PositionableIconTest extends PositionableTestBase {
         Assert.assertNotNull("PositionableIcon Constructor", p);
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         super.setUp();

@@ -1,5 +1,6 @@
 package jmri.jmrix.easydcc;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.jmrix.AbstractMRListener;
 import jmri.jmrix.AbstractMRMessage;
 import jmri.jmrix.AbstractMRReply;

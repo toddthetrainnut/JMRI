@@ -2,14 +2,24 @@ package jmri.implementation;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
-
-import jmri.*;
-import jmri.jmrit.display.EditorManager;
+import jmri.Block;
+import jmri.InstanceManager;
+import jmri.NamedBean;
+import jmri.NamedBeanHandle;
+import jmri.Section;
+import jmri.Sensor;
+import jmri.SignalMast;
+import jmri.Turnout;
+import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.layoutEditor.ConnectivityUtil;
 import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.jmrit.display.layoutEditor.LayoutBlockConnectivityTools;
@@ -19,8 +29,6 @@ import jmri.jmrit.display.layoutEditor.LayoutSlip;
 import jmri.jmrit.display.layoutEditor.LayoutTrackExpectedState;
 import jmri.jmrit.display.layoutEditor.LayoutTurnout;
 import jmri.jmrit.display.layoutEditor.LevelXing;
-import jmri.util.ThreadingUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,20 +37,19 @@ import org.slf4j.LoggerFactory;
  *
  * @author Kevin Dickerson Copyright (C) 2011
  */
-public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalMastLogic, VetoableChangeListener {
+public class DefaultSignalMastLogic extends AbstractNamedBean implements jmri.SignalMastLogic, java.beans.VetoableChangeListener {
 
     SignalMast source;
     SignalMast destination;
     String stopAspect;
 
-    Hashtable<SignalMast, DestinationMast> destList = new Hashtable<>();
+    Hashtable<SignalMast, DestinationMast> destList = new Hashtable<SignalMast, DestinationMast>();
     LayoutEditor editor;
 
     boolean useAutoGenBlock = true;
     boolean useAutoGenTurnouts = true;
 
     LayoutBlock facingBlock = null;
-    LayoutBlock remoteProtectingBlock = null;
 
     boolean disposing = false;
 
@@ -55,36 +62,27 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         super(source.toString()); // default system name
         this.source = source;
         try {
-            this.stopAspect = source.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER);
+            this.stopAspect = source.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER);
             this.source.addPropertyChangeListener(propertySourceMastListener);
             if (source.getAspect() == null) {
                 source.setAspect(stopAspect);
             }
         } catch (Exception ex) {
-            log.error("Error while creating Signal Logic", ex);
+            log.error("Error while creating Signal Logic {}", ex);
         }
     }
 
-    // Most of the following methods will inherit Javadoc from SignalMastLogic.java
-    /**
-     * {@inheritDoc }
-     */
+    // Most of the following methods will inherit Javadoc from jmri.SignalMastLogic.java
     @Override
     public void setFacingBlock(LayoutBlock facing) {
         facingBlock = facing;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public LayoutBlock getFacingBlock() {
         return facingBlock;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public LayoutBlock getProtectingBlock(@Nonnull SignalMast dest) {
         if (!destList.containsKey(dest)) {
@@ -93,17 +91,11 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(dest).getProtectingBlock();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public SignalMast getSourceMast() {
         return source;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void replaceSourceMast(SignalMast oldMast, SignalMast newMast) {
         if (oldMast != source) {
@@ -112,29 +104,26 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
         source.removePropertyChangeListener(propertySourceMastListener);
         source = newMast;
-        stopAspect = source.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER);
+        stopAspect = source.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER);
         source.addPropertyChangeListener(propertySourceMastListener);
         if (source.getAspect() == null) {
             source.setAspect(stopAspect);
         }
-        getDestinationList().forEach(sm -> {
+        for (SignalMast sm : getDestinationList()) {
             DestinationMast destMast = destList.get(sm);
             if (destMast.getAssociatedSection() != null) {
                 String oldUserName = destMast.getAssociatedSection().getUserName();
                 String newUserName = source.getDisplayName() + ":" + sm.getDisplayName();
                 if (oldUserName != null) {
-                    InstanceManager.getDefault(NamedBeanHandleManager.class).renameBean(oldUserName, newUserName, ((NamedBean) destMast.getAssociatedSection()));
+                    jmri.InstanceManager.getDefault(jmri.NamedBeanHandleManager.class).renameBean(oldUserName, newUserName, ((NamedBean) destMast.getAssociatedSection()));
                 } else {
                     log.warn("AssociatedSection oldUserName null for destination mast {}, skipped", destMast.getDisplayName());
                 }
             }
-        });
+        }
         firePropertyChange("updatedSource", oldMast, newMast);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void replaceDestinationMast(SignalMast oldMast, SignalMast newMast) {
         if (!destList.containsKey(oldMast)) {
@@ -153,7 +142,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             String oldUserName = destMast.getAssociatedSection().getUserName();
             String newUserName = source.getDisplayName() + ":" + newMast.getDisplayName();
             if (oldUserName != null) {
-                InstanceManager.getDefault(NamedBeanHandleManager.class).renameBean(oldUserName, newUserName, destMast.getAssociatedSection());
+                jmri.InstanceManager.getDefault(jmri.NamedBeanHandleManager.class).renameBean(oldUserName, newUserName, destMast.getAssociatedSection());
             } else {
                 log.warn("AssociatedSection oldUserName null for destination mast {}, skipped", destMast.getDisplayName());
             }
@@ -162,9 +151,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         firePropertyChange("updatedDestination", oldMast, newMast);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setDestinationMast(SignalMast dest) {
         if (destList.containsKey(dest)) {
@@ -174,14 +160,11 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
         int oldSize = destList.size();
         destList.put(dest, new DestinationMast(dest));
-        //InstanceManager.getDefault(SignalMastLogicManager.class).addDestinationMastToLogic(this, dest);
-        firePropertyChange("length", oldSize, destList.size());
+        //InstanceManager.getDefault(jmri.SignalMastLogicManager.class).addDestinationMastToLogic(this, dest);
+        firePropertyChange("length", oldSize, Integer.valueOf(destList.size()));
         // make new dest mast appear in (update of) SignallingSourcePanel Table by having that table listen to PropertyChange Events from SML TODO
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isDestinationValid(SignalMast dest) {
         if (dest == null) {
@@ -190,9 +173,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.containsKey(dest);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<SignalMast> getDestinationList() {
         List<SignalMast> out = new ArrayList<>();
@@ -203,9 +183,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return out;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public String getComment(SignalMast dest) {
         if (!destList.containsKey(dest)) {
@@ -214,9 +191,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(dest).getComment();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setComment(String comment, SignalMast dest) {
         if (!destList.containsKey(dest)) {
@@ -225,9 +199,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(dest).setComment(comment);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setStore(int store, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -236,9 +207,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setStore(store);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public int getStoreState(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -247,9 +215,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getStoreState();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setEnabled(SignalMast dest) {
         if (!destList.containsKey(dest)) {
@@ -258,9 +223,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(dest).setEnabled();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setDisabled(SignalMast dest) {
         if (!destList.containsKey(dest)) {
@@ -269,9 +231,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(dest).setDisabled();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isEnabled(SignalMast dest) {
         if (!destList.containsKey(dest)) {
@@ -280,9 +239,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(dest).isEnabled();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isActive(SignalMast dest) {
         if (!destList.containsKey(dest)) {
@@ -291,9 +247,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(dest).isActive();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public SignalMast getActiveDestination() {
         for (SignalMast sm : getDestinationList()) {
@@ -304,133 +257,60 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return null;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean removeDestination(SignalMast dest) {
         int oldSize = destList.size();
         if (destList.containsKey(dest)) {
-            //InstanceManager.getDefault(SignalMastLogicManager.class).removeDestinationMastToLogic(this, dest);
+            //InstanceManager.getDefault(jmri.SignalMastLogicManager.class).removeDestinationMastToLogic(this, dest);
             destList.get(dest).dispose();
             destList.remove(dest);
-            firePropertyChange("length", oldSize, destList.size());
+            firePropertyChange("length", oldSize, Integer.valueOf(destList.size()));
         }
-        return destList.isEmpty();
+        if (destList.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void disableLayoutEditorUse() {
-        destList.values().forEach(dest -> {
+        for (DestinationMast dest : destList.values()) {
             try {
                 dest.useLayoutEditor(false);
-            } catch (JmriException e) {
-                log.error("Could not disable LayoutEditor ",  e);
+            } catch (jmri.JmriException e) {
+                log.error(e.getLocalizedMessage(), e);
             }
-        });
+        }
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
-    public void useLayoutEditor(boolean boo, SignalMast destination) throws JmriException {
+    public void useLayoutEditor(boolean boo, SignalMast destination) throws jmri.JmriException {
         if (!destList.containsKey(destination)) {
             return;
         }
         if (boo) {
             log.debug("Set use layout editor");
-            Set<LayoutEditor> layout = InstanceManager.getDefault(EditorManager.class).getAll(LayoutEditor.class);
+            List<LayoutEditor> layout = InstanceManager.getDefault(PanelMenu.class).getLayoutEditorPanelList();
             /*We don't care which layout editor panel the signalmast is on, just so long as
              the routing is done via layout blocks*/
             // TODO: what is this?
-            log.debug("userLayoutEditor finds layout list size is {}", layout.size());
-            for (LayoutEditor findeditor : layout) {
-                log.debug("layouteditor {}", findeditor.getLayoutName());
+            log.debug("userLayoutEditor finds layout list size is {}", Integer.toString(layout.size()));
+            for (int i = 0; i < layout.size(); i++) {
+                if (log.isDebugEnabled()) {
+                    log.debug(layout.get(i).getLayoutName());
+                }
                 if (facingBlock == null) {
-                    facingBlock = InstanceManager.getDefault(LayoutBlockManager.class).getFacingBlockByMast(getSourceMast(), findeditor);
+                    facingBlock = InstanceManager.getDefault(LayoutBlockManager.class).getFacingBlockByMast(getSourceMast(), layout.get(i));
                 }
             }
         }
         try {
             destList.get(destination).useLayoutEditor(boo);
-        } catch (JmriException e) {
+        } catch (jmri.JmriException e) {
             throw e;
         }
     }
 
-    /**
-     * Add direction sensors to SML
-     *
-     * @return number of errors
-     */
-    @Override
-    public int setupDirectionSensors() {
-        // iterrate over the signal masts
-        int errorCount = 0;
-        for (SignalMast sm : getDestinationList()) {
-            String displayName = sm.getDisplayName();
-            Section sec = getAssociatedSection(sm);
-            if (sec != null) {
-                Block thisFacingBlock;
-                Sensor fwd = sec.getForwardBlockingSensor();
-                Sensor rev = sec.getReverseBlockingSensor();
-                LayoutBlock lBlock = getFacingBlock();
-                if (lBlock == null) {
-                    try {
-                        useLayoutEditor(true, sm); // force a refind
-                    } catch (JmriException ex) {
-                        continue;
-                    }
-                }
-                if (lBlock != null) {
-                    thisFacingBlock = lBlock.getBlock();
-                    EntryPoint fwdEntryPoint = sec.getEntryPointFromBlock(thisFacingBlock, Section.FORWARD);
-                    EntryPoint revEntryPoint = sec.getEntryPointFromBlock(thisFacingBlock, Section.REVERSE);
-                    log.debug("Mast[{}] Sec[{}] Fwd[{}] Rev [{}]",
-                            displayName, sec, fwd, rev);
-                    if (fwd != null && fwdEntryPoint != null) {
-                        addSensor(fwd.getUserName(), Sensor.INACTIVE, sm);
-                        log.debug("Mast[{}] Sec[{}] Fwd[{}] fwdEP[{}]",
-                                displayName, sec, fwd,
-                                fwdEntryPoint.getBlock().getUserName());
-
-                    } else if (rev != null && revEntryPoint != null) {
-                        addSensor(rev.getUserName(), Sensor.INACTIVE, sm);
-                        log.debug("Mast[{}] Sec[{}] Rev [{}] revEP[{}]",
-                                displayName, sec, rev,
-                                revEntryPoint.getBlock().getUserName());
-
-                    } else {
-                        log.error("Mast[{}] Cannot Establish entry point to protected section", displayName);
-                        errorCount += 1;
-                    }
-                } else {
-                    log.error("Mast[{}] No Facing Block", displayName);
-                    errorCount += 1;
-                }
-            } else {
-                log.error("Mast[{}] No Associated Section", displayName);
-                errorCount += 1;
-            }
-        }
-        return errorCount;
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void removeDirectionSensors() {
-        //TODO find aaway of easilty identifying the ones we added.
-    }
-
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean useLayoutEditor(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -439,24 +319,18 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).useLayoutEditor();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
-    public void useLayoutEditorDetails(boolean turnouts, boolean blocks, SignalMast destination) throws JmriException {
+    public void useLayoutEditorDetails(boolean turnouts, boolean blocks, SignalMast destination) throws jmri.JmriException {
         if (!destList.containsKey(destination)) {
             return;
         }
         try {
             destList.get(destination).useLayoutEditorDetails(turnouts, blocks);
-        } catch (JmriException e) {
+        } catch (jmri.JmriException e) {
             throw e;
         }
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean useLayoutEditorBlocks(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -465,9 +339,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).useLayoutEditorBlocks();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean useLayoutEditorTurnouts(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -476,9 +347,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).useLayoutEditorTurnouts();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public Section getAssociatedSection(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -487,9 +355,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getAssociatedSection();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setAssociatedSection(Section sec, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -498,9 +363,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setAssociatedSection(sec);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean allowAutoMaticSignalMastGeneration(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -509,9 +371,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).allowAutoSignalMastGen();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void allowAutoMaticSignalMastGeneration(boolean allow, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -520,9 +379,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).allowAutoSignalMastGen(allow);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void allowTurnoutLock(boolean lock, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -531,9 +387,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).allowTurnoutLock(lock);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isTurnoutLockAllowed(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -542,9 +395,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).isTurnoutLockAllowed();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setTurnouts(Hashtable<NamedBeanHandle<Turnout>, Integer> turnouts, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -553,9 +403,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setTurnouts(turnouts);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setAutoTurnouts(Hashtable<Turnout, Integer> turnouts, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -564,9 +411,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setAutoTurnouts(turnouts);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setBlocks(Hashtable<Block, Integer> blocks, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -575,9 +419,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setBlocks(blocks);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setAutoBlocks(LinkedHashMap<Block, Integer> blocks, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -586,9 +427,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setAutoBlocks(blocks);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setMasts(Hashtable<SignalMast, String> masts, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -597,9 +435,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setMasts(masts);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setAutoMasts(Hashtable<SignalMast, String> masts, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -608,9 +443,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setAutoMasts(masts, true);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setSensors(Hashtable<NamedBeanHandle<Sensor>, Integer> sensors, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -619,9 +451,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).setSensors(sensors);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void addSensor(String sensorName, int state, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -629,14 +458,11 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
         Sensor sen = InstanceManager.sensorManagerInstance().getSensor(sensorName);
         if (sen != null) {
-            NamedBeanHandle<Sensor> namedSensor = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(sensorName, sen);
+            NamedBeanHandle<Sensor> namedSensor = jmri.InstanceManager.getDefault(jmri.NamedBeanHandleManager.class).getNamedBeanHandle(sensorName, sen);
             destList.get(destination).addSensor(namedSensor, state);
         }
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void removeSensor(String sensorName, SignalMast destination) {
         Sensor sen = InstanceManager.sensorManagerInstance().getSensor(sensorName);
@@ -652,9 +478,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<Block> getBlocks(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -663,9 +486,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getBlocks();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<Block> getAutoBlocks(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -674,9 +494,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getAutoBlocks();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<Block> getAutoBlocksBetweenMasts(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -685,24 +502,18 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getAutoBlocksBetweenMasts();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<Turnout> getTurnouts(SignalMast destination) {
         if (!destList.containsKey(destination)) {
-            return new ArrayList<>();
+            return new ArrayList<Turnout>();
         }
         return destList.get(destination).getTurnouts();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<NamedBeanHandle<Turnout>> getNamedTurnouts(SignalMast destination) {
         if (!destList.containsKey(destination)) {
-            return new ArrayList<>();
+            return new ArrayList<NamedBeanHandle<Turnout>>();
         }
         return destList.get(destination).getNamedTurnouts();
     }
@@ -717,42 +528,30 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<Turnout> getAutoTurnouts(SignalMast destination) {
         if (!destList.containsKey(destination)) {
-            return new ArrayList<>();
+            return new ArrayList<Turnout>();
         }
         return destList.get(destination).getAutoTurnouts();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<Sensor> getSensors(SignalMast destination) {
         if (!destList.containsKey(destination)) {
-            return new ArrayList<>();
+            return new ArrayList<Sensor>();
         }
         return destList.get(destination).getSensors();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<NamedBeanHandle<Sensor>> getNamedSensors(SignalMast destination) {
         if (!destList.containsKey(destination)) {
-            return new ArrayList<>();
+            return new ArrayList<NamedBeanHandle<Sensor>>();
         }
         return destList.get(destination).getNamedSensors();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<SignalMast> getSignalMasts(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -761,9 +560,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getSignalMasts();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public List<SignalMast> getAutoMasts(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -772,9 +568,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getAutoSignalMasts();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void initialise() {
         Enumeration<SignalMast> en = destList.keys();
@@ -783,9 +576,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void initialise(SignalMast destination) {
         if (disposing) {
@@ -798,24 +588,18 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         destList.get(destination).initialise();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public LinkedHashMap<Block, Integer> setupLayoutEditorTurnoutDetails(List<LayoutBlock> blks, SignalMast destination) {
         if (disposing) {
-            return new LinkedHashMap<>();
+            return new LinkedHashMap<Block, Integer>();
         }
 
         if (!destList.containsKey(destination)) {
-            return new LinkedHashMap<>();
+            return new LinkedHashMap<Block, Integer>();
         }
         return destList.get(destination).setupLayoutEditorTurnoutDetails(blks);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setupLayoutEditorDetails() {
         if (disposing) {
@@ -825,7 +609,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         while (en.hasMoreElements()) {
             try {
                 destList.get(en.nextElement()).setupLayoutEditorDetails();
-            } catch (JmriException e) {
+            } catch (jmri.JmriException e) {
                 //Considered normal if no route is valid on a Layout Editor panel
             }
         }
@@ -868,15 +652,12 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return false;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean areBlocksIncluded(List<Block> blks) {
         Enumeration<SignalMast> en = destList.keys();
         while (en.hasMoreElements()) {
             SignalMast dm = en.nextElement();
-            boolean included;
+            boolean included = false;
             for (int i = 0; i < blks.size(); i++) {
                 included = destList.get(dm).isBlockIncluded(blks.get(i));
                 if (included) {
@@ -891,9 +672,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return false;
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public int getBlockState(Block block, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -902,9 +680,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getBlockState(block);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isBlockIncluded(Block block, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -913,9 +688,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).isBlockIncluded(block);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isTurnoutIncluded(Turnout turnout, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -924,9 +696,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).isTurnoutIncluded(turnout);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isSensorIncluded(Sensor sensor, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -935,9 +704,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).isSensorIncluded(sensor);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public boolean isSignalMastIncluded(SignalMast signal, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -946,9 +712,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).isSignalMastIncluded(signal);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public int getAutoBlockState(Block block, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -957,9 +720,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getAutoBlockState(block);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public int getSensorState(Sensor sensor, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -968,9 +728,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getSensorState(sensor);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public int getTurnoutState(Turnout turnout, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -979,9 +736,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getTurnoutState(turnout);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public int getAutoTurnoutState(Turnout turnout, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -990,9 +744,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getAutoTurnoutState(turnout);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public String getSignalMastState(SignalMast mast, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -1001,9 +752,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getSignalMastState(mast);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public String getAutoSignalMastState(SignalMast mast, SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -1012,9 +760,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         return destList.get(destination).getAutoSignalMastState(mast);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public float getMaximumSpeed(SignalMast destination) {
         if (!destList.containsKey(destination)) {
@@ -1037,15 +782,15 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
         inWait = true;
 
-        // The next line forces a single initialization of InstanceManager.getDefault(SignalSpeedMap.class)
+        // The next line forces a single initialization of jmri.InstanceManager.getDefault(SignalSpeedMap.class)
         // before launching parallel threads
-        InstanceManager.getDefault(SignalSpeedMap.class);
+        jmri.InstanceManager.getDefault(SignalSpeedMap.class);
 
-        // The next line forces a single initialization of InstanceManager.getDefault(SignalMastLogicManager.class)
+        // The next line forces a single initialization of InstanceManager.getDefault(jmri.SignalMastLogicManager.class)
         // before launching delay
-        int tempDelay = InstanceManager.getDefault(SignalMastLogicManager.class).getSignalLogicDelay() / 2;
+        int tempDelay = InstanceManager.getDefault(jmri.SignalMastLogicManager.class).getSignalLogicDelay() / 2;
         log.debug("SignalMastLogicManager started (delay)");
-        ThreadingUtil.runOnLayoutDelayed(
+        jmri.util.ThreadingUtil.runOnLayoutDelayed(
                 () -> {
                     setMastAppearance();
                     inWait = false;
@@ -1063,16 +808,16 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         if (getSourceMast().getHeld()) {
             log.debug("Signal is at a Held state so will set to the aspect defined for Held or Danger");
 
-            String heldAspect = getSourceMast().getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.HELD);
+            String heldAspect = getSourceMast().getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.HELD);
             if (heldAspect != null) {
                 log.debug("  Setting to HELD value of {}", heldAspect);
-                ThreadingUtil.runOnLayout(() -> {
+                jmri.util.ThreadingUtil.runOnLayout(() -> {
                     getSourceMast().setAspect(heldAspect);
                 });
             } else {
-                String dangerAspect = getSourceMast().getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER);
+                String dangerAspect = getSourceMast().getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER);
                 log.debug("  Setting to DANGER value of {}", dangerAspect);
-                ThreadingUtil.runOnLayout(() -> {
+                jmri.util.ThreadingUtil.runOnLayout(() -> {
                     getSourceMast().setAspect(dangerAspect);
                 });
             }
@@ -1085,10 +830,10 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
         String[] advancedAspect;
         if (destination.getHeld()) {
-            if (destination.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.HELD) != null) {
-                advancedAspect = getSourceMast().getAppearanceMap().getValidAspectsForAdvancedAspect(destination.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.HELD));
+            if (destination.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.HELD) != null) {
+                advancedAspect = getSourceMast().getAppearanceMap().getValidAspectsForAdvancedAspect(destination.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.HELD));
             } else {
-                advancedAspect = getSourceMast().getAppearanceMap().getValidAspectsForAdvancedAspect(destination.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER));
+                advancedAspect = getSourceMast().getAppearanceMap().getValidAspectsForAdvancedAspect(destination.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER));
             }
         } else {
             advancedAspect = getSourceMast().getAppearanceMap().getValidAspectsForAdvancedAspect(destination.getAspect());
@@ -1100,20 +845,18 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         if (advancedAspect != null) {
             String aspect = stopAspect;
             if (destList.get(destination).permissiveBlock) {
-                if (!getSourceMast().isPermissiveSmlDisabled()) {
-                    //if a block is in a permissive state then we set the permissive appearance
-                    aspect = getSourceMast().getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.PERMISSIVE);
-                }
+                //if a block is in a permissive state then we set the permissive appearance
+                aspect = getSourceMast().getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.PERMISSIVE);
             } else {
-                for (String advancedAspect1 : advancedAspect) {
-                    if (!getSourceMast().isAspectDisabled(advancedAspect1)) {
-                        aspect = advancedAspect1;
+                for (int i = 0; i < advancedAspect.length; i++) {
+                    if (!getSourceMast().isAspectDisabled(advancedAspect[i])) {
+                        aspect = advancedAspect[i];
                         break;
                     }
                 }
-                List<Integer> divergAspects = new ArrayList<>();
-                List<Integer> nonDivergAspects = new ArrayList<>();
-                List<Integer> eitherAspects = new ArrayList<>();
+                List<Integer> divergAspects = new ArrayList<Integer>();
+                List<Integer> nonDivergAspects = new ArrayList<Integer>();
+                List<Integer> eitherAspects = new ArrayList<Integer>();
                 if (advancedAspect.length > 1) {
                     float maxSigSpeed = -1;
                     float maxPathSpeed = destList.get(destination).getMinimumSpeed();
@@ -1159,24 +902,26 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                     for (int i = 0; i < advancedAspect.length; i++) {
                         if (!getSourceMast().isAspectDisabled(advancedAspect[i])) {
                             String strSpeed = (String) getSourceMast().getSignalSystem().getProperty(advancedAspect[i], "speed");
-                            log.debug("Aspect Speed = {} for aspect {}", strSpeed, advancedAspect[i]);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Aspect Speed = {} for aspect {}", strSpeed, advancedAspect[i]);
+                            }
                             /*  if the diverg flags available is set and the diverg aspect
                              array contains the entry then we will check this aspect.
 
                              If the diverg flag has not been set then we will check.
                              */
-                            log.debug("advanced aspect {}",advancedAspect[i]);
+                            log.debug(advancedAspect[i]);
                             if ((divergRoute && (divergFlagsAvailable) && (divergAspects.contains(i))) || ((divergRoute && !divergFlagsAvailable) || (!divergRoute)) && (nonDivergAspects.contains(i))) {
                                 log.debug("In list");
-                                if ((strSpeed != null) && (!strSpeed.isEmpty())) {
+                                if ((strSpeed != null) && (!strSpeed.equals(""))) {
                                     float speed = 0.0f;
                                     try {
-                                        speed = Float.parseFloat(strSpeed);
+                                        speed = Float.valueOf(strSpeed);
                                     } catch (NumberFormatException nx) {
                                         // not a number, perhaps a name?
                                         try {
-                                            speed = InstanceManager.getDefault(SignalSpeedMap.class).getSpeed(strSpeed);
-                                        } catch (IllegalArgumentException ex) {
+                                            speed = jmri.InstanceManager.getDefault(SignalSpeedMap.class).getSpeed(strSpeed);
+                                        } catch (Exception ex) {
                                             // not a name either
                                             log.warn("Using speed = 0.0 because could not understand \"{}\"", strSpeed);
                                         }
@@ -1186,7 +931,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                                      * is no block speed specified or the highest speed signal
                                      * that is under the minimum block speed.
                                      */
-                                    log.debug("{} signal state speed {} maxSigSpeed {} maxPathSpeed {}", destination.getDisplayName(), speed, maxSigSpeed, maxPathSpeed);
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("{} signal state speed {} maxSigSpeed {} maxPathSpeed {}", destination.getDisplayName(), speed, maxSigSpeed, maxPathSpeed);
+                                    }
                                     if (maxPathSpeed == 0) {
                                         if (maxSigSpeed == -1) {
                                             log.debug("min speed on this route is equal to 0 so will set this as our max speed");
@@ -1220,40 +967,39 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                                     }
                                 }
                             }
-                        } else {
+                        } else if (log.isDebugEnabled()) {
                             log.debug("Aspect has been disabled {}", advancedAspect[i]);
                         }
                     }
                 }
             }
-            if ((aspect != null) && (!aspect.isEmpty())) {
+            if ((aspect != null) && (!aspect.equals(""))) {
                 log.debug("setMastAppearance setting aspect \"{}\"", aspect);
                 String aspectSet = aspect; // for lambda
                 try {
-                    ThreadingUtil.runOnLayout(() -> {
+                    jmri.util.ThreadingUtil.runOnLayout(() -> {
                         getSourceMast().setAspect(aspectSet);
                     });
                 } catch (Exception ex) {
-                    log.error("Exception while setting Signal Logic", ex);
+                    log.error("Exception while setting Signal Logic: {}", ex);
                 }
                 return;
             }
         }
         log.debug("Aspect returned is not valid, setting stop");
-        ThreadingUtil.runOnLayout(() -> {
+        jmri.util.ThreadingUtil.runOnLayout(() -> {
             getSourceMast().setAspect(stopAspect);
         });
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void setConflictingLogic(SignalMast sm, LevelXing lx) {
         if (sm == null) {
             return;
         }
-        log.debug("setConflicting logic mast {}", sm.getDisplayName());
+        if (log.isDebugEnabled()) {
+            log.debug("setConflicting logic mast {}", sm.getDisplayName());
+        }
         if (sm == source) {
             log.debug("source is us so exit");
             return;
@@ -1275,9 +1021,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public void removeConflictingLogic(SignalMast sm, LevelXing lx) {
         if (sm == source) {
@@ -1303,23 +1046,23 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         LayoutBlock destinationBlock = null;
         LayoutBlock protectingBlock = null; //this is the block that the source signal is protecting
 
-        List<NamedBeanSetting> userSetTurnouts = new ArrayList<>(0);
-        Hashtable<Turnout, Integer> autoTurnouts = new Hashtable<>(0);
+        List<NamedBeanSetting> userSetTurnouts = new ArrayList<NamedBeanSetting>(0);
+        Hashtable<Turnout, Integer> autoTurnouts = new Hashtable<Turnout, Integer>(0);
         //Hashtable<Turnout, Boolean> turnoutThroats = new Hashtable<Turnout, Boolean>(0);
         //Hashtable<Turnout, Boolean> autoTurnoutThroats = new Hashtable<Turnout, Boolean>(0);
 
-        List<NamedBeanSetting> userSetMasts = new ArrayList<>(0);
-        Hashtable<SignalMast, String> autoMasts = new Hashtable<>(0);
-        List<NamedBeanSetting> userSetSensors = new ArrayList<>(0);
-        List<NamedBeanSetting> userSetBlocks = new ArrayList<>(0);
+        List<NamedBeanSetting> userSetMasts = new ArrayList<NamedBeanSetting>(0);
+        Hashtable<SignalMast, String> autoMasts = new Hashtable<SignalMast, String>(0);
+        List<NamedBeanSetting> userSetSensors = new ArrayList<NamedBeanSetting>(0);
+        List<NamedBeanSetting> userSetBlocks = new ArrayList<NamedBeanSetting>(0);
         boolean turnoutThrown = false;
         boolean permissiveBlock = false;
         boolean disposed = false;
 
-        List<LevelXing> blockInXings = new ArrayList<>();
+        List<LevelXing> blockInXings = new ArrayList<LevelXing>();
 
         //autoBlocks are for those automatically generated by the system.
-        LinkedHashMap<Block, Integer> autoBlocks = new LinkedHashMap<>(0);
+        LinkedHashMap<Block, Integer> autoBlocks = new LinkedHashMap<Block, Integer>(0);
 
         List<Block> xingAutoBlocks = new ArrayList<>(0);
         List<Block> dblCrossoverAutoBlocks = new ArrayList<>(0);
@@ -1340,9 +1083,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             this.destination = destination;
             if (destination.getAspect() == null) {
                 try {
-                    destination.setAspect(destination.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER));
+                    destination.setAspect(destination.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER));
                 } catch (Exception ex) {
-                    log.error("Error while creating Signal Logic", ex);
+                    log.error("Error while creating Signal Logic {}", ex);
                 }
             }
         }
@@ -1351,9 +1094,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             destination = newMast;
             if (destination.getAspect() == null) {
                 try {
-                    destination.setAspect(destination.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER));
+                    destination.setAspect(destination.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER));
                 } catch (Exception ex) {
-                    log.error("Error while creating Signal Logic", ex);
+                    log.error("Error while creating Signal Logic {}", ex);
                 }
             }
         }
@@ -1424,7 +1167,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 associatedSection = null;
                 return;
             }
-            associatedSection = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(section.getDisplayName(), section);
+            associatedSection = jmri.InstanceManager.getDefault(jmri.NamedBeanHandleManager.class).getNamedBeanHandle(section.getDisplayName(), section);
             if (!autoBlocks.isEmpty()) { // associatedSection is guaranteed to exist
                 createSectionDetails();
             }
@@ -1439,22 +1182,24 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
         void createSectionDetails() {
             getAssociatedSection().removeAllBlocksFromSection();
-            getAutoBlocksBetweenMasts().forEach(key -> {
+            for (Block key : getAutoBlocksBetweenMasts()) {
                 getAssociatedSection().addBlock(key);
-            });
-            String dir = Path.decodeDirection(getFacingBlock().getNeighbourDirection(getProtectingBlock()));
-            EntryPoint ep = new EntryPoint(getProtectingBlock().getBlock(), getFacingBlock().getBlock(), dir);
+            }
+            String dir = jmri.Path.decodeDirection(getFacingBlock().getNeighbourDirection(getProtectingBlock()));
+            jmri.EntryPoint ep = new jmri.EntryPoint(getProtectingBlock().getBlock(), getFacingBlock().getBlock(), dir);
             ep.setTypeForward();
             getAssociatedSection().addToForwardList(ep);
 
-            LayoutBlock proDestLBlock = InstanceManager.getDefault(LayoutBlockManager.class).getProtectedBlockByNamedBean(destination, destinationBlock.getMaxConnectedPanel());
+            LayoutBlock proDestLBlock = jmri.InstanceManager.getDefault(jmri.jmrit.display.layoutEditor.LayoutBlockManager.class).getProtectedBlockByNamedBean(destination, destinationBlock.getMaxConnectedPanel());
             if (proDestLBlock != null) {
-                log.debug("Add protecting Block {}", proDestLBlock.getDisplayName());
-                dir = Path.decodeDirection(proDestLBlock.getNeighbourDirection(destinationBlock));
-                ep = new EntryPoint(destinationBlock.getBlock(), proDestLBlock.getBlock(), dir);
+                if (log.isDebugEnabled()) {
+                    log.debug("Add protecting Block {}", proDestLBlock.getDisplayName());
+                }
+                dir = jmri.Path.decodeDirection(proDestLBlock.getNeighbourDirection(destinationBlock));
+                ep = new jmri.EntryPoint(destinationBlock.getBlock(), proDestLBlock.getBlock(), dir);
                 ep.setTypeReverse();
                 getAssociatedSection().addToReverseList(ep);
-            } else {
+            } else if (log.isDebugEnabled()) {
                 log.debug(" ### Protecting Block not found ### ");
             }
         }
@@ -1475,15 +1220,15 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
         void setTurnouts(Hashtable<NamedBeanHandle<Turnout>, Integer> turnouts) {
             if (this.userSetTurnouts != null) {
-                userSetTurnouts.forEach(nbh -> {
+                for (NamedBeanSetting nbh : userSetTurnouts) {
                     nbh.getBean().removePropertyChangeListener(propertyTurnoutListener);
-                });
+                }
             }
             destMastInit = false;
             if (turnouts == null) {
-                userSetTurnouts = new ArrayList<>(0);
+                userSetTurnouts = new ArrayList<NamedBeanSetting>(0);
             } else {
-                userSetTurnouts = new ArrayList<>();
+                userSetTurnouts = new ArrayList<NamedBeanSetting>();
                 Enumeration<NamedBeanHandle<Turnout>> e = turnouts.keys();
                 while (e.hasMoreElements()) {
                     NamedBeanHandle<Turnout> nbh = e.nextElement();
@@ -1506,9 +1251,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             }
             destMastInit = false;
             if (turnouts == null) {
-                this.autoTurnouts = new Hashtable<>(0);
+                this.autoTurnouts = new Hashtable<Turnout, Integer>(0);
             } else {
-                this.autoTurnouts = new Hashtable<>(turnouts);
+                this.autoTurnouts = turnouts;
             }
             firePropertyChange("autoturnouts", null, this.destination);
         }
@@ -1516,19 +1261,19 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         void setBlocks(Hashtable<Block, Integer> blocks) {
             log.debug("{} Set blocks called", destination.getDisplayName());
             if (this.userSetBlocks != null) {
-                userSetBlocks.forEach(nbh -> {
+                for (NamedBeanSetting nbh : userSetBlocks) {
                     nbh.getBean().removePropertyChangeListener(propertyBlockListener);
-                });
+                }
             }
             destMastInit = false;
 
-            userSetBlocks = new ArrayList<>(0);
+            userSetBlocks = new ArrayList<NamedBeanSetting>(0);
             if (blocks != null) {
-                userSetBlocks = new ArrayList<>();
+                userSetBlocks = new ArrayList<NamedBeanSetting>();
                 Enumeration<Block> e = blocks.keys();
                 while (e.hasMoreElements()) {
                     Block blk = e.nextElement();
-                    NamedBeanHandle<?> nbh = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(blk.getDisplayName(), blk);
+                    NamedBeanHandle<?> nbh = jmri.InstanceManager.getDefault(jmri.NamedBeanHandleManager.class).getNamedBeanHandle(blk.getDisplayName(), blk);
                     NamedBeanSetting nbs = new NamedBeanSetting(nbh, blocks.get(blk));
                     userSetBlocks.add(nbs);
                 }
@@ -1541,16 +1286,16 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 log.debug("{} called setAutoBlocks with {}", destination.getDisplayName(), (blocks != null ? "" + blocks.size() + " blocks in hash table" : "null hash table reference"));
             }
             if (this.autoBlocks != null) {
-                autoBlocks.keySet().forEach(key -> {
+                for (Block key : autoBlocks.keySet()) {
                     key.removePropertyChangeListener(propertyBlockListener);
-                });
+                }
             }
             destMastInit = false;
             if (blocks == null) {
-                this.autoBlocks = new LinkedHashMap<>(0);
+                this.autoBlocks = new LinkedHashMap<Block, Integer>(0);
 
             } else {
-                this.autoBlocks = new LinkedHashMap<>(blocks);
+                this.autoBlocks = blocks;
                 //We shall remove the facing block in the list.
                 if (facingBlock != null) {
                     if (autoBlocks.containsKey(facingBlock.getBlock())) {
@@ -1566,21 +1311,21 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
         void setMasts(Hashtable<SignalMast, String> masts) {
             if (this.userSetMasts != null) {
-                userSetMasts.forEach(nbh -> {
+                for (NamedBeanSetting nbh : userSetMasts) {
                     nbh.getBean().removePropertyChangeListener(propertySignalMastListener);
-                });
+                }
             }
 
             destMastInit = false;
 
             if (masts == null) {
-                userSetMasts = new ArrayList<>(0);
+                userSetMasts = new ArrayList<NamedBeanSetting>(0);
             } else {
-                userSetMasts = new ArrayList<>();
+                userSetMasts = new ArrayList<NamedBeanSetting>();
                 Enumeration<SignalMast> e = masts.keys();
                 while (e.hasMoreElements()) {
                     SignalMast mast = e.nextElement();
-                    NamedBeanHandle<?> nbh = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(mast.getDisplayName(), mast);
+                    NamedBeanHandle<?> nbh = jmri.InstanceManager.getDefault(jmri.NamedBeanHandleManager.class).getNamedBeanHandle(mast.getDisplayName(), mast);
                     NamedBeanSetting nbs = new NamedBeanSetting(nbh, masts.get(mast));
                     userSetMasts.add(nbs);
                 }
@@ -1595,7 +1340,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
          *                     the SML
          */
         void setAutoMasts(Hashtable<SignalMast, String> newAutoMasts, boolean overwrite) {
-            log.debug("{} setAutoMast Called", destination.getDisplayName());
+            if (log.isDebugEnabled()) {
+                log.debug("{} setAutoMast Called", destination.getDisplayName());
+            }
             if (this.autoMasts != null) {
                 Enumeration<SignalMast> keys = this.autoMasts.keys();
                 while (keys.hasMoreElements()) {
@@ -1607,13 +1354,13 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             destMastInit = false;
             if (overwrite) {
                 if (newAutoMasts == null) {
-                    this.autoMasts = new Hashtable<>(0);
+                    this.autoMasts = new Hashtable<SignalMast, String>(0);
                 } else {
-                    this.autoMasts = new Hashtable<>(newAutoMasts);
+                    this.autoMasts = newAutoMasts;
                 }
             } else {
                 if (newAutoMasts == null) {
-                    this.autoMasts = new Hashtable<>(0);
+                    this.autoMasts = new Hashtable<SignalMast, String>(0);
                 } else {
                     Enumeration<SignalMast> keys = newAutoMasts.keys();
                     while (keys.hasMoreElements()) {
@@ -1632,19 +1379,19 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
         void setSensors(Hashtable<NamedBeanHandle<Sensor>, Integer> sensors) {
             if (this.userSetSensors != null) {
-                userSetSensors.forEach(nbh -> {
+                for (NamedBeanSetting nbh : userSetSensors) {
                     nbh.getBean().removePropertyChangeListener(propertySensorListener);
-                });
+                }
             }
             destMastInit = false;
 
             if (sensors == null) {
-                userSetSensors = new ArrayList<>(0);
+                userSetSensors = new ArrayList<NamedBeanSetting>(0);
             } else {
-                userSetSensors = new ArrayList<>();
+                userSetSensors = new ArrayList<NamedBeanSetting>();
                 Enumeration<NamedBeanHandle<Sensor>> e = sensors.keys();
                 while (e.hasMoreElements()) {
-                    NamedBeanHandle<Sensor> nbh = e.nextElement();
+                    NamedBeanHandle<?> nbh = e.nextElement();
                     NamedBeanSetting nbs = new NamedBeanSetting(nbh, sensors.get(nbh));
                     userSetSensors.add(nbs);
                 }
@@ -1664,17 +1411,17 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             firePropertyChange("sensors", null, this.destination);
         }
 
-// not used now, preserved for later use
-//         void removeSensor(NamedBeanHandle<Sensor> sen) {
-//             for (NamedBeanSetting nbh : userSetSensors) {
-//                 if (nbh.getBean().equals(sen.getBean())) {
-//                     sen.getBean().removePropertyChangeListener(propertySensorListener);
-//                     userSetSensors.remove(nbh);
-//                     firePropertyChange("sensors", null, this.destination);
-//                     return;
-//                 }
-//             }
-//         }
+        @SuppressWarnings("unused") // not used now, preserved for later use
+        void removeSensor(NamedBeanHandle<Sensor> sen) {
+            for (NamedBeanSetting nbh : userSetSensors) {
+                if (nbh.getBean().equals(sen.getBean())) {
+                    sen.getBean().removePropertyChangeListener(propertySensorListener);
+                    userSetSensors.remove(nbh);
+                    firePropertyChange("sensors", null, this.destination);
+                    return;
+                }
+            }
+        }
 
         void removeSensor(Sensor sen) {
             for (NamedBeanSetting nbh : userSetSensors) {
@@ -1689,9 +1436,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
         List<Block> getBlocks() {
             List<Block> out = new ArrayList<>();
-            userSetBlocks.forEach(nbh -> {
+            for (NamedBeanSetting nbh : userSetBlocks) {
                 out.add((Block) nbh.getBean());
-            });
+            }
             return out;
         }
 
@@ -1699,15 +1446,15 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             List<Block> out = new ArrayList<>();
             Set<Block> blockKeys = autoBlocks.keySet();
             //while ( blockKeys.hasMoreElements() )
-            blockKeys.forEach(key -> {
+            for (Block key : blockKeys) {
                 //Block key = blockKeys.nextElement();
                 out.add(key);
-            });
+            }
             return out;
         }
 
         List<Block> getAutoBlocksBetweenMasts() {
-            if (destList.get(destination).xingAutoBlocks.isEmpty() && destList.get(destination).dblCrossoverAutoBlocks.isEmpty()) {
+            if (destList.get(destination).xingAutoBlocks.size() == 0 && destList.get(destination).dblCrossoverAutoBlocks.size() == 0) {
                 return getAutoBlocks();
             }
             List<Block> returnList = getAutoBlocks();
@@ -1715,6 +1462,8 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 if (xingAutoBlocks.contains(blk)) {
                     returnList.remove(blk);
                 }
+            }
+            for (Block blk : getAutoBlocks()) {
                 if (dblCrossoverAutoBlocks.contains(blk)) {
                     returnList.remove(blk);
                 }
@@ -1724,10 +1473,10 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
 
         List<Turnout> getTurnouts() {
-            List<Turnout> out = new ArrayList<>();
-            userSetTurnouts.forEach(nbh -> {
+            List<Turnout> out = new ArrayList<Turnout>();
+            for (NamedBeanSetting nbh : userSetTurnouts) {
                 out.add((Turnout) nbh.getBean());
-            });
+            }
             return out;
         }
 
@@ -1745,15 +1494,15 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
         @SuppressWarnings("unchecked") // (NamedBeanHandle<Turnout>) nbh.getNamedBean() is unchecked cast
         List<NamedBeanHandle<Turnout>> getNamedTurnouts() {
-            List<NamedBeanHandle<Turnout>> out = new ArrayList<>();
-            userSetTurnouts.forEach(nbh -> {
+            List<NamedBeanHandle<Turnout>> out = new ArrayList<NamedBeanHandle<Turnout>>();
+            for (NamedBeanSetting nbh : userSetTurnouts) {
                 out.add((NamedBeanHandle<Turnout>) nbh.getNamedBean());
-            });
+            }
             return out;
         }
 
         List<Turnout> getAutoTurnouts() {
-            List<Turnout> out = new ArrayList<>();
+            List<Turnout> out = new ArrayList<Turnout>();
             Enumeration<Turnout> en = autoTurnouts.keys();
             while (en.hasMoreElements()) {
                 out.add(en.nextElement());
@@ -1763,9 +1512,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
         List<SignalMast> getSignalMasts() {
             List<SignalMast> out = new ArrayList<>();
-            userSetMasts.forEach(nbh -> {
+            for (NamedBeanSetting nbh : userSetMasts) {
                 out.add((SignalMast) nbh.getBean());
-            });
+            }
             return out;
         }
 
@@ -1779,24 +1528,29 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
 
         List<Sensor> getSensors() {
-            List<Sensor> out = new ArrayList<>();
-            userSetSensors.forEach(nbh -> {
+            List<Sensor> out = new ArrayList<Sensor>();
+            for (NamedBeanSetting nbh : userSetSensors) {
                 out.add((Sensor) nbh.getBean());
-            });
+            }
             return out;
         }
 
         @SuppressWarnings("unchecked") // (NamedBeanHandle<Sensor>) nbh.getNamedBean() is unchecked cast
         List<NamedBeanHandle<Sensor>> getNamedSensors() {
-            List<NamedBeanHandle<Sensor>> out = new ArrayList<>();
-            userSetSensors.forEach(nbh -> {
+            List<NamedBeanHandle<Sensor>> out = new ArrayList<NamedBeanHandle<Sensor>>();
+            for (NamedBeanSetting nbh : userSetSensors) {
                 out.add((NamedBeanHandle<Sensor>) nbh.getNamedBean());
-            });
+            }
             return out;
         }
 
         boolean isBlockIncluded(Block block) {
-            return userSetBlocks.stream().anyMatch(nbh -> (nbh.getBean().equals(block)));
+            for (NamedBeanSetting nbh : userSetBlocks) {
+                if (nbh.getBean().equals(block)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         boolean isAutoBlockIncluded(LayoutBlock block) {
@@ -1811,19 +1565,39 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         }
 
         boolean isBlockIncluded(LayoutBlock block) {
-            return userSetBlocks.stream().anyMatch(nbh -> (nbh.getBean().equals(block.getBlock())));
+            for (NamedBeanSetting nbh : userSetBlocks) {
+                if (nbh.getBean().equals(block.getBlock())) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         boolean isTurnoutIncluded(Turnout turnout) {
-            return userSetTurnouts.stream().anyMatch(nbh -> (nbh.getBean().equals(turnout)));
+            for (NamedBeanSetting nbh : userSetTurnouts) {
+                if (nbh.getBean().equals(turnout)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         boolean isSensorIncluded(Sensor sensor) {
-            return userSetSensors.stream().anyMatch(nbh -> (nbh.getBean().equals(sensor)));
+            for (NamedBeanSetting nbh : userSetSensors) {
+                if (nbh.getBean().equals(sensor)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         boolean isSignalMastIncluded(SignalMast signal) {
-            return userSetMasts.stream().anyMatch(nbh -> (nbh.getBean().equals(signal)));
+            for (NamedBeanSetting nbh : userSetMasts) {
+                if (nbh.getBean().equals(signal)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         int getAutoBlockState(Block block) {
@@ -1921,11 +1695,11 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             log.debug("check Signal Dest State called");
             inWait = true;
 
-            // The next line forces a single initialization of InstanceManager.getDefault(SignalMastLogicManager.class)
+            // The next line forces a single initialization of InstanceManager.getDefault(jmri.SignalMastLogicManager.class)
             // before launching parallel threads
-            int tempDelay = InstanceManager.getDefault(SignalMastLogicManager.class).getSignalLogicDelay();
+            int tempDelay = InstanceManager.getDefault(jmri.SignalMastLogicManager.class).getSignalLogicDelay();
 
-            ThreadingUtil.runOnLayoutDelayed(
+            jmri.util.ThreadingUtil.runOnLayoutDelayed(
                     () -> {
                         checkStateDetails();
                         inWait = false;
@@ -1953,7 +1727,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             }
             log.debug("From {} to {} internal check state", getSourceMast().getDisplayName(), destination.getDisplayName());
             active = false;
-            if ((useLayoutEditor) && (autoTurnouts.isEmpty()) && (autoBlocks.isEmpty())) {
+            if ((useLayoutEditor) && (autoTurnouts.size() == 0) && (autoBlocks.size() == 0)) {
                 return;
             }
             boolean state = true;
@@ -1989,11 +1763,13 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             Enumeration<SignalMast> mastKeys = autoMasts.keys();
             while (mastKeys.hasMoreElements()) {
                 SignalMast key = mastKeys.nextElement();
-                log.debug("key {} {} {}", key.getDisplayName(), key.getAspect(), autoMasts.get(key));
+                if (log.isDebugEnabled()) {
+                    log.debug("{} {} {}", key.getDisplayName(), key.getAspect(), autoMasts.get(key));
+                }
                 if ((key.getAspect() != null) && (!key.getAspect().equals(autoMasts.get(key)))) {
                     if (isSignalMastIncluded(key)) {
                         //Basically if we have a blank aspect, we don't care about the state of the signalmast
-                        if (!getSignalMastState(key).isEmpty()) {
+                        if (!getSignalMastState(key).equals("")) {
                             if (!key.getAspect().equals(getSignalMastState(key))) {
                                 state = false;
                             }
@@ -2018,7 +1794,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             }
 
             for (Map.Entry<Block, Integer> entry : this.autoBlocks.entrySet()) {
-                log.debug(" entry {} {} {}", entry.getKey().getDisplayName(), entry.getKey().getState(), entry.getValue());
+                if (log.isDebugEnabled()) {
+                    log.debug("{} {} {}", entry.getKey().getDisplayName(), entry.getKey().getState(), entry.getValue());
+                }
                 if (entry.getKey().getState() != autoBlocks.get(entry.getKey())) {
                     if (isBlockIncluded(entry.getKey())) {
                         if (getBlockState(entry.getKey()) != 0x03) {
@@ -2034,7 +1812,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                         if (entry.getKey().getState() == Block.OCCUPIED && entry.getKey().getPermissiveWorking()) {
                             permissiveBlock = true;
                         } else if (entry.getKey().getState() == Block.UNDETECTED) {
-                            log.debug("Block {} is UNDETECTED so treat as unoccupied", entry.getKey().getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("Block {} is UNDETECTED so treat as unoccupied", entry.getKey().getDisplayName());
+                            }
                         } else {
                             state = false;
                         }
@@ -2057,7 +1837,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             if (permissiveBlock) {
                 /*If a block has been found to be permissive, but the source signalmast
                  does not support a call-on/permissive aspect then the route can not be set*/
-                if (getSourceMast().getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.PERMISSIVE) == null) {
+                if (getSourceMast().getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.PERMISSIVE) == null) {
                     state = false;
                 }
             }
@@ -2065,11 +1845,11 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             /*This check is purely for use with the dispatcher, it will check to see if any of the blocks are set to "useExtraColor"
              which is a means to determine if the block is in a section that is occupied and it not ours thus we can set the signal to danger.*/
             if (state && getAssociatedSection() != null
-                    && InstanceManager.getNullableDefault(jmri.jmrit.dispatcher.DispatcherFrame.class) != null
-                    && InstanceManager.getNullableDefault(LayoutBlockManager.class) != null
+                    && jmri.InstanceManager.getNullableDefault(jmri.jmrit.dispatcher.DispatcherFrame.class) != null
+                    && jmri.InstanceManager.getNullableDefault(jmri.jmrit.display.layoutEditor.LayoutBlockManager.class) != null
                     && getAssociatedSection().getState() != Section.FORWARD) {
 
-                LayoutBlockManager lbm = InstanceManager.getDefault(LayoutBlockManager.class);
+                LayoutBlockManager lbm = InstanceManager.getDefault(jmri.jmrit.display.layoutEditor.LayoutBlockManager.class);
                 for (Block key : autoBlocks.keySet()) {
                     LayoutBlock lb = lbm.getLayoutBlock(key);
                     if (lb != null && lb.getUseExtraColor()) {
@@ -2095,7 +1875,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             }
 
             active = state;
-            ThreadingUtil.runOnLayout(() -> {
+            jmri.util.ThreadingUtil.runOnLayout(() -> {
                 setSignalAppearance();
             });
         }
@@ -2113,7 +1893,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             turnoutThrown = false;
             permissiveBlock = false;
             boolean routeclear = true;
-            if ((useLayoutEditor) && (autoTurnouts.isEmpty()) && (autoBlocks.isEmpty()) && (autoMasts.isEmpty())) {
+            if ((useLayoutEditor) && (autoTurnouts.size() == 0) && (autoBlocks.size() == 0) && (autoMasts.size() == 0)) {
                 return;
             }
 
@@ -2154,7 +1934,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             Enumeration<SignalMast> mastKeys = autoMasts.keys();
             while (mastKeys.hasMoreElements()) {
                 SignalMast key = mastKeys.nextElement();
-                log.debug("{} auto mast add list {}", destination.getDisplayName(), key.getDisplayName());
+                if (log.isDebugEnabled()) {
+                    log.debug("{} auto mast add list {}", destination.getDisplayName(), key.getDisplayName());
+                }
                 key.addPropertyChangeListener(propertySignalMastListener);
                 if (!key.getAspect().equals(autoMasts.get(key))) {
                     if (isSignalMastIncluded(key)) {
@@ -2170,7 +1952,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             for (NamedBeanSetting nbh : userSetMasts) {
                 SignalMast key = (SignalMast) nbh.getBean();
                 key.addPropertyChangeListener(propertySignalMastListener);
-                log.debug("mast '{}' key aspect '{}'", destination.getDisplayName(), key.getAspect());
+                if (log.isDebugEnabled()) {
+                    log.debug("mast '{}' key aspect '{}'", destination.getDisplayName(), key.getAspect());
+                }
                 if ((key.getAspect() == null) || (!key.getAspect().equals(nbh.getStringSetting()))) {
                     routeclear = false;
                 }
@@ -2199,7 +1983,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                         if (entry.getKey().getState() == Block.OCCUPIED && entry.getKey().getPermissiveWorking()) {
                             permissiveBlock = true;
                         } else if (entry.getKey().getState() == Block.UNDETECTED) {
-                            log.debug("Block {} is UNDETECTED so treat as unoccupied", entry.getKey().getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("Block {} is UNDETECTED so treat as unoccupied", entry.getKey().getDisplayName());
+                            }
                         } else {
                             routeclear = false;
                         }
@@ -2221,7 +2007,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             if (permissiveBlock) {
                 /* If a block has been found to be permissive, but the source signalmast
                  does not support a call-on/permissive aspect then the route can not be set */
-                if (getSourceMast().getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.PERMISSIVE) == null) {
+                if (getSourceMast().getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.PERMISSIVE) == null) {
                     routeclear = false;
                 }
             }
@@ -2235,8 +2021,10 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             destMastInit = true;
         }
 
-        void useLayoutEditor(boolean boo) throws JmriException {
-            log.debug("{} called useLayoutEditor({}), is {}", destination.getDisplayName(), boo, useLayoutEditor);
+        void useLayoutEditor(boolean boo) throws jmri.JmriException {
+            if (log.isDebugEnabled()) {
+                log.debug("{} called useLayoutEditor({}), is {}", destination.getDisplayName(), boo, useLayoutEditor);
+            }
             if (useLayoutEditor == boo) {
                 return;
             }
@@ -2244,7 +2032,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             if ((boo) && (InstanceManager.getDefault(LayoutBlockManager.class).routingStablised())) {
                 try {
                     setupLayoutEditorDetails();
-                } catch (JmriException e) {
+                } catch (jmri.JmriException e) {
                     throw e;
                     // Considered normal if there is no valid path using the layout editor.
                 }
@@ -2257,48 +2045,52 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             }
         }
 
-        void useLayoutEditorDetails(boolean turnouts, boolean blocks) throws JmriException {
-            log.debug("{} use layout editor details called {}", destination.getDisplayName(), useLayoutEditor);
+        void useLayoutEditorDetails(boolean turnouts, boolean blocks) throws jmri.JmriException {
+            if (log.isDebugEnabled()) {
+                log.debug("{} use layout editor details called {}", destination.getDisplayName(), useLayoutEditor);
+            }
             useLayoutEditorTurnouts = turnouts;
             useLayoutEditorBlocks = blocks;
             if ((useLayoutEditor) && (InstanceManager.getDefault(LayoutBlockManager.class).routingStablised())) {
                 try {
                     setupLayoutEditorDetails();
-                } catch (JmriException e) {
+                } catch (jmri.JmriException e) {
                     throw e;
                     // Considered normal if there is no valid path using the Layout Editor.
                 }
             }
         }
 
-        void setupLayoutEditorDetails() throws JmriException {
+        void setupLayoutEditorDetails() throws jmri.JmriException {
             log.debug("setupLayoutEditorDetails: useLayoutEditor={} disposed={}", useLayoutEditor, disposed);
             if ((!useLayoutEditor) || (disposed)) {
                 return;
             }
             LayoutBlockManager lbm = InstanceManager.getDefault(LayoutBlockManager.class);
-            if ( destinationBlock != null) {
+            if ((destinationBlock != null) && (log.isDebugEnabled())) {
                 log.debug("{} Set use layout editor", destination.getDisplayName());
             }
-            Set<LayoutEditor> layout = InstanceManager.getDefault(EditorManager.class).getAll(LayoutEditor.class);
+            List<LayoutEditor> layout = InstanceManager.getDefault(PanelMenu.class).getLayoutEditorPanelList();
             List<LayoutBlock> protectingBlocks = new ArrayList<>();
             // We don't care which Layout Editor panel the signal mast is on, just so long as
             // the routing is done via layout blocks.
-            remoteProtectingBlock = null;
+            LayoutBlock remoteProtectingBlock = null;
             for (int i = 0; i < layout.size(); i++) {
-                log.debug("{} Layout name {}", destination.getDisplayName(), editor );
+                if (log.isDebugEnabled()) {
+                    log.debug("{} Layout name {}", destination.getDisplayName(), layout.get(i).getLayoutName());
+                }
                 if (facingBlock == null) {
-                    facingBlock = lbm.getFacingBlockByNamedBean(getSourceMast(), editor);
+                    facingBlock = lbm.getFacingBlockByNamedBean(getSourceMast(), layout.get(i));
                 }
                 if (protectingBlock == null && protectingBlocks.isEmpty()) {
                     //This is wrong
-                    protectingBlocks = lbm.getProtectingBlocksByNamedBean(getSourceMast(), editor);
+                    protectingBlocks = lbm.getProtectingBlocksByNamedBean(getSourceMast(), layout.get(i));
                 }
                 if (destinationBlock == null) {
-                    destinationBlock = lbm.getFacingBlockByNamedBean(destination, editor);
+                    destinationBlock = lbm.getFacingBlockByNamedBean(destination, layout.get(i));
                 }
                 if (remoteProtectingBlock == null) {
-                    remoteProtectingBlock = lbm.getProtectedBlockByNamedBean(destination, editor);
+                    remoteProtectingBlock = lbm.getProtectedBlockByNamedBean(destination, layout.get(i));
                 }
             }
             // At this point, if we are not using the Layout Editor turnout or block
@@ -2308,11 +2100,11 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             }
             if (facingBlock == null) {
                 log.error("No facing block found for source mast {}", getSourceMast().getDisplayName());
-                throw new JmriException("No facing block found for source mast " + getSourceMast().getDisplayName());
+                throw new jmri.JmriException("No facing block found for source mast " + getSourceMast().getDisplayName());
             }
             if (destinationBlock == null) {
                 log.error("No facing block found for destination mast {}", destination.getDisplayName());
-                throw new JmriException("No facing block found for destination mast " + destination.getDisplayName());
+                throw new jmri.JmriException("No facing block found for destination mast " + destination.getDisplayName());
             }
             List<LayoutBlock> lblks = new ArrayList<>();
             if (protectingBlock == null) {
@@ -2321,10 +2113,10 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 StringBuffer lBlksNamesBuf = new StringBuffer();
                 for (LayoutBlock pBlk : protectingBlocks) {
                     log.debug("checking layoutBlock {}", pBlk.getDisplayName());
-                    pBlkNames = pBlkNames + pBlk.getDisplayName() + " (" + lbm.getLayoutBlockConnectivityTools().checkValidDest(facingBlock, pBlk, destinationBlock, remoteProtectingBlock, LayoutBlockConnectivityTools.Routing.MASTTOMAST) + "), ";
-                    if (lbm.getLayoutBlockConnectivityTools().checkValidDest(facingBlock, pBlk, destinationBlock, remoteProtectingBlock, LayoutBlockConnectivityTools.Routing.MASTTOMAST)) {
+                    pBlkNames = pBlkNames + pBlk.getDisplayName() + " (" + lbm.getLayoutBlockConnectivityTools().checkValidDest(facingBlock, pBlk, destinationBlock, remoteProtectingBlock, LayoutBlockConnectivityTools.MASTTOMAST) + "), ";
+                    if (lbm.getLayoutBlockConnectivityTools().checkValidDest(facingBlock, pBlk, destinationBlock, remoteProtectingBlock, LayoutBlockConnectivityTools.MASTTOMAST)) {
                         try {
-                            lblks = lbm.getLayoutBlockConnectivityTools().getLayoutBlocks(facingBlock, destinationBlock, pBlk, true, LayoutBlockConnectivityTools.Routing.MASTTOMAST);
+                            lblks = lbm.getLayoutBlockConnectivityTools().getLayoutBlocks(facingBlock, destinationBlock, pBlk, true, jmri.jmrit.display.layoutEditor.LayoutBlockConnectivityTools.MASTTOMAST);
                             protectingBlock = pBlk;
                             log.debug("building path names...");
                             for (LayoutBlock lBlk : lblks) {
@@ -2332,7 +2124,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                                 lBlksNamesBuf.append(lBlk.getDisplayName());
                             }
                             break;
-                        } catch (JmriException ee) {
+                        } catch (jmri.JmriException ee) {
                             log.debug("path not found this time");
                         }
                     }
@@ -2340,33 +2132,33 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 String lBlksNames = new String(lBlksNamesBuf);
 
                 if (protectingBlock == null) {
-                    throw new JmriException("Path not valid, protecting block is null. Protecting block: " + pBlkNames + " not connected to " + facingBlock.getDisplayName() + ". Layout block names: " + lBlksNames);
+                    throw new jmri.JmriException("Path not valid, protecting block is null. Protecting block: " + pBlkNames + " not connected to " + facingBlock.getDisplayName() + ". Layout block names: " + lBlksNames);
                 }
             }
             try {
-                if (!lbm.getLayoutBlockConnectivityTools().checkValidDest(facingBlock, protectingBlock, destinationBlock, remoteProtectingBlock, LayoutBlockConnectivityTools.Routing.MASTTOMAST)) {
-                    throw new JmriException("Path not valid, destination check failed.");
+                if (!lbm.getLayoutBlockConnectivityTools().checkValidDest(facingBlock, protectingBlock, destinationBlock, remoteProtectingBlock, LayoutBlockConnectivityTools.MASTTOMAST)) {
+                    throw new jmri.JmriException("Path not valid, destination check failed.");
                 }
-            } catch (JmriException e) {
+            } catch (jmri.JmriException e) {
                 throw e;
             }
             if (log.isDebugEnabled()) {
-                log.debug("{} face {}", destination.getDisplayName(), facingBlock);
-                log.debug("{} prot {}", destination.getDisplayName(), protectingBlock);
-                log.debug("{} dest {}", destination.getDisplayName(), destinationBlock);
+                log.debug(destination.getDisplayName() + " face " + facingBlock);
+                log.debug(destination.getDisplayName() + " prot " + protectingBlock);
+                log.debug(destination.getDisplayName() + " dest " + destinationBlock);
             }
 
             if (destinationBlock != null && protectingBlock != null && facingBlock != null) {
                 setAutoMasts(null, true);
                 if (log.isDebugEnabled()) {
-                    log.debug("{} face {}", destination.getDisplayName(), facingBlock.getDisplayName());
-                    log.debug("{} prot {}", destination.getDisplayName(), protectingBlock.getDisplayName());
-                    log.debug("{} dest {}", destination.getDisplayName(), destinationBlock.getDisplayName());
+                    log.debug(destination.getDisplayName() + " face " + facingBlock.getDisplayName());
+                    log.debug(destination.getDisplayName() + " prot " + protectingBlock.getDisplayName());
+                    log.debug(destination.getDisplayName() + " dest " + destinationBlock.getDisplayName());
                 }
 
                 try {
-                    lblks = lbm.getLayoutBlockConnectivityTools().getLayoutBlocks(facingBlock, destinationBlock, protectingBlock, true, LayoutBlockConnectivityTools.Routing.MASTTOMAST);
-                } catch (JmriException ee) {
+                    lblks = lbm.getLayoutBlockConnectivityTools().getLayoutBlocks(facingBlock, destinationBlock, protectingBlock, true, jmri.jmrit.display.layoutEditor.LayoutBlockConnectivityTools.MASTTOMAST);
+                } catch (jmri.JmriException ee) {
                     log.error("No blocks found by the layout editor for pair {}-{}", source.getDisplayName(), destination.getDisplayName());
                 }
                 LinkedHashMap<Block, Integer> block = setupLayoutEditorTurnoutDetails(lblks);
@@ -2374,7 +2166,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 for (int i = 0; i < blockInXings.size(); i++) {
                     blockInXings.get(i).removeSignalMastLogic(source);
                 }
-                blockInXings = new ArrayList<>(0);
+                blockInXings = new ArrayList<LevelXing>(0);
                 xingAutoBlocks = new ArrayList<>(0);
                 for (LayoutEditor lay : layout) {
                     for (LevelXing levelXing : lay.getLevelXings()) {
@@ -2420,10 +2212,12 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
         LinkedHashMap<Block, Integer> setupLayoutEditorTurnoutDetails(List<LayoutBlock> lblks) {
             ConnectivityUtil connection;
             List<LayoutTrackExpectedState<LayoutTurnout>> turnoutList;
-            Hashtable<Turnout, Integer> turnoutSettings = new Hashtable<>();
-            LinkedHashMap<Block, Integer> block = new LinkedHashMap<>();
+            Hashtable<Turnout, Integer> turnoutSettings = new Hashtable<Turnout, Integer>();
+            LinkedHashMap<Block, Integer> block = new LinkedHashMap<Block, Integer>();
             for (int i = 0; i < lblks.size(); i++) {
-                log.debug("layoutblock {}",lblks.get(i).getDisplayName());
+                if (log.isDebugEnabled()) {
+                    log.debug(lblks.get(i).getDisplayName());
+                }
                 block.put(lblks.get(i).getBlock(), Block.UNOCCUPIED);
                 if ((i > 0)) {
                     int nxtBlk = i + 1;
@@ -2433,74 +2227,59 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                     }
                     //We use the best connectivity for the current block;
                     connection = new ConnectivityUtil(lblks.get(i).getMaxConnectedPanel());
-                    if (i == lblks.size() - 1 && remoteProtectingBlock != null) {
-                        turnoutList = connection.getTurnoutList(lblks.get(i).getBlock(), lblks.get(preBlk).getBlock(), remoteProtectingBlock.getBlock());
-                    }else{
-                        turnoutList = connection.getTurnoutList(lblks.get(i).getBlock(), lblks.get(preBlk).getBlock(), lblks.get(nxtBlk).getBlock());
-                    }
+                    turnoutList = connection.getTurnoutList(lblks.get(i).getBlock(), lblks.get(preBlk).getBlock(), lblks.get(nxtBlk).getBlock());
                     for (int x = 0; x < turnoutList.size(); x++) {
                         LayoutTurnout lt = turnoutList.get(x).getObject();
                         if (lt instanceof LayoutSlip) {
                             LayoutSlip ls = (LayoutSlip) lt;
                             int slipState = turnoutList.get(x).getExpectedState();
                             int taState = ls.getTurnoutState(slipState);
-                            Turnout tTemp = ls.getTurnout();
-                            if (tTemp == null ) {
-                                log.error("Unexpected null Turnout in {}, skipped", ls);
-                                continue; // skip this one in loop, what else can you do?
-                            }
                             turnoutSettings.put(ls.getTurnout(), taState);
                             int tbState = ls.getTurnoutBState(slipState);
                             turnoutSettings.put(ls.getTurnoutB(), tbState);
-                        } else if ( lt != null ) {
+                        } else {
                             String t = lt.getTurnoutName();
-                            // temporary = why is this looking up the Turnout instead of using getTurnout()?
                             Turnout turnout = InstanceManager.turnoutManagerInstance().getTurnout(t);
                             if (log.isDebugEnabled()) {
-                                if (    (lt.getTurnoutType() == LayoutTurnout.TurnoutType.RH_TURNOUT ||
-                                         lt.getTurnoutType() == LayoutTurnout.TurnoutType.LH_TURNOUT ||
-                                         lt.getTurnoutType() == LayoutTurnout.TurnoutType.WYE_TURNOUT)
-                                        && (!lt.getBlockName().isEmpty())) {
+                                if ((lt.getTurnoutType() <= 3) && (!lt.getBlockName().equals(""))) {
                                     log.debug("turnout in list is straight left/right wye");
-                                    log.debug("turnout block Name {}", lt.getBlockName());
-                                    log.debug("current {} - pre {}", lblks.get(i).getBlock().getDisplayName(), lblks.get(preBlk).getBlock().getDisplayName());
-                                    log.debug("A {}", lt.getConnectA());
-                                    log.debug("B {}", lt.getConnectB());
-                                    log.debug("C {}", lt.getConnectC());
-                                    log.debug("D {}", lt.getConnectD());
+                                    log.debug("turnout block Name " + lt.getBlockName());
+                                    log.debug("current " + lblks.get(i).getBlock().getDisplayName() + " - pre " + lblks.get(preBlk).getBlock().getDisplayName());
+                                    log.debug("A " + lt.getConnectA());
+                                    log.debug("B " + lt.getConnectB());
+                                    log.debug("C " + lt.getConnectC());
+                                    log.debug("D " + lt.getConnectD());
                                 }
                             }
                             if (turnout != null ) {
                                 turnoutSettings.put(turnout, turnoutList.get(x).getExpectedState());
                             }
-                            Turnout tempT;
-                            if ((tempT = lt.getSecondTurnout()) != null) {
-                                turnoutSettings.put(tempT, turnoutList.get(x).getExpectedState());
+                            if (lt.getSecondTurnout() != null) {
+                                turnoutSettings.put(lt.getSecondTurnout(), turnoutList.get(x).getExpectedState());
                             }
                             /* TODO: We could do with a more intelligent way to deal with double crossovers, other than
                                 just looking at the state of the other conflicting blocks, such as looking at Signalmasts
                                 that protect the other blocks and the settings of any other turnouts along the way.
                              */
-                            if (lt.getTurnoutType() == LayoutTurnout.TurnoutType.DOUBLE_XOVER) {
-                                LayoutBlock tempLB;
-                                if (turnoutList.get(x).getExpectedState() == Turnout.THROWN) {
+                            if (lt.getTurnoutType() == LayoutTurnout.DOUBLE_XOVER) {
+                                if (turnoutList.get(x).getExpectedState() == jmri.Turnout.THROWN) {
                                     if (lt.getLayoutBlock() == lblks.get(i) || lt.getLayoutBlockC() == lblks.get(i)) {
-                                        if ((tempLB = lt.getLayoutBlockB()) != null) {
-                                            dblCrossoverAutoBlocks.add(tempLB.getBlock());
-                                            block.put(tempLB.getBlock(), Block.UNOCCUPIED);
+                                        if (lt.getLayoutBlockB() != null) {
+                                            dblCrossoverAutoBlocks.add(lt.getLayoutBlockB().getBlock());
+                                            block.put(lt.getLayoutBlockB().getBlock(), Block.UNOCCUPIED);
                                         }
-                                        if ((tempLB = lt.getLayoutBlockD()) != null) {
-                                            dblCrossoverAutoBlocks.add(tempLB.getBlock());
-                                            block.put(tempLB.getBlock(), Block.UNOCCUPIED);
+                                        if (lt.getLayoutBlockD() != null) {
+                                            dblCrossoverAutoBlocks.add(lt.getLayoutBlockD().getBlock());
+                                            block.put(lt.getLayoutBlockD().getBlock(), Block.UNOCCUPIED);
                                         }
                                     } else if (lt.getLayoutBlockB() == lblks.get(i) || lt.getLayoutBlockD() == lblks.get(i)) {
-                                        if ((tempLB = lt.getLayoutBlock()) != null) {
-                                            dblCrossoverAutoBlocks.add(tempLB.getBlock());
-                                            block.put(tempLB.getBlock(), Block.UNOCCUPIED);
+                                        if (lt.getLayoutBlock() != null) {
+                                            dblCrossoverAutoBlocks.add(lt.getLayoutBlock().getBlock());
+                                            block.put(lt.getLayoutBlock().getBlock(), Block.UNOCCUPIED);
                                         }
-                                        if ((tempLB = lt.getLayoutBlockC()) != null) {
-                                            dblCrossoverAutoBlocks.add(tempLB.getBlock());
-                                            block.put(tempLB.getBlock(), Block.UNOCCUPIED);
+                                        if (lt.getLayoutBlockC() != null) {
+                                            dblCrossoverAutoBlocks.add(lt.getLayoutBlockC().getBlock());
+                                            block.put(lt.getLayoutBlockC().getBlock(), Block.UNOCCUPIED);
                                         }
                                     }
                                 }
@@ -2525,38 +2304,40 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
          * @param overwrite When true, replace an existing autoMasts list in the
          *                  SML
          */
-        void setupAutoSignalMast(SignalMastLogic sml, boolean overwrite) {
+        void setupAutoSignalMast(jmri.SignalMastLogic sml, boolean overwrite) {
             if (!allowAutoSignalMastGeneration) {
                 return;
             }
-            List<SignalMastLogic> smlList = InstanceManager.getDefault(SignalMastLogicManager.class).getLogicsByDestination(destination);
+            List<jmri.SignalMastLogic> smlList = InstanceManager.getDefault(jmri.SignalMastLogicManager.class).getLogicsByDestination(destination);
             List<Block> allBlock = new ArrayList<>();
 
-            userSetBlocks.forEach(nbh -> {
+            for (NamedBeanSetting nbh : userSetBlocks) {
                 allBlock.add((Block) nbh.getBean());
-            });
+            }
 
             Set<Block> blockKeys = autoBlocks.keySet();
-            blockKeys.stream().filter(key -> (!allBlock.contains(key))).forEachOrdered(key -> {
-                allBlock.add(key);
-            });
+            for (Block key : blockKeys) {
+                if (!allBlock.contains(key)) {
+                    allBlock.add(key);
+                }
+            }
             Hashtable<SignalMast, String> masts;
             if (sml != null) {
                 masts = autoMasts;
                 if (sml.areBlocksIncluded(allBlock)) {
                     SignalMast mast = sml.getSourceMast();
-                    String danger = mast.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER);
+                    String danger = mast.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER);
                     masts.put(mast, danger);
                 } else {
                     //No change so will leave.
                     return;
                 }
             } else {
-                masts = new Hashtable<>();
+                masts = new Hashtable<SignalMast, String>();
                 for (int i = 0; i < smlList.size(); i++) {
                     if (smlList.get(i).areBlocksIncluded(allBlock)) {
                         SignalMast mast = smlList.get(i).getSourceMast();
-                        String danger = mast.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER);
+                        String danger = mast.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER);
                         masts.put(mast, danger);
                     }
                 }
@@ -2571,8 +2352,10 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
          * @param mast The Signal Mast to be added
          */
         void addAutoSignalMast(SignalMast mast) {
-            log.debug("{} add mast to auto list {}", destination.getDisplayName(), mast);
-            String danger = mast.getAppearanceMap().getSpecificAppearance(SignalAppearanceMap.DANGER);
+            if (log.isDebugEnabled()) {
+                log.debug("{} add mast to auto list {}", destination.getDisplayName(), mast);
+            }
+            String danger = mast.getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.DANGER);
             if (danger == null) {
                 log.error("Can not add SignalMast {} to logic for {} to {} as it does not have a Danger appearance configured", mast.getDisplayName(), source.getDisplayName(), destination.getDisplayName());
                 return;
@@ -2649,9 +2432,10 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 return;
             }
 
-            userSetTurnouts.stream().map(nbh -> (Turnout) nbh.getBean()).forEachOrdered(key -> {
+            for (NamedBeanSetting nbh : userSetTurnouts) {
+                Turnout key = (Turnout) nbh.getBean();
                 key.setLocked(Turnout.CABLOCKOUT + Turnout.PUSHBUTTONLOCKOUT, true);
-            });
+            }
             Enumeration<Turnout> keys = autoTurnouts.keys();
             while (keys.hasMoreElements()) {
                 Turnout key = keys.nextElement();
@@ -2672,62 +2456,79 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 key.setLocked(Turnout.CABLOCKOUT + Turnout.PUSHBUTTONLOCKOUT, false);
             }
 
-            userSetTurnouts.stream().map(nbh -> (Turnout) nbh.getBean()).forEachOrdered(key -> {
+            for (NamedBeanSetting nbh : userSetTurnouts) {
+                Turnout key = (Turnout) nbh.getBean();
                 key.setLocked(Turnout.CABLOCKOUT + Turnout.PUSHBUTTONLOCKOUT, false);
-            });
+            }
         }
 
         protected void calculateSpeed() {
-            log.debug("{} calculate the speed setting for this logic ie what the signalmast will display", destination.getDisplayName());
+            if (log.isDebugEnabled()) {
+                log.debug("{} calculate the speed setting for this logic ie what the signalmast will display", destination.getDisplayName());
+            }
             minimumBlockSpeed = 0.0f;
             Enumeration<Turnout> keys = autoTurnouts.keys();
             while (keys.hasMoreElements()) {
                 Turnout key = keys.nextElement();
-                log.debug("{} turnout {}", destination.getDisplayName(), key.getDisplayName());
+                if (log.isDebugEnabled()) {
+                    log.debug("{} turnout {}", destination.getDisplayName(), key.getDisplayName());
+                }
                 if (!isTurnoutIncluded(key)) {
                     if (autoTurnouts.get(key) == Turnout.CLOSED) {
                         if (((key.getStraightLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getStraightLimit() != -1)) {
                             minimumBlockSpeed = key.getStraightLimit();
-                            log.debug("{} turnout {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                            if (log.isDebugEnabled()) {
+                                log.debug("{} turnout {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                            }
                         }
                     } else {
                         if (((key.getDivergingLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getDivergingLimit() != -1)) {
                             minimumBlockSpeed = key.getDivergingLimit();
+                            if (log.isDebugEnabled()) {
+                                log.debug("{} turnout {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (NamedBeanSetting nbh : userSetTurnouts) {
+                Turnout key = (Turnout) nbh.getBean();
+                if (nbh.getSetting() == Turnout.CLOSED) {
+                    if (((key.getStraightLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getStraightLimit() != -1)) {
+                        minimumBlockSpeed = key.getStraightLimit();
+                        if (log.isDebugEnabled()) {
+                            log.debug("{} turnout {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                        }
+                    }
+                } else if (nbh.getSetting() == Turnout.THROWN) {
+                    if (((key.getDivergingLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getDivergingLimit() != -1)) {
+                        minimumBlockSpeed = key.getDivergingLimit();
+                        if (log.isDebugEnabled()) {
                             log.debug("{} turnout {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
                         }
                     }
                 }
             }
 
-            userSetTurnouts.forEach(nbh -> {
-                Turnout key = (Turnout) nbh.getBean();
-                if (nbh.getSetting() == Turnout.CLOSED) {
-                    if (((key.getStraightLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getStraightLimit() != -1)) {
-                        minimumBlockSpeed = key.getStraightLimit();
-                        log.debug("{} turnout {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
-                    }
-                } else if (nbh.getSetting() == Turnout.THROWN) {
-                    if (((key.getDivergingLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getDivergingLimit() != -1)) {
-                        minimumBlockSpeed = key.getDivergingLimit();
-                        log.debug("{} turnout {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
-                    }
-                }
-            });
-
             Set<Block> autoBlockKeys = autoBlocks.keySet();
             for (Block key : autoBlockKeys) {
-                log.debug("{} auto block add list {}", destination.getDisplayName(), key.getDisplayName());
+                log.debug(destination.getDisplayName() + " auto block add list " + key.getDisplayName());
                 if (!isBlockIncluded(key)) {
                     if (((key.getSpeedLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getSpeedLimit() != -1)) {
                         minimumBlockSpeed = key.getSpeedLimit();
-                        log.debug("{} block {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                        if (log.isDebugEnabled()) {
+                            log.debug("{} block {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                        }
                     }
                 }
             }
             for (NamedBeanSetting nbh : userSetBlocks) {
                 Block key = (Block) nbh.getBean();
                 if (((key.getSpeedLimit() < minimumBlockSpeed) || (minimumBlockSpeed == 0)) && (key.getSpeedLimit() != -1)) {
-                    log.debug("{} block {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                    if (log.isDebugEnabled()) {
+                        log.debug("{} block {} set speed to {}", destination.getDisplayName(), key.getDisplayName(), minimumBlockSpeed);
+                    }
                     minimumBlockSpeed = key.getSpeedLimit();
                 }
             }
@@ -2741,7 +2542,7 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 Sensor sen = (Sensor) e.getSource();
                 log.debug("{} to {} destination sensor {} trigger {}", source.getDisplayName(), destination.getDisplayName(), sen.getDisplayName(), e.getPropertyName());
                 if (e.getPropertyName().equals("KnownState")) {
-                    int now = ((Integer) e.getNewValue());
+                    int now = ((Integer) e.getNewValue()).intValue();
                     log.debug("current value {} value we want {}", now, getSensorState(sen));
                     if (isSensorIncluded(sen) && getSensorState(sen) != now) {
                         log.debug("Sensor {} caused the signalmast to be set to danger", sen.getDisplayName());
@@ -2766,29 +2567,37 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 if (e.getPropertyName().equals("KnownState")) {
                     //Need to check this against the manual list vs auto list
                     //The manual list should over-ride the auto list
-                    int now = ((Integer) e.getNewValue());
+                    int now = ((Integer) e.getNewValue()).intValue();
                     if (isTurnoutIncluded(turn)) {
                         if (getTurnoutState(turn) != now) {
-                            log.debug("Turnout {} caused the signalmast to be set", turn.getDisplayName());
-                            log.debug("From {} to {} Turnout {} caused the signalmast to be set to danger", getSourceMast().getDisplayName(), destination.getDisplayName(), turn.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("Turnout {} caused the signalmast to be set", turn.getDisplayName());
+                                log.debug("From {} to {} Turnout {} caused the signalmast to be set to danger", getSourceMast().getDisplayName(), destination.getDisplayName(), turn.getDisplayName());
+                            }
                             if (active == true) {
                                 active = false;
                                 setSignalAppearance();
                             }
                         } else {
-                            log.debug("{} turnout {} triggers a calculation of change", destination.getDisplayName(), turn.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("{} turnout {} triggers a calculation of change", destination.getDisplayName(), turn.getDisplayName());
+                            }
                             checkState();
                         }
                     } else if (autoTurnouts.containsKey(turn)) {
                         if (getAutoTurnoutState(turn) != now) {
-                            log.debug("Turnout {} auto caused the signalmast to be set", turn.getDisplayName());
-                            log.debug("From {} to {} Auto Turnout {} auto caused the signalmast to be set to danger", getSourceMast().getDisplayName(), destination.getDisplayName(), turn.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("Turnout {} auto caused the signalmast to be set", turn.getDisplayName());
+                                log.debug("From {} to {} Auto Turnout {} auto caused the signalmast to be set to danger", getSourceMast().getDisplayName(), destination.getDisplayName(), turn.getDisplayName());
+                            }
                             if (active == true) {
                                 active = false;
                                 setSignalAppearance();
                             }
                         } else {
-                            log.debug("From {} to {} turnout {} triggers a calculation of change", getSourceMast().getDisplayName(), destination.getDisplayName(), turn.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("From {} to {} turnout {} triggers a calculation of change", getSourceMast().getDisplayName(), destination.getDisplayName(), turn.getDisplayName());
+                            }
                             checkState();
                         }
                     }
@@ -2803,20 +2612,28 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             @Override
             public void propertyChange(PropertyChangeEvent e) {
                 Block block = (Block) e.getSource();
-                log.debug("{} destination block {} trigger {} {}", destination.getDisplayName(), block.getDisplayName(), e.getPropertyName(), e.getNewValue());
+                if (log.isDebugEnabled()) {
+                    log.debug("{} destination block {} trigger {} {}", destination.getDisplayName(), block.getDisplayName(), e.getPropertyName(), e.getNewValue());
+                }
                 if (e.getPropertyName().equals("state") || e.getPropertyName().equals("allocated")) {
-                    // TODO: what is this?
-                    log.debug("Included in user entered block {}", Boolean.toString(isBlockIncluded(block)));
-                    log.debug("Included in AutoGenerated Block {}", Boolean.toString(autoBlocks.containsKey(block)));
+                    if (log.isDebugEnabled()) {
+                        // TODO: what is this?
+                        log.debug("Included in user entered block {}", Boolean.toString(isBlockIncluded(block)));
+                        log.debug("Included in AutoGenerated Block {}", Boolean.toString(autoBlocks.containsKey(block)));
+                    }
                     if (isBlockIncluded(block)) {
-                        log.debug("{} in manual block", destination.getDisplayName());
-                        log.debug("  state: {}  {}", getBlockState(block), block.getState());
+                        if (log.isDebugEnabled()) {
+                            log.debug("{} in manual block", destination.getDisplayName());
+                            log.debug("{}  {}", getBlockState(block), block.getState());
+                        }
                         checkState();
                     } else if (autoBlocks.containsKey(block)) {
-                        log.debug("{} in auto block", destination.getDisplayName());
-                        log.debug("  states: {}  {}", getAutoBlockState(block), block.getState());
+                        if (log.isDebugEnabled()) {
+                            log.debug("{} in auto block", destination.getDisplayName());
+                            log.debug("{}  {}", getAutoBlockState(block), block.getState());
+                        }
                         checkState();
-                    } else {
+                    } else if (log.isDebugEnabled()) {
                         log.debug("{} Not found", destination.getDisplayName());
                     }
                 } else if (e.getPropertyName().equals("BlockSpeedChange")) {
@@ -2830,34 +2647,46 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             public void propertyChange(PropertyChangeEvent e) {
 
                 SignalMast mast = (SignalMast) e.getSource();
-                log.debug("{} signalmast change {} {}", destination.getDisplayName(), mast.getDisplayName(), e.getPropertyName());
+                if (log.isDebugEnabled()) {
+                    log.debug("{} signalmast change {} {}", destination.getDisplayName(), mast.getDisplayName(), e.getPropertyName());
+                }
                 //   log.debug(destination.getDisplayName() + " destination sensor "+ sen.getDisplayName() + "trigger");
                 if (e.getPropertyName().equals("Aspect")) {
 
                     String now = ((String) e.getNewValue());
-                    log.debug("{} match property {}", destination.getDisplayName(), now);
+                    if (log.isDebugEnabled()) {
+                        log.debug("{} match property {}", destination.getDisplayName(), now);
+                    }
                     if (isSignalMastIncluded(mast)) {
                         if (!now.equals(getSignalMastState(mast))) {
-                            log.debug("{} in mast list SignalMast {} caused the signalmast to be set", destination.getDisplayName(), mast.getDisplayName());
-                            log.debug("SignalMast {} caused the signalmast to be set", mast.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("{} in mast list SignalMast {} caused the signalmast to be set", destination.getDisplayName(), mast.getDisplayName());
+                                log.debug("SignalMast {} caused the signalmast to be set", mast.getDisplayName());
+                            }
                             if (active) {
                                 active = false;
                                 setSignalAppearance();
                             }
                         } else {
-                            log.debug("{} in mast list signalmast change", destination.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("{} in mast list signalmast change", destination.getDisplayName());
+                            }
                             checkState();
                         }
                     } else if (autoMasts.containsKey(mast)) {
                         if (!now.equals(getAutoSignalMastState(mast))) {
-                            log.debug("SignalMast {} caused the signalmast to be set", mast.getDisplayName());
-                            log.debug("{} in auto mast list SignalMast {} caused the signalmast to be set", destination.getDisplayName(), mast.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("SignalMast {} caused the signalmast to be set", mast.getDisplayName());
+                                log.debug("{} in auto mast list SignalMast {} caused the signalmast to be set", destination.getDisplayName(), mast.getDisplayName());
+                            }
                             if (active) {
                                 active = false;
                                 setSignalAppearance();
                             }
                         } else {
-                            log.debug("{} in auto mast list signalmast change", destination.getDisplayName());
+                            if (log.isDebugEnabled()) {
+                                log.debug("{} in auto mast list signalmast change", destination.getDisplayName());
+                            }
                             checkState();
                         }
                     }
@@ -2904,28 +2733,32 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
     }
 
     /**
-     * The listener on the destination Signal Mast.
+     * The listener on the destination Signal Mast
      */
     protected PropertyChangeListener propertyDestinationMastListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             SignalMast mast = (SignalMast) e.getSource();
             if (mast == destination) {
-                log.debug("destination mast change {}", mast.getDisplayName());
+                if (log.isDebugEnabled()) {
+                    log.debug("destination mast change {}", mast.getDisplayName());
+                }
                 setSignalAppearance();
             }
         }
     };
 
     /**
-     * The listener on the source Signal Mast.
+     * The listener on the source Signal Mast
      */
     protected PropertyChangeListener propertySourceMastListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             SignalMast mast = (SignalMast) e.getSource();
             if ((mast == source) && (e.getPropertyName().equals("Held"))) {
-                log.debug("source mast change {} {}", mast.getDisplayName(), e.getPropertyName());
+                if (log.isDebugEnabled()) {
+                    log.debug("source mast change {} {}", mast.getDisplayName(), e.getPropertyName());
+                }
                 setSignalAppearance();
             }
         }
@@ -2933,9 +2766,9 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
     //@todo need to think how we deal with auto generated lists based upon the layout editor.
     @Override
-    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+    public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
         NamedBean nb = (NamedBean) evt.getOldValue();
-        if ("CanDelete".equals(evt.getPropertyName())) { // NOI18N
+        if ("CanDelete".equals(evt.getPropertyName())) { //NOI18N
             boolean found = false;
             StringBuilder message = new StringBuilder();
             if (nb instanceof SignalMast) {
@@ -2947,24 +2780,23 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                         message.append("</li>");
                     }
                     message.append("</ul>");
-                    throw new PropertyVetoException(message.toString(), evt);
+                    throw new java.beans.PropertyVetoException(message.toString(), evt);
 
                 } else if (isDestinationValid((SignalMast) nb)) {
-                    throw new PropertyVetoException("Is the end point mast for logic attached to signal mast " + source.getDisplayName() + " which will be <b>Deleted</b> ", evt);
+                    throw new java.beans.PropertyVetoException("Is the end point mast for logic attached to signal mast " + source.getDisplayName() + " which will be <b>Deleted</b> ", evt);
                 }
                 for (SignalMast sm : getDestinationList()) {
                     if (isSignalMastIncluded((SignalMast) nb, sm)) {
                         message.append("<li>");
-                        message.append("Used in conflicting logic of ").append(source.getDisplayName())
-                            .append(" & ").append(sm.getDisplayName()).append("</li>");
+                        message.append("Used in conflicting logic of " + source.getDisplayName() + " & " + sm.getDisplayName());
+                        message.append("</li>");
                     }
                 }
             }
             if (nb instanceof Turnout) {
                 for (SignalMast sm : getDestinationList()) {
                     if (isTurnoutIncluded((Turnout) nb, sm)) {
-                        message.append("<li>Is in logic between Signal Masts ").append(source.getDisplayName())
-                            .append(" ").append(sm.getDisplayName()).append("</li>");
+                        message.append("<li>Is in logic between Signal Masts " + source.getDisplayName() + " " + sm.getDisplayName() + "</li>");
                         found = true;
                     }
                 }
@@ -2973,16 +2805,16 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
                 for (SignalMast sm : getDestinationList()) {
                     if (isSensorIncluded((Sensor) nb, sm)) {
                         message.append("<li>");
-                        message.append("Is in logic between Signal Masts ").append(source.getDisplayName())
-                            .append(" ").append(sm.getDisplayName()).append("</li>");
+                        message.append("Is in logic between Signal Masts " + source.getDisplayName() + " " + sm.getDisplayName());
+                        message.append("</li>");
                         found = true;
                     }
                 }
             }
             if (found) {
-                throw new PropertyVetoException(message.toString(), evt);
+                throw new java.beans.PropertyVetoException(message.toString(), evt);
             }
-        } else if ("DoDelete".equals(evt.getPropertyName())) { // NOI18N
+        } else if ("DoDelete".equals(evt.getPropertyName())) { //IN18N
             if (nb instanceof SignalMast) {
                 if (nb.equals(source)) {
                     dispose();
@@ -2999,15 +2831,19 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             }
             if (nb instanceof Turnout) {
                 Turnout t = (Turnout) nb;
-                getDestinationList().stream().filter(sm -> (isTurnoutIncluded(t, sm))).forEachOrdered(sm -> {
-                    removeTurnout(t, sm);
-                });
+                for (SignalMast sm : getDestinationList()) {
+                    if (isTurnoutIncluded(t, sm)) {
+                        removeTurnout(t, sm);
+                    }
+                }
             }
             if (nb instanceof Sensor) {
                 Sensor s = (Sensor) nb;
-                getDestinationList().stream().filter(sm -> (isSensorIncluded(s, sm))).forEachOrdered(sm -> {
-                    removeSensor(s, sm);
-                });
+                for (SignalMast sm : getDestinationList()) {
+                    if (isSensorIncluded(s, sm)) {
+                        removeSensor(s, sm);
+                    }
+                }
             }
         }
     }
@@ -3024,12 +2860,8 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
             SignalMast dm = en.nextElement();
             destList.get(dm).dispose();
         }
-        super.dispose(); // release any prop change listeners
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public String getBeanType() {
         return Bundle.getMessage("BeanNameSignalMastLogic");
@@ -3047,60 +2879,6 @@ public class DefaultSignalMastLogic extends AbstractNamedBean implements SignalM
 
     @Override
     public void setState(int i) {
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public List<NamedBeanUsageReport> getUsageReport(NamedBean bean) {
-        List<NamedBeanUsageReport> report = new ArrayList<>();
-        if (bean != null) {
-            if (bean.equals(getSourceMast())) {
-                report.add(new NamedBeanUsageReport("SMLSourceMast"));  // NOI18N
-            }
-            getDestinationList().forEach((dest) -> {
-                if (bean.equals(dest)) {
-                    report.add(new NamedBeanUsageReport("SMLDestinationMast"));  // NOI18N
-                }
-                getAutoBlocks(dest).forEach((block) -> {
-                    if (bean.equals(block)) {
-                        report.add(new NamedBeanUsageReport("SMLBlockAuto", dest));  // NOI18N
-                    }
-                });
-                getBlocks(dest).forEach((block) -> {
-                    if (bean.equals(block)) {
-                        report.add(new NamedBeanUsageReport("SMLBlockUser", dest));  // NOI18N
-                    }
-                });
-                getAutoTurnouts(dest).forEach((turnout) -> {
-                    if (bean.equals(turnout)) {
-                        report.add(new NamedBeanUsageReport("SMLTurnoutAuto", dest));  // NOI18N
-                    }
-                });
-                getTurnouts(dest).forEach((turnout) -> {
-                    if (bean.equals(turnout)) {
-                        report.add(new NamedBeanUsageReport("SMLTurnoutUser", dest));  // NOI18N
-                    }
-                });
-                getSensors(dest).forEach((sensor) -> {
-                    if (bean.equals(sensor)) {
-                        report.add(new NamedBeanUsageReport("SMLSensor", dest));  // NOI18N
-                    }
-                });
-                getAutoMasts(dest).forEach((mast) -> {
-                    if (bean.equals(mast)) {
-                        report.add(new NamedBeanUsageReport("SMLMastAuto", dest));  // NOI18N
-                    }
-                });
-                getSignalMasts(dest).forEach((mast) -> {
-                    if (bean.equals(mast)) {
-                        report.add(new NamedBeanUsageReport("SMLMastUser", dest));  // NOI18N
-                    }
-                });
-            });
-        }
-        return report;
     }
 
     private final static Logger log = LoggerFactory.getLogger(DefaultSignalMastLogic.class);

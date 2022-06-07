@@ -9,13 +9,12 @@ import jmri.InstanceManager;
 import jmri.util.*;
 
 import org.jdom2.JDOMException;
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmrit.roster.RosterEntry class.
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2002, 2018
+ * @author	Bob Jacobsen Copyright (C) 2001, 2002, 2018
  */
 public class RosterEntryTest {
 
@@ -114,31 +113,13 @@ public class RosterEntryTest {
     }
 
     @Test
-    public void testFromSchemaFile() throws JDOMException, IOException {
-
-        // Create a RosterEntry from a test xml file
-        // This one references the Schema version
-        RosterEntry r = RosterEntry.fromFile(new File("java/test/jmri/jmrit/roster/ACL1012-Schema.xml"));
-
-        // check for various values
-        Assert.assertEquals("file name ", "ACL1012-Schema.xml", r.getFileName());
-        Assert.assertEquals("DCC Address ", "1012", r.getDccAddress());
-        Assert.assertEquals("road name ", "Atlantic Coast Line", r.getRoadName());
-        Assert.assertEquals("road number ", "1012", r.getRoadNumber());
-        Assert.assertEquals("model ", "Synch Diesel Sound 1812 - N Scale Atlas Short Board Dropin", r.getDecoderModel());
-        Assert.assertEquals("family ", "Brilliance Sound Decoders", r.getDecoderFamily());
-    }
-
-    @Test
-    public void testFromDtdFile() throws JDOMException, IOException {
-
-        // Create a RosterEntry from a test xml file
-        // This one references the DTD to make sure that still works
-        // post migration
-        RosterEntry r = RosterEntry.fromFile(new File("java/test/jmri/jmrit/roster/ACL1012-DTD.xml"));
+    public void testFromFile() throws JDOMException, IOException {
+        
+        //create a RosterEntry from a test xml file
+        RosterEntry r = RosterEntry.fromFile(new File("java/test/jmri/jmrit/roster/ACL1012.xml"));
 
         // check for various values
-        Assert.assertEquals("file name ", "ACL1012-DTD.xml", r.getFileName());
+        Assert.assertEquals("file name ", "ACL1012.xml", r.getFileName());
         Assert.assertEquals("DCC Address ", "1012", r.getDccAddress());
         Assert.assertEquals("road name ", "Atlantic Coast Line", r.getRoadName());
         Assert.assertEquals("road number ", "1012", r.getRoadNumber());
@@ -162,8 +143,8 @@ public class RosterEntryTest {
 
         r.setId("test Id");
         r.setDateUpdated("unparseable date");
-
-        jmri.util.JUnitAppender.assertWarnMessage("Unable to parse \"unparseable date\" as a date in roster entry \"test Id\".");
+        
+        jmri.util.JUnitAppender.assertWarnMessage("Unable to parse \"unparseable date\" as a date in roster entry \"test Id\"."); 
     }
 
     @Test
@@ -178,9 +159,9 @@ public class RosterEntryTest {
         } finally {
             TimeZone.setDefault(tz);
         }
-
-        Assert.assertTrue(jmri.util.JUnitAppender.verifyNoBacklog());
-        Assert.assertEquals("2015-10-03T18:19:12.000+00:00", r.getDateUpdated());
+        
+        Assert.assertTrue(jmri.util.JUnitAppender.verifyNoBacklog()); 
+        Assert.assertEquals("2015-10-03T18:19:12.000+0000", r.getDateUpdated());
     }
 
     @Test
@@ -189,21 +170,9 @@ public class RosterEntryTest {
 
         r.setId("test Id");
         r.setDateUpdated("2018-03-05T02:34:55Z");
-
-        Assert.assertTrue(jmri.util.JUnitAppender.verifyNoBacklog());
-        Assert.assertEquals("2018-03-05T02:34:55.000+00:00", r.getDateUpdated());
-    }
-
-    @Test
-    public void testDateFormatPreviousJackson() {
-        RosterEntry r = new RosterEntry("file here");
-
-        r.setId("test Id");
-        r.setDateUpdated("2018-03-05T02:34:55.000+0000");
-
-        Assert.assertTrue(jmri.util.JUnitAppender.verifyNoBacklog());
-        Assert.assertEquals("2018-03-05T02:34:55.000+00:00", r.getDateUpdated());
-
+        
+        Assert.assertTrue(jmri.util.JUnitAppender.verifyNoBacklog()); 
+        Assert.assertEquals("2018-03-05T02:34:55.000+0000", r.getDateUpdated());
     }
 
     @Test
@@ -211,7 +180,7 @@ public class RosterEntryTest {
         RosterEntry r = new RosterEntry("file here");
 
         r.setId("test Id");
-
+        
         TimeZone tz = TimeZone.getDefault();
         try {
             TimeZone.setDefault(TimeZone.getTimeZone("GMT-7"));
@@ -219,11 +188,11 @@ public class RosterEntryTest {
         } finally {
             TimeZone.setDefault(tz);
         }
-
-        Assert.assertTrue(jmri.util.JUnitAppender.verifyNoBacklog());
-
+        
+        Assert.assertTrue(jmri.util.JUnitAppender.verifyNoBacklog()); 
+        
         // convert that same local time in ISO format and compare
-        Assert.assertEquals("2016-03-02T16:57:04.000+00:00", r.getDateUpdated());
+        Assert.assertEquals("2016-03-02T16:57:04.000+0000", r.getDateUpdated());
     }
 
     @Test
@@ -257,7 +226,6 @@ public class RosterEntryTest {
                 .addContent(new org.jdom2.Element("decoder")
                         .setAttribute("family", "91")
                         .setAttribute("model", "33")
-                        .setAttribute("comment", "decoder comment")
                 ); // end create element
 
         RosterEntry r = new RosterEntry(e) {
@@ -271,8 +239,6 @@ public class RosterEntryTest {
         Assert.assertEquals("XML Element ", e.toString(), o.toString());
         Assert.assertEquals("family ", "91", o.getChild("decoder").getAttribute("family").getValue());
         Assert.assertEquals("model ", "33", o.getChild("decoder").getAttribute("model").getValue());
-        Assert.assertEquals("comment", "decoder comment", o.getChild("decoder").getAttribute("comment").getValue());
-        Assert.assertEquals("default maxFnNum ", "28", o.getChild("decoder").getAttribute("maxFnNum").getValue());
     }
 
     @Test
@@ -330,7 +296,7 @@ public class RosterEntryTest {
         Assert.assertEquals("initial filename ", null, r.getFileName());
         r.setId("test Roster Entry 123456789ABC");
         Assert.assertEquals("initial ID ", "test Roster Entry 123456789ABC", r.getId());
-        File f = new File(Roster.getDefault().getRosterFilesLocation() + "test_Roster_Entry_123456789ABC.xml");
+        File f = new File(LocoFile.getFileLocation() + "test_Roster_Entry_123456789ABC.xml");
         if (f.exists()) {
             f.delete();
         }
@@ -343,19 +309,19 @@ public class RosterEntryTest {
 
     @Test
     public void testEnsureFilenameExistsOld() throws IOException {
-        FileUtil.createDirectory(Roster.getDefault().getRosterFilesLocation());
+        FileUtil.createDirectory(LocoFile.getFileLocation());
         RosterEntry r = new RosterEntry();
         Assert.assertEquals("initial filename ", null, r.getFileName());
         r.setId("test Roster Entry 123456789ABC");
         Assert.assertEquals("initial ID ", "test Roster Entry 123456789ABC", r.getId());
-        File f1 = new File(Roster.getDefault().getRosterFilesLocation() + "test_Roster_Entry_123456789ABC.xml");
+        File f1 = new File(LocoFile.getFileLocation() + "test_Roster_Entry_123456789ABC.xml");
         if (!f1.exists()) {
             // create a dummy
             FileOutputStream f = new FileOutputStream(f1);
             f.write(0);
             f.close();
         }
-        File f2 = new File(Roster.getDefault().getRosterFilesLocation() + "test_Roster_Entry_123456789ABC0.xml");
+        File f2 = new File(LocoFile.getFileLocation() + "test_Roster_Entry_123456789ABC0.xml");
         if (!f2.exists()) {
             // create a dummy
             FileOutputStream f = new FileOutputStream(f2);
@@ -484,14 +450,14 @@ public class RosterEntryTest {
                 .getChild("value").getText());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
         InstanceManager.setDefault(RosterConfigManager.class, new RosterConfigManager());
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

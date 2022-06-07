@@ -1,45 +1,48 @@
 package jmri.jmrix.tmcc;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the TMCCSystemConnectionMemo class.
  *
  * @author Paul Bender Copyright (C) 2016
  */
-public class TmccSystemConnectionMemoTest extends SystemConnectionMemoTestBase<TmccSystemConnectionMemo> {
+public class TmccSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
     @Override
     @Test
-    public void testProvidesConsistManager() {
-        Assert.assertFalse("Provides ConsistManager", scm.provides(jmri.ConsistManager.class));
-    }
-
-    @Test
-    public void checkConfigureManagers() {
-        scm.configureManagers();
-        Assert.assertNotNull("Throttle Manager after configureManagers", scm.getThrottleManager());
-        Assert.assertNotNull("Turnout Manager after configureManagers", scm.getTurnoutManager());
+    public void testProvidesConsistManager(){
+       Assert.assertFalse("Provides ConsistManager",scm.provides(jmri.ConsistManager.class));
     }
 
     @Override
-    @BeforeEach
-    public void setUp() {
-        JUnitUtil.setUp();
-        scm = new TmccSystemConnectionMemo();
+    @Before
+    public void setUp(){
+       JUnitUtil.setUp();
+       TmccSystemConnectionMemo memo = new TmccSystemConnectionMemo();
+       new SerialTrafficController(memo) {
+          @Override
+          public void sendSerialMessage(SerialMessage m, SerialListener reply) {
+          }
+          @Override
+          public void transmitLoop(){
+          }
+          @Override
+          public void receiveLoop(){
+          }
+       };
+       scm = memo;
     }
 
     @Override
-    @AfterEach
-    public void tearDown() {
-        scm.getTrafficController().terminateThreads();
-        scm.dispose();
+    @After
+    public void tearDown(){
+        scm = null;
         JUnitUtil.tearDown();
-
     }
 
 }

@@ -2,12 +2,11 @@ package jmri.jmris.srcp;
 
 import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -20,21 +19,21 @@ public class JmriSRCPServerMenuTest {
     @Test public void testCtor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         JmriSRCPServerMenu a = new JmriSRCPServerMenu();
-        assertThat(a).isNotNull();
+        Assert.assertNotNull(a);
     }
 
     @Test public void testStringCtor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         JmriSRCPServerMenu a = new JmriSRCPServerMenu("Hello World");
-        assertThat(a).isNotNull();
+        Assert.assertNotNull(a);
     }
 
-    @BeforeEach public void setUp() {
+    @Before public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach public void tearDown() {
+    @After public void tearDown() throws Exception {
         JUnitUtil.tearDown();
     }
 

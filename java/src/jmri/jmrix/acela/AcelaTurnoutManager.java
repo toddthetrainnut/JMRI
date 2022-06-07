@@ -1,7 +1,5 @@
 package jmri.jmrix.acela;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
 import jmri.Turnout;
 import jmri.managers.AbstractTurnoutManager;
 import org.slf4j.Logger;
@@ -18,18 +16,19 @@ import org.slf4j.LoggerFactory;
  * to establish Acela support.
  */
 public class AcelaTurnoutManager extends AbstractTurnoutManager {
+ 
+    AcelaSystemConnectionMemo _memo = null;
 
     public AcelaTurnoutManager(AcelaSystemConnectionMemo memo) {
-       super(memo);
+       _memo = memo;
     }
 
     /**
-     * {@inheritDoc}
+     * Get the configured system prefix for this connection.
      */
     @Override
-    @Nonnull
-    public AcelaSystemConnectionMemo getMemo() {
-        return (AcelaSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return _memo.getSystemPrefix();
     }
 
     /**
@@ -37,26 +36,27 @@ public class AcelaTurnoutManager extends AbstractTurnoutManager {
      * <p>
      * Assumes calling method has checked that a Turnout with this
      * system name does not already exist.
-     * {@inheritDoc}
+     *
+     * @return null if the system name is not in a valid format
      */
-    @Nonnull
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Turnout createNewTurnout(String systemName, String userName) {
         Turnout trn = null;
         // check if the output bit is available
-        int nAddress = AcelaAddress.getNodeAddressFromSystemName(systemName, getMemo());
+        int nAddress = -1;
+        nAddress = AcelaAddress.getNodeAddressFromSystemName(systemName, _memo);
         if (nAddress == -1) {
-            throw new IllegalArgumentException("Cannot get Node Address from System Name " + systemName);
+            return (null);
         }
         int bitNum = AcelaAddress.getBitFromSystemName(systemName, getSystemPrefix());
         if (bitNum == -1) {
-            throw new IllegalArgumentException("Cannot get Bit Number from System Name " + systemName);
+            return (null);
         }
 
         // Validate the systemName
         if (AcelaAddress.validSystemNameFormat(systemName, 'T', getSystemPrefix()) == NameValidity.VALID) {
-            trn = new AcelaTurnout(systemName, userName, getMemo());
-            if (!AcelaAddress.validSystemNameConfig(systemName, 'T', getMemo())) {
+            trn = new AcelaTurnout(systemName, userName, _memo);
+            if (!AcelaAddress.validSystemNameConfig(systemName, 'T', _memo)) {
                 log.warn("Turnout System Name does not refer to configured hardware: {}", systemName);
             }
         } else {
@@ -67,54 +67,57 @@ public class AcelaTurnoutManager extends AbstractTurnoutManager {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Verifies system name has valid prefix and is an integer from
-     * {@value AcelaAddress#MINOUTPUTADDRESS} to
-     * {@value AcelaAddress#MAXOUTPUTADDRESS}.
+     * Public method to notify user of Turnout creation error. use it somewhere TODO
      */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String systemName, @Nonnull Locale locale) {
-        return super.validateIntegerSystemNameFormat(systemName,
-                AcelaAddress.MINOUTPUTADDRESS,
-                AcelaAddress.MAXOUTPUTADDRESS,
-                locale);
-    }
+//    public void notifyTurnoutCreationError(String conflict, int bitNum) {
+//        javax.swing.JOptionPane.showMessageDialog(null, Bundle.getMessage("AcelaAssignDialog", bitNum, conflict,
+//                Bundle.getMessage("BeanNameTurnout")),
+//                Bundle.getMessage("AcelaAssignDialogTitle"),
+//                javax.swing.JOptionPane.INFORMATION_MESSAGE, null);
+//    }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format.
+     *
+     * @return 'true' if system name has a valid format, else return 'false'
      */
     @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
+    public NameValidity validSystemNameFormat(String systemName) {
         return (AcelaAddress.validSystemNameFormat(systemName, 'T', getSystemPrefix()));
     }
 
     /**
      * Public method to validate system name for configuration.
      *
-     * @param systemName system name to validate
      * @return 'true' if system name has a valid meaning in the current
      * configuration, else return 'false'
      */
-    public boolean validSystemNameConfig(@Nonnull String systemName) {
-        return (AcelaAddress.validSystemNameConfig(systemName, 'T', getMemo()));
+    public boolean validSystemNameConfig(String systemName) {
+        return (AcelaAddress.validSystemNameConfig(systemName, 'T', _memo));
     }
 
     /**
-     * Public method to convert system name to its alternate format.
+     * Public method to convert system name to its alternate format
      * <p>
-     * @param systemName system name to convert
-     * @return a normalized system name if system name is valid and has a valid
-     * alternate representation, else return ""
+     * Returns a normalized system name if system name is valid and has a valid
+     * alternate representation, else return "".
      */
     public String convertSystemNameToAlternate(String systemName) {
         return (AcelaAddress.convertSystemNameToAlternate(systemName, getSystemPrefix()));
     }
 
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return true;
+    }
+
+    /**
+     * Allow access to AcelaTurnoutManager.
+     * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
+     */
+    @Deprecated
+    static public AcelaTurnoutManager instance() {
+        return null;
     }
 
     private final static Logger log = LoggerFactory.getLogger(AcelaTurnoutManager.class);

@@ -9,24 +9,24 @@ import jmri.SignalHead;
 import jmri.Turnout;
 import jmri.util.JUnitUtil;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Assert;
+import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the BlockBossLogic class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class BlockBossLogicTest {
-
+    
     // test creation
     @Test
     public void testCreate() {
         p = new BlockBossLogic("IH2");
-        assertThat(p.getDrivenSignal()).withFailMessage("driven signal name").isEqualTo("IH2");
+        Assert.assertEquals("driven signal name", "IH2", p.getDrivenSignal());
     }
 
     // test simplest block, just signal following
@@ -34,43 +34,42 @@ public class BlockBossLogicTest {
     public void testSimpleBlock() {
         setupSimpleBlock();
         startLogic();
-        assertThat(p.getDrivenSignal()).withFailMessage("driven signal name").isEqualTo("IH1");
-
+        Assert.assertEquals("driven signal name", "IH1", p.getDrivenSignal());
+        
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.YELLOW);
-        JUnitUtil.waitFor(()-> SignalHead.GREEN == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so yellow sets green");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.GREEN == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so yellow sets green");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.RED);
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so red sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so red sets yellow");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.GREEN);
-        JUnitUtil.waitFor(()-> SignalHead.GREEN == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so green sets green");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.GREEN == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so green sets green");  // wait and test
     }
 
     // test that initial conditions are set right
-    @Test
     public void testSimpleBlockInitial() {
         setupSimpleBlock();
         startLogic();
 
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "initial red sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "initial red sets yellow");  // wait and test
     }
 
     // occupancy check
     @Test
-    public void testSimpleBlockOccupancy() {
+    public void testSimpleBlockOccupancy() throws jmri.JmriException {
         setupSimpleBlock();
         p.setSensor1("IS1");
         startLogic();
         JUnitUtil.setBeanState(s1, Sensor.INACTIVE);
-
+        
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.YELLOW);
-        JUnitUtil.waitFor(()-> SignalHead.GREEN == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so yellow sets green");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.GREEN == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so yellow sets green");  // wait and test
 
         JUnitUtil.setBeanState(s1, Sensor.ACTIVE);
-        JUnitUtil.waitFor(()-> SignalHead.RED == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so occupied sets red");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.RED == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so occupied sets red");  // wait and test
 
         JUnitUtil.setBeanState(s1, Sensor.INACTIVE);
-        JUnitUtil.waitFor(()-> SignalHead.GREEN == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so unoccupied sets green");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.GREEN == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so unoccupied sets green");  // wait and test
     }
 
     // test signal following in distant simple block
@@ -80,16 +79,16 @@ public class BlockBossLogicTest {
         p.setDistantSignal(true);
         startLogic();
 
-        assertThat(p.getDrivenSignal()).withFailMessage("driven signal name").isEqualTo("IH1");
+        Assert.assertEquals("driven signal name", "IH1", p.getDrivenSignal());
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.YELLOW);
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "yellow sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "yellow sets yellow");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.RED);
-        JUnitUtil.waitFor(()-> SignalHead.RED == h1.getAppearance(), "red sets red");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.RED == h1.getAppearance();}, "red sets red");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.GREEN);
-        JUnitUtil.waitFor(()-> SignalHead.GREEN == h1.getAppearance(), "green sets green");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.GREEN == h1.getAppearance();}, "green sets green");  // wait and test
     }
 
     // test signal following in limited simple block
@@ -101,13 +100,13 @@ public class BlockBossLogicTest {
         startLogic();
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.RED);
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "red sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "red sets yellow");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.YELLOW);
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "yellow sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "yellow sets yellow");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.GREEN);
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "green sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "green sets yellow");  // wait and test
     }
 
     // test signal following in distant, limited simple block
@@ -119,54 +118,54 @@ public class BlockBossLogicTest {
         startLogic();
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.YELLOW);
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "yellow sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "yellow sets yellow");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.RED);
-        JUnitUtil.waitFor(()-> SignalHead.RED == h1.getAppearance(), "red sets red");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.RED == h1.getAppearance();}, "red sets red");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.GREEN);
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "green sets yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "green sets yellow");  // wait and test
     }
 
     // test signal following in restricting simple block
     @Test
-    public void testSimpleBlockRestricting() {
+    public void testSimpleBlockRestricting() throws jmri.JmriException {
         JUnitUtil.setBeanState(s1, Sensor.INACTIVE);
 
         setupSimpleBlock();
         p.setSensor1("IS1");
         p.setRestrictingSpeed1(true);
         startLogic();
-
+        
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.YELLOW);
-        JUnitUtil.waitFor(()-> SignalHead.FLASHRED == h1.getAppearance(), "yellow sets flashing red");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.FLASHRED == h1.getAppearance();}, "yellow sets flashing red");  // wait and test
 
         JUnitUtil.setBeanState(s1, Sensor.ACTIVE);
-        JUnitUtil.waitFor(()-> SignalHead.RED == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so occupied sets red");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.RED == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so occupied sets red");  // wait and test
 
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.GREEN);
         JUnitUtil.setBeanState(s1, Sensor.INACTIVE);
-        JUnitUtil.waitFor(()-> SignalHead.FLASHRED == h1.getAppearance(), "Stuck at "+h1.getAppearance()+" so unoccupied green sets flashing red");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.FLASHRED == h1.getAppearance();}, "Stuck at "+h1.getAppearance()+" so unoccupied green sets flashing red");  // wait and test
     }
 
     // if no next signal, next signal considered green
     @Test
     public void testSimpleBlockNoNext() throws jmri.JmriException {
         s1.setState(Sensor.INACTIVE);
-
+        
         p = new BlockBossLogic("IH1");
         p.setSensor1("1");
         p.setMode(BlockBossLogic.SINGLEBLOCK);
         startLogic();
 
-        JUnitUtil.waitFor(()-> SignalHead.GREEN == h1.getAppearance(), "missing signal is green");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.GREEN == h1.getAppearance();}, "missing signal is green");  // wait and test
     }
 
     // if no next signal, next signal is considered green
     @Test
     public void testSimpleBlockNoNextLimited() throws jmri.JmriException {
         s1.setState(Sensor.INACTIVE);
-
+        
         p = new BlockBossLogic("IH1");
         p.setMode(BlockBossLogic.SINGLEBLOCK);
         p.setSensor1("1");
@@ -174,38 +173,28 @@ public class BlockBossLogicTest {
 
         startLogic();
 
-        JUnitUtil.waitFor(()-> SignalHead.YELLOW == h1.getAppearance(), "missing signal is green, show yellow");  // wait and test
+        JUnitUtil.waitFor(()->{return SignalHead.YELLOW == h1.getAppearance();}, "missing signal is green, show yellow");  // wait and test
     }
 
     // check for basic not-fail if no signal name was set
     @Test
-    public void testSimpleBlockNoSignal() {
-        try {
-            new BlockBossLogic(null);
-        } catch (java.lang.NullPointerException e) {
-            // this is expected
-        }
-    }
+    public void testSimpleBlockNoSignal() throws jmri.JmriException {
 
-    // check for basic not-fail if empty signal name was set
-    @Test
-    public void testSimpleBlockEmptyName() {
-        try {
-            new BlockBossLogic("");
+        try { 
+            new BlockBossLogic(null);
         } catch (java.lang.IllegalArgumentException e) {
             // this is expected
         }
-        jmri.util.JUnitAppender.assertWarnMessage("Signal Head \"\" was not found");
+        jmri.util.JUnitAppender.assertWarnMessage("Signal Head \"null\" was not found");
     }
 
     // test interruption
     @Test
     public void testInterrupt() throws jmri.JmriException {
         s1.setState(Sensor.INACTIVE);
-
+        
         forceInterrupt = false;
         p = new BlockBossLogic("IH1") {
-            @Override
             public void setOutput() {
                 testThread = this.thread;
                 if (forceInterrupt) {
@@ -220,12 +209,12 @@ public class BlockBossLogicTest {
 
         startLogic();
 
-        JUnitUtil.waitFor(()-> p.isRunning(), "is running");
-
+        JUnitUtil.waitFor(()->{return p.isRunning();}, "is running");
+                
         forceInterrupt = true;
         s1.setState(Sensor.ACTIVE);
-
-        JUnitUtil.waitFor(()-> !p.isRunning(), "is stopped");
+        
+        JUnitUtil.waitFor(()->{return !p.isRunning();}, "is stopped");
     }
 
 
@@ -254,25 +243,25 @@ public class BlockBossLogicTest {
 
         p.setApproachSensor1("9");
 
-        assertThat(p.getSensor1()).withFailMessage("sensor1").isEqualTo("1");
-        assertThat(p.getSensor2()).withFailMessage("sensor2").isEqualTo("2");
-        assertThat(p.getSensor3()).withFailMessage("sensor3").isEqualTo("3");
-        assertThat(p.getSensor4()).withFailMessage("sensor4").isEqualTo("4");
-        assertThat(p.getSensor5()).withFailMessage("sensor5").isEqualTo("10");
+        Assert.assertEquals("sensor1", "1", p.getSensor1());
+        Assert.assertEquals("sensor2", "2", p.getSensor2());
+        Assert.assertEquals("sensor3", "3", p.getSensor3());
+        Assert.assertEquals("sensor4", "4", p.getSensor4());
+        Assert.assertEquals("sensor5", "10", p.getSensor5());
 
-        assertThat(p.getTurnout()).withFailMessage("turnout1").isEqualTo("1");
+        Assert.assertEquals("turnout1", "1", p.getTurnout());
 
-        assertThat(p.getWatchedSignal1()).withFailMessage("watchedsignal1").isEqualTo("1");
-        assertThat(p.getWatchedSignal1Alt()).withFailMessage("watchedsignal1alt").isEqualTo("2");
-        assertThat(p.getWatchedSignal2()).withFailMessage("watchedsignal2").isEqualTo("3");
-        assertThat(p.getWatchedSignal2Alt()).withFailMessage("watchedsignal2alt").isEqualTo("4");
+        Assert.assertEquals("watchedsignal1", "1", p.getWatchedSignal1());
+        Assert.assertEquals("watchedsignal1alt", "2", p.getWatchedSignal1Alt());
+        Assert.assertEquals("watchedsignal2", "3", p.getWatchedSignal2());
+        Assert.assertEquals("watchedsignal2alt", "4", p.getWatchedSignal2Alt());
 
-        assertThat(p.getWatchedSensor1()).withFailMessage("watchedsensor1").isEqualTo("5");
-        assertThat(p.getWatchedSensor1Alt()).withFailMessage("watchedsensor1alt").isEqualTo("6");
-        assertThat(p.getWatchedSensor2()).withFailMessage("watchedsensor2").isEqualTo("7");
-        assertThat(p.getWatchedSensor2Alt()).withFailMessage("watchedsensor2alt").isEqualTo("8");
+        Assert.assertEquals("watchedsensor1", "5", p.getWatchedSensor1());
+        Assert.assertEquals("watchedsensor1alt", "6", p.getWatchedSensor1Alt());
+        Assert.assertEquals("watchedsensor2", "7", p.getWatchedSensor2());
+        Assert.assertEquals("watchedsensor2alt", "8", p.getWatchedSensor2Alt());
 
-        assertThat(p.getApproachSensor1()).withFailMessage("approach").isEqualTo("9");
+        Assert.assertEquals("approach", "9", p.getApproachSensor1());
 
     }
 
@@ -301,25 +290,25 @@ public class BlockBossLogicTest {
 
         p.setApproachSensor1("IS9");
 
-        assertThat(p.getSensor1()).withFailMessage("sensor1").isEqualTo("IS1");
-        assertThat(p.getSensor2()).withFailMessage("sensor2").isEqualTo("IS2");
-        assertThat(p.getSensor3()).withFailMessage("sensor3").isEqualTo("IS3");
-        assertThat(p.getSensor4()).withFailMessage("sensor4").isEqualTo("IS4");
-        assertThat(p.getSensor5()).withFailMessage("sensor5").isEqualTo("IS10");
+        Assert.assertEquals("sensor1", "IS1", p.getSensor1());
+        Assert.assertEquals("sensor2", "IS2", p.getSensor2());
+        Assert.assertEquals("sensor3", "IS3", p.getSensor3());
+        Assert.assertEquals("sensor4", "IS4", p.getSensor4());
+        Assert.assertEquals("sensor5", "IS10", p.getSensor5());
 
-        assertThat(p.getTurnout()).withFailMessage("turnout1").isEqualTo("IT1");
+        Assert.assertEquals("turnout1", "IT1", p.getTurnout());
 
-        assertThat(p.getWatchedSignal1()).withFailMessage("watchedsignal1").isEqualTo("IH1");
-        assertThat(p.getWatchedSignal1Alt()).withFailMessage("watchedsignal1alt").isEqualTo("IH2");
-        assertThat(p.getWatchedSignal2()).withFailMessage("watchedsignal2").isEqualTo("IH3");
-        assertThat(p.getWatchedSignal2Alt()).withFailMessage("watchedsignal2alt").isEqualTo("IH4");
+        Assert.assertEquals("watchedsignal1", "IH1", p.getWatchedSignal1());
+        Assert.assertEquals("watchedsignal1alt", "IH2", p.getWatchedSignal1Alt());
+        Assert.assertEquals("watchedsignal2", "IH3", p.getWatchedSignal2());
+        Assert.assertEquals("watchedsignal2alt", "IH4", p.getWatchedSignal2Alt());
 
-        assertThat(p.getWatchedSensor1()).withFailMessage("watchedsensor1").isEqualTo("IS5");
-        assertThat(p.getWatchedSensor1Alt()).withFailMessage("watchedsensor1alt").isEqualTo("IS6");
-        assertThat(p.getWatchedSensor2()).withFailMessage("watchedsensor2").isEqualTo("IS7");
-        assertThat(p.getWatchedSensor2Alt()).withFailMessage("watchedsensor2alt").isEqualTo("IS8");
+        Assert.assertEquals("watchedsensor1", "IS5", p.getWatchedSensor1());
+        Assert.assertEquals("watchedsensor1alt", "IS6", p.getWatchedSensor1Alt());
+        Assert.assertEquals("watchedsensor2", "IS7", p.getWatchedSensor2());
+        Assert.assertEquals("watchedsensor2alt", "IS8", p.getWatchedSensor2Alt());
 
-        assertThat(p.getApproachSensor1()).withFailMessage("approach").isEqualTo("IS9");
+        Assert.assertEquals("approach", "IS9", p.getApproachSensor1());
 
     }
 
@@ -354,25 +343,25 @@ public class BlockBossLogicTest {
      * creates a set of turnouts, sensors and signals as common background for
      * testing
      */
-    @BeforeEach
+    @Before
     public void setUp() {
         // reset InstanceManager
         JUnitUtil.setUp();
-
+        
         JUnitUtil.initInternalSensorManager();
         JUnitUtil.initInternalTurnoutManager();
         JUnitUtil.initInternalSignalHeadManager();
 
         // clear the BlockBossLogic static list
+        Enumeration<BlockBossLogic> en = BlockBossLogic.entries();
         ArrayList<SignalHead> heads = new ArrayList<>();
-
-        for (BlockBossLogic b : InstanceManager.getDefault(BlockBossLogicProvider.class).provideAll()) {
-            heads.add(b.getDrivenSignalNamedBean().getBean());
+        while (en.hasMoreElements()) {
+            heads.add(en.nextElement().getDrivenSignalNamedBean().getBean());
         }
         for (SignalHead head : heads) {  // avoids ConcurrentModificationException
             BlockBossLogic.getStoppedObject(head);
         }
-
+        
         t1 = InstanceManager.turnoutManagerInstance().newTurnout("IT1", "1");
         t2 = InstanceManager.turnoutManagerInstance().newTurnout("IT2", "2");
         t3 = InstanceManager.turnoutManagerInstance().newTurnout("IT3", "3");
@@ -391,7 +380,7 @@ public class BlockBossLogicTest {
         h1 = new jmri.implementation.VirtualSignalHead("IH1", "1");
         InstanceManager.getDefault(jmri.SignalHeadManager.class).register(h1);
         JUnitUtil.setBeanStateAndWait(h1, SignalHead.RED); // ensure starting point
-
+        
         h2 = new jmri.implementation.VirtualSignalHead("IH2", "2");
         InstanceManager.getDefault(jmri.SignalHeadManager.class).register(h2);
         JUnitUtil.setBeanStateAndWait(h2, SignalHead.RED); // ensure starting point
@@ -405,7 +394,7 @@ public class BlockBossLogicTest {
         JUnitUtil.setBeanStateAndWait(h4, SignalHead.RED); // ensure starting point
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         t1=t2=t3=null;
         s1=s2=s3=s4=s5=s6=s7=s8=s9=s10=null;

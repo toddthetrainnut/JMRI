@@ -1,12 +1,9 @@
 package jmri.jmris.srcp;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.OutputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmris.srcp.JmriSRCPTimeServer class
@@ -18,7 +15,7 @@ public class JmriSRCPTimeServerTest extends jmri.jmris.AbstractTimeServerTestBas
     private StringBuilder sb = null;
 
     /**
-     * {@inheritDoc}
+     * {@inhertDoc} 
      */
     @Override
     public void confirmErrorStatusSent(){
@@ -26,7 +23,7 @@ public class JmriSRCPTimeServerTest extends jmri.jmris.AbstractTimeServerTestBas
     }
 
     /**
-     * {@inheritDoc}
+     * {@inhertDoc} 
      */
     @Override
     public void confirmStatusSent(){
@@ -36,31 +33,32 @@ public class JmriSRCPTimeServerTest extends jmri.jmris.AbstractTimeServerTestBas
     @Test
     public void sendRate() throws java.io.IOException {
        a.sendRate();
-       assertThat(sb.toString()).withFailMessage("Rate Sent").endsWith("101 INFO 0 TIME 1 1\n\r");
+       Assert.assertTrue("Rate Sent", sb.toString().endsWith("101 INFO 0 TIME 1 1\n\r"));
     }
 
     @Test
     public void sendTime() throws java.io.IOException {
        a.sendTime();
-       assertThat(sb.toString()).withFailMessage("time sent").matches(".* 100 INFO 0 TIME .* .{1,2} .{1,2} .{1,2}\n\r");
+       Assert.assertTrue("time sent", java.util.regex.Pattern.matches(".* 100 INFO 0 TIME .* .{1,2} .{1,2} .{1,2}\n\r",sb.toString()));
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp(){
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetInstanceManager();
         sb = new StringBuilder();
-        OutputStream output = new java.io.OutputStream() {
+        java.io.DataOutputStream output = new java.io.DataOutputStream(
+                new java.io.OutputStream() {
                     @Override
-                    public void write(int b) {
+                    public void write(int b) throws java.io.IOException {
                         sb.append((char)b);
                     }
-                };
-        a = new JmriSRCPTimeServer(new TimeStampedOutput(output));
+                });
+        a = new JmriSRCPTimeServer(output);
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown(){
         a.dispose();

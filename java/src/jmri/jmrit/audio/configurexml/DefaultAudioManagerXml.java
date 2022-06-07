@@ -47,7 +47,6 @@ public class DefaultAudioManagerXml extends AbstractAudioManagerConfigXML {
      * it.
      *
      * @param shared Top level Element to unpack.
-     * @param perNode Per-node top level Element to unpack.
      * @return true if successful
      */
     @Override

@@ -3,8 +3,9 @@ package jmri.jmrix.openlcb;
 import jmri.jmrix.can.CanMessage;
 import jmri.jmrix.can.CanReply;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.openlcb.can.OpenLcbCanFrame;
 
 /**
@@ -26,12 +27,12 @@ public class CanConverterTest {
         new OpenLcbCanFrame(100);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

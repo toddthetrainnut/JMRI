@@ -1,7 +1,9 @@
 package jmri.jmrit.throttle;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of LargePowerManagerButton
@@ -16,12 +18,12 @@ public class LargePowerManagerButtonTest {
         Assert.assertNotNull("exists", panel);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
     }

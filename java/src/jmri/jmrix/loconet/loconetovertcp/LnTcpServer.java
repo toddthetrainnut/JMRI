@@ -11,11 +11,10 @@ import jmri.InstanceManager;
 import jmri.ShutDownManager;
 import jmri.jmrix.loconet.LnTrafficController;
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
+import jmri.implementation.QuietShutDownTask;
 import jmri.util.zeroconf.ZeroConfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 
 /**
  * Implementation of the LocoNetOverTcp LbServer Server Protocol.
@@ -29,22 +28,27 @@ public class LnTcpServer {
     private ServerSocket serverSocket;
     private final List<LnTcpServerListener> stateListeners = new ArrayList<>();
     private boolean settingsChanged = false;
-    private final Runnable shutDownTask = this::disable;
+    private QuietShutDownTask shutDownTask;
     private ZeroConfService service = null;
 
     private int portNumber;
-    private final LnTrafficController tc;
+    private LnTrafficController tc;
 
-    private LnTcpServer(@Nonnull LocoNetSystemConnectionMemo memo) {
+    private LnTcpServer(LocoNetSystemConnectionMemo memo) {
         tc = memo.getLnTrafficController(); // store tc in order to know where to send messages
         LnTcpPreferences pm = LnTcpPreferences.getDefault();
         portNumber = pm.getPort();
         pm.addPropertyChangeListener((PropertyChangeEvent evt) -> {
-            // ignore uninteresting property changes
-            if (LnTcpPreferences.PORT.equals(evt.getPropertyName())) {// only change the port if stopped
-                if (!isEnabled()) {
-                    portNumber = pm.getPort();
-                }
+            switch (evt.getPropertyName()) {
+                case LnTcpPreferences.PORT:
+                    // only change the port if stopped
+                    if (!isEnabled()) {
+                        portNumber = pm.getPort();
+                    }
+                    break;
+                default:
+                    // ignore uninteresting property changes
+                    break;
             }
         });
     }
@@ -52,7 +56,7 @@ public class LnTcpServer {
     /**
      * Get the default server instance, creating it if necessary.
      *
-     * @return the default LnTcpServer instance
+     * @return the default server instance
      */
     public static synchronized LnTcpServer getDefault() {
         return InstanceManager.getOptionalDefault(LnTcpServer.class).orElseGet(() -> {
@@ -83,6 +87,15 @@ public class LnTcpServer {
             }
             log.info("Starting ZeroConfService _loconetovertcpserver._tcp.local for LocoNetOverTCP Server");
             this.service.publish();
+            if (this.shutDownTask == null) {
+                this.shutDownTask = new QuietShutDownTask("LocoNetOverTcpServer") {
+                    @Override
+                    public boolean execute() {
+                        LnTcpServer.this.disable();
+                        return true;
+                    }
+                };
+            }
             InstanceManager.getDefault(jmri.ShutDownManager.class).register(this.shutDownTask);
         }
     }
@@ -95,7 +108,7 @@ public class LnTcpServer {
                 if (serverSocket != null) {
                     serverSocket.close();
                 }
-            } catch (IOException ignore) {
+            } catch (IOException ex) {
             }
 
             updateServerStateListeners();
@@ -106,8 +119,8 @@ public class LnTcpServer {
             synchronized (clients) {
                 clientsArray = clients.toArray();
             }
-            for (Object o : clientsArray) {
-                ((ClientRxHandler) o).close();
+            for (int i = 0; i < clientsArray.length; i++) {
+                ((ClientRxHandler) clientsArray[i]).close();
             }
         }
         if (this.service != null) {

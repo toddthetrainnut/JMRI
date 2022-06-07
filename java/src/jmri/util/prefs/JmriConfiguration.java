@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import jmri.profile.AuxiliaryConfiguration;
 import jmri.util.FileUtil;
 import jmri.util.xml.XMLUtil;
@@ -110,7 +109,7 @@ public abstract class JmriConfiguration implements AuxiliaryConfiguration {
             try {
                 this.backup(shared);
                 try (final OutputStream os = new FileOutputStream(file)) {
-                    XMLUtil.write(doc, os, StandardCharsets.UTF_8.name());
+                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
                 }
             } catch (IOException ex) {
                 log.error("Cannot write {}", file, ex);
@@ -138,7 +137,7 @@ public abstract class JmriConfiguration implements AuxiliaryConfiguration {
                         if (root.getElementsByTagName("*").getLength() > 0) {
                             // NOI18N
                             try (final OutputStream os = new FileOutputStream(file)) {
-                                XMLUtil.write(doc, os, StandardCharsets.UTF_8.name());
+                                XMLUtil.write(doc, os, "UTF-8"); // NOI18N
                             }
                         } else if (!file.delete()) {
                             log.debug("Unable to delete {}", file);

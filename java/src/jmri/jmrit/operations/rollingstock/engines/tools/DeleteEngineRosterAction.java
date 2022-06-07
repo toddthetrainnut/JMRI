@@ -1,15 +1,12 @@
 package jmri.jmrit.operations.rollingstock.engines.tools;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.rollingstock.engines.EngineManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This routine will remove all engines from the operation database.
@@ -18,8 +15,10 @@ import jmri.jmrit.operations.rollingstock.engines.EngineManager;
  */
 public class DeleteEngineRosterAction extends AbstractAction {
 
-    public DeleteEngineRosterAction() {
-        super(Bundle.getMessage("MenuItemDelete"));
+    EngineManager manager = InstanceManager.getDefault(EngineManager.class);
+
+    public DeleteEngineRosterAction(String actionName) {
+        super(actionName);
     }
 
     @Override
@@ -27,9 +26,10 @@ public class DeleteEngineRosterAction extends AbstractAction {
         if (JOptionPane.showConfirmDialog(null, Bundle.getMessage("engineSureDelete"),
                 Bundle.getMessage("engineDeleteAll"), JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             log.debug("removing all engines from roster");
-            InstanceManager.getDefault(EngineManager.class).deleteAll();
+            manager.deleteAll();
         }
     }
 
-    private final static Logger log = LoggerFactory.getLogger(DeleteEngineRosterAction.class);
+    private final static Logger log = LoggerFactory
+            .getLogger(DeleteEngineRosterAction.class);
 }

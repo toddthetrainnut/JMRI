@@ -1,16 +1,15 @@
 package jmri.jmrit.throttle;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import javax.swing.JFrame;
-
+import jmri.InstanceManager;
 import jmri.InstanceManagerAutoDefault;
 import jmri.util.JmriJFrame;
-
-import org.jdom2.Element;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Interface for allocating and deallocating throttles frames. Not to be
@@ -20,18 +19,23 @@ import org.jdom2.Element;
  */
 public class ThrottleFrameManager implements InstanceManagerAutoDefault {
 
+    private final static int NEXT_THROTTLE_KEY = KeyEvent.VK_RIGHT;
+    private final static int PREV_THROTTLE_KEY = KeyEvent.VK_LEFT;
+
     private int activeFrame;
+    private final ThrottleCyclingKeyListener throttleCycler;
 
-    private ArrayList<ThrottleWindow> throttleWindows; // synchronized access
+    private ArrayList<ThrottleWindow> throttleWindows;
 
-    private ThrottlesPreferencesWindow throttlePreferencesFrame;
+    private JmriJFrame throttlePreferencesFrame;
     private JmriJFrame throttlesListFrame;
     private ThrottlesListPanel throttlesListPanel;
 
     /**
-     * Constructor for the ThrottleFrameManager object.
+     * Constructor for the ThrottleFrameManager object
      */
     public ThrottleFrameManager() {
+        throttleCycler = new ThrottleCyclingKeyListener();
         throttleWindows = new ArrayList<>(0);
         if (jmri.InstanceManager.getNullableDefault(ThrottlesPreferences.class) == null) {
             jmri.InstanceManager.store(new ThrottlesPreferences(), ThrottlesPreferences.class);
@@ -45,38 +49,11 @@ public class ThrottleFrameManager implements InstanceManagerAutoDefault {
      * @return The newly created ThrottleWindow
      */
     public ThrottleWindow createThrottleWindow() {
-        return createThrottleWindow((jmri.jmrix.ConnectionConfig) null);
-    }
-
-    /**
-     * Tell this manager that a new ThrottleWindow was created.
-     *
-     * @param connectionConfig the connection config
-     * @return The newly created ThrottleWindow
-     */
-    public ThrottleWindow createThrottleWindow(jmri.jmrix.ConnectionConfig connectionConfig) {
-        ThrottleWindow tw = new ThrottleWindow(connectionConfig);
+        ThrottleWindow tw = new ThrottleWindow();
         tw.pack();
-        synchronized (this) {
-            throttleWindows.add(tw);
-            activeFrame = throttleWindows.indexOf(tw);
-        }
-        return tw;
-    }
-
-    /**
-     * Tell this manager that a new ThrottleWindow was created.
-     *
-     * @param e the xml element for the throttle window
-     * @return The newly created ThrottleWindow
-     */
-    public ThrottleWindow createThrottleWindow(Element e) {
-        ThrottleWindow tw = ThrottleWindow.createThrottleWindow(e);
-        tw.pack();
-        synchronized (this) {
-            throttleWindows.add(tw);
-            activeFrame = throttleWindows.indexOf(tw);
-        }
+        KeyListenerInstaller.installKeyListenerOnAllComponents(throttleCycler, tw);
+        throttleWindows.add(tw);
+        activeFrame = throttleWindows.indexOf(tw);
         return tw;
     }
 
@@ -86,17 +63,7 @@ public class ThrottleFrameManager implements InstanceManagerAutoDefault {
      * @return The newly created ThrottleFrame
      */
     public ThrottleFrame createThrottleFrame() {
-        return createThrottleFrame(null);
-    }
-
-    /**
-     * Tell this manager that a new ThrottleFrame was created.
-     *
-     * @param connectionConfig the connection config
-     * @return The newly created ThrottleFrame
-     */
-    public ThrottleFrame createThrottleFrame(jmri.jmrix.ConnectionConfig connectionConfig) {
-        return createThrottleWindow(connectionConfig).getCurrentThrottleFrame();
+        return createThrottleWindow().getCurrentThrottleFrame();
     }
 
     /**
@@ -107,17 +74,20 @@ public class ThrottleFrameManager implements InstanceManagerAutoDefault {
     public void requestThrottleWindowDestruction(ThrottleWindow frame) {
         if (frame != null) {
             destroyThrottleWindow(frame);
-            synchronized (this) {
-                throttleWindows.remove(frame);
-                if (!throttleWindows.isEmpty()) {
-                    requestFocusForNextThrottleWindow();
-                }
+            try {
+                throttleWindows.remove(throttleWindows.indexOf(frame));
+            } catch (java.lang.ArrayIndexOutOfBoundsException ex) {
+                log.debug(ex.toString());
+            }
+            if (throttleWindows.size() > 0) {
+                requestFocusForNextFrame();
             }
         }
     }
 
-    public synchronized void requestAllThrottleWindowsDestroyed() {
-        for (ThrottleWindow frame : throttleWindows) {
+    public void requestAllThrottleWindowsDestroyed() {
+        for (Iterator<ThrottleWindow> i = throttleWindows.iterator(); i.hasNext();) {
+            ThrottleWindow frame = i.next();
             destroyThrottleWindow(frame);
         }
         throttleWindows = new ArrayList<>(0);
@@ -138,32 +108,32 @@ public class ThrottleFrameManager implements InstanceManagerAutoDefault {
      *
      * @return The Iterator on the list of ThrottleFrames.
      */
-    public synchronized Iterator<ThrottleWindow> getThrottleWindows() {
+    public Iterator<ThrottleWindow> getThrottleWindows() {
         return throttleWindows.iterator();
     }
 
-    public synchronized int getNumberThrottleWindows() {
+    public int getNumberThrottleWindows() {
         return throttleWindows.size();
     }
 
-    public synchronized void requestFocusForNextThrottleWindow() {
+    private void requestFocusForNextFrame() {
         activeFrame = (activeFrame + 1) % throttleWindows.size();
-        ThrottleWindow tw = throttleWindows.get(activeFrame);
-        tw.requestFocus();
-        tw.toFront();
+        ThrottleWindow tf = throttleWindows.get(activeFrame);
+        tf.requestFocus();
+        tf.toFront();
     }
 
-    public synchronized void requestFocusForPreviousThrottleWindow() {
+    private void requestFocusForPreviousFrame() {
         activeFrame--;
         if (activeFrame < 0) {
             activeFrame = throttleWindows.size() - 1;
         }
-        ThrottleWindow tw = throttleWindows.get(activeFrame);
-        tw.requestFocus();
-        tw.toFront();
+        ThrottleWindow tf = throttleWindows.get(activeFrame);
+        tf.requestFocus();
+        tf.toFront();
     }
 
-    public synchronized ThrottleWindow getCurrentThrottleFrame() {
+    public ThrottleWindow getCurrentThrottleFrame() {
         if (throttleWindows == null) {
             return null;
         }
@@ -173,8 +143,43 @@ public class ThrottleFrameManager implements InstanceManagerAutoDefault {
         return throttleWindows.get(activeFrame);
     }
 
+    public ThrottlesPreferences getThrottlesPreferences() {
+        return InstanceManager.getDefault(ThrottlesPreferences.class);
+    }
+
+    /**
+     * Description of the Class
+     *
+     * @author glen
+     */
+    class ThrottleCyclingKeyListener extends KeyAdapter {
+
+        /**
+         * Description of the Method
+         *
+         * @param e Description of the Parameter
+         */
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.isShiftDown() && e.getKeyCode() == NEXT_THROTTLE_KEY) {
+                requestFocusForNextFrame();
+            } else if (e.isShiftDown() && e.getKeyCode() == PREV_THROTTLE_KEY) {
+                requestFocusForPreviousFrame();
+            }
+        }
+    }
+
     public ThrottlesListPanel getThrottlesListPanel() {
         return throttlesListPanel;
+    }
+
+    private void buildThrottlePreferencesFrame() {
+        throttlePreferencesFrame = new JmriJFrame(Bundle.getMessage("ThrottlePreferencesFrameTitle"));
+        ThrottlesPreferencesPane tpP = new ThrottlesPreferencesPane();
+        throttlePreferencesFrame.add(tpP);
+        tpP.setContainer(throttlePreferencesFrame);
+        throttlePreferencesFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        throttlePreferencesFrame.pack();
     }
 
     private void buildThrottleListFrame() {
@@ -184,10 +189,6 @@ public class ThrottleFrameManager implements InstanceManagerAutoDefault {
         throttlesListFrame.pack();
     }
 
-    /*
-     * Show JMRI native throttle list window
-     *
-     */
     public void showThrottlesList() {
         if (throttlesListFrame == null) {
             buildThrottleListFrame();
@@ -195,33 +196,13 @@ public class ThrottleFrameManager implements InstanceManagerAutoDefault {
         throttlesListFrame.setVisible(!throttlesListFrame.isVisible());
     }
 
-    /*
-     * Show throttle preferences window
-     *
-     */
     public void showThrottlesPreferences() {
         if (throttlePreferencesFrame == null) {
-            throttlePreferencesFrame = new ThrottlesPreferencesWindow(Bundle.getMessage("ThrottlePreferencesFrameTitle"));
-            throttlePreferencesFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            throttlePreferencesFrame.pack();
-        } else {
-            throttlePreferencesFrame.resetComponents();
-            throttlePreferencesFrame.revalidate();
+            buildThrottlePreferencesFrame();
         }
         throttlePreferencesFrame.setVisible(true);
         throttlePreferencesFrame.requestFocus();
     }
 
-    /*
-     * Apply curent throttle preferences to all throttle windows
-     *
-     */
-    public void applyPreferences() {
-        throttleWindows.forEach(frame -> {
-            frame.applyPreferences();
-        });
-        throttlesListPanel.applyPreferences();
-    }
-
-    // private final static Logger log = LoggerFactory.getLogger(ThrottleFrameManager.class);
+    private final static Logger log = LoggerFactory.getLogger(ThrottleFrameManager.class);
 }

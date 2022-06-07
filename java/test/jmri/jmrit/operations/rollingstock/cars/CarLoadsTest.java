@@ -4,7 +4,7 @@ import java.util.List;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  * Tests for the Operations RollingStock Cars Loads class Last manually
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
  * <p>
  * Still to do: Everything
  *
- * @author Bob Coleman Copyright (C) 2008, 2009
+ * @author	Bob Coleman Copyright (C) 2008, 2009
  */
 public class CarLoadsTest extends OperationsTestCase {
 

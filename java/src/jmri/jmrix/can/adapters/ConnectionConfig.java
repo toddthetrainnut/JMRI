@@ -1,11 +1,13 @@
 package jmri.jmrix.can.adapters;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import jmri.jmrix.can.CanSystemConnectionMemo;
+import jmri.jmrix.can.ConfigurationManager;
 import jmri.jmrix.openlcb.swing.protocoloptions.ConfigPaneHelper;
 
 import org.slf4j.Logger;
@@ -21,8 +23,8 @@ import org.slf4j.LoggerFactory;
 abstract public class ConnectionConfig extends jmri.jmrix.AbstractSerialConnectionConfig {
 
     /**
-     * Create a connection configuration with a preexisting adapter.
-     * This is used principally when loading a configuration that defines this
+     * Create a connection configuration with a preexisting adapter. This is
+     * used principally when loading a configuratioon that defines this
      * connection.
      *
      * @param p the adapter to create a connection configuration for
@@ -53,8 +55,11 @@ abstract public class ConnectionConfig extends jmri.jmrix.AbstractSerialConnecti
 
         updateUserNameField();
 
-        ((JComboBox<Option>) options.get("Protocol").getComponent()).addActionListener((ActionEvent e) -> {
-            updateUserNameField();
+        ((JComboBox<Option>) options.get("Protocol").getComponent()).addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateUserNameField();
+            }
         });
     }
 

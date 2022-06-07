@@ -2,33 +2,37 @@ package jmri.jmrit.roster;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Set;
-
 import javax.swing.JComboBox;
-
 import jmri.jmrit.roster.swing.RosterEntryComboBox;
 import jmri.util.FileUtil;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Tests for the jmrit.roster.Roster class.
- * <p>
+ *
  * This separates tests of the DefaultRoster functionality from tests of Roster
  * objects individually. Roster itself doesn't (yet) do go a good job of
  * separating, those, so this is somewhat arbitrary.
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2002, 2012
+ * @author	Bob Jacobsen Copyright (C) 2001, 2002, 2012
  */
 public class RosterTest {
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
     public void testDirty() {
@@ -190,12 +194,13 @@ public class RosterTest {
     }
 
     @Test
-    public void testBackupFile(@TempDir File folder) throws Exception {
+    public void testBackupFile() throws Exception {
         // this test uses explicit filenames intentionally, to ensure that
         // the resulting files go into the test tree area.
 
         // create a file in "temp"
-        File rosterDir = new File(folder, "roster");
+        File rosterDir = folder.newFolder();
+        folder.newFolder();
         FileUtil.createDirectory(rosterDir);
         File f = new File(rosterDir, "roster.xml");
 
@@ -250,7 +255,7 @@ public class RosterTest {
     @Test
     public void testReadWrite() throws Exception {
         // create a test roster & store in file
-        Roster r = jmri.util.RosterTestUtil.createTestRoster(new File(Roster.getDefault().getRosterLocation()), "rosterTest.xml");
+        Roster r = createTestRoster();
         Assert.assertNotNull("exists", r);
         // write it
         r.writeFile(r.getRosterIndexPath());
@@ -267,7 +272,7 @@ public class RosterTest {
     @Test
     public void testAttributeAccess() throws Exception {
         // create a test roster & store in file
-        Roster r = jmri.util.RosterTestUtil.createTestRoster(new File(Roster.getDefault().getRosterLocation()), "rosterTest.xml");
+        Roster r = createTestRoster();
         Assert.assertNotNull("exists", r);
 
         List<RosterEntry> l;
@@ -282,7 +287,7 @@ public class RosterTest {
     @Test
     public void testAttributeValueAccess() throws Exception {
         // create a test roster & store in file
-        Roster r = jmri.util.RosterTestUtil.createTestRoster(new File(Roster.getDefault().getRosterLocation()), "rosterTest.xml");
+        Roster r = createTestRoster();
         Assert.assertNotNull("exists", r);
 
         List<RosterEntry> l;
@@ -299,7 +304,7 @@ public class RosterTest {
     @Test
     public void testAttributeList() throws Exception {
         // create a test roster & store in file
-        Roster r = jmri.util.RosterTestUtil.createTestRoster(new File(Roster.getDefault().getRosterLocation()), "rosterTest.xml");
+        Roster r = createTestRoster();
         Assert.assertNotNull("exists", r);
 
         Set<String> s;
@@ -316,8 +321,9 @@ public class RosterTest {
     public void testDefaultLocation() {
         Assert.assertTrue("creates a default", Roster.getDefault() != null);
         Assert.assertEquals("always same", Roster.getDefault(), Roster.getDefault());
-        // Default roster not stored in InstanceManager
-        Assert.assertNull("registered a default", jmri.InstanceManager.getNullableDefault(Roster.class));
+
+        // since we created it when we referenced it, should be in InstanceManager
+        Assert.assertTrue("registered a default", jmri.InstanceManager.getNullableDefault(Roster.class) != null);
     }
 
     @Test
@@ -325,11 +331,11 @@ public class RosterTest {
         RosterEntry r = new RosterEntry();
         RosterSpeedProfile rp = new RosterSpeedProfile(r);
         rp.setSpeed(1000, 500, 5000);
-        Assert.assertEquals(500.0, rp.getForwardSpeed(1.0f), 0.0);
-        Assert.assertEquals(375.0, rp.getForwardSpeed(0.75f), 0.0);
-        Assert.assertEquals(250.0, rp.getForwardSpeed(0.5f), 0.0);
-        Assert.assertEquals(125.0, rp.getForwardSpeed(0.25f), 0.0);
-        Assert.assertEquals(4.0, rp.getForwardSpeed(0.0078125f), 0.0); //routine will use 8 (round( value * 1000))
+        Assert.assertEquals(500.0,rp.getForwardSpeed(1.0f),0.0);
+        Assert.assertEquals(375.0,rp.getForwardSpeed(0.75f),0.0);
+        Assert.assertEquals(250.0,rp.getForwardSpeed(0.5f), 0.0);
+        Assert.assertEquals(125.0,rp.getForwardSpeed(0.25f),0.0);
+        Assert.assertEquals(4.0,rp.getForwardSpeed(0.0078125f),0.0); //routine will use 8 (round( value * 1000))
     }
 
     @Test
@@ -338,23 +344,22 @@ public class RosterTest {
         RosterSpeedProfile rp = new RosterSpeedProfile(r);
         rp.setSpeed(1000, 500, 5000);
         rp.setSpeed(500, 250, 2500);
-        Assert.assertEquals(500.0, rp.getForwardSpeed(1.0f), 0.0);
-        Assert.assertEquals(375.0, rp.getForwardSpeed(0.75f), 0.0);
-        Assert.assertEquals(250.0, rp.getForwardSpeed(0.5f), 0.0);
-        Assert.assertEquals(125.0, rp.getForwardSpeed(0.25f), 0.0);
-        Assert.assertEquals(4.0, rp.getForwardSpeed(0.0078125f), 0.0); //routine will use 8 (round( value * 1000))
+        Assert.assertEquals(500.0,rp.getForwardSpeed(1.0f),0.0);
+        Assert.assertEquals(375.0,rp.getForwardSpeed(0.75f),0.0);
+        Assert.assertEquals(250.0,rp.getForwardSpeed(0.5f), 0.0);
+        Assert.assertEquals(125.0,rp.getForwardSpeed(0.25f),0.0);
+        Assert.assertEquals(4.0,rp.getForwardSpeed(0.0078125f),0.0); //routine will use 8 (round( value * 1000))
     }
-
     @Test
     public void testProfileOnePointReverse() {
         RosterEntry r = new RosterEntry();
         RosterSpeedProfile rp = new RosterSpeedProfile(r);
         rp.setSpeed(1000, 500, 5000);
-        Assert.assertEquals(5000.0, rp.getReverseSpeed(1.0f), 0.0);
-        Assert.assertEquals(3750.0, rp.getReverseSpeed(0.75f), 0.0);
-        Assert.assertEquals(2500.0, rp.getReverseSpeed(0.5f), 0.0);
-        Assert.assertEquals(1250.0, rp.getReverseSpeed(0.25f), 0.0);
-        Assert.assertEquals(40.0, rp.getReverseSpeed(0.0078125f), 0.0);   //routine will use 8 (round( value * 1000))
+        Assert.assertEquals(5000.0,rp.getReverseSpeed(1.0f),0.0);
+        Assert.assertEquals(3750.0,rp.getReverseSpeed(0.75f),0.0);
+        Assert.assertEquals(2500.0,rp.getReverseSpeed(0.5f), 0.0);
+        Assert.assertEquals(1250.0,rp.getReverseSpeed(0.25f),0.0);
+        Assert.assertEquals(40.0,rp.getReverseSpeed(0.0078125f),0.0);   //routine will use 8 (round( value * 1000))
     }
 
     @Test
@@ -363,11 +368,11 @@ public class RosterTest {
         RosterSpeedProfile rp = new RosterSpeedProfile(r);
         rp.setSpeed(1000, 500, 5000);
         rp.setSpeed(500, 250, 2500);
-        Assert.assertEquals(5000.0, rp.getReverseSpeed(1.0f), 0.0);
-        Assert.assertEquals(3750.0, rp.getReverseSpeed(0.75f), 0.0);
-        Assert.assertEquals(2500.0, rp.getReverseSpeed(0.5f), 0.0);
-        Assert.assertEquals(1250.0, rp.getReverseSpeed(0.25f), 0.0);
-        Assert.assertEquals(40.0, rp.getReverseSpeed(0.0078125f), 0.0); //routine will use 8 (round( value * 1000))
+        Assert.assertEquals(5000.0,rp.getReverseSpeed(1.0f),0.0);
+        Assert.assertEquals(3750.0,rp.getReverseSpeed(0.75f),0.0);
+        Assert.assertEquals(2500.0,rp.getReverseSpeed(0.5f), 0.0);
+        Assert.assertEquals(1250.0,rp.getReverseSpeed(0.25f),0.0);
+        Assert.assertEquals(40.0,rp.getReverseSpeed(0.0078125f),0.0); //routine will use 8 (round( value * 1000))
     }
 
     @Test
@@ -376,36 +381,79 @@ public class RosterTest {
         RosterSpeedProfile rp = new RosterSpeedProfile(r);
         rp.setSpeed(1000, 500, 5000);
         rp.setSpeed(500, 250, 2500);
-        Assert.assertEquals(1.0, rp.getThrottleSetting(500, true), 0.0);
-        Assert.assertEquals(0.5, rp.getThrottleSetting(250, true), 0.0);
-        Assert.assertEquals(0.25, rp.getThrottleSetting(125, true), 0.0);
+        Assert.assertEquals(1.0,rp.getThrottleSetting(500,true),0.0);
+        Assert.assertEquals(0.5,rp.getThrottleSetting(250,true),0.0);
+        Assert.assertEquals(0.25,rp.getThrottleSetting(125,true),0.0);
     }
 
-    @Test
+   @Test
     public void testProfileTwoPointReverseGetThrottleSetting() {
         RosterEntry r = new RosterEntry();
         RosterSpeedProfile rp = new RosterSpeedProfile(r);
         rp.setSpeed(1000, 500, 5000);
         rp.setSpeed(500, 250, 2500);
-        Assert.assertEquals(1.0, rp.getThrottleSetting(5000, false), 0.0);
-        Assert.assertEquals(0.5, rp.getThrottleSetting(2500, false), 0.0);
-        Assert.assertEquals(0.25, rp.getThrottleSetting(1250, false), 0.0);
+        Assert.assertEquals(1.0,rp.getThrottleSetting(5000,false),0.0);
+        Assert.assertEquals(0.5,rp.getThrottleSetting(2500,false),0.0);
+        Assert.assertEquals(0.25,rp.getThrottleSetting(1250,false),0.0);
     }
 
-    @BeforeEach
-    public void setUp(@TempDir File folder) {
+    public Roster createTestRoster() throws IOException, FileNotFoundException {
+        // this uses explicit filenames intentionally, to ensure that
+        // the resulting files go into the test tree area.
+
+        // store files in random temp directory
+        File rosterDir = folder.newFolder();
+        FileUtil.createDirectory(rosterDir);
+
+        File f = new File(rosterDir, "rosterTest.xml");
+        // File should never be there is TemporaryFolder working
+        if (f.exists()) Assert.fail("rosterTest.xml in "+rosterDir+" already present: "+f);
+
+        // create a roster with known contents
+        Roster r = new Roster();
+        r.setRosterLocation(rosterDir.getAbsolutePath());
+        r.setRosterIndexFileName("rosterTest.xml");
+
+        RosterEntry e1 = new RosterEntry("file name Bob");
+        e1.setId("Bob");
+        e1.setDccAddress("123");
+        e1.setRoadNumber("123");
+        e1.setRoadName("SP");
+        e1.ensureFilenameExists();
+        e1.putAttribute("key a", "value a");
+        e1.putAttribute("key b", "value b");
+        r.addEntry(e1);
+        RosterEntry e2 = new RosterEntry("file name Bill");
+        e2.setId("Bill");
+        e2.setDccAddress("456");
+        e2.setRoadNumber("123");
+        e2.setRoadName("ATSF");
+        e2.setDecoderModel("81");
+        e2.setDecoderFamily("33");
+        e2.ensureFilenameExists();
+        e2.putAttribute("key a", "value a");
+        r.addEntry(e2);
+        RosterEntry e3 = new RosterEntry("file name Ben");
+        e3.setId("Ben");
+        e3.setRoadNumber("123");
+        e3.setRoadName("UP");
+        e3.ensureFilenameExists();
+        e3.putAttribute("key b", "value b");
+        r.addEntry(e3);
+
+        // write it
+        //r.writeFile(r.getRosterIndexPath());
+        return r;
+    }
+
+    // The minimal setup for log4J
+    @Before
+    public void setUp() {
         JUnitUtil.setUp();
-        try {
-            JUnitUtil.resetProfileManager(new jmri.profile.NullProfile(folder));
-        } catch (IOException ioe) {
-            // failed to reset the profile relative to the temporary folder.
-            // use the default reset.
-            JUnitUtil.resetProfileManager();
-        }
-        JUnitUtil.initRosterConfigManager();
+        jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

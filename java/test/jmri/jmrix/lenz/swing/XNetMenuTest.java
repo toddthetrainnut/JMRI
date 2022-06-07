@@ -1,21 +1,21 @@
 package jmri.jmrix.lenz.swing;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.lenz.LenzCommandStation;
 import jmri.jmrix.lenz.XNetInterfaceScaffold;
 import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.jmrix.lenz.XNetTrafficController;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of XNetMenu
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class XNetMenuTest {
 
@@ -30,7 +30,7 @@ public class XNetMenuTest {
         Assert.assertNotNull("exists", action);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tc = new XNetInterfaceScaffold(new LenzCommandStation());
@@ -40,10 +40,7 @@ public class XNetMenuTest {
 
     }
 
-    @AfterEach
-    public void tearDown() {
-        tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();        tc = null;
     }
 }

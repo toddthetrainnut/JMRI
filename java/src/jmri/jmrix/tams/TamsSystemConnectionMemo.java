@@ -1,12 +1,8 @@
 package jmri.jmrix.tams;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
-
-import jmri.*;
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
-import jmri.jmrix.DefaultSystemConnectionMemo;
-import jmri.util.NamedBeanComparator;
+import jmri.GlobalProgrammerManager;
+import jmri.InstanceManager;
 
 /**
  * Lightweight class to denote that a system is active, and provide general
@@ -17,22 +13,25 @@ import jmri.util.NamedBeanComparator;
  *
  * Based on work by Bob Jacobsen
  *
- * @author Kevin Dickerson Copyright (C) 2012
+ * @author	Kevin Dickerson Copyright (C) 2012
  */
-public class TamsSystemConnectionMemo extends DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class TamsSystemConnectionMemo extends jmri.jmrix.SystemConnectionMemo {
 
     public TamsSystemConnectionMemo(TamsTrafficController et) {
         super("T", "Tams");
         this.et = et;
         et.setAdapterMemo(this);
-        InstanceManager.store(this, TamsSystemConnectionMemo.class);
+        register();
+        InstanceManager.store(this, TamsSystemConnectionMemo.class); // also register as specific type
         InstanceManager.store(cf = new jmri.jmrix.tams.swing.TamsComponentFactory(this),
                 jmri.jmrix.swing.ComponentFactory.class);
     }
 
     public TamsSystemConnectionMemo() {
         super("T", "Tams");
-        InstanceManager.store(this, TamsSystemConnectionMemo.class);
+        register(); // registers general type
+        InstanceManager.store(this, TamsSystemConnectionMemo.class); // also register as specific type
+        //Needs to be implemented
         InstanceManager.store(cf = new jmri.jmrix.tams.swing.TamsComponentFactory(this),
                 jmri.jmrix.swing.ComponentFactory.class);
     }
@@ -41,7 +40,6 @@ public class TamsSystemConnectionMemo extends DefaultSystemConnectionMemo implem
 
     /**
      * Provides access to the TrafficController for this particular connection.
-     * @return Tams Traffic Controller.
      */
     public TamsTrafficController getTrafficController() {
         return et;
@@ -58,27 +56,21 @@ public class TamsSystemConnectionMemo extends DefaultSystemConnectionMemo implem
      */
     public void configureManagers() {
 
-        TamsPowerManager powerManager = new TamsPowerManager(getTrafficController());
-        InstanceManager.store(powerManager, jmri.PowerManager.class);
-        store(powerManager, jmri.PowerManager.class);
+        powerManager = new jmri.jmrix.tams.TamsPowerManager(getTrafficController());
+        jmri.InstanceManager.store(powerManager, jmri.PowerManager.class);
 
-        TamsProgrammerManager programmerManager = getProgrammerManager();
-        InstanceManager.store(programmerManager, GlobalProgrammerManager.class);
-        InstanceManager.store(programmerManager, AddressedProgrammerManager.class);
+        InstanceManager.store(getProgrammerManager(), GlobalProgrammerManager.class);
+        InstanceManager.store(getProgrammerManager(), jmri.AddressedProgrammerManager.class);
 
-        TurnoutManager turnoutManager = new TamsTurnoutManager(this);
-        InstanceManager.setTurnoutManager(turnoutManager);
-        store(turnoutManager,TurnoutManager.class);
+        turnoutManager = new jmri.jmrix.tams.TamsTurnoutManager(this);
+        jmri.InstanceManager.setTurnoutManager(turnoutManager);
 
-        ThrottleManager throttleManager = new TamsThrottleManager(this);
-        InstanceManager.setThrottleManager(throttleManager);
-        store(throttleManager,ThrottleManager.class);
+        throttleManager = new jmri.jmrix.tams.TamsThrottleManager(this);
+        jmri.InstanceManager.setThrottleManager(throttleManager);
 
-        SensorManager sensorManager = new TamsSensorManager(this);
-        InstanceManager.setSensorManager(sensorManager);
-        store(throttleManager,ThrottleManager.class);
+        sensorManager = new jmri.jmrix.tams.TamsSensorManager(this);
+        jmri.InstanceManager.setSensorManager(sensorManager);
 
-        register();
     }
 
     @Override
@@ -86,42 +78,121 @@ public class TamsSystemConnectionMemo extends DefaultSystemConnectionMemo implem
         return ResourceBundle.getBundle("jmri.jmrix.tams.TamsActionListBundle");
     }
 
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
-    }
-
     /**
-     * Provides access to the Programmer for this particular connection.
-     * NOTE: Programmer defaults to null
-     * @return programmer manager.
+     * Provides access to the Programmer for this particular connection. NOTE:
+     * Programmer defaults to null
      */
     public TamsProgrammerManager getProgrammerManager() {
-        return (TamsProgrammerManager) classObjectMap.computeIfAbsent(TamsProgrammerManager.class, (Class<?> c) -> new TamsProgrammerManager(new TamsProgrammer(getTrafficController()),this));
+        if (programmerManager == null) {
+            programmerManager = new TamsProgrammerManager(new TamsProgrammer(getTrafficController()), this);
+        }
+        return programmerManager;
     }
 
     public void setProgrammerManager(TamsProgrammerManager p) {
-        store(p,TamsProgrammerManager.class);
+        programmerManager = p;
     }
 
+    private TamsProgrammerManager programmerManager = null;
+
+    private TamsSensorManager sensorManager;
+    private TamsTurnoutManager turnoutManager;
+    private TamsThrottleManager throttleManager;
+    private TamsPowerManager powerManager;
+
     public TamsTurnoutManager getTurnoutManager() {
-        return (TamsTurnoutManager) classObjectMap.computeIfAbsent(TurnoutManager.class, (Class<?> c) -> { return new TamsTurnoutManager(this); });
+        return turnoutManager;
     }
 
     public TamsSensorManager getSensorManager() {
-        return (TamsSensorManager) classObjectMap.computeIfAbsent(SensorManager.class, (Class<?> c) -> { return new TamsSensorManager(this); });
+        return sensorManager;
     }
 
     public TamsThrottleManager getThrottleManager() {
-        return (TamsThrottleManager) classObjectMap.computeIfAbsent(ThrottleManager.class, (Class<?> c) -> { return new TamsThrottleManager(this); });
+        return throttleManager;
     }
 
     public TamsPowerManager getPowerManager() {
-        return (TamsPowerManager) classObjectMap.computeIfAbsent(PowerManager.class, (Class<?> c) -> { return new TamsPowerManager(getTrafficController()); });
+        return powerManager;
+    }
+
+    /**
+     * Tells which managers this class provides.
+     */
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        }
+        if (type.equals(jmri.ThrottleManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.PowerManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.GlobalProgrammerManager.class)) {
+            return getProgrammerManager().isGlobalProgrammerAvailable();
+        }
+        if (type.equals(jmri.AddressedProgrammerManager.class)) {
+            return getProgrammerManager().isAddressedModePossible();
+        }
+
+        if (type.equals(jmri.SensorManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.TurnoutManager.class)) {
+            return true;
+        }
+        return super.provides(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.ThrottleManager.class)) {
+            return (T) getThrottleManager();
+        }
+        if (T.equals(jmri.PowerManager.class)) {
+            return (T) getPowerManager();
+        }
+        if (T.equals(jmri.GlobalProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+        if (T.equals(jmri.AddressedProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+
+        if (T.equals(jmri.SensorManager.class)) {
+            return (T) getSensorManager();
+        }
+        if (T.equals(jmri.TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        return super.get(T);
     }
 
     @Override
     public void dispose() {
+        if (sensorManager != null) {
+            sensorManager.dispose();
+            sensorManager = null;
+        }
+        if (turnoutManager != null) {
+            turnoutManager.dispose();
+            turnoutManager = null;
+        }
+
+        if (powerManager != null) {
+            InstanceManager.deregister(powerManager, jmri.jmrix.tams.TamsPowerManager.class);
+        }
+
+        if (throttleManager != null) {
+            InstanceManager.deregister(throttleManager, jmri.jmrix.tams.TamsThrottleManager.class);
+        }
+
         et = null;
         InstanceManager.deregister(this, TamsSystemConnectionMemo.class);
         if (cf != null) {

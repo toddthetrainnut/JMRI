@@ -54,7 +54,7 @@ public class StoreXmlConfigAction extends LoadStoreBaseAction {
     @CheckForNull
     public static File getFileCustom(JFileChooser fileChooser) {
         fileChooser.rescanCurrentDirectory();
-        int retVal = fileChooser.showDialog(null, Bundle.getMessage("MenuItemStore"));
+        int retVal = fileChooser.showDialog(null, null);
         if (retVal != JFileChooser.APPROVE_OPTION) {
             return null;  // give up if no file selected
         }
@@ -68,7 +68,9 @@ public class StoreXmlConfigAction extends LoadStoreBaseAction {
                 file = new File(fileName);
             }
         }
-        log.debug("Save file: {}", file.getPath());
+        if (log.isDebugEnabled()) {
+            log.debug("Save file: " + file.getPath());
+        }
         // check for possible overwrite
         if (file.exists()) {
             int selectedValue = JOptionPane.showConfirmDialog(null,
@@ -95,7 +97,7 @@ public class StoreXmlConfigAction extends LoadStoreBaseAction {
             log.error("Failed to get default configure manager");
         } else {
             boolean results = cm.storeConfig(file);
-            log.debug("store {}", results ? "was successful" : "failed");
+            log.debug(results ? "store was successful" : "store failed");
             if (!results) {
                 JOptionPane.showMessageDialog(null,
                         rb.getString("StoreHasErrors") + "\n"

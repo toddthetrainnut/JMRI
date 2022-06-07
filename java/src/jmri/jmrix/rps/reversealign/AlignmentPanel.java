@@ -1,7 +1,8 @@
 package jmri.jmrix.rps.reversealign;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Objects;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -20,6 +21,7 @@ import jmri.jmrix.rps.Measurement;
 import jmri.jmrix.rps.PositionFile;
 import jmri.jmrix.rps.Reading;
 import jmri.jmrix.rps.ReadingListener;
+import jmri.jmrix.rps.trackingpanel.RpsTrackingPanel;
 import jmri.jmrix.rps.RpsSystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +34,12 @@ import org.slf4j.LoggerFactory;
  * transmitters, we also flip the sign of Z coordinates to keep this bias
  * working for us.
  *
- * @author Bob Jacobsen Copyright (C) 2007
+ * @author	Bob Jacobsen Copyright (C) 2007
  */
 public class AlignmentPanel extends javax.swing.JPanel
         implements ReadingListener, Constants {
 
-    RpsSystemConnectionMemo memo;
+    RpsSystemConnectionMemo memo = null;
 
     public AlignmentPanel(RpsSystemConnectionMemo _memo) {
         super();
@@ -69,7 +71,12 @@ public class AlignmentPanel extends javax.swing.JPanel
         p.add(vs);
         vs.setText("0.01345");
         p.add(calc);
-        calc.addActionListener(event -> calculate());
+        calc.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                calculate();
+            }
+        });
         add(p);
 
         p = new JPanel();
@@ -107,12 +114,22 @@ public class AlignmentPanel extends javax.swing.JPanel
         // file load, store
         p = new JPanel();
         JButton b1;
-        b1 = new JButton(Bundle.getMessage("ButtonStore_"));
-        b1.addActionListener(event -> store());
+        b1 = new JButton("Store...");
+        b1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                store();
+            }
+        });
         p.add(b1);
 
-        b1 = new JButton(Bundle.getMessage("ButtonLoad_"));
-        b1.addActionListener(event -> load());
+        b1 = new JButton("Load...");
+        b1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                load();
+            }
+        });
         p.add(b1);
 
         add(new JSeparator());
@@ -133,7 +150,7 @@ public class AlignmentPanel extends javax.swing.JPanel
             if (retVal == JFileChooser.APPROVE_OPTION) {
                 File file = fci.getSelectedFile();
                 if (log.isInfoEnabled()) {
-                    log.info("located file {} for load", file);
+                    log.info("located file " + file + " for load");
                 }
                 // handle the file
                 PositionFile pf = new PositionFile();
@@ -159,7 +176,7 @@ public class AlignmentPanel extends javax.swing.JPanel
                 log.info("load cancelled in open dialog");
             }
         } catch (Exception e) {
-            log.error("exception during load: ", e);
+            log.error("exception during load: " + e);
         }
     }
 
@@ -172,7 +189,7 @@ public class AlignmentPanel extends javax.swing.JPanel
             if (retVal == JFileChooser.APPROVE_OPTION) {
                 File file = fci.getSelectedFile();
                 if (log.isInfoEnabled()) {
-                    log.info("located file {} for load", file);
+                    log.info("located file " + file + " for load");
                 }
                 // handle the file
                 PositionFile pf = new PositionFile();
@@ -193,21 +210,17 @@ public class AlignmentPanel extends javax.swing.JPanel
                 log.info("load cancelled in open dialog");
             }
         } catch (Exception e) {
-            log.error("exception during load: ", e);
+            log.error("exception during load: " + e);
         }
     }
 
     /**
      * Service routine for finding a Point3d from input fields
-     * @param x X coordinate of resulting point
-     * @param y Y coordinate of resulting point
-     * @param z Z coordinate of resulting point
-     * @return point from coordinates
      */
     Point3d getPoint(JTextField x, JTextField y, JTextField z) {
-        float xval = Float.parseFloat(x.getText());
-        float yval = Float.parseFloat(y.getText());
-        float zval = Float.parseFloat(z.getText());
+        float xval = Float.valueOf(x.getText()).floatValue();
+        float yval = Float.valueOf(y.getText()).floatValue();
+        float zval = Float.valueOf(z.getText()).floatValue();
         return new Point3d(xval, yval, zval);
     }
 
@@ -347,14 +360,14 @@ public class AlignmentPanel extends javax.swing.JPanel
     @Override
     public void notify(Reading r) {
         // update lines
-        for (Line line : lines) {
-            line.update(r);
+        for (int i = 0; i < lines.length; i++) {
+            lines[i].update(r);
         }
     }
 
     double getVSound() {
         try {
-            return Double.parseDouble(vs.getText());
+            return Double.valueOf(vs.getText()).doubleValue();
         } catch (Exception e) {
             vs.setText("0.0344");
             return 0.0344;
@@ -384,7 +397,7 @@ public class AlignmentPanel extends javax.swing.JPanel
             Reading r = getReading(NREADINGS, 0);
 
             // calculate
-            Calculator c = Algorithms.newCalculator(points, getVSound(), offset, (String) Objects.requireNonNull(algorithm.getSelectedItem()));
+            Calculator c = Algorithms.newCalculator(points, getVSound(), offset, (String) algorithm.getSelectedItem());
             Measurement m = c.convert(r);
 
             // store
@@ -490,7 +503,12 @@ public class AlignmentPanel extends javax.swing.JPanel
 
             add(acquire);
             JButton reset = new JButton("Reset");
-            reset.addActionListener(event -> reset());
+            reset.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    reset();
+                }
+            });
 
             add(reset);
             add(new JLabel("n:"));
@@ -572,18 +590,16 @@ public class AlignmentPanel extends javax.swing.JPanel
 
         /**
          * Service routine for finding a Point3d from input fields
-         * @return Point from input coordinate values
          */
         Point3d getPoint() {
-            float xval = Float.parseFloat(xl.getText());
-            float yval = Float.parseFloat(yl.getText());
-            float zval = -Float.parseFloat(zl.getText());
+            float xval = Float.valueOf(xl.getText()).floatValue();
+            float yval = Float.valueOf(yl.getText()).floatValue();
+            float zval = -Float.valueOf(zl.getText()).floatValue();
             return new Point3d(xval, yval, zval);
         }
 
         /**
          * Service routine for setting the receiver input fields from a Point3d
-         * @param p Specific input point
          */
         void setPoint(Point3d p) {
             xl.setText("" + p.x);
@@ -610,6 +626,6 @@ public class AlignmentPanel extends javax.swing.JPanel
         double s1, s2, s3, s4, s5, s6;
     }
 
-    private final static Logger log = LoggerFactory.getLogger(AlignmentPanel.class);
+    private final static Logger log = LoggerFactory.getLogger(RpsTrackingPanel.class);
 
 }

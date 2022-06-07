@@ -1,29 +1,30 @@
 package apps;
 
 import apps.gui3.tabbedpreferences.TabbedPreferences;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import java.io.*;
+import java.awt.GraphicsEnvironment;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-
 import javax.swing.SwingUtilities;
-
-import jmri.*;
-import jmri.jmrit.logixng.LogixNGPreferences;
+import jmri.Application;
+import jmri.ConfigureManager;
+import jmri.InstanceManager;
+import jmri.JmriException;
+import jmri.ShutDownManager;
+import jmri.implementation.AbstractShutDownTask;
+import jmri.implementation.JmriConfigurationManager;
+import jmri.jmrit.display.layoutEditor.BlockValueFile;
 import jmri.jmrit.revhistory.FileHistory;
 import jmri.profile.Profile;
 import jmri.profile.ProfileManager;
 import jmri.script.JmriScriptEngineManager;
 import jmri.util.FileUtil;
+import jmri.util.Log4JUtil;
 import jmri.util.ThreadingUtil;
-
-import jmri.util.prefs.JmriPreferencesActionFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import apps.util.Log4JUtil;
 
 /**
  * Base class for the core of JMRI applications.
@@ -58,8 +59,6 @@ public abstract class AppsBase {
      *
      * @param applicationName The application name as presented to the user
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification="Info String always needs to be evaluated")
     static public void preInit(String applicationName) {
         Log4JUtil.initLogging();
 
@@ -96,6 +95,8 @@ public abstract class AppsBase {
 
         installConfigurationManager();
 
+        addDefaultShutDownTasks();
+
         installManagers();
 
         setAndLoadPreferenceFile();
@@ -116,12 +117,6 @@ public abstract class AppsBase {
         InstanceManager.getDefault(jmri.LogixManager.class).activateAllLogixs();
         InstanceManager.getDefault(jmri.jmrit.display.layoutEditor.LayoutBlockManager.class).initializeLayoutBlockPaths();
 
-        jmri.jmrit.logixng.LogixNG_Manager logixNG_Manager =
-                InstanceManager.getDefault(jmri.jmrit.logixng.LogixNG_Manager.class);
-        logixNG_Manager.setupAllLogixNGs();
-        if (InstanceManager.getDefault(LogixNGPreferences.class).getStartLogixNGOnStartup()) {
-            logixNG_Manager.activateAllLogixNGs();
-        }
     }
 
     /**
@@ -156,7 +151,7 @@ public abstract class AppsBase {
             try {
                 if (ProfileManager.getDefault().migrateToProfiles(getConfigFileName())) { // migration or first use
                     // GUI should show message here
-                    log.info("Migrated {}",Bundle.getMessage("ConfigMigratedToProfile"));
+                    log.info(Bundle.getMessage("ConfigMigratedToProfile"));
                 }
             } catch (IOException | IllegalArgumentException ex) {
                 // GUI should show message here
@@ -186,9 +181,7 @@ public abstract class AppsBase {
     }
 
     protected void installConfigurationManager() {
-        // install a Preferences Action Factory
-        InstanceManager.store(new AppsPreferencesActionFactory(), JmriPreferencesActionFactory.class);
-        ConfigureManager cm = new AppsConfigurationManager();
+        ConfigureManager cm = new JmriConfigurationManager();
         FileUtil.createDirectory(FileUtil.getUserFilesPath());
         InstanceManager.store(cm, ConfigureManager.class);
         InstanceManager.setDefault(ConfigureManager.class, cm);
@@ -323,6 +316,37 @@ public abstract class AppsBase {
     }
 
     /**
+     * @deprecated for removal since 4.17.2 without replacement
+     */
+    @Deprecated
+    protected void installShutDownManager() {
+        // nothing to do
+    }
+
+    protected void addDefaultShutDownTasks() {
+        // add the default shutdown task to save blocks
+        // as a special case, register a ShutDownTask to write out blocks
+        InstanceManager.getDefault(jmri.ShutDownManager.class).
+                register(new AbstractShutDownTask("Writing Blocks") {
+
+                    @Override
+                    public boolean execute() {
+                        // Save block values prior to exit, if necessary
+                        log.debug("Start writing block info");
+                        try {
+                            new BlockValueFile().writeBlockValues();
+                        } //catch (org.jdom2.JDOMException jde) { log.error("Exception writing blocks: "+jde); }
+                        catch (java.io.IOException ioe) {
+                            log.error("Exception writing blocks:", ioe);
+                        }
+
+                        // continue shutdown
+                        return true;
+                    }
+                });
+    }
+
+    /**
      * Final actions before releasing control of the application to the user,
      * invoked explicitly after object has been constructed in main().
      */
@@ -389,7 +413,7 @@ public abstract class AppsBase {
                 log.warn("JMRI property {} already set to {}, skipping reset to {}", key, current, value);
             }
         } catch (Exception e) {
-            log.error("Unable to set JMRI property {} to {}due to exception", key, value, e);
+            log.error("Unable to set JMRI property {} to {}due to exception: {}", key, value, e);
         }
     }
 
@@ -424,6 +448,4 @@ public abstract class AppsBase {
         }
         return false;
     }
-
-
 }

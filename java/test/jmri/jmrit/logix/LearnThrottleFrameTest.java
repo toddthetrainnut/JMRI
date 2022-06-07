@@ -1,42 +1,39 @@
 package jmri.jmrit.logix;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Pete Cressman Copyright (C) 2020
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class LearnThrottleFrameTest {
+public class LearnThrottleFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @Test
-    public void testCTor() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        WarrantFrame wf = new WarrantFrame(new Warrant("IW0", "AllTestWarrant"));
-        LearnThrottleFrame ltf = new LearnThrottleFrame(wf);
-        assertThat(ltf).withFailMessage("exists").isNotNull();
-        JUnitUtil.dispose(ltf);
-        JUnitUtil.dispose(wf);
-    }
+    private WarrantFrame wf;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
+    @Override
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDebugThrottleManager();
+        if(!GraphicsEnvironment.isHeadless()){
+           wf = new WarrantFrame(new Warrant("IW0", "AllTestWarrant"));
+           frame = new LearnThrottleFrame(wf);
+        }
     }
 
-    @AfterEach
+    @After
+    @Override
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.tearDown();
+        if(wf !=null ) {
+           JUnitUtil.dispose(wf);
+        }
+        wf = null;
+        super.tearDown();
     }
+
+    // private final static Logger log = LoggerFactory.getLogger(LearnThrottleFrameTest.class);
 
 }

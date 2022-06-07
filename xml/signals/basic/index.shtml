@@ -1,47 +1,48 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="en">
 <head>
-  <meta name="generator" content="HTML Tidy for HTML5 for Apple macOS version 5.8.0">
-  <title>JMRI: Basic Signaling Definition</title>
-  <!--#include virtual="/Style.shtml" -->
+
+<title>JMRI: Basic Signaling Definition</title>
+<!-- Style -->
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<LINK REL="stylesheet" TYPE="text/css" HREF="/css/default.css"
+	MEDIA="screen">
+<LINK REL="stylesheet" TYPE="text/css" HREF="/css/print.css"
+	MEDIA="print">
+<LINK REL="icon" HREF="/images/jmri.ico" TYPE="image/png">
+<LINK REL="home" TITLE="Home" HREF="/">
+<!-- /Style -->
 </head>
+
 <body>
-  <!--#include virtual="/Header.shtml" -->
+<!--#include virtual="/Header" -->
+  <div class="nomenu" id="mBody">
+    <div id="mainContent">
 
-  <div id="mBody">
-    <div id="mainContent" class="no-sidebar">
+<h1> 
+JMRI: Basic Signaling Definition
+</h1>
 
-      <h1>JMRI: Basic Signaling Definition</h1>
-      This directory contains basic signaling definitions understood by many model railroaders.
-      They don't model any specific prototype, but are similar to transition era ARR signaling
-      techniques.
-      <p>See the <a href="aspects.xml">aspect page</a>.</p>
+This directory contains basic signaling definitions understood by 
+many model railroaders.  
+They don't model any specific prototype, 
+but are similar to transition era ARR signaling techniques.
 
-      <p>Signal Mast definitions:</p>
+<p>
+See the 
+<a href="aspects.xml">aspect page</a>.
 
-      <ul>
-        <li>
-          <a href="appearance-one-searchlight.xml">Single searchlight high signal</a>
-        </li>
+<p>
+Signal Mast definitions:
+<ul>
+<li><a href="appearance-one-searchlight.xml">Single searchlight high signal</a>
+<li><a href="appearance-two-searchlight.xml">Double searchlight high signal</a>
+<li><a href="appearance-one-low.xml">Single searchlight low signal</a>
+<li><a href="appearance-two-low.xml">Double searchlight low signal</a>
+</ul>
 
-        <li>
-          <a href="appearance-two-searchlight.xml">Double searchlight high signal</a>
-        </li>
-
-        <li>
-          <a href="appearance-one-low.xml">Single searchlight low signal</a>
-        </li>
-
-        <li>
-          <a href="appearance-two-low.xml">Double searchlight low signal</a>
-        </li>
-      </ul>
-
-      <!--#include virtual="/Footer.shtml" -->
     </div>
-    <!-- closes #mainContent-->
-  </div>
-  <!-- closes #mBody-->
-  <script src="/js/main.js"></script>
+</div>
+<!--#include virtual="/Footer" -->
 </body>
 </html>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../XSLT/decoder.xsl"?>
 <!-- Copyright (C) JMRI 2001, 2005, 2007, 2-009, 2010 All rights reserved -->
 <variables xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://jmri.org/xml/schema/decoder.xsd">
@@ -55,7 +55,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 1</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 1</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 1</label>
-    <label xml:lang="es">FL(hacia delante) controla la salida-1</label>
   </variable>
   <variable item="FL(f) controls output 2" CV="33" mask="XXXXXXVX" minOut="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -64,7 +63,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 2</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 2</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 2</label>
-    <label xml:lang="es">FL (hacia delante) controla la salida-2</label>
   </variable>
   <variable item="FL(f) controls output 3" CV="33" mask="XXXXXVXX" minOut="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -73,7 +71,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 3</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 3</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 3</label>
-    <label xml:lang="es">FL (hacia delante) controla la salida-3</label>
   </variable>
   <variable item="FL(f) controls output 4" CV="33" mask="XXXXVXXX" minOut="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -82,7 +79,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 4</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 4</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 4</label>
-    <label xml:lang="es">FL (hacia delante) controla la salida-4</label>
   </variable>
   <variable item="FL(f) controls output 5" CV="33" mask="XXXVXXXX" minOut="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -91,7 +87,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 5</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 5</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 5</label>
-    <label xml:lang="es">FL (hacia delante) controla la salida-5</label>
   </variable>
   <variable item="FL(f) controls output 6" CV="33" mask="XXVXXXXX" minOut="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -100,7 +95,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 6</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 6</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 6</label>
-    <label xml:lang="es">FL (hacia delante) controla la salida-6</label>
   </variable>
   <variable item="FL(f) controls output 7" CV="33" mask="XVXXXXXX" minOut="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -109,7 +103,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 7</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 7</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 7</label>
-    <label xml:lang="es">FL (hacia delante) controla la salida-7</label>
   </variable>
   <variable item="FL(f) controls output 8" CV="33" mask="VXXXXXXX" minOut="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -118,7 +111,6 @@
     <label xml:lang="de">FL(v) steuert Ausgang 8</label>
     <label xml:lang="cs">F světla (vpřed) řídí výstup 8</label>
     <label xml:lang="nl">FL(v) stuurt uitgang 8</label>
-    <label xml:lang="es">FL (hacia delante) controla la salida-8</label>
   </variable>
   <variable item="FL(r) controls output 1" CV="34" mask="XXXXXXXV" minOut="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -127,7 +119,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 1</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 1</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 1</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-1</label>
   </variable>
   <variable item="FL(r) controls output 2" CV="34" mask="XXXXXXVX" minOut="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -136,7 +127,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 2</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 2</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 2</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-2</label>
   </variable>
   <variable item="FL(r) controls output 3" CV="34" mask="XXXXXVXX" minOut="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -145,7 +135,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 3</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 3</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 3</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-3</label>
   </variable>
   <variable item="FL(r) controls output 4" CV="34" mask="XXXXVXXX" minOut="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -154,7 +143,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 4</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 4</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 4</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-4</label>
   </variable>
   <variable item="FL(r) controls output 5" CV="34" mask="XXXVXXXX" minOut="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -163,7 +151,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 5</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 5</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 5</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-5</label>
   </variable>
   <variable item="FL(r) controls output 6" CV="34" mask="XXVXXXXX" minOut="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -172,7 +159,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 6</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 6</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 6</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-6</label>
   </variable>
   <variable item="FL(r) controls output 7" CV="34" mask="XVXXXXXX" minOut="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -181,7 +167,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 7</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 7</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 7</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-7</label>
   </variable>
   <variable item="FL(r) controls output 8" CV="34" mask="VXXXXXXX" minOut="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -190,7 +175,6 @@
     <label xml:lang="de">FL(r) steuert Ausgang 8</label>
     <label xml:lang="cs">F světla (vzad) řídí výstup 8</label>
     <label xml:lang="nl">FL(a) stuurt uitgang 8</label>
-    <label xml:lang="es">FL (en reversa) controla la salida-8</label>
   </variable>
   <variable item="F1 controls output 1" CV="35" mask="XXXXXXXV" minOut="1" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -199,7 +183,6 @@
     <label xml:lang="de">F1 steuert Ausgang 1</label>
     <label xml:lang="cs">F1 řídí výstup 1</label>
     <label xml:lang="nl">F1 stuurt uitgang 1</label>
-    <label xml:lang="es">F1 controla la salida-1</label>
   </variable>
   <variable item="F1 controls output 2" CV="35" mask="XXXXXXVX" minOut="2" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -208,7 +191,6 @@
     <label xml:lang="de">F1 steuert Ausgang 2</label>
     <label xml:lang="cs">F1 řídí výstup 2</label>
     <label xml:lang="nl">F1 stuurt uitgang 2</label>
-    <label xml:lang="es">F1 controla la salida-2</label>
   </variable>
   <variable item="F1 controls output 3" CV="35" mask="XXXXXVXX" minOut="3" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -217,7 +199,6 @@
     <label xml:lang="de">F1 steuert Ausgang 3</label>
     <label xml:lang="cs">F1 řídí výstup 3</label>
     <label xml:lang="nl">F1 stuurt uitgang 3</label>
-    <label xml:lang="es">F1 controla la salida-3</label>
   </variable>
   <variable item="F1 controls output 4" CV="35" mask="XXXXVXXX" minOut="4" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -226,7 +207,6 @@
     <label xml:lang="de">F1 steuert Ausgang 4</label>
     <label xml:lang="cs">F1 řídí výstup 4</label>
     <label xml:lang="nl">F1 stuurt uitgang 4</label>
-    <label xml:lang="es">F1 controla la salida-4</label>
   </variable>
   <variable item="F1 controls output 5" CV="35" mask="XXXVXXXX" minOut="5" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -235,7 +215,6 @@
     <label xml:lang="de">F1 steuert Ausgang 5</label>
     <label xml:lang="cs">F1 řídí výstup 5</label>
     <label xml:lang="nl">F1 stuurt uitgang 5</label>
-    <label xml:lang="es">F1 controla la salida-5</label>
   </variable>
   <variable item="F1 controls output 6" CV="35" mask="XXVXXXXX" minOut="6" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -244,7 +223,6 @@
     <label xml:lang="de">F1 steuert Ausgang 6</label>
     <label xml:lang="cs">F1 řídí výstup 6</label>
     <label xml:lang="nl">F1 stuurt uitgang 6</label>
-    <label xml:lang="es">F1 controla la salida-6</label>
   </variable>
   <variable item="F1 controls output 7" CV="35" mask="XVXXXXXX" minOut="7" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -253,7 +231,6 @@
     <label xml:lang="de">F1 steuert Ausgang 7</label>
     <label xml:lang="cs">F1 řídí výstup 7</label>
     <label xml:lang="nl">F1 stuurt uitgang 7</label>
-    <label xml:lang="es">F1 controla la salida-7</label>
   </variable>
   <variable item="F1 controls output 8" CV="35" mask="VXXXXXXX" minOut="8" minFn="1">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -262,7 +239,6 @@
     <label xml:lang="de">F1 steuert Ausgang 8</label>
     <label xml:lang="cs">F1 řídí výstup 8</label>
     <label xml:lang="nl">F1 stuurt uitgang 8</label>
-    <label xml:lang="es">F1 controla la salida-8</label>
   </variable>
   <variable item="F2 controls output 1" CV="36" mask="XXXXXXXV" minOut="1" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -271,7 +247,6 @@
     <label xml:lang="de">F2 steuert Ausgang 1</label>
     <label xml:lang="cs">F2 řídí výstup 1</label>
     <label xml:lang="nl">F2 stuurt uitgang 1</label>
-    <label xml:lang="es">F2 controla la salida-1</label>
   </variable>
   <variable item="F2 controls output 2" CV="36" mask="XXXXXXVX" minOut="2" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -280,7 +255,6 @@
     <label xml:lang="de">F2 steuert Ausgang 2</label>
     <label xml:lang="cs">F2 řídí výstup 2</label>
     <label xml:lang="nl">F2 stuurt uitgang 2</label>
-    <label xml:lang="es">F2 controla la salida-2</label>
   </variable>
   <variable item="F2 controls output 3" CV="36" mask="XXXXXVXX" minOut="3" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -289,7 +263,6 @@
     <label xml:lang="de">F2 steuert Ausgang 3</label>
     <label xml:lang="cs">F2 řídí výstup 3</label>
     <label xml:lang="nl">F2 stuurt uitgang 3</label>
-    <label xml:lang="es">F2 controla la salida-3</label>
   </variable>
   <variable item="F2 controls output 4" CV="36" mask="XXXXVXXX" minOut="4" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -298,7 +271,6 @@
     <label xml:lang="de">F2 steuert Ausgang 4</label>
     <label xml:lang="cs">F2 řídí výstup 4</label>
     <label xml:lang="nl">F2 stuurt uitgang 4</label>
-    <label xml:lang="es">F2 controla la salida-4</label>
   </variable>
   <variable item="F2 controls output 5" CV="36" mask="XXXVXXXX" minOut="5" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -307,7 +279,6 @@
     <label xml:lang="de">F2 steuert Ausgang 5</label>
     <label xml:lang="cs">F2 řídí výstup 5</label>
     <label xml:lang="nl">F2 stuurt uitgang 5</label>
-    <label xml:lang="es">F2 controla la salida-5</label>
   </variable>
   <variable item="F2 controls output 6" CV="36" mask="XXVXXXXX" minOut="6" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -316,7 +287,6 @@
     <label xml:lang="de">F2 steuert Ausgang 6</label>
     <label xml:lang="cs">F2 řídí výstup 6</label>
     <label xml:lang="nl">F2 stuurt uitgang 6</label>
-    <label xml:lang="es">F2 controla la salida-6</label>
   </variable>
   <variable item="F2 controls output 7" CV="36" mask="XVXXXXXX" minOut="7" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -325,7 +295,6 @@
     <label xml:lang="de">F2 steuert Ausgang 7</label>
     <label xml:lang="cs">F2 řídí výstup 7</label>
     <label xml:lang="nl">F2 stuurt uitgang 7</label>
-    <label xml:lang="es">F2 controla la salida-7</label>
   </variable>
   <variable item="F2 controls output 8" CV="36" mask="VXXXXXXX" minOut="8" minFn="2">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -334,7 +303,6 @@
     <label xml:lang="de">F2 steuert Ausgang 8</label>
     <label xml:lang="cs">F2 řídí výstup 8</label>
     <label xml:lang="nl">F2 stuurt uitgang 8</label>
-    <label xml:lang="es">F2 controla la salida-8</label>
   </variable>
   <variable item="F3 controls output 1" CV="37" mask="XXXXXXXV" minOut="1" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -343,7 +311,6 @@
     <label xml:lang="de">F3 steuert Ausgang 1</label>
     <label xml:lang="cs">F3 řídí výstup 1</label>
     <label xml:lang="nl">F3 stuurt uitgang 1</label>
-    <label xml:lang="es">F3 controla la salida-1</label>
   </variable>
   <variable item="F3 controls output 2" CV="37" mask="XXXXXXVX" minOut="2" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -352,7 +319,6 @@
     <label xml:lang="de">F3 steuert Ausgang 2</label>
     <label xml:lang="cs">F3 řídí výstup 2</label>
     <label xml:lang="nl">F3 stuurt uitgang 2</label>
-    <label xml:lang="es">F3 controla la salida-2</label>
   </variable>
   <variable item="F3 controls output 3" CV="37" mask="XXXXXVXX" minOut="3" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -361,7 +327,6 @@
     <label xml:lang="de">F3 steuert Ausgang 3</label>
     <label xml:lang="cs">F3 řídí výstup 3</label>
     <label xml:lang="nl">F3 stuurt uitgang 3</label>
-    <label xml:lang="es">F3 controla la salida-3</label>
   </variable>
   <variable item="F3 controls output 4" CV="37" mask="XXXXVXXX" minOut="4" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -370,7 +335,6 @@
     <label xml:lang="de">F3 steuert Ausgang 4</label>
     <label xml:lang="cs">F3 řídí výstup 4</label>
     <label xml:lang="nl">F3 stuurt uitgang 4</label>
-    <label xml:lang="es">F3 controla la salida-4</label>
   </variable>
   <variable item="F3 controls output 5" CV="37" mask="XXXVXXXX" minOut="5" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -379,7 +343,6 @@
     <label xml:lang="de">F3 steuert Ausgang 5</label>
     <label xml:lang="cs">F3 řídí výstup 5</label>
     <label xml:lang="nl">F3 stuurt uitgang 5</label>
-    <label xml:lang="es">F3 controla la salida-5</label>
   </variable>
   <variable item="F3 controls output 6" CV="37" mask="XXVXXXXX" minOut="6" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -388,7 +351,6 @@
     <label xml:lang="de">F3 steuert Ausgang 6</label>
     <label xml:lang="cs">F3 řídí výstup 6</label>
     <label xml:lang="nl">F3 stuurt uitgang 6</label>
-    <label xml:lang="es">F3 controla la salida-6</label>
   </variable>
   <variable item="F3 controls output 7" CV="37" mask="XVXXXXXX" minOut="7" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -397,7 +359,6 @@
     <label xml:lang="de">F3 steuert Ausgang 7</label>
     <label xml:lang="cs">F3 řídí výstup 7</label>
     <label xml:lang="nl">F3 stuurt uitgang 7</label>
-    <label xml:lang="es">F3 controla la salida-7</label>
   </variable>
   <variable item="F3 controls output 8" CV="37" mask="VXXXXXXX" minOut="8" minFn="3">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -406,7 +367,6 @@
     <label xml:lang="de">F3 steuert Ausgang 8</label>
     <label xml:lang="cs">F3 řídí výstup 8</label>
     <label xml:lang="nl">F3 stuurt uitgang 8</label>
-    <label xml:lang="es">F3 controla la salida-8</label>
   </variable>
   <variable item="F4 controls output 4" CV="38" mask="XXXXXXXV" minOut="4" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -415,7 +375,6 @@
     <label xml:lang="de">F4 steuert Ausgang 4</label>
     <label xml:lang="cs">F4 řídí výstup 4</label>
     <label xml:lang="nl">F4 stuurt uitgang 4</label>
-    <label xml:lang="es">F4 controla la salida-4</label>
   </variable>
   <variable item="F4 controls output 5" CV="38" mask="XXXXXXVX" minOut="5" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -424,7 +383,6 @@
     <label xml:lang="de">F4 steuert Ausgang 5</label>
     <label xml:lang="cs">F4 řídí výstup 5</label>
     <label xml:lang="nl">F4 stuurt uitgang 5</label>
-    <label xml:lang="es">F4 controla la salida-5</label>
   </variable>
   <variable item="F4 controls output 6" CV="38" mask="XXXXXVXX" minOut="6" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -433,7 +391,6 @@
     <label xml:lang="de">F4 steuert Ausgang 6</label>
     <label xml:lang="cs">F4 řídí výstup 6</label>
     <label xml:lang="nl">F4 stuurt uitgang 6</label>
-    <label xml:lang="es">F4 controla la salida-6</label>
   </variable>
   <variable item="F4 controls output 7" CV="38" mask="XXXXVXXX" minOut="7" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -442,7 +399,6 @@
     <label xml:lang="de">F4 steuert Ausgang 7</label>
     <label xml:lang="cs">F4 řídí výstup 7</label>
     <label xml:lang="nl">F4 stuurt uitgang 7</label>
-    <label xml:lang="es">F4 controla la salida-7</label>
   </variable>
   <variable item="F4 controls output 8" CV="38" mask="XXXVXXXX" minOut="8" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -451,7 +407,6 @@
     <label xml:lang="de">F4 steuert Ausgang 8</label>
     <label xml:lang="cs">F4 řídí výstup 8</label>
     <label xml:lang="nl">F4 stuurt uitgang 8</label>
-    <label xml:lang="es">F4 controla la salida-8</label>
   </variable>
   <variable item="F4 controls output 9" CV="38" mask="XXVXXXXX" minOut="9" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -460,7 +415,6 @@
     <label xml:lang="de">F4 steuert Ausgang 9</label>
     <label xml:lang="cs">F4 řídí výstup 9</label>
     <label xml:lang="nl">F4 stuurt uitgang 9</label>
-    <label xml:lang="es">F4 controla la salida-9</label>
   </variable>
   <variable item="F4 controls output 10" CV="38" mask="XVXXXXXX" minOut="10" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -469,7 +423,6 @@
     <label xml:lang="de">F4 steuert Ausgang 10</label>
     <label xml:lang="cs">F4 řídí výstup 10</label>
     <label xml:lang="nl">F4 stuurt uitgang 10</label>
-    <label xml:lang="es">F4 controla la salida-10</label>
   </variable>
   <variable item="F4 controls output 11" CV="38" mask="VXXXXXXX" minOut="11" minFn="4">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -478,7 +431,6 @@
     <label xml:lang="de">F4 steuert Ausgang 11</label>
     <label xml:lang="cs">F4 řídí výstup 11</label>
     <label xml:lang="nl">F4 stuurt uitgang 11</label>
-    <label xml:lang="es">F4 controla la salida-11</label>
   </variable>
   <variable item="F5 controls output 4" CV="39" mask="XXXXXXXV" minOut="4" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -487,7 +439,6 @@
     <label xml:lang="de">F5 steuert Ausgang 4</label>
     <label xml:lang="cs">F5 řídí výstup 4</label>
     <label xml:lang="nl">F5 stuurt uitgang 4</label>
-    <label xml:lang="es">F5 controla la salida-4</label>
   </variable>
   <variable item="F5 controls output 5" CV="39" mask="XXXXXXVX" minOut="5" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -496,7 +447,6 @@
     <label xml:lang="de">F5 steuert Ausgang 5</label>
     <label xml:lang="cs">F5 řídí výstup 5</label>
     <label xml:lang="nl">F5 stuurt uitgang 5</label>
-    <label xml:lang="es">F5 controla la salida-5</label>
   </variable>
   <variable item="F5 controls output 6" CV="39" mask="XXXXXVXX" minOut="6" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -505,7 +455,6 @@
     <label xml:lang="de">F5 steuert Ausgang 6</label>
     <label xml:lang="cs">F5 řídí výstup 6</label>
     <label xml:lang="nl">F5 stuurt uitgang 6</label>
-    <label xml:lang="es">F5 controla la salida-6</label>
   </variable>
   <variable item="F5 controls output 7" CV="39" mask="XXXXVXXX" minOut="7" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -514,7 +463,6 @@
     <label xml:lang="de">F5 steuert Ausgang 7</label>
     <label xml:lang="cs">F5 řídí výstup 7</label>
     <label xml:lang="nl">F5 stuurt uitgang 7</label>
-    <label xml:lang="es">F5 controla la salida-7</label>
   </variable>
   <variable item="F5 controls output 8" CV="39" mask="XXXVXXXX" minOut="8" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -523,7 +471,6 @@
     <label xml:lang="de">F5 steuert Ausgang 8</label>
     <label xml:lang="cs">F5 řídí výstup 8</label>
     <label xml:lang="nl">F5 stuurt uitgang 8</label>
-    <label xml:lang="es">F5 controla la salida-8</label>
   </variable>
   <variable item="F5 controls output 9" CV="39" mask="XXVXXXXX" minOut="9" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -532,7 +479,6 @@
     <label xml:lang="de">F5 steuert Ausgang 9</label>
     <label xml:lang="cs">F5 řídí výstup 9</label>
     <label xml:lang="nl">F5 stuurt uitgang 9</label>
-    <label xml:lang="es">F5 controla la salida-9</label>
   </variable>
   <variable item="F5 controls output 10" CV="39" mask="XVXXXXXX" minOut="10" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -541,7 +487,6 @@
     <label xml:lang="de">F5 steuert Ausgang 10</label>
     <label xml:lang="cs">F5 řídí výstup 10</label>
     <label xml:lang="nl">F5 stuurt uitgang 10</label>
-    <label xml:lang="es">F5 controla la salida-10</label>
   </variable>
   <variable item="F5 controls output 11" CV="39" mask="VXXXXXXX" minOut="11" minFn="5">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -550,7 +495,6 @@
     <label xml:lang="de">F5 steuert Ausgang 11</label>
     <label xml:lang="cs">F5 řídí výstup 11</label>
     <label xml:lang="nl">F5 stuurt uitgang 11</label>
-    <label xml:lang="es">F5 controla la salida-11</label>
   </variable>
   <variable item="F6 controls output 4" CV="40" mask="XXXXXXXV" minOut="4" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -559,7 +503,6 @@
     <label xml:lang="de">F6 steuert Ausgang 4</label>
     <label xml:lang="cs">F6 řídí výstup 4</label>
     <label xml:lang="nl">F6 stuurt uitgang 4</label>
-    <label xml:lang="es">F6 controla la salida-4</label>
   </variable>
   <variable item="F6 controls output 5" CV="40" mask="XXXXXXVX" minOut="5" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -568,7 +511,6 @@
     <label xml:lang="de">F6 steuert Ausgang 5</label>
     <label xml:lang="cs">F6 řídí výstup 5</label>
     <label xml:lang="nl">F6 stuurt uitgang 5</label>
-    <label xml:lang="es">F6 controla la salida-5</label>
   </variable>
   <variable item="F6 controls output 6" CV="40" mask="XXXXXVXX" minOut="6" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -577,7 +519,6 @@
     <label xml:lang="de">F6 steuert Ausgang 6</label>
     <label xml:lang="cs">F6 řídí výstup 6</label>
     <label xml:lang="nl">F6 stuurt uitgang 6</label>
-    <label xml:lang="es">F6 controla la salida-6</label>
   </variable>
   <variable item="F6 controls output 7" CV="40" mask="XXXXVXXX" minOut="7" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -586,7 +527,6 @@
     <label xml:lang="de">F6 steuert Ausgang 7</label>
     <label xml:lang="cs">F6 řídí výstup 7</label>
     <label xml:lang="nl">F6 stuurt uitgang 7</label>
-    <label xml:lang="es">F6 controla la salida-7</label>
   </variable>
   <variable item="F6 controls output 8" CV="40" mask="XXXVXXXX" minOut="8" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -595,7 +535,6 @@
     <label xml:lang="de">F6 steuert Ausgang 8</label>
     <label xml:lang="cs">F6 řídí výstup 8</label>
     <label xml:lang="nl">F6 stuurt uitgang 8</label>
-    <label xml:lang="es">F6 controla la salida-8</label>
   </variable>
   <variable item="F6 controls output 9" CV="40" mask="XXVXXXXX" minOut="9" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -604,7 +543,6 @@
     <label xml:lang="de">F6 steuert Ausgang 9</label>
     <label xml:lang="cs">F6 řídí výstup 9</label>
     <label xml:lang="nl">F6 stuurt uitgang 9</label>
-    <label xml:lang="es">F6 controla la salida-9</label>
   </variable>
   <variable item="F6 controls output 10" CV="40" mask="XVXXXXXX" minOut="10" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -613,7 +551,6 @@
     <label xml:lang="de">F6 steuert Ausgang 10</label>
     <label xml:lang="cs">F6 řídí výstup 10</label>
     <label xml:lang="nl">F6 stuurt uitgang 10</label>
-    <label xml:lang="es">F6 controla la salida-10</label>
   </variable>
   <variable item="F6 controls output 11" CV="40" mask="VXXXXXXX" minOut="11" minFn="6">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -622,7 +559,6 @@
     <label xml:lang="de">F6 steuert Ausgang 11</label>
     <label xml:lang="cs">F6 řídí výstup 11</label>
     <label xml:lang="nl">F6 stuurt uitgang 11</label>
-    <label xml:lang="es">F6 controla la salida-11</label>
   </variable>
   <variable item="F7 controls output 4" CV="41" mask="XXXXXXXV" minOut="4" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -631,7 +567,6 @@
     <label xml:lang="de">F7 steuert Ausgang 4</label>
     <label xml:lang="cs">F7 řídí výstup 4</label>
     <label xml:lang="nl">F7 stuurt uitgang 4</label>
-    <label xml:lang="es">F7 controla la salida-4</label>
   </variable>
   <variable item="F7 controls output 5" CV="41" mask="XXXXXXVX" minOut="5" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -640,7 +575,6 @@
     <label xml:lang="de">F7 steuert Ausgang 5</label>
     <label xml:lang="cs">F7 řídí výstup 5</label>
     <label xml:lang="nl">F7 stuurt uitgang 5</label>
-    <label xml:lang="es">F7 controla la salida-5</label>
   </variable>
   <variable item="F7 controls output 6" CV="41" mask="XXXXXVXX" minOut="6" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -649,7 +583,6 @@
     <label xml:lang="de">F7 steuert Ausgang 6</label>
     <label xml:lang="cs">F7 řídí výstup 6</label>
     <label xml:lang="nl">F7 stuurt uitgang 6</label>
-    <label xml:lang="es">F7 controla la salida-6</label>
   </variable>
   <variable item="F7 controls output 7" CV="41" mask="XXXXVXXX" minOut="7" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -658,7 +591,6 @@
     <label xml:lang="de">F7 steuert Ausgang 7</label>
     <label xml:lang="cs">F7 řídí výstup 7</label>
     <label xml:lang="nl">F7 stuurt uitgang 7</label>
-    <label xml:lang="es">F7 controla la salida-7</label>
   </variable>
   <variable item="F7 controls output 8" CV="41" mask="XXXVXXXX" minOut="8" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -667,7 +599,6 @@
     <label xml:lang="de">F7 steuert Ausgang 8</label>
     <label xml:lang="cs">F7 řídí výstup 8</label>
     <label xml:lang="nl">F7 stuurt uitgang 8</label>
-    <label xml:lang="es">F7 controla la salida-8</label>
   </variable>
   <variable item="F7 controls output 9" CV="41" mask="XXVXXXXX" minOut="9" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -676,7 +607,6 @@
     <label xml:lang="de">F7 steuert Ausgang 9</label>
     <label xml:lang="cs">F7 řídí výstup 9</label>
     <label xml:lang="nl">F7 stuurt uitgang 9</label>
-    <label xml:lang="es">F7 controla la salida-9</label>
   </variable>
   <variable item="F7 controls output 10" CV="41" mask="XVXXXXXX" minOut="10" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -685,7 +615,6 @@
     <label xml:lang="de">F7 steuert Ausgang 10</label>
     <label xml:lang="cs">F7 řídí výstup 10</label>
     <label xml:lang="nl">F7 stuurt uitgang 10</label>
-    <label xml:lang="es">F7 controla la salida-10</label>
   </variable>
   <variable item="F7 controls output 11" CV="41" mask="VXXXXXXX" minOut="11" minFn="7">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -694,7 +623,6 @@
     <label xml:lang="de">F7 steuert Ausgang 11</label>
     <label xml:lang="cs">F7 řídí výstup 11</label>
     <label xml:lang="nl">F7 stuurt uitgang 11</label>
-    <label xml:lang="es">F7 controla la salida-11</label>
   </variable>
   <variable item="F8 controls output 4" CV="42" mask="XXXXXXXV" minOut="4" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -703,7 +631,6 @@
     <label xml:lang="de">F8 steuert Ausgang 4</label>
     <label xml:lang="cs">F8 řídí výstup 4</label>
     <label xml:lang="nl">F8 stuurt uitgang 4</label>
-    <label xml:lang="es">F8 controla la salida-4</label>
   </variable>
   <variable item="F8 controls output 5" CV="42" mask="XXXXXXVX" minOut="5" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -712,7 +639,6 @@
     <label xml:lang="de">F8 steuert Ausgang 5</label>
     <label xml:lang="cs">F8 řídí výstup 5</label>
     <label xml:lang="nl">F8 stuurt uitgang 5</label>
-    <label xml:lang="es">F8 controla la salida-5</label>
   </variable>
   <variable item="F8 controls output 6" CV="42" mask="XXXXXVXX" minOut="6" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -721,7 +647,6 @@
     <label xml:lang="de">F8 steuert Ausgang 6</label>
     <label xml:lang="cs">F8 řídí výstup 6</label>
     <label xml:lang="nl">F8 stuurt uitgang 6</label>
-    <label xml:lang="es">F8 controla la salida-6</label>
   </variable>
   <variable item="F8 controls output 7" CV="42" mask="XXXXVXXX" minOut="7" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -730,7 +655,6 @@
     <label xml:lang="de">F8 steuert Ausgang 7</label>
     <label xml:lang="cs">F8 řídí výstup 7</label>
     <label xml:lang="nl">F8 stuurt uitgang 7</label>
-    <label xml:lang="es">F8 controla la salida-7</label>
   </variable>
   <variable item="F8 controls output 8" CV="42" mask="XXXVXXXX" minOut="8" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -739,7 +663,6 @@
     <label xml:lang="de">F8 steuert Ausgang 8</label>
     <label xml:lang="cs">F8 řídí výstup 8</label>
     <label xml:lang="nl">F8 stuurt uitgang 8</label>
-    <label xml:lang="es">F8 controla la salida-8</label>
   </variable>
   <variable item="F8 controls output 9" CV="42" mask="XXVXXXXX" minOut="9" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -748,7 +671,6 @@
     <label xml:lang="de">F8 steuert Ausgang 9</label>
     <label xml:lang="cs">F8 řídí výstup 9</label>
     <label xml:lang="nl">F8 stuurt uitgang 9</label>
-    <label xml:lang="es">F8 controla la salida-9</label>
   </variable>
   <variable item="F8 controls output 10" CV="42" mask="XVXXXXXX" minOut="10" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -757,7 +679,6 @@
     <label xml:lang="de">F8 steuert Ausgang 10</label>
     <label xml:lang="cs">F8 řídí výstup 10</label>
     <label xml:lang="nl">F8 stuurt uitgang 10</label>
-    <label xml:lang="es">F8 controla la salida-10</label>
   </variable>
   <variable item="F8 controls output 11" CV="42" mask="VXXXXXXX" minOut="11" minFn="8">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -766,7 +687,6 @@
     <label xml:lang="de">F8 steuert Ausgang 11</label>
     <label xml:lang="cs">F8 řídí výstup 11</label>
     <label xml:lang="nl">F8 stuurt uitgang 11</label>
-    <label xml:lang="es">F8 controla la salida-11</label>
   </variable>
   <variable item="F9 controls output 7" CV="43" mask="XXXXXXXV" minOut="7" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -775,7 +695,6 @@
     <label xml:lang="de">F9 steuert Ausgang 7</label>
     <label xml:lang="cs">F9 řídí výstup 7</label>
     <label xml:lang="nl">F9 stuurt uitgang 7</label>
-    <label xml:lang="es">F9 controla la salida-7</label>
   </variable>
   <variable item="F9 controls output 8" CV="43" mask="XXXXXXVX" minOut="8" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -784,7 +703,6 @@
     <label xml:lang="de">F9 steuert Ausgang 8</label>
     <label xml:lang="cs">F9 řídí výstup 8</label>
     <label xml:lang="nl">F9 stuurt uitgang 8</label>
-    <label xml:lang="es">F9 controla la salida-8</label>
   </variable>
   <variable item="F9 controls output 9" CV="43" mask="XXXXXVXX" minOut="9" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -793,7 +711,6 @@
     <label xml:lang="de">F9 steuert Ausgang 9</label>
     <label xml:lang="cs">F9 řídí výstup 9</label>
     <label xml:lang="nl">F9 stuurt uitgang 9</label>
-    <label xml:lang="es">F9 controla la salida-9</label>
   </variable>
   <variable item="F9 controls output 10" CV="43" mask="XXXXVXXX" minOut="10" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -802,7 +719,6 @@
     <label xml:lang="de">F9 steuert Ausgang 10</label>
     <label xml:lang="cs">F9 řídí výstup 10</label>
     <label xml:lang="nl">F9 stuurt uitgang 10</label>
-    <label xml:lang="es">F9 controla la salida-10</label>
   </variable>
   <variable item="F9 controls output 11" CV="43" mask="XXXVXXXX" minOut="11" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -811,7 +727,6 @@
     <label xml:lang="de">F9 steuert Ausgang 11</label>
     <label xml:lang="cs">F9 řídí výstup 11</label>
     <label xml:lang="nl">F9 stuurt uitgang 11</label>
-    <label xml:lang="es">F9 controla la salida-11</label>
   </variable>
   <variable item="F9 controls output 12" CV="43" mask="XXVXXXXX" minOut="12" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -820,7 +735,6 @@
     <label xml:lang="de">F9 steuert Ausgang 12</label>
     <label xml:lang="cs">F9 řídí výstup 12</label>
     <label xml:lang="nl">F9 stuurt uitgang 12</label>
-    <label xml:lang="es">F9 controla la salida-12</label>
   </variable>
   <variable item="F9 controls output 13" CV="43" mask="XVXXXXXX" minOut="13" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -829,7 +743,6 @@
     <label xml:lang="de">F9 steuert Ausgang 13</label>
     <label xml:lang="cs">F9 řídí výstup 13</label>
     <label xml:lang="nl">F9 stuurt uitgang 13</label>
-    <label xml:lang="es">F9 controla la salida-13</label>
   </variable>
   <variable item="F9 controls output 14" CV="43" mask="VXXXXXXX" minOut="14" minFn="9">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -838,7 +751,6 @@
     <label xml:lang="de">F9 steuert Ausgang 14</label>
     <label xml:lang="cs">F9 řídí výstup 14</label>
     <label xml:lang="nl">F9 stuurt uitgang 14</label>
-    <label xml:lang="es">F9 controla la salida-14</label>
   </variable>
   <variable item="F10 controls output 7" CV="44" mask="XXXXXXXV" minOut="7" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -847,7 +759,6 @@
     <label xml:lang="de">F10 steuert Ausgang 7</label>
     <label xml:lang="cs">F10 řídí výstup 7</label>
     <label xml:lang="nl">F10 stuurt uitgang 7</label>
-    <label xml:lang="es">F10 controla la salida-7</label>
   </variable>
   <variable item="F10 controls output 8" CV="44" mask="XXXXXXVX" minOut="8" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -856,7 +767,6 @@
     <label xml:lang="de">F10 steuert Ausgang 8</label>
     <label xml:lang="cs">F10 řídí výstup 8</label>
     <label xml:lang="nl">F10 stuurt uitgang 8</label>
-    <label xml:lang="es">F10 controla la salida-8</label>
   </variable>
   <variable item="F10 controls output 9" CV="44" mask="XXXXXVXX" minOut="9" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -865,7 +775,6 @@
     <label xml:lang="de">F10 steuert Ausgang 9</label>
     <label xml:lang="cs">F10 řídí výstup 9</label>
     <label xml:lang="nl">F10 stuurt uitgang 9</label>
-    <label xml:lang="es">F10 controla la salida-9</label>
   </variable>
   <variable item="F10 controls output 10" CV="44" mask="XXXXVXXX" minOut="10" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -874,7 +783,6 @@
     <label xml:lang="de">F10 steuert Ausgang 10</label>
     <label xml:lang="cs">F10 řídí výstup 10</label>
     <label xml:lang="nl">F10 stuurt uitgang 10</label>
-    <label xml:lang="es">F10 controla la salida-10</label>
   </variable>
   <variable item="F10 controls output 11" CV="44" mask="XXXVXXXX" minOut="11" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -883,7 +791,6 @@
     <label xml:lang="de">F10 steuert Ausgang 11</label>
     <label xml:lang="cs">F10 řídí výstup 11</label>
     <label xml:lang="nl">F10 stuurt uitgang 11</label>
-    <label xml:lang="es">F10 controla la salida-11</label>
   </variable>
   <variable item="F10 controls output 12" CV="44" mask="XXVXXXXX" minOut="12" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -892,7 +799,6 @@
     <label xml:lang="de">F10 steuert Ausgang 12</label>
     <label xml:lang="cs">F10 řídí výstup 12</label>
     <label xml:lang="nl">F10 stuurt uitgang 12</label>
-    <label xml:lang="es">F10 controla la salida-12</label>
   </variable>
   <variable item="F10 controls output 13" CV="44" mask="XVXXXXXX" minOut="13" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -901,7 +807,6 @@
     <label xml:lang="de">F10 steuert Ausgang 13</label>
     <label xml:lang="cs">F10 řídí výstup 13</label>
     <label xml:lang="nl">F10 stuurt uitgang 13</label>
-    <label xml:lang="es">F10 controla la salida-13</label>
   </variable>
   <variable item="F10 controls output 14" CV="44" mask="VXXXXXXX" minOut="14" minFn="10">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -910,7 +815,6 @@
     <label xml:lang="de">F10 steuert Ausgang 14</label>
     <label xml:lang="cs">F10 řídí výstup 14</label>
     <label xml:lang="nl">F10 stuurt uitgang 14</label>
-    <label xml:lang="es">F10 controla la salida-14</label>
   </variable>
   <variable item="F11 controls output 7" CV="45" mask="XXXXXXXV" minOut="7" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -919,7 +823,6 @@
     <label xml:lang="de">F11 steuert Ausgang 7</label>
     <label xml:lang="cs">F11 řídí výstup 7</label>
     <label xml:lang="nl">F11 stuurt uitgang 7</label>
-    <label xml:lang="es">F11 controla la salida-7</label>
   </variable>
   <variable item="F11 controls output 8" CV="45" mask="XXXXXXVX" minOut="8" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -928,7 +831,6 @@
     <label xml:lang="de">F11 steuert Ausgang 8</label>
     <label xml:lang="cs">F11 řídí výstup 8</label>
     <label xml:lang="nl">F11 stuurt uitgang 8</label>
-    <label xml:lang="es">F11 controla la salida-8</label>
   </variable>
   <variable item="F11 controls output 9" CV="45" mask="XXXXXVXX" minOut="9" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -937,7 +839,6 @@
     <label xml:lang="de">F11 steuert Ausgang 9</label>
     <label xml:lang="cs">F11 řídí výstup 9</label>
     <label xml:lang="nl">F11 stuurt uitgang 9</label>
-    <label xml:lang="es">F11 controla la salida-9</label>
   </variable>
   <variable item="F11 controls output 10" CV="45" mask="XXXXVXXX" minOut="10" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -946,7 +847,6 @@
     <label xml:lang="de">F11 steuert Ausgang 10</label>
     <label xml:lang="cs">F11 řídí výstup 10</label>
     <label xml:lang="nl">F11 stuurt uitgang 10</label>
-    <label xml:lang="es">F11 controla la salida-10</label>
   </variable>
   <variable item="F11 controls output 11" CV="45" mask="XXXVXXXX" minOut="11" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -955,7 +855,6 @@
     <label xml:lang="de">F11 steuert Ausgang 11</label>
     <label xml:lang="cs">F11 řídí výstup 11</label>
     <label xml:lang="nl">F11 stuurt uitgang 11</label>
-    <label xml:lang="es">F11 controla la salida-11</label>
   </variable>
   <variable item="F11 controls output 12" CV="45" mask="XXVXXXXX" minOut="12" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -964,7 +863,6 @@
     <label xml:lang="de">F11 steuert Ausgang 12</label>
     <label xml:lang="cs">F11 řídí výstup 12</label>
     <label xml:lang="nl">F11 stuurt uitgang 12</label>
-    <label xml:lang="es">F11 controla la salida-12</label>
   </variable>
   <variable item="F11 controls output 13" CV="45" mask="XVXXXXXX" minOut="13" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -973,7 +871,6 @@
     <label xml:lang="de">F11 steuert Ausgang 13</label>
     <label xml:lang="cs">F11 řídí výstup 13</label>
     <label xml:lang="nl">F11 stuurt uitgang 13</label>
-    <label xml:lang="es">F11 controla la salida-13</label>
   </variable>
   <variable item="F11 controls output 14" CV="45" mask="VXXXXXXX" minOut="14" minFn="11">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -982,7 +879,6 @@
     <label xml:lang="de">F11 steuert Ausgang 14</label>
     <label xml:lang="cs">F11 řídí výstup 14</label>
     <label xml:lang="nl">F11 stuurt uitgang 14</label>
-    <label xml:lang="es">F11 controla la salida-14</label>
   </variable>
   <variable item="F12 controls output 7" CV="46" mask="XXXXXXXV" minOut="7" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -991,7 +887,6 @@
     <label xml:lang="de">F12 steuert Ausgang 7</label>
     <label xml:lang="cs">F12 řídí výstup 7</label>
     <label xml:lang="nl">F12 stuurt uitgang 7</label>
-    <label xml:lang="es">F12 controla la salida-7</label>
   </variable>
   <variable item="F12 controls output 8" CV="46" mask="XXXXXXVX" minOut="8" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -1000,7 +895,6 @@
     <label xml:lang="de">F12 steuert Ausgang 8</label>
     <label xml:lang="cs">F12 řídí výstup 8</label>
     <label xml:lang="nl">F12 stuurt uitgang 8</label>
-    <label xml:lang="es">F12 controla la salida-8</label>
   </variable>
   <variable item="F12 controls output 9" CV="46" mask="XXXXXVXX" minOut="9" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -1009,7 +903,6 @@
     <label xml:lang="de">F12 steuert Ausgang 9</label>
     <label xml:lang="cs">F12 řídí výstup 9</label>
     <label xml:lang="nl">F12 stuurt uitgang 9</label>
-    <label xml:lang="es">F12 controla la salida-9</label>
   </variable>
   <variable item="F12 controls output 10" CV="46" mask="XXXXVXXX" minOut="10" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -1018,7 +911,6 @@
     <label xml:lang="de">F12 steuert Ausgang 10</label>
     <label xml:lang="cs">F12 řídí výstup 10</label>
     <label xml:lang="nl">F12 stuurt uitgang 10</label>
-    <label xml:lang="es">F12 controla la salida-10</label>
   </variable>
   <variable item="F12 controls output 11" CV="46" mask="XXXVXXXX" minOut="11" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -1027,7 +919,6 @@
     <label xml:lang="de">F12 steuert Ausgang 11</label>
     <label xml:lang="cs">F12 řídí výstup 11</label>
     <label xml:lang="nl">F12 stuurt uitgang 11</label>
-    <label xml:lang="es">F12 controla la salida-11</label>
   </variable>
   <variable item="F12 controls output 12" CV="46" mask="XXVXXXXX" minOut="12" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -1036,7 +927,6 @@
     <label xml:lang="de">F12 steuert Ausgang 12</label>
     <label xml:lang="cs">F12 řídí výstup 12</label>
     <label xml:lang="nl">F12 stuurt uitgang 12</label>
-    <label xml:lang="es">F12 controla la salida-12</label>
   </variable>
   <variable item="F12 controls output 13" CV="46" mask="XVXXXXXX" minOut="13" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -1045,7 +935,6 @@
     <label xml:lang="de">F12 steuert Ausgang 13</label>
     <label xml:lang="cs">F12 řídí výstup 13</label>
     <label xml:lang="nl">F12 stuurt uitgang 13</label>
-    <label xml:lang="es">F12 controla la salida-13</label>
   </variable>
   <variable item="F12 controls output 14" CV="46" mask="VXXXXXXX" minOut="14" minFn="12">
     <xi:include href="http://jmri.org/xml/decoders/parts/enum-NoYes.xml"/>
@@ -1054,6 +943,5 @@
     <label xml:lang="de">F12 steuert Ausgang 14</label>
     <label xml:lang="cs">F12 řídí výstup 14</label>
     <label xml:lang="nl">F12 stuurt uitgang 14</label>
-    <label xml:lang="es">F12 controla la salida-14</label>
   </variable>
 </variables>

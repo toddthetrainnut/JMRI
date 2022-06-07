@@ -2,7 +2,6 @@ package jmri.jmrit.operations.setup;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -14,10 +13,14 @@ import javax.swing.AbstractAction;
 public class BuildReportOptionAction extends AbstractAction {
 
     public BuildReportOptionAction() {
-        super(Bundle.getMessage("TitleBuildReportOptions"));
+        this(Bundle.getMessage("TitleBuildReportOptions"));
     }
 
-    BuildReportOptionFrame f;
+    public BuildReportOptionAction(String s) {
+        super(s);
+    }
+
+    BuildReportOptionFrame f = null;
 
     @Override
     public void actionPerformed(ActionEvent e) {

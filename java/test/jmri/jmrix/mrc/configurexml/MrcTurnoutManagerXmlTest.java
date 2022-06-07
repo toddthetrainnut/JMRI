@@ -1,14 +1,15 @@
 package jmri.jmrix.mrc.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * MrcTurnoutManagerXmlTest.java
  *
- * Test for the MrcTurnoutManagerXml class
+ * Description: tests for the MrcTurnoutManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class MrcTurnoutManagerXmlTest {
       Assert.assertNotNull("MrcTurnoutManagerXml constructor",new MrcTurnoutManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

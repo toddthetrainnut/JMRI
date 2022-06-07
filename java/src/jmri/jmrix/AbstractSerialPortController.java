@@ -2,7 +2,6 @@ package jmri.jmrix;
 
 import java.util.Enumeration;
 import java.util.Vector;
-import jmri.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import purejavacomm.CommPortIdentifier;
@@ -42,7 +41,7 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
      */
     @Override
     public String handlePortBusy(PortInUseException p, String portName, Logger log) {
-        log.error("{} port is in use: {}", portName, p.getMessage());
+        log.error(portName + " port is in use: " + p.getMessage());
         /*JOptionPane.showMessageDialog(null, "Port is in use",
          "Error", JOptionPane.ERROR_MESSAGE);*/
         ConnectionStatus.instance().setConnectionState(this.getSystemPrefix(), portName, ConnectionStatus.CONNECTION_DOWN);
@@ -51,13 +50,9 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
 
     /**
      * Standard error handling for port-not-found case.
-     * @param p no such port exception.
-     * @param portName port name.
-     * @param log system log.
-     * @return human readable string with error detail.
      */
     public String handlePortNotFound(NoSuchPortException p, String portName, Logger log) {
-        log.error("Serial port {} not found", portName);
+        log.error("Serial port " + portName + " not found");
         /*JOptionPane.showMessageDialog(null, "Serial port "+portName+" not found",
          "Error", JOptionPane.ERROR_MESSAGE);*/
         ConnectionStatus.instance().setConnectionState(this.getSystemPrefix(), portName, ConnectionStatus.CONNECTION_DOWN);
@@ -89,7 +84,7 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
     public String getCurrentPortName() {
         if (mPort == null) {
             if (getPortNames() == null) {
-                // this shouldn't happen in normal operation
+                // This shouldn't happen in normal operation
                 // but in the tests this can happen if the receive thread has been interrupted
                 log.error("Port names returned as null");
                 return null;
@@ -110,13 +105,13 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
      *
      * @param serialPort Port to be updated
      * @param flow       flow control mode from (@link purejavacomm.SerialPort}
-     * @param rts        set RTS active if true
+     * @param rts        Set RTS active if true
      * @param dtr        set DTR active if true
      */
     protected void configureLeadsAndFlowControl(SerialPort serialPort, int flow, boolean rts, boolean dtr) {
         // (Jan 2018) PJC seems to mix termios and ioctl access, so it's not clear
         // what's preserved and what's not. Experimentally, it seems necessary
-        // to write the control leads, set flow control, and then write the control
+        // to write the control leads, set flow control, and then write the control 
         // leads again.
         serialPort.setRTS(rts);
         serialPort.setDTR(dtr);
@@ -128,7 +123,7 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
         } catch (purejavacomm.UnsupportedCommOperationException e) {
             log.warn("Could not set flow control, ignoring");
         }
-        if (flow!=purejavacomm.SerialPort.FLOWCONTROL_RTSCTS_OUT) serialPort.setRTS(rts); // not connected in some serial ports and adapters
+        if (flow!=purejavacomm.SerialPort.FLOWCONTROL_RTSCTS_OUT) serialPort.setRTS(rts);  // not connected in some serial ports and adapters
         serialPort.setDTR(dtr);
     }
 
@@ -150,9 +145,6 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
         mBaudRate = rate;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void configureBaudRateFromNumber(String indexString) {
         int baudNum;
@@ -205,7 +197,7 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
                 log.debug("old format baud number: {}", indexString);
             }
         }
-        // fetch baud rate description from validBaudRates[] array copy and set
+        // fetch baud rate description from ValidBaudRates[] array copy and set
         for (int i = 0; i < numbers.length; i++) {
             if (numbers[i] == baudNum) {
                 index = i;
@@ -217,25 +209,21 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
         log.debug("mBaudRate set to: {}", mBaudRate);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void configureBaudRateFromIndex(int index) {
-        if (validBaudRates().length > index) {
-            mBaudRate = validBaudRates()[index];
-            log.debug("mBaudRate set by index to: {}", mBaudRate);
+    public void configureBaudIndex(int index) {
+        if ((validBaudNumbers() != null) && (validBaudNumbers().length > 0)) {
+            for (int i = 0; i < validBaudNumbers().length; i++) {
+                if (validBaudRates()[i].equals(mBaudRate)) {
+                    mBaudRate = validBaudRates()[i];
+                    break;
+                }
+            }
         } else {
             log.debug("no baud rates in array"); // expected for simulators extending serialPortAdapter, mBaudRate already null
         }
     }
 
     protected String mBaudRate = null;
-
-    @Override
-    public int defaultBaudIndex() {
-        return -1;
-    }
 
     /**
      * {@inheritDoc}
@@ -248,32 +236,25 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
         return mBaudRate;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getCurrentBaudNumber() {
-        int[] numbers = validBaudNumbers();
-        String[] rates = validBaudRates();
-        if (numbers == null || rates == null || numbers.length != rates.length) { // entries in arrays should correspond
-            return "";
-        }
-        String baudNumString = "";
-        // first try to find the configured baud rate value
         if (mBaudRate != null) {
+            int[] numbers = validBaudNumbers();
+            String[] rates = validBaudRates();
+            if (numbers == null || rates == null || numbers.length != rates.length) { // entries in arrays should correspond
+                return "";
+            }
+            String baudNumString = "";
+            // find the configured baud rate value
             for (int i = 0; i < numbers.length; i++) {
                 if (rates[i].equals(mBaudRate)) {
                     baudNumString = Integer.toString(numbers[i]);
                     break;
                 }
             }
-        } else if (defaultBaudIndex() > -1) {
-            // use default
-            baudNumString = Integer.toString(numbers[defaultBaudIndex()]);
-            log.debug("using default port speed {}", baudNumString);
+            return baudNumString;
         }
-        log.debug("mBaudRate = {}, matched to string {}", mBaudRate, baudNumString);
-        return baudNumString;
+        return ""; // (none)
     }
 
     @Override
@@ -287,7 +268,7 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
                 }
             }
         }
-        return defaultBaudIndex(); // default index or -1 if port speed not supported
+        return 0; // (none)
     }
 
     /**
@@ -356,8 +337,7 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
     }
 
     /**
-     * Set event logging.
-     * @param port Serial port to configure
+     * Set event logging
      */
     protected void setPortEventLogging(SerialPort port) {
         // arrange to notify later
@@ -368,37 +348,37 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
                     int type = e.getEventType();
                     switch (type) {
                         case SerialPortEvent.DATA_AVAILABLE:
-                            log.info("SerialEvent: DATA_AVAILABLE is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: DATA_AVAILABLE is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
-                            log.info("SerialEvent: OUTPUT_BUFFER_EMPTY is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: OUTPUT_BUFFER_EMPTY is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.CTS:
-                            log.info("SerialEvent: CTS is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: CTS is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.DSR:
-                            log.info("SerialEvent: DSR is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: DSR is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.RI:
-                            log.info("SerialEvent: RI is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: RI is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.CD:
-                            log.info("SerialEvent: CD is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: CD is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.OE:
-                            log.info("SerialEvent: OE (overrun error) is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: OE (overrun error) is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.PE:
-                            log.info("SerialEvent: PE (parity error) is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: PE (parity error) is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.FE:
-                            log.info("SerialEvent: FE (framing error) is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: FE (framing error) is " + e.getNewValue()); // NOI18N
                             return;
                         case SerialPortEvent.BI:
-                            log.info("SerialEvent: BI (break interrupt) is {}", e.getNewValue()); // NOI18N
+                            log.info("SerialEvent: BI (break interrupt) is " + e.getNewValue()); // NOI18N
                             return;
                         default:
-                            log.info("SerialEvent of unknown type: {} value: {}", type, e.getNewValue()); // NOI18N
+                            log.info("SerialEvent of unknown type: " + type + " value: " + e.getNewValue()); // NOI18N
                     }
                 }
             }
@@ -406,29 +386,29 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
         } catch (java.util.TooManyListenersException ex) {
             log.warn("cannot set listener for SerialPortEvents; was one already set?");
         }
-
+        
         try {
             port.notifyOnFramingError(true);
         } catch (Exception e) {
-            log.debug("Could not notifyOnFramingError", e); // NOI18N
+            log.debug("Could not notifyOnFramingError: " + e); // NOI18N
         }
 
         try {
             port.notifyOnBreakInterrupt(true);
         } catch (Exception e) {
-            log.debug("Could not notifyOnBreakInterrupt", e); // NOI18N
+            log.debug("Could not notifyOnBreakInterrupt: " + e); // NOI18N
         }
 
         try {
             port.notifyOnParityError(true);
         } catch (Exception e) {
-            log.debug("Could not notifyOnParityError", e); // NOI18N
+            log.debug("Could not notifyOnParityError: " + e); // NOI18N
         }
 
         try {
             port.notifyOnOverrunError(true);
         } catch (Exception e) {
-            log.debug("Could not notifyOnOverrunError", e); // NOI18N
+            log.debug("Could not notifyOnOverrunError: " + e); // NOI18N
         }
 
         port.notifyOnCarrierDetect(true);
@@ -461,49 +441,123 @@ abstract public class AbstractSerialPortController extends AbstractPortControlle
 
     /**
      * {@inheritDoc}
-     * Each serial port adapter should handle this and it should be abstract.
      */
     @Override
-    protected void closeConnection(){}
+    public void dispose() {
+        super.dispose();
+    }
 
     /**
-     * Re-setup the connection.
-     * Called when the physical connection has reconnected and can be linked to
-     * this connection.
-     * Each port adapter should handle this and it should be abstract.
+     * This is called when a connection is initially lost. It closes the client
+     * side socket connection, resets the open flag and attempts a reconnection.
      */
     @Override
-    protected void resetupConnection(){}
-
-    /**
-     * {@inheritDoc}
-     * Attempts a re-connection to the serial port from the main reconnect
-     * thread.
-     */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification="I18N of Info Message")
-    @Override
-    protected void reconnectFromLoop(int retryNum){
+    public void recover() {
+        if (!allowConnectionRecovery) {
+            return;
+        }
+        opened = false;
         try {
-            log.info("Retrying Connection attempt {} for {}", retryNum,mPort);
-            Enumeration<CommPortIdentifier> portIDs = CommPortIdentifier.getPortIdentifiers();
-            while (portIDs.hasMoreElements()) {
-                CommPortIdentifier id = portIDs.nextElement();
-                // filter out line printers
-                if (id.getPortType() != CommPortIdentifier.PORT_PARALLEL) // accumulate the names in a vector
-                {
-                    if (id.getName().equals(mPort)) {
-                        log.info(Bundle.getMessage("ReconnectPortReAppear", mPort));
-                        openPort(mPort, "jmri");
+            closeConnection();
+        } catch (RuntimeException e) {
+            log.warn("closeConnection failed");
+        }
+        reconnect();
+    }
+
+    /*Each serial port adapter should handle this and it should be abstract.
+     However this is in place until all the other code has been refactored */
+    protected void closeConnection() {
+        log.warn("abstract closeConnection() called; should be overriden");
+    }
+
+    /*Each port adapter should handle this and it should be abstract.
+     However this is in place until all the other code has been refactored */
+    protected void resetupConnection() {
+        log.warn("abstract resetupConnection() called; should be overriden");
+    }
+
+    /**
+     * Attempts to reconnect to a failed Server
+     */
+    public void reconnect() {
+        // If the connection is already open, then we shouldn't try a re-connect.
+        if (opened && !allowConnectionRecovery) {
+            return;
+        }
+        ReconnectWait thread = new ReconnectWait();
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            log.error("Unable to join to the reconnection thread {}", e.getMessage());
+        }
+        if (!opened) {
+            log.error("Failed to re-establish connectivity");
+        } else {
+            log.info("Reconnected to {}", getCurrentPortName());
+            resetupConnection();
+        }
+    }
+
+    class ReconnectWait extends Thread {
+
+        public final static int THREADPASS = 0;
+        public final static int THREADFAIL = 1;
+        int _status;
+
+        public int status() {
+            return _status;
+        }
+
+        public ReconnectWait() {
+            _status = THREADFAIL;
+        }
+
+        @Override
+        public void run() {
+            boolean reply = true;
+            int count = 0;
+            int secondCount = 0;
+            while (reply) {
+                safeSleep(reconnectinterval, "Waiting");
+                count++;
+                try {
+                    log.error("Retrying Connection attempt {}-{}", secondCount, count);
+                    Enumeration<CommPortIdentifier> portIDs = CommPortIdentifier.getPortIdentifiers();
+                    while (portIDs.hasMoreElements()) {
+                        CommPortIdentifier id = portIDs.nextElement();
+                        // filter out line printers
+                        if (id.getPortType() != CommPortIdentifier.PORT_PARALLEL) // accumulate the names in a vector
+                        {
+                            if (id.getName().equals(mPort)) {
+                                log.info("{} port has reappeared as being valid, trying to reconnect", mPort);
+                                openPort(mPort, "jmri");
+                            }
+                        }
                     }
+                } catch (RuntimeException e) {
+                    log.warn("failed to reconnect to port {}", (mPort == null ? "null" : mPort));
+                }
+                reply = !opened;
+                if (count >= retryAttempts) {
+                    log.error("Unable to reconnect after {} attempts, increasing duration of retries", count);
+                    // retrying but with twice the retry interval.
+                    reconnectinterval = reconnectinterval * 2;
+                    count = 0;
+                    secondCount++;
+                }
+                if (secondCount >= 10) {
+                    log.error("Giving up on reconnecting after 100 attempts to reconnect");
+                    reply = false;
                 }
             }
-            if (retryNum % 10==0) {
-                log.info(Bundle.getMessage("ReconnectSerialTip"));
+            if (!opened) {
+                log.error("Failed to re-establish connectivity");
+            } else {
+                log.error("Reconnected to {}", getCurrentPortName());
+                resetupConnection();
             }
-        } catch (RuntimeException e) {
-            log.warn(Bundle.getMessage("ReconnectFail",(mPort == null ? "null" : mPort)));
-
         }
     }
 

@@ -1,14 +1,15 @@
 package jmri.jmrix.nce.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * NceSensorManagerXmlTest.java
  *
- * Test for the NceSensorManagerXml class
+ * Description: tests for the NceSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class NceSensorManagerXmlTest {
       Assert.assertNotNull("NceSensorManagerXml constructor",new NceSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

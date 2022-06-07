@@ -1,7 +1,9 @@
 package jmri;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for setting and changing path lengths of the Path class
@@ -72,7 +74,7 @@ public class PathLengthTest {
         Assert.assertEquals("check raw path p3 length", 0f, p1.getLength(), 0.0);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         
@@ -80,7 +82,7 @@ public class PathLengthTest {
         jmri.InstanceManager.store(new jmri.NamedBeanHandleManager(), jmri.NamedBeanHandleManager.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

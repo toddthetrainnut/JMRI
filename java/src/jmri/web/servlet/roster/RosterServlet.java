@@ -12,7 +12,6 @@ import static jmri.server.json.JSON.MFG;
 import static jmri.server.json.JSON.NAME;
 import static jmri.server.json.JSON.NUMBER;
 import static jmri.server.json.JSON.ROAD;
-import static jmri.server.json.JSON.V5;
 import static jmri.web.servlet.ServletUtil.IMAGE_PNG;
 import static jmri.web.servlet.ServletUtil.UTF8;
 import static jmri.web.servlet.ServletUtil.UTF8_APPLICATION_JSON;
@@ -164,7 +163,7 @@ public class RosterServlet extends HttpServlet {
             if (!fm.getFileType().equals("text/xml")
                     && !fm.getFileType().startsWith("image")) {
                 String m = String.format(rl, Bundle.getMessage(rl, "ErrorInvalidFileType"), fm.getFileName(), fm.getFileType());
-                log.error("{} : Invalid File Type", m);
+                log.error(m);
                 msgList.add(m);
                 break; //stop processing this one
             }
@@ -181,7 +180,7 @@ public class RosterServlet extends HttpServlet {
                 log.debug("file '{}' of type '{}' temp saved to {}", fm.getFileType(), fm.getFileName(), tempFolder);
             } catch (IOException e) {
                 String m = String.format(rl, Bundle.getMessage(rl, "ErrorSavingFile"), fm.getFileName());
-                log.error("{} : Error Saving File", m);
+                log.error(m);
                 msgList.add(m);
                 break; //stop processing this one
             } finally {
@@ -201,7 +200,7 @@ public class RosterServlet extends HttpServlet {
                 if (fileNew.exists()) {
                     if (!fm.getFileReplace()) {
                         String m = String.format(rl, Bundle.getMessage(rl, "ErrorFileExists"), fm.getFileName());
-                        log.error("{} : File Already Exists", m);
+                        log.error(m);
                         msgList.add(m);
                         if (!fileTemp.delete()) { //get rid of temp file
                             log.error("Unable to delete {}", fileTemp);
@@ -209,16 +208,16 @@ public class RosterServlet extends HttpServlet {
                     } else {
                         if (!fileNew.delete()) { //delete the old file
                             String m = String.format(rl, Bundle.getMessage(rl, "ErrorDeletingFile"), fileNew.getName());
-                            log.debug("{} : Error Deleting File", m);
+                            log.debug(m);
                             msgList.add(m);
                         }
                         if (fileTemp.renameTo(fileNew)) {
                             String m = String.format(rl, Bundle.getMessage(rl, "FileReplaced"), fm.getFileName());
-                            log.debug("{} : File Replaced", m);
+                            log.debug(m);
                             msgList.add(m);
                         } else {
                             String m = String.format(rl, Bundle.getMessage(rl, "ErrorRenameFailed"), fm.getFileName());
-                            log.error("{} : Rename Failed", m);
+                            log.error(m);
                             msgList.add(m);
                             if (!fileTemp.delete()) { //get rid of temp file
                                 log.error("Unable to delete {}", fileTemp);
@@ -228,11 +227,11 @@ public class RosterServlet extends HttpServlet {
                 } else {
                     if (fileTemp.renameTo(fileNew)) {
                         String m = String.format(rl, Bundle.getMessage(rl, "FileAdded"), fm.getFileName());
-                        log.debug("{} : File Added", m);
+                        log.debug(m);
                         msgList.add(m);
                     } else {
                         String m = String.format(rl, Bundle.getMessage(rl, "ErrorRenameFailed"), fm.getFileName());
-                        log.error("{} : Rename Failed", m);
+                        log.error(m);
                         msgList.add(m);
                         if (!fileTemp.delete()) { //get rid of temp file
                             log.error("Unable to delete {}", fileTemp);
@@ -246,7 +245,7 @@ public class RosterServlet extends HttpServlet {
                     reTemp = RosterEntry.fromFile(new File(tempFolder, fm.getFileName()));
                 } catch (JDOMException e) { //handle XML failures
                     String m = String.format(rl, Bundle.getMessage(rl, "ErrorInvalidXML"), fm.getFileName(), e.getMessage());
-                    log.error("{} : Invalid XML", m);
+                    log.error(m);
                     msgList.add(m);
                     if (!fileTemp.delete()) { //get rid of temp file
                         log.error("Unable to delete {}", fileTemp);
@@ -257,7 +256,7 @@ public class RosterServlet extends HttpServlet {
                 if (reOld != null) {
                     if (!fm.getFileReplace()) {
                         String m = String.format(rl, Bundle.getMessage(rl, "ErrorFileExists"), fm.getFileName());
-                        log.error("{} : File Already Exists", m);
+                        log.error(m);
                         msgList.add(m);
                         if (!fileTemp.delete()) { //get rid of temp file
                             log.error("Unable to delete {}", fileTemp);
@@ -268,7 +267,7 @@ public class RosterServlet extends HttpServlet {
                         Roster.getDefault().addEntry(reTemp); //add the new entry to roster
                         Roster.getDefault().writeRoster(); //save modified roster.xml file
                         String m = String.format(rl, Bundle.getMessage(rl, "RosterEntryReplaced"), fm.getFileName(), reTemp.getDisplayName());
-                        log.debug("{} : Roster Entry Replaced", m);
+                        log.debug(m);
                         msgList.add(m);
                         if (!fileTemp.delete()) { //get rid of temp file
                             log.error("Unable to delete {}", fileTemp);
@@ -279,11 +278,11 @@ public class RosterServlet extends HttpServlet {
                         Roster.getDefault().addEntry(reTemp);
                         Roster.getDefault().writeRoster();
                         String m = String.format(rl, Bundle.getMessage(rl, "RosterEntryAdded"), fm.getFileName(), reTemp.getId());
-                        log.debug("{} : Roster Entry Added", m);
+                        log.debug(m);
                         msgList.add(m);
                     } else {
                         String m = String.format(rl, Bundle.getMessage(rl, "ErrorMoveFailed"), fm.getFileName(), reTemp.getPathName());
-                        log.error("{} : File Move Failed", m);
+                        log.error(m);
                         msgList.add(m);                        
                     }
                 }
@@ -497,9 +496,11 @@ public class RosterServlet extends HttpServlet {
         switch (format) {
             case JSON.JSON:
                 response.setContentType(UTF8_APPLICATION_JSON);
-                JsonRosterServiceFactory factory = new JsonRosterServiceFactory();
+                JsonRosterServiceFactory factory = InstanceManager.getOptionalDefault(JsonRosterServiceFactory.class).orElseGet(() -> {
+                    return InstanceManager.setDefault(JsonRosterServiceFactory.class, new JsonRosterServiceFactory());
+                });
                 try {
-                    response.getWriter().print(factory.getHttpService(mapper, V5).getRoster(request.getLocale(), filter, 0));
+                    response.getWriter().print(factory.getHttpService(mapper).getRoster(request.getLocale(), filter, 0));
                 } catch (JsonException ex) {
                     response.sendError(ex.getCode(), mapper.writeValueAsString(ex.getJsonMessage()));
                 }

@@ -3,12 +3,8 @@ package jmri.jmrix.ieee802154.xbee;
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.models.XBee16BitAddress;
 import com.digi.xbee.api.models.XBee64BitAddress;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.*;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for XBeeIOStream.
@@ -23,43 +19,43 @@ public class XBeeIOStreamTest {
 
    @Test
    public void ConstructorTest(){
-       assertThat(a).isNotNull();
+       Assert.assertNotNull(a);
    }
 
    @Test
    public void checkInputStream(){
-       assertThat(a.getInputStream()).isNotNull();
+       Assert.assertNotNull(a.getInputStream());
    }
 
    @Test
    public void checkOutputStream(){
-       assertThat(a.getOutputStream()).isNotNull();
+       Assert.assertNotNull(a.getOutputStream());
    }
 
    @Test
    public void checkStatus(){
-       assertThat(a.status()).isNotNull();
+       Assert.assertTrue(a.status());
    }
 
    @Test
    public void checkPortName(){
-       assertThat(a.getCurrentPortName()).isEqualTo("NONE");
+       Assert.assertEquals("NONE",a.getCurrentPortName());
    }
 
    @Test
    public void checkDisabled(){
-       assertThat(a.getDisabled()).isFalse();
+       Assert.assertFalse(a.getDisabled());
    }
 
    @Test
-   @Disabled("data send occurs, but tearDown closes the pipes too quickly")
+   @Ignore("data send occurs, but tearDown closes the pipes too quickly")
    public void checkSend() throws java.io.IOException {
        a.configure(); // start the send and receive threads.
        a.getOutputStream().writeChars("Hello World");
        jmri.util.JUnitUtil.waitFor(()->{ return tc.dataSent; });
    }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         tc = new XBeeInterfaceScaffold();
@@ -77,16 +73,14 @@ public class XBeeIOStreamTest {
         a = new XBeeIOStream(node,tc);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         a.dispose();
         a=null;
         tc.terminate();
         tc = null;
         node = null;
-        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         jmri.util.JUnitUtil.tearDown();
-
     }
 
 }

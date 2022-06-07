@@ -1,29 +1,28 @@
 package jmri.jmrit.symbolicprog.tabbedframe;
 
-import javax.swing.*;
-
 /**
  * JLabel that watches another component, setting itself invisible if when the
  * other component is
  *
- * @author Bob Jacobsen Copyright (C) 2010, 2020
+ * @author Bob Jacobsen Copyright (C) 2010
  */
-public class WatchingLabel extends JLabel {
+public class WatchingLabel extends javax.swing.JLabel {
 
-    public WatchingLabel(String name, JComponent c) {
+    public WatchingLabel(String name, javax.swing.JComponent c) {
         super(name);
 
         comp = c;
+        self = this;
 
         comp.addComponentListener(new java.awt.event.ComponentListener() {
             @Override
             public void componentHidden(java.awt.event.ComponentEvent e) {
-                WatchingLabel.this.setVisible(false);
+                self.setVisible(false);
             }
 
             @Override
             public void componentShown(java.awt.event.ComponentEvent e) {
-                WatchingLabel.this.setVisible(true);
+                self.setVisible(true);
             }
 
             @Override
@@ -37,11 +36,9 @@ public class WatchingLabel extends JLabel {
         });
 
         // set initial status
-        setVisible(c.isVisible());
+        self.setVisible(c.isVisible());
     }
 
-    public JComponent getWatcher() { return this; }
-    public JComponent getWatched() { return comp; }
-    
-    JComponent comp;
+    javax.swing.JComponent comp;
+    javax.swing.JComponent self;
 }

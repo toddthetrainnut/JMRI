@@ -1,12 +1,11 @@
 package jmri.util;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.util.AlphanumComparator class.
  *
- * @author Paul Bender Copyright 2016
+ * @author	Paul Bender Copyright 2016
  */
 public class AlphanumComparatorTest {
 
@@ -178,13 +177,13 @@ public class AlphanumComparatorTest {
 
     
     // from here down is testing infrastructure
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
         ac = new AlphanumComparator();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
     }

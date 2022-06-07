@@ -1,22 +1,22 @@
+/**
+ * Frame for user input of Xpa+Modem (dialing) messages.
+ *
+ * @author	Paul Bender Copyright (C) 2004
+ */
 package jmri.jmrix.xpa.swing.packetgen;
 
 import java.awt.Dimension;
 import javax.swing.BoxLayout;
 import jmri.jmrix.xpa.XpaMessage;
 
-/**
- * Frame for user input of Xpa+Modem (dialing) messages.
- *
- * @author Paul Bender Copyright (C) 2004
- */
 public class XpaPacketGenFrame extends jmri.util.JmriJFrame implements jmri.jmrix.xpa.XpaListener {
 
     // member declarations
-    final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-    final javax.swing.JButton sendButton = new javax.swing.JButton();
-    final javax.swing.JTextField packetTextField = new javax.swing.JTextField(12);
+    javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+    javax.swing.JButton sendButton = new javax.swing.JButton();
+    javax.swing.JTextField packetTextField = new javax.swing.JTextField(12);
 
-    final jmri.jmrix.xpa.XpaSystemConnectionMemo memo;
+    jmri.jmrix.xpa.XpaSystemConnectionMemo memo = null;
 
     public XpaPacketGenFrame(jmri.jmrix.xpa.XpaSystemConnectionMemo m) {
         super();
@@ -52,18 +52,21 @@ public class XpaPacketGenFrame extends jmri.util.JmriJFrame implements jmri.jmri
         getContentPane().add(packetTextField);
         getContentPane().add(sendButton);
 
-        sendButton.addActionListener(this::sendButtonActionPerformed);
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                sendButtonActionPerformed(e);
+            }
+        });
 
         // pack for display
         pack();
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        XpaMessage m = new XpaMessage(input.length());
-        for (int i = 0; i < input.length(); i++) {
-            m.setElement(i, input.charAt(i));
+        XpaMessage m = new XpaMessage(packetTextField.getText().length());
+        for (int i = 0; i < packetTextField.getText().length(); i++) {
+            m.setElement(i, packetTextField.getText().charAt(i));
         }
 
         memo.getXpaTrafficController().sendXpaMessage(m, this);

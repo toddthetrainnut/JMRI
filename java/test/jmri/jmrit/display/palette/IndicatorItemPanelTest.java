@@ -1,17 +1,18 @@
 package jmri.jmrit.display.palette;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrit.display.DisplayFrame;
+import jmri.jmrit.display.EditorScaffold;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class IndicatorItemPanelTest {
 
@@ -19,21 +20,21 @@ public class IndicatorItemPanelTest {
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         DisplayFrame df = new DisplayFrame();
-        IndicatorItemPanel t = new IndicatorItemPanel(df,"test1","test2");
+        EditorScaffold es = new EditorScaffold();
+        IndicatorItemPanel t = new IndicatorItemPanel(df,"test1","test2",es);
         Assert.assertNotNull("exists",t);
         JUnitUtil.dispose(df);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

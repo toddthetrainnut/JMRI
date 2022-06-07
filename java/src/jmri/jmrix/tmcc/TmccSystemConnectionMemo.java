@@ -1,13 +1,11 @@
 package jmri.jmrix.tmcc;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
 import javax.annotation.Nonnull;
-
-import jmri.*;
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
-import jmri.jmrix.DefaultSystemConnectionMemo;
-import jmri.util.NamedBeanComparator;
+import jmri.InstanceManager;
+import jmri.ThrottleManager;
+import jmri.TurnoutManager;
+import jmri.jmrix.SystemConnectionMemo;
 
 /**
  * Provide the required SystemConnectionMemo.
@@ -18,7 +16,7 @@ import jmri.util.NamedBeanComparator;
  * @author Randall Wood randall.h.wood@alexandriasoftware.com
  * @author Egbert Broerse Copyright (C) 2017
  */
-public class TmccSystemConnectionMemo extends DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class TmccSystemConnectionMemo extends SystemConnectionMemo {
 
     public TmccSystemConnectionMemo() {
         this("T", "Lionel TMCC");
@@ -32,8 +30,9 @@ public class TmccSystemConnectionMemo extends DefaultSystemConnectionMemo implem
     public TmccSystemConnectionMemo(SerialTrafficController tc) {
         super("T", "Lionel TMCC");
         trafficController = tc;
+        register(); // registers general type
         log.debug("TMCC SystemConnectionMemo with TC");
-        InstanceManager.store(this, TmccSystemConnectionMemo.class);
+        InstanceManager.store(this, TmccSystemConnectionMemo.class); // also register as specific type
         // create and register the ComponentFactory for the GUI (menu)
         InstanceManager.store(cf = new jmri.jmrix.tmcc.swing.TmccComponentFactory(this),
                 jmri.jmrix.swing.ComponentFactory.class);
@@ -43,8 +42,9 @@ public class TmccSystemConnectionMemo extends DefaultSystemConnectionMemo implem
 
     public TmccSystemConnectionMemo(@Nonnull String prefix, @Nonnull String name) {
         super(prefix, name);
+        register(); // registers general type
         log.debug("TMCC SystemConnectionMemo prefix={}", prefix);
-        InstanceManager.store(this, TmccSystemConnectionMemo.class);
+        InstanceManager.store(this, TmccSystemConnectionMemo.class); // also register as specific type
         // create and register the ComponentFactory for the GUI (menu)
         InstanceManager.store(cf = new jmri.jmrix.tmcc.swing.TmccComponentFactory(this),
                 jmri.jmrix.swing.ComponentFactory.class);
@@ -52,16 +52,11 @@ public class TmccSystemConnectionMemo extends DefaultSystemConnectionMemo implem
         log.debug("Created TMCCSystemConnectionMemo");
     }
 
-    jmri.jmrix.swing.ComponentFactory cf;
+    jmri.jmrix.swing.ComponentFactory cf = null;
 
     @Override
     protected ResourceBundle getActionModelResourceBundle() {
         return null;
-    }
-
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
     }
 
     private SerialTrafficController trafficController;
@@ -95,31 +90,76 @@ public class TmccSystemConnectionMemo extends DefaultSystemConnectionMemo implem
      */
     public void configureManagers() {
         log.debug("configureManagers");
-        TurnoutManager turnoutManager = getTurnoutManager();
-        store(turnoutManager,TurnoutManager.class);
         InstanceManager.setTurnoutManager(getTurnoutManager());
-        ThrottleManager throttleManager = getThrottleManager();
-        store(throttleManager,ThrottleManager.class);
         InstanceManager.setThrottleManager(getThrottleManager());
-        register();
     }
+
+    /**
+     * Tells which managers this class provides.
+     */
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        }
+
+        if (type.equals(ThrottleManager.class)) {
+            return true;
+        }
+
+        if (type.equals(TurnoutManager.class)) {
+            return true;
+        }
+
+        return super.provides(type);
+    }
+
+    /**
+     * Provide manager by class.
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+
+        if (T.equals(ThrottleManager.class)) {
+            return (T) getThrottleManager();
+        }
+
+        if (T.equals(TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        return super.get(T);
+    }
+
+    private ThrottleManager throttleManager;
 
     public ThrottleManager getThrottleManager() {
         if (getDisabled()) {
             return null;
         }
-        return (SerialThrottleManager) classObjectMap.computeIfAbsent(ThrottleManager.class, (Class<?> c) -> new SerialThrottleManager(this));
+        if (throttleManager == null) {
+            throttleManager = new jmri.jmrix.tmcc.SerialThrottleManager(this);
+        }
+        return throttleManager;
     }
 
     public void setThrottleManager(ThrottleManager t) {
-        classObjectMap.put(ThrottleManager.class,t);
+        throttleManager = t;
     }
+
+    private SerialTurnoutManager turnoutManager;
 
     public SerialTurnoutManager getTurnoutManager() {
         if (getDisabled()) {
             return null;
         }
-        return (SerialTurnoutManager) classObjectMap.computeIfAbsent(TurnoutManager.class,(Class<?> c) -> new SerialTurnoutManager(this));
+        if (turnoutManager == null) {
+            turnoutManager = new jmri.jmrix.tmcc.SerialTurnoutManager(this);
+        }
+        return turnoutManager;
     }
 
 
@@ -127,6 +167,7 @@ public class TmccSystemConnectionMemo extends DefaultSystemConnectionMemo implem
     public void dispose() {
         trafficController = null;
         InstanceManager.deregister(this, TmccSystemConnectionMemo.class);
+
         super.dispose();
     }
 

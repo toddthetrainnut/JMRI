@@ -50,7 +50,9 @@ public class JmriMultiStatePropertyListener extends JmriSimplePropertyListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        log.debug("\"{}\" sent PropertyChangeEvent {}, old value =\"{}\", new value =\"{}, enabled = {}", _varName, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue(), _enabled);
+        log.debug("\"" + _varName + "\" sent PropertyChangeEvent " + evt.getPropertyName()
+                + ", old value =\"" + evt.getOldValue() + "\", new value =\"" + evt.getNewValue()
+                + ", enabled = " + _enabled);
         if (getPropertyName().equals(evt.getPropertyName())) {
             int newState = ((Number) evt.getNewValue()).intValue();
             int oldState = ((Number) evt.getOldValue()).intValue();

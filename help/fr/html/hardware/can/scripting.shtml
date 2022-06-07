@@ -4,7 +4,7 @@
 <html lang="fr">
 <head>
 <!-- Translated  by Blorec Herv&#233; le 2017-01-20 -->
-<title>JMRI Mat&#233;riel - CAN - Scripts</title>
+<title>JMRI Hardware Support - CAN Network - Scripting</title>
 
 <!-- Style -->
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -16,13 +16,12 @@
 </head>
 
 <body>
-<!--#include virtual="/Header.shtml" -->
-<div id="mBody">
-    <!--#include virtual="Sidebar" -->
+<!--#include virtual="/Header" -->
+  <div class="nomenu" id="mBody">
     <div id="mainContent">
-        <!-- Page Body -->
 
-<h1>Prise en charge Mat&#233;riel: CAN - Scripts</h1>
+
+<h1>Prise en charge MAt&#233;riel: CAN - Scripts</h1>
 
 <p>Script JMRI peut &#234;tre utilis&#233; pour
 envoyer et recevoir des trames CAN.
@@ -62,7 +61,6 @@ transmises sur le bus par JMRI.
 L'interface CanListener fournit ceux-ci s&#233;par&#233;ment
 via des proc&#233;dures "reply"et "message", respectivement.
 
-<code>
 class MyCanListener (jmri.jmrix.can.CanListener) :
     def message(self, msg) :
         # g&egrave;re la transmission des trames CAN en ignorant leurs retours
@@ -74,7 +72,7 @@ class MyCanListener (jmri.jmrix.can.CanListener) :
         return
     
 jmri.jmrix.can.TrafficController.instance().addCanListener(MyCanListener())
-</code>
+</pre></code>
 
 <a name="documentation"></a><h2>Documentation</h2>
 <h3>Aide JMRI</h3>
@@ -82,7 +80,7 @@ jmri.jmrix.can.TrafficController.instance().addCanListener(MyCanListener())
 	<li>Retour &#224; la page <a href="index.shtml">support d'Aide Principale R&#233;seau CAN</a>.
 	</ul>
 
-<!--#include virtual="/Footer.shtml" -->
+<!--#include virtual="/Footer" -->
  </div><!-- closes #mainContent-->
 </div> <!-- closes #mBody-->
 </body>

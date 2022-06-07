@@ -1,9 +1,10 @@
 package jmri.jmrit.throttle;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of ThrottlesTableModel
@@ -18,12 +19,12 @@ public class ThrottlesTableModelTest {
         Assert.assertNotNull("exists", panel);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -17,7 +17,6 @@ public class AddSignalMastJFrame extends JmriJFrame {
         getContentPane().setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
         add(sigMastPanel = new AddSignalMastPanel());
-        setEscapeKeyClosesWindow(true);
         pack();
     }
 
@@ -28,7 +27,6 @@ public class AddSignalMastJFrame extends JmriJFrame {
         getContentPane().setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
         add(new AddSignalMastPanel(mast));
-        setEscapeKeyClosesWindow(true);
         pack();
     }
 

@@ -1,22 +1,20 @@
 package jmri.jmrix.rfid.networkdriver.configurexml;
 
 import jmri.util.*;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
 import jmri.jmrix.rfid.networkdriver.ConnectionConfig;
 
 /**
  * ConnectionConfigXmlTest.java
  *
- * Test for the ConnectionConfigXml class
+ * Description: tests for the ConnectionConfigXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
 public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractNetworkConnectionConfigXmlTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new ConnectionConfigXml();
@@ -24,8 +22,7 @@ public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractNet
         
     }
     
-    @Test
-    @Timeout(5000)
+    @Test(timeout=5000)
     @Override
     public void loadTest() throws jmri.configurexml.JmriConfigureXmlException {
         super.loadTest();
@@ -33,8 +30,7 @@ public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractNet
         JUnitAppender.assertWarnMessage("Could not parse port attribute: [Attribute: port=\"(none selected)\"]");
     }    
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
         xmlAdapter = null;

@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 
 /**
  * CSV Record Types. The first field is the record type keyword (not I18N).
@@ -78,7 +75,7 @@ public class TimeTableCsvImport {
     List<String> importFeedback = new ArrayList<>();
     FileReader fileReader;
     BufferedReader bufferedReader;
-    CSVParser csvFile;
+    com.csvreader.CsvReader csvFile;
 
     int recordNumber = 0;
     int layoutId = 0;       //Current layout object id
@@ -94,16 +91,16 @@ public class TimeTableCsvImport {
         try {
             fileReader = new FileReader(file);
             bufferedReader = new BufferedReader(fileReader);
-            csvFile = new CSVParser(bufferedReader, CSVFormat.DEFAULT);
-            for (CSVRecord record : csvFile.getRecords()) {
+            csvFile = new com.csvreader.CsvReader(bufferedReader);
+            csvFile.setUseComments(true);
+            while (csvFile.readRecord()) {
                 if (errorOccurred) {
                     break;
                 }
                 recordNumber += 1;
-                if (record.size() > 0) {
-                    List<String> list = new ArrayList<>();
-                    record.forEach(list::add);
-                    String[] values = list.toArray(new String[record.size()]);
+                if (csvFile.getColumnCount() > 0) {
+                    String[] values;
+                    values = csvFile.getValues();
                     String recd = values[0];
 
                     if (recd.equals("Layout") && layoutId == 0) {
@@ -123,7 +120,7 @@ public class TimeTableCsvImport {
                     } else {
                         log.warn("Unable to process record {}, content = {}", recordNumber, values);
                         importFeedback.add(String.format("Unable to process record %d, content = %s",
-                                recordNumber, record.toString()));
+                                recordNumber, csvFile.getRawRecord()));
                         errorOccurred = true;
                     }
                 }
@@ -209,7 +206,7 @@ public class TimeTableCsvImport {
 
         String metric = (values.length > 5) ? values[5] : "No";
         if (metric.equals("Yes") || metric.equals("No")) {
-            newLayout.setMetric((metric.equals("Yes")));
+            newLayout.setMetric((metric.equals("Yes")) ? true : false);
         }
     }
 
@@ -224,9 +221,9 @@ public class TimeTableCsvImport {
 
         String typeName = values[1];
         if (typeName.equals("UseLayoutTypes")) {
-            tdm.getTrainTypes(layoutId, true).forEach((currType) -> {
+            for (TrainType currType : tdm.getTrainTypes(layoutId, true)) {
                 trainTypes.add(currType.getTypeId());
-            });
+            }
             return;
         }
         for (TrainType trainType : tdm.getTrainTypes(layoutId, false)) {
@@ -293,9 +290,9 @@ public class TimeTableCsvImport {
 
         String stationName = values[1];
         if (stationName.equals("UseSegmentStations")) {
-            tdm.getStations(segmentId, true).forEach((currStation) -> {
+            for (Station currStation : tdm.getStations(segmentId, true)) {
                 stations.add(currStation.getStationId());
-            });
+            }
             return;
         }
         for (Station station : tdm.getStations(segmentId, false)) {
@@ -320,7 +317,7 @@ public class TimeTableCsvImport {
 
         String doubleTrack = (values.length > 3) ? values[3] : "No";
         if (doubleTrack.equals("Yes") || doubleTrack.equals("No")) {
-            newStation.setDoubleTrack((doubleTrack.equals("Yes")));
+            newStation.setDoubleTrack((doubleTrack.equals("Yes")) ? true : false);
         }
 
         String sidingsString = (values.length > 4) ? values[4] : "0";
@@ -458,7 +455,7 @@ public class TimeTableCsvImport {
         int stopStationIndex = convertToInteger(stopStationString);
         stopStationIndex -= 1;       // stations list is 0 to n-1
         if (stopStationIndex >= 0 && stopStationIndex < stations.size()) {
-            List<Stop> stops = tdm.getStops(trainId, 0, false);
+            ArrayList<Stop> stops = tdm.getStops(trainId, 0, false);
             Stop newStop = new Stop(trainId, stops.size() + 1);
             newStop.setStationId(stations.get(stopStationIndex));
 

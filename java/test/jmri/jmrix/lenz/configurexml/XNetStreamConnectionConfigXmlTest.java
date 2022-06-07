@@ -1,9 +1,7 @@
 package jmri.jmrix.lenz.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
 import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.jmrix.lenz.XNetStreamConnectionConfig;
 
@@ -14,16 +12,15 @@ import jmri.jmrix.lenz.XNetStreamConnectionConfig;
  */
 public class XNetStreamConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractStreamConnectionConfigXmlTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new XNetStreamConnectionConfigXml();
         cc = new XNetStreamConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         // if we've started a traffic controller, dispose of it
         if (cc.getAdapter() != null) {

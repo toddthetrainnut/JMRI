@@ -1,39 +1,43 @@
 package jmri.server.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.lang.reflect.Method;
 import java.util.HashMap;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import jmri.util.JUnitAppender;
-import jmri.util.JUnitUtil;
+import java.util.List;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
+ *
  * @author Randall Wood (C) 2016
  */
 public class DefaultWebServerConfigurationTest {
 
-    private DefaultWebServerConfiguration instance;
-
-    @BeforeEach
-    public void setUp() {
-        JUnitUtil.setUp();
-        instance = new DefaultWebServerConfiguration();
+    public DefaultWebServerConfigurationTest() {
     }
 
-    @AfterEach
+    @BeforeClass
+    public static void setUpClass() {
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
     public void tearDown() {
-        instance = null;
-        JUnitUtil.tearDown();
     }
 
     @Test
     public void testConstructor() {
-        assertThat(instance).as("Default constructor").isNotNull();
+        DefaultWebServerConfiguration instance = new DefaultWebServerConfiguration();
+        Assert.assertNotNull("Default constructor", instance);
     }
 
     /**
@@ -41,12 +45,10 @@ public class DefaultWebServerConfigurationTest {
      */
     @Test
     public void testGetFilePaths() {
-        assertThat(instance.getFilePaths())
-                .as("Default file paths")
-                .satisfies(paths -> {
-                    assertThat(paths).isNotNull();
-                    assertThat(paths.size()).isEqualTo(15);
-                });
+        DefaultWebServerConfiguration instance = new DefaultWebServerConfiguration();
+        HashMap<String, String> result = instance.getFilePaths();
+        Assert.assertNotNull("Default file paths", result);
+        Assert.assertEquals("Default file paths", 15, result.size());
     }
 
     /**
@@ -55,12 +57,10 @@ public class DefaultWebServerConfigurationTest {
      */
     @Test
     public void testGetRedirectedPaths() {
-        assertThat(instance.getRedirectedPaths())
-                .as("Default redirections")
-                .satisfies(paths -> {
-                    assertThat(paths).isNotNull();
-                    assertThat(paths).isEmpty();
-                });
+        DefaultWebServerConfiguration instance = new DefaultWebServerConfiguration();
+        HashMap<String, String> result = instance.getRedirectedPaths();
+        Assert.assertNotNull("Default redirections", result);
+        Assert.assertTrue("Default redirections", result.isEmpty());
     }
 
     /**
@@ -68,25 +68,10 @@ public class DefaultWebServerConfigurationTest {
      */
     @Test
     public void testGetForbiddenPaths() {
-        assertThat(instance.getForbiddenPaths())
-                .as("Default forbidden paths")
-                .satisfies(paths -> {
-                    assertThat(paths).isNotNull();
-                    assertThat(paths).isEmpty();
-                });
+        DefaultWebServerConfiguration instance = new DefaultWebServerConfiguration();
+        List<String> result = instance.getForbiddenPaths();
+        Assert.assertNotNull("Default forbidden paths", result);
+        Assert.assertTrue("Default forbidden paths", result.isEmpty());
     }
 
-    /**
-     * Test of load method with missing/non-existent resource.
-     * 
-     * @throws Exception if unable to use reflection
-     */
-    @Test
-    public void testLoadWithMissingResource() throws Exception {
-        Method method = instance.getClass()
-                .getDeclaredMethod("loadMap", HashMap.class, String.class);
-        method.setAccessible(true);
-        method.invoke(instance, new HashMap<String, String>(), "no.such.resource");
-        JUnitAppender.assertErrorMessage("Unable to load no.such.resource");
-    }
 }

@@ -10,6 +10,7 @@ import java.awt.geom.AffineTransform;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicLabelUI;
 
 /**

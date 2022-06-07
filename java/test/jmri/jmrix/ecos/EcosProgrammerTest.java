@@ -2,13 +2,14 @@ package jmri.jmrix.ecos;
 
 import jmri.ProgrammingMode;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class EcosProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
 
@@ -27,24 +28,24 @@ public class EcosProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     }
 
     @Override
-    @Test
+    @Test(expected=java.lang.IllegalArgumentException.class)
     public void testSetGetMode() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> programmer.setMode(ProgrammingMode.REGISTERMODE));
+        programmer.setMode(ProgrammingMode.REGISTERMODE);
+        Assert.assertEquals("Check mode matches set", ProgrammingMode.REGISTERMODE,
+                programmer.getMode());        
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         EcosTrafficController tc = new EcosInterfaceScaffold();
         programmer = new EcosProgrammer(tc);
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         programmer = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

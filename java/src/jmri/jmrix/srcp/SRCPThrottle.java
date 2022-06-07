@@ -3,8 +3,6 @@ package jmri.jmrix.srcp;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.DccLocoAddress;
 import jmri.LocoAddress;
-import jmri.SpeedStepMode;
-import jmri.Throttle;
 import jmri.jmrix.AbstractThrottle;
 
 /**
@@ -14,7 +12,7 @@ import jmri.jmrix.AbstractThrottle;
  * considered long addresses. This is not the NCE system standard, but is used
  * as an expedient here.
  *
- * @author Bob Jacobsen Copyright (C) 2001,2008
+ * @author	Bob Jacobsen Copyright (C) 2001,2008
  */
 public class SRCPThrottle extends AbstractThrottle {
 
@@ -26,11 +24,11 @@ public class SRCPThrottle extends AbstractThrottle {
      */
     public SRCPThrottle(SRCPBusConnectionMemo memo, DccLocoAddress address) {
         // default to 128 speed steps with 28 functions and NMRA protocl.
-        this(memo, address, "N", SpeedStepMode.NMRA_DCC_128, 28);
+        this(memo, address, "N", SpeedStepMode128, 28);
     }
 
     public SRCPThrottle(SRCPBusConnectionMemo memo, DccLocoAddress address,
-            String protocol, SpeedStepMode mode, int functions) {
+            String protocol, int mode, int functions) {
         super(memo);
         if (!protocol.equals("N")) {
             throw new IllegalArgumentException("Protocol " + protocol + " not supported");
@@ -41,10 +39,35 @@ public class SRCPThrottle extends AbstractThrottle {
 
         // cache settings. It would be better to read the
         // actual state, but I don't know how to do this
-        synchronized(this) {
-            this.speedSetting = 0;
-        }
-        // Functions default to false
+        this.speedSetting = 0;
+        this.f0 = false;
+        this.f1 = false;
+        this.f2 = false;
+        this.f3 = false;
+        this.f4 = false;
+        this.f5 = false;
+        this.f6 = false;
+        this.f7 = false;
+        this.f8 = false;
+        this.f9 = false;
+        this.f10 = false;
+        this.f11 = false;
+        this.f12 = false;
+        this.f13 = false;
+        this.f14 = false;
+        this.f15 = false;
+        this.f16 = false;
+        this.f17 = false;
+        this.f18 = false;
+        this.f19 = false;
+        this.f20 = false;
+        this.f21 = false;
+        this.f22 = false;
+        this.f23 = false;
+        this.f24 = false;
+        this.f26 = false;
+        this.f27 = false;
+        this.f28 = false;
         this.address = address;
         this.isForward = true;
 
@@ -102,7 +125,7 @@ public class SRCPThrottle extends AbstractThrottle {
     }
 
     /**
-     * Set the speed and direction.
+     * Set the speed {@literal &} direction.
      * <p>
      * This intentionally skips the emergency stop value of 1.
      *
@@ -110,12 +133,13 @@ public class SRCPThrottle extends AbstractThrottle {
      */
     @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY") // OK to compare floating point, notify on any change
     @Override
-    public synchronized void setSpeedSetting(float speed) {
+    public void setSpeedSetting(float speed) {
         float oldSpeed = this.speedSetting;
         this.speedSetting = speed;
         sendUpdate();
-        firePropertyChange(SPEEDSETTING, oldSpeed, this.speedSetting);
-        record(speed);
+        if (oldSpeed != this.speedSetting) {
+            notifyPropertyChangeListener("SpeedSetting", oldSpeed, this.speedSetting);
+        }
     }
 
     @Override
@@ -123,7 +147,9 @@ public class SRCPThrottle extends AbstractThrottle {
         boolean old = isForward;
         isForward = forward;
         sendUpdate();
-        firePropertyChange(Throttle.ISFORWARD, old, isForward);
+        if (old != isForward) {
+            notifyPropertyChangeListener("IsForward", old, isForward);
+        }
     }
 
     private DccLocoAddress address;
@@ -141,42 +167,40 @@ public class SRCPThrottle extends AbstractThrottle {
 
         // direction and speed
         msg += (isForward ? " 1" : " 0");
-        synchronized(this) {
-            msg += " " + ((int) (speedSetting * maxsteps));
-        }
+        msg += " " + ((int) (speedSetting * maxsteps));
         msg += " ";
         msg += maxsteps;
 
         // now add the functions
-        msg += getFunction(0) ? " 1" : " 0";
-        msg += getFunction(1) ? " 1" : " 0";
-        msg += getFunction(2) ? " 1" : " 0";
-        msg += getFunction(3) ? " 1" : " 0";
-        msg += getFunction(4) ? " 1" : " 0";
-        msg += getFunction(5) ? " 1" : " 0";
-        msg += getFunction(6) ? " 1" : " 0";
-        msg += getFunction(7) ? " 1" : " 0";
-        msg += getFunction(8) ? " 1" : " 0";
-        msg += getFunction(9) ? " 1" : " 0";
-        msg += getFunction(10) ? " 1" : " 0";
-        msg += getFunction(11) ? " 1" : " 0";
-        msg += getFunction(12) ? " 1" : " 0";
-        msg += getFunction(13) ? " 1" : " 0";
-        msg += getFunction(14) ? " 1" : " 0";
-        msg += getFunction(15) ? " 1" : " 0";
-        msg += getFunction(16) ? " 1" : " 0";
-        msg += getFunction(17) ? " 1" : " 0";
-        msg += getFunction(18) ? " 1" : " 0";
-        msg += getFunction(19) ? " 1" : " 0";
-        msg += getFunction(20) ? " 1" : " 0";
-        msg += getFunction(21) ? " 1" : " 0";
-        msg += getFunction(22) ? " 1" : " 0";
-        msg += getFunction(23) ? " 1" : " 0";
-        msg += getFunction(24) ? " 1" : " 0";
-        msg += getFunction(25) ? " 1" : " 0";
-        msg += getFunction(26) ? " 1" : " 0";
-        msg += getFunction(27) ? " 1" : " 0";
-        msg += getFunction(28) ? " 1" : " 0";
+        msg += f0 ? " 1" : " 0";
+        msg += f1 ? " 1" : " 0";
+        msg += f2 ? " 1" : " 0";
+        msg += f3 ? " 1" : " 0";
+        msg += f4 ? " 1" : " 0";
+        msg += f5 ? " 1" : " 0";
+        msg += f6 ? " 1" : " 0";
+        msg += f7 ? " 1" : " 0";
+        msg += f8 ? " 1" : " 0";
+        msg += f9 ? " 1" : " 0";
+        msg += f10 ? " 1" : " 0";
+        msg += f11 ? " 1" : " 0";
+        msg += f12 ? " 1" : " 0";
+        msg += f13 ? " 1" : " 0";
+        msg += f14 ? " 1" : " 0";
+        msg += f15 ? " 1" : " 0";
+        msg += f16 ? " 1" : " 0";
+        msg += f17 ? " 1" : " 0";
+        msg += f18 ? " 1" : " 0";
+        msg += f19 ? " 1" : " 0";
+        msg += f20 ? " 1" : " 0";
+        msg += f21 ? " 1" : " 0";
+        msg += f22 ? " 1" : " 0";
+        msg += f23 ? " 1" : " 0";
+        msg += f24 ? " 1" : " 0";
+        msg += f25 ? " 1" : " 0";
+        msg += f26 ? " 1" : " 0";
+        msg += f27 ? " 1" : " 0";
+        msg += f28 ? " 1" : " 0";
 
         // send the result
         SRCPMessage m = new SRCPMessage(msg + "\n");
@@ -185,18 +209,21 @@ public class SRCPThrottle extends AbstractThrottle {
     }
 
     @Override
-    public void setSpeedStepMode(SpeedStepMode Mode) {
+    public void setSpeedStepMode(int Mode) {
         super.setSpeedStepMode(Mode);
         switch (Mode) {
-            case NMRA_DCC_14:
-            case NMRA_DCC_27:
-            case NMRA_DCC_28:
-            case NMRA_DCC_128:
-                maxsteps = Mode.numSteps;
+            case SpeedStepMode14:
+                maxsteps = 14;
                 break;
+            case SpeedStepMode27:
+                maxsteps = 27;
+                break;
+            case SpeedStepMode28:
+                maxsteps = 28;
+                break;
+            case SpeedStepMode128:
             default:
                 maxsteps = 126;
-                break;
         }
     }
 
@@ -206,7 +233,7 @@ public class SRCPThrottle extends AbstractThrottle {
     }
 
     @Override
-    public void throttleDispose() {
+    protected void throttleDispose() {
         finishRecord();
     }
 

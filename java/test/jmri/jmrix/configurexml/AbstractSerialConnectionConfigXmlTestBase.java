@@ -1,8 +1,6 @@
 package jmri.jmrix.configurexml;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 import org.jdom2.Element;
 import jmri.jmrix.ConnectionConfig;
 import jmri.jmrix.AbstractSerialPortController;
@@ -13,7 +11,7 @@ import javax.swing.JPanel;
 /**
  * Base tests for SerialConnectionConfigXml objects.
  *
- * @author Paul Bender Copyright (C) 2018
+ * @author Paul Bender Copyright (C) 2018	
  */
 abstract public class AbstractSerialConnectionConfigXmlTestBase extends AbstractConnectionConfigXmlTestBase {
 
@@ -25,7 +23,7 @@ abstract public class AbstractSerialConnectionConfigXmlTestBase extends Abstract
         // load details MAY produce an error message if no ports are found.
         jmri.util.JUnitAppender.suppressErrorMessage("No usable ports returned");
         Element e = xmlAdapter.store(cc);
-        Assert.assertNotNull("XML Element Produced", e);
+        Assert.assertNotNull("XML Element Produced", e); 
         if(e.getAttribute("class")!=null){
            Assert.assertEquals("class", xmlAdapter.getClass().getName(), e.getAttribute("class").getValue());
         }
@@ -33,7 +31,7 @@ abstract public class AbstractSerialConnectionConfigXmlTestBase extends Abstract
         validateConnectionDetails(cc, e);
     }
 
-    @Test
+    @Test(timeout=5000)
     @Override
     public void loadTest() throws jmri.configurexml.JmriConfigureXmlException {
         Assume.assumeNotNull(cc);

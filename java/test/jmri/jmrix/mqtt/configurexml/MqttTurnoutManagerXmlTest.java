@@ -1,9 +1,10 @@
 package jmri.jmrix.mqtt.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for MqttTurnoutManagerXml class.
@@ -18,13 +19,13 @@ public class MqttTurnoutManagerXmlTest {
         Assert.assertNotNull("ConnectionConfig constructor", new MqttTurnoutManagerXml());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

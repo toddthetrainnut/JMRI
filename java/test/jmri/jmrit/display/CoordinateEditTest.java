@@ -1,16 +1,13 @@
 package jmri.jmrit.display;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of CoordinateEdit
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class CoordinateEditTest extends jmri.util.JmriJFrameTestBase {
 
@@ -25,10 +22,10 @@ public class CoordinateEditTest extends jmri.util.JmriJFrameTestBase {
            ((CoordinateEdit)frame).init("foo",i,false);
         } catch( Exception e) {
             Assert.fail("Exception " + e + " Thrown during init call ");
-        }
+        } 
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -37,11 +34,9 @@ public class CoordinateEditTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         super.tearDown();
     }
 

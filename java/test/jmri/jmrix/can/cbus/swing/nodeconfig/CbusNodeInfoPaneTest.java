@@ -1,13 +1,13 @@
 package jmri.jmrix.can.cbus.swing.nodeconfig;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.can.cbus.node.CbusNode;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of CbusNodeInfoPane
@@ -20,30 +20,33 @@ public class CbusNodeInfoPaneTest {
     @Test
     public void testCtor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        CbusNodeInfoPane t = new CbusNodeInfoPane(null);
+        CbusNodeInfoPane t = new CbusNodeInfoPane();
         Assert.assertNotNull("exists",t);
+        t = null;
     }
     
     @Test
     public void testInit() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        CbusNodeInfoPane t = new CbusNodeInfoPane(null);
+        CbusNodeInfoPane t = new CbusNodeInfoPane();
         
         CbusNode nd = new CbusNode(null,12345);
-        nd.getNodeParamManager().setParameters(new int[]{8,165,89,10,4,5,3,4,8});
+        nd.setParameters(new int[]{8,165,89,10,4,5,3,4,8});
         
-        t.setNode(nd);
+        t.initComponents(nd);
         
         Assert.assertNotNull("exists",t);
         
+        nd = null;
+        t = null;
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

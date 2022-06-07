@@ -1,14 +1,15 @@
 package jmri.jmrix.lenz.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * XNetLightManagerXmlTest.java
  *
- * Test for the XNetLightManagerXml class
+ * Description: tests for the XNetLightManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class XNetLightManagerXmlTest {
       Assert.assertNotNull("XNetLightManagerXml constructor",new XNetLightManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

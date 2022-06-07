@@ -8,7 +8,7 @@ import jmri.jmrix.sprog.SprogSystemConnectionMemo;
 /**
  * Frame for user input of Sprog messages.
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2010
+ * @author	Bob Jacobsen Copyright (C) 2001, 2010
  */
 public class SprogPacketGenFrame extends jmri.util.JmriJFrame {
 
@@ -64,9 +64,7 @@ public class SprogPacketGenFrame extends jmri.util.JmriJFrame {
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        SprogMessage m = new SprogMessage(input);
+        SprogMessage m = new SprogMessage(packetTextField.getText());
         _memo.getSprogTrafficController().sendSprogMessage(m);
     }
 

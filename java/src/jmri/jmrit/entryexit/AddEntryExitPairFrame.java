@@ -44,7 +44,12 @@ public class AddEntryExitPairFrame extends jmri.util.JmriJFrame {
         optMenu.add(optItem);
         menuBar.add(optMenu);
 
-        optItem.addActionListener(nxPanel::optionWindow);
+        optItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                nxPanel.optionWindow(event);
+            }
+        });
 
         setJMenuBar(menuBar);
         addHelpMenu("package.jmri.jmrit.entryexit.EntryExitFrame", true);  // NOI18N

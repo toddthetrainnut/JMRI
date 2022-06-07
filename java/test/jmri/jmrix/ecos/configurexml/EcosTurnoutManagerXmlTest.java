@@ -1,14 +1,15 @@
 package jmri.jmrix.ecos.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * EcosTurnoutManagerXmlTest.java
  *
- * Test for the EcosTurnoutManagerXml class
+ * Description: tests for the EcosTurnoutManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class EcosTurnoutManagerXmlTest {
       Assert.assertNotNull("EcosTurnoutManagerXml constructor",new EcosTurnoutManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

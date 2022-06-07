@@ -3,6 +3,8 @@ package jmri.jmrix.lenz.swing.stackmon;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -29,21 +31,21 @@ import org.slf4j.LoggerFactory;
 public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener {
 
     // buttons currently (4.8) not displayed
-    final JButton nextButton = new JButton(Bundle.getMessage("NextButtonLabel"));
-    final JButton previousButton = new JButton(Bundle.getMessage("PreviousButtonLabel"));
-    final JButton deleteButton = new JButton(Bundle.getMessage("ButtonDelete"));
-    final JButton refreshButton = new JButton(Bundle.getMessage("RefreshButtonLabel"));
-    final JLabel currentStatus = new JLabel(" ");
+    JButton nextButton = new JButton(Bundle.getMessage("NextButtonLabel"));
+    JButton previousButton = new JButton(Bundle.getMessage("PreviousButtonLabel"));
+    JButton deleteButton = new JButton(Bundle.getMessage("ButtonDelete"));
+    JButton refreshButton = new JButton(Bundle.getMessage("RefreshButtonLabel"));
+    JLabel currentStatus = new JLabel(" ");
 
-    final JTextField adrTextField = new javax.swing.JTextField(4);
+    JTextField adrTextField = new javax.swing.JTextField(4);
 
-    StackMonDataModel stackModel;
-    javax.swing.JTable stackTable;
+    StackMonDataModel stackModel = null;
+    javax.swing.JTable stackTable = null;
 
     // flag to know if Get All or Get Next/Previous was pressed
     private boolean _getAll = false;
 
-    protected XNetTrafficController tc;
+    protected XNetTrafficController tc = null;
 
     public StackMonFrame(jmri.jmrix.lenz.XNetSystemConnectionMemo memo) {
         super();
@@ -52,12 +54,22 @@ public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener 
         stackTable = new javax.swing.JTable(stackModel);
 
         // Add listener object to retrieve the next entry
-        nextButton.addActionListener(e -> getNextEntry());
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getNextEntry();
+            }
+        });
 
         // Set the Next button to visible
         nextButton.setVisible(true);
         // add listener object to retrieve the previous entry
-        previousButton.addActionListener(e -> getPreviousEntry());
+        previousButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getPreviousEntry();
+            }
+        });
 
         // Set the Previous button to visible.
         previousButton.setVisible(true);
@@ -68,12 +80,22 @@ public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener 
         // Set the Delete button to visible
         deleteButton.setVisible(true);
         // add listener object to remove the current entry
-        deleteButton.addActionListener(e -> deleteEntry());
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteEntry();
+            }
+        });
 
         // Set the nextButton to visible
         refreshButton.setVisible(true);
         // add listener object to retrieve the next entry
-        refreshButton.addActionListener(e -> getAllEntries());
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getAllEntries();
+            }
+        });
 
         // Set the adrTextField to visible
         adrTextField.setVisible(true);
@@ -181,7 +203,7 @@ public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener 
      * Remove the current entry.
      */
     private void deleteEntry() {
-        int address;
+        int address = 0;
         if (!adrTextField.getText().equals("")) {
             address = Integer.parseInt(adrTextField.getText());
             XNetMessage msg = XNetMessage.getDeleteAddressOnStackMsg(address);
@@ -195,7 +217,7 @@ public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", 
         justification = "This is part of work in progress code to allow display of all information about the locomotives in the stack.")
     private void requestStatus() {
-        int address;
+        int address = 0;
         if (!adrTextField.getText().equals("")) {
             address = Integer.parseInt(adrTextField.getText());
             XNetMessage msg = XNetMessage.getLocomotiveInfoRequestMsg(address);
@@ -210,7 +232,7 @@ public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", 
             justification = "This is part of work in progress code to allow display of all information about the locomotives in the stack.")
     private void requestFunctionStatus() {
-        int address;
+        int address = 0;
         if (!adrTextField.getText().equals("")) {
             address = Integer.parseInt(adrTextField.getText());
             XNetMessage msg = XNetMessage.getLocomotiveFunctionStatusMsg(address);
@@ -227,7 +249,7 @@ public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener 
     public void message(XNetReply r) {
         if (r.getElement(0) == XNetConstants.LOCO_INFO_RESPONSE) {
             int address = r.getThrottleMsgAddr();
-            Integer intAddress = address;
+            Integer intAddress = Integer.valueOf(address);
             switch (r.getElement(1)) {
                 case XNetConstants.LOCO_SEARCH_RESPONSE_N:
                     currentStatus.setText(Bundle.getMessage("SearchNormal"));
@@ -302,11 +324,11 @@ public class StackMonFrame extends jmri.util.JmriJFrame implements XNetListener 
     @Override
     public void notifyTimeout(XNetMessage msg) {
         if (log.isDebugEnabled()) {
-            log.debug("Notified of timeout on message{}", msg.toString());
+            log.debug("Notified of timeout on message" + msg.toString());
         }
     }
 
     // Register for logging
-    private static final Logger log = LoggerFactory.getLogger(StackMonFrame.class);
+    private final static Logger log = LoggerFactory.getLogger(StackMonFrame.class);
 
 }

@@ -7,6 +7,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+import jmri.jmrit.operations.locations.tools.ShowCarsByLocationAction;
+import jmri.jmrit.operations.locations.tools.ShowTrainsServingLocationAction;
 import jmri.jmrit.operations.locations.tools.TrackDestinationEditAction;
 import jmri.jmrit.operations.routes.Route;
 import jmri.jmrit.operations.trains.Train;
@@ -30,13 +32,7 @@ public class StagingEditFrame extends TrackEditFrame {
     JPanel panelLoad = panelOpt4;
 
     public StagingEditFrame() {
-        super(Bundle.getMessage("AddStaging"));
-    }
-    
-    @Override
-    public void initComponents(Track track) {
-        setTitle(Bundle.getMessage("EditStaging"));
-        initComponents(track.getLocation(), track);
+        super();
     }
 
     @Override
@@ -75,7 +71,9 @@ public class StagingEditFrame extends TrackEditFrame {
 
         super.initComponents(location, track);
 
-        _toolMenu.insert(new TrackDestinationEditAction(_track), TOOL_MENU_OFFSET);
+        _toolMenu.add(new TrackDestinationEditAction(this));
+        _toolMenu.add(new ShowTrainsServingLocationAction(Bundle.getMessage("MenuItemShowTrainsTrack"), _location, _track));
+        _toolMenu.add(new ShowCarsByLocationAction(false, _location, _track));
         addHelpMenu("package.jmri.jmrit.operations.Operations_Staging", true); // NOI18N
 
         // override text strings for tracks

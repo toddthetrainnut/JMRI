@@ -1,8 +1,9 @@
 package jmri.profile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-
+import java.util.Properties;
 import javax.annotation.Nonnull;
 
 /**
@@ -39,15 +40,9 @@ public class Profile implements Comparable<Profile> {
     public static final String CONFIG = "profile.xml"; // NOI18N
     public static final String SHARED_PROPERTIES = PROFILE + "/" + PROPERTIES; // NOI18N
     public static final String SHARED_CONFIG = PROFILE + "/" + CONFIG; // NOI18N
-    /**
-     * {@value #CONFIG_FILENAME} may be present in older profiles
-     */
     public static final String CONFIG_FILENAME = "ProfileConfig.xml"; // NOI18N
     public static final String UI_CONFIG = "user-interface.xml"; // NOI18N
     public static final String SHARED_UI_CONFIG = PROFILE + "/" + UI_CONFIG; // NOI18N
-    /**
-     * {@value #UI_CONFIG_FILENAME} may be present in older profiles
-     */
     public static final String UI_CONFIG_FILENAME = "UserPrefsProfileConfig.xml"; // NOI18N
     /**
      * The filename extension for JMRI profile directories. This is needed for
@@ -85,7 +80,7 @@ public class Profile implements Comparable<Profile> {
      * @throws java.io.IOException If unable to create the profile at path
      * @throws IllegalArgumentException If a profile already exists at or within path
      */
-    public Profile(@Nonnull String name, @Nonnull String id, @Nonnull File path) throws IOException {
+    public Profile(@Nonnull String name, @Nonnull String id, @Nonnull File path) throws IOException, IllegalArgumentException {
         File pathWithExt; // path with extension
         if (path.getName().endsWith(EXTENSION)) {
             pathWithExt = path;
@@ -173,7 +168,7 @@ public class Profile implements Comparable<Profile> {
         }
     }
 
-    protected final void save() {
+    protected final void save() throws IOException {
         ProfileProperties p = new ProfileProperties(this);
         p.put(NAME, this.name, true);
         p.put(ID, this.id, true);
@@ -230,16 +225,37 @@ public class Profile implements Comparable<Profile> {
         return path;
     }
 
-    private void readProfile() {
-        ProfileProperties p = new ProfileProperties(path);
-        String readId = p.get(ID, true);
-        if (readId != null) {
-            id = readId;
+    private void readProfile() throws IOException {
+        ProfileProperties p = new ProfileProperties(this.path);
+        this.id = p.get(ID, true);
+        this.name = p.get(NAME, true);
+        if (this.id == null) {
+            this.readProfileXml();
+            this.save();
         }
-        String readName = p.get(NAME, true);
-        if (readName != null) {
-            name = readName;
+    }
+
+    /**
+     * @deprecated since 4.1.1; Remove sometime after the new profiles get
+     * entrenched (JMRI 5.0, 6.0?)
+     */
+    @Deprecated
+    private void readProfileXml() throws IOException {
+        Properties p = new Properties();
+        File f = new File(this.path, PROPERTIES);
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(f);
+            p.loadFromXML(is);
+            is.close();
+        } catch (IOException ex) {
+            if (is != null) {
+                is.close();
+            }
+            throw ex;
         }
+        this.id = p.getProperty(ID);
+        this.name = p.getProperty(NAME);
     }
 
     @Override
@@ -290,7 +306,7 @@ public class Profile implements Comparable<Profile> {
      * @return An eight-character String of alphanumeric characters.
      */
     public String getUniqueId() {
-        return this.id.substring(this.id.lastIndexOf('.') + 1);
+        return this.id.substring(this.id.lastIndexOf(".") + 1); // NOI18N
     }
 
     /**
@@ -366,5 +382,5 @@ public class Profile implements Comparable<Profile> {
         return thisString.compareTo(thatString);
     }
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Profile.class);
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Profile.class);
 }

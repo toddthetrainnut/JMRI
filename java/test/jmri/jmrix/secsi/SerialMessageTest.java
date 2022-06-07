@@ -1,14 +1,12 @@
 package jmri.jmrix.secsi;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * JUnit tests for the SerialMessage class.
  *
- * @author Bob Jacobsen Copyright 2003, 2007, 2008
+ * @author	Bob Jacobsen Copyright 2003, 2007, 2008
  */
 public class SerialMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
@@ -24,14 +22,15 @@ public class SerialMessageTest extends jmri.jmrix.AbstractMessageTestBase {
         Assert.assertEquals("string compare ", "81 02 A2 00", msg.toString());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         m = msg = new SerialMessage(4);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         m = msg = null;
         JUnitUtil.tearDown();

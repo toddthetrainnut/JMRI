@@ -2,6 +2,7 @@ package jmri.jmrix.nce.consist;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import org.slf4j.Logger;

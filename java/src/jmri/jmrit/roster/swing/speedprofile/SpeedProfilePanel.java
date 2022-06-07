@@ -25,7 +25,6 @@ import jmri.DccThrottle;
 import jmri.InstanceManager;
 import jmri.Sensor;
 import jmri.SensorManager;
-import jmri.SpeedStepMode;
 import jmri.ThrottleListener;
 import jmri.jmrit.logix.WarrantPreferences;
 import jmri.jmrit.roster.Roster;
@@ -444,7 +443,6 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
             }
         }
 
-        throttleState = 0;
         re = reBox.getSelectedRosterEntries()[0];
         boolean ok = InstanceManager.throttleManagerInstance().requestThrottle(re, this, true); // we have a mechanism for steal / share
         if (!ok) {
@@ -453,7 +451,8 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
             return;
         }
         // Wait for throttle be correct and then run the profile
-        jmri.util.ThreadingUtil.newThread(new Runnable() {
+        throttleState = 0;
+        new Thread(new Runnable() {
                 @Override
                 public void run() {
                     int count = 0;
@@ -467,7 +466,7 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
                             setButtonStates(true);
                             return;
                         }
-                        count++;
+                        trys++;
                     }
                     log.debug("Run");
                     if (throttleState != 1) {
@@ -511,9 +510,18 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
     }
 
     private void runProfile() {
-        SpeedStepMode speedStepMode = t.getSpeedStepMode();
+        int speedStepMode = t.getSpeedStepMode();
         profileIncrement = t.getSpeedIncrement();
-        profileSpeedStepMode = speedStepMode.numSteps;
+//        int speedStep;
+        if (speedStepMode == DccThrottle.SpeedStepMode14) {
+            profileSpeedStepMode = 14;
+        } else if (speedStepMode == DccThrottle.SpeedStepMode27) {
+            profileSpeedStepMode = 27;
+        } else if (speedStepMode == DccThrottle.SpeedStepMode28) {
+            profileSpeedStepMode = 28;
+        } else {// default to 128 speed step mode
+            profileSpeedStepMode = 126;
+        }
         if (finishSpeedStep <= 0) {
             finishSpeedStep = profileSpeedStepMode;
         }
@@ -635,6 +643,21 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
     }
     
     /**
+     * Profiling on a stolen or shared throttle is invalid
+     * <p>
+     * {@inheritDoc}
+     * @deprecated since 4.15.7; use #notifyDecisionRequired
+     */
+    @Override
+    @Deprecated
+    public void notifyStealThrottleRequired(jmri.LocoAddress address) {
+        JOptionPane.showMessageDialog(null, Bundle.getMessage("ErrorNoStealing"));
+        InstanceManager.throttleManagerInstance().cancelThrottleRequest(address, this);
+        setButtonStates(true);
+        throttleState = -1;
+    }
+    
+    /**
     * Profiling on a stolen or shared throttle is invalid
     * <p>
     * {@inheritDoc}
@@ -736,8 +759,8 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
             t.setSpeedSetting(0.0f);
             if (!profile) {
                 // there are only the 2 fields on screen to be updated after a test
-                speedStepTestFwd.setText(RosterSpeedProfile.convertMMSToScaleSpeedWithUnits(testSpeedFwd));
-                speedStepTestRev.setText(RosterSpeedProfile.convertMMSToScaleSpeedWithUnits(testSpeedRev));
+                speedStepTestFwd.setText(re.getSpeedProfile().convertMMSToScaleSpeedWithUnits(testSpeedFwd));
+                speedStepTestRev.setText(re.getSpeedProfile().convertMMSToScaleSpeedWithUnits(testSpeedRev));
             }
             releaseThrottle();
             //updateSpeedProfileWithResults();

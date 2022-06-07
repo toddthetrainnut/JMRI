@@ -51,7 +51,7 @@ public class Dcc4PcBoardManager implements Dcc4PcListener {
     @SuppressFBWarnings(value="DLS_DEAD_LOCAL_STORE", justification="See issue #6132")
     public void reply(Dcc4PcReply r) {
         if (log.isDebugEnabled()) {
-            log.debug("Reply details sm: {}", r.toHexString());
+            log.debug("Reply details sm: " + r.toHexString());
         }
         if(r.getBoard() == -1){
             return;
@@ -111,7 +111,7 @@ public class Dcc4PcBoardManager implements Dcc4PcListener {
                 Dcc4PcMessage m = Dcc4PcMessage.getEnabledInputs(board);
                 m.setTimeout(2000);
                 m.setRetries(2);
-                log.debug("Sending {}", m);
+                log.debug(m.toString());
                 tc.sendDcc4PcMessage(m, this);
             } else if (r.getMessageType()==Dcc4PcMessage.CHILDENABLEDINPUTS) {
                 log.debug("Make Sensors for board {}: {}", board, r.toString());
@@ -123,7 +123,7 @@ public class Dcc4PcBoardManager implements Dcc4PcListener {
     @Override
     public void handleTimeout(Dcc4PcMessage m) {
         if (log.isDebugEnabled()) {
-            log.debug("timeout received to our last message {}", m.toString());
+            log.debug("timeout received to our last message " + m.toString());
         }
         log.debug("Timeout to message {} for board {}", m.toString(), m.getBoard());
     }

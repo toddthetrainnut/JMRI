@@ -2,14 +2,12 @@ package jmri.jmrix.pricom.pockettester;
 
 import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * JUnit tests for the StatusFrame class
  *
- * @author Bob Jacobsen Copyright 2005
+ * @author	Bob Jacobsen Copyright 2005
  */
 public class StatusFrameTest {
 
@@ -30,17 +28,17 @@ public class StatusFrameTest {
         f.setSource(new DataSource() {
 
             @Override
-            synchronized void sendBytes(byte[] bytes) {
+            void sendBytes(byte[] bytes) {
             }
         });
-        f.asciiFormattedMessage(TestConstants.version);
-        f.asciiFormattedMessage(TestConstants.speed0003A);
-        f.asciiFormattedMessage(TestConstants.idlePacket);
-        f.asciiFormattedMessage(TestConstants.status1);
-        f.asciiFormattedMessage(TestConstants.status2);
-        f.asciiFormattedMessage(TestConstants.status3);
-        f.asciiFormattedMessage(TestConstants.status4);
-        f.asciiFormattedMessage(TestConstants.status5);
+        f.asciiFormattedMessage(PackageTest.version);
+        f.asciiFormattedMessage(PackageTest.speed0003A);
+        f.asciiFormattedMessage(PackageTest.idlePacket);
+        f.asciiFormattedMessage(PackageTest.status1);
+        f.asciiFormattedMessage(PackageTest.status2);
+        f.asciiFormattedMessage(PackageTest.status3);
+        f.asciiFormattedMessage(PackageTest.status4);
+        f.asciiFormattedMessage(PackageTest.status5);
 
         f.dispose();
     }
@@ -54,25 +52,25 @@ public class StatusFrameTest {
         f.setVisible(true);
         f.setSource(new DataSource() {
             @Override
-            synchronized void sendBytes(byte[] bytes) {
+            void sendBytes(byte[] bytes) {
             }
         });
-        f.asciiFormattedMessage(TestConstants.version);
-        f.asciiFormattedMessage(TestConstants.speed0003A);
-        f.asciiFormattedMessage(TestConstants.idlePacket);
-        f.asciiFormattedMessage(TestConstants.status6);
-        f.asciiFormattedMessage(TestConstants.status2);
+        f.asciiFormattedMessage(PackageTest.version);
+        f.asciiFormattedMessage(PackageTest.speed0003A);
+        f.asciiFormattedMessage(PackageTest.idlePacket);
+        f.asciiFormattedMessage(PackageTest.status6);
+        f.asciiFormattedMessage(PackageTest.status2);
 
         f.dispose();
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         JUnitUtil.tearDown();
     }

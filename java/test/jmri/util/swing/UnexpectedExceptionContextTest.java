@@ -1,13 +1,14 @@
 package jmri.util.swing;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class UnexpectedExceptionContextTest extends ExceptionContextTest {
 
@@ -23,14 +24,15 @@ public class UnexpectedExceptionContextTest extends ExceptionContextTest {
         Assert.assertEquals("Title",Bundle.getMessage("UnexpectedExceptionOperationTitle",Exception.class.getSimpleName()),ec.getTitle());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();    
         ec = new UnexpectedExceptionContext(new Exception("Test"),"Test Op");
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         ec = null;

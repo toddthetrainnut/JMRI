@@ -1,16 +1,17 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * LenzConnectionTypeListTest.java
  *
- * Test for the jmri.jmrix.lenz.LenzConnectionTypeList class
+ * Description:	tests for the jmri.jmrix.lenz.LenzConnectionTypeList class
  *
- * @author Paul Bender Copyright (C) 2012,2016
+ * @author	Paul Bender Copyright (C) 2012,2016
  */
 public class LenzConnectionTypeListTest {
 
@@ -20,12 +21,13 @@ public class LenzConnectionTypeListTest {
         Assert.assertNotNull(c);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

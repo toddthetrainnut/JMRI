@@ -1,11 +1,3 @@
-package jmri.jmrix.lenz;
-
-import jmri.Consist;
-import jmri.ConsistListener;
-import jmri.DccLocoAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * XNetConsist.java
  *
@@ -14,6 +6,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Paul Bender Copyright (C) 2004-2010
  */
+package jmri.jmrix.lenz;
+
+import jmri.Consist;
+import jmri.ConsistListener;
+import jmri.DccLocoAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class XNetConsist extends jmri.implementation.DccConsist implements XNetListener {
 
     // We need to wait for replies before completing consist
@@ -27,14 +27,11 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
     private DccLocoAddress _locoAddress = null; // address for the last request
     private boolean _directionNormal = false; // direction of the last request
 
-    protected XNetTrafficController tc; // hold the traffic controller associated with this consist.
+    protected XNetTrafficController tc = null; // hold the traffic controller associated with this consist.
 
     /**
-     * Initialize a consist for the specific address.
-     * Default consist type is an advanced consist.
-     * @param address loco address.
-     * @param controller system connection traffic controller.
-     * @param systemMemo system connection.
+     * Initialize a consist for the specific address. Default consist type is an
+     * advanced consist.
      */
     public XNetConsist(int address, XNetTrafficController controller, XNetSystemConnectionMemo systemMemo) {
         super(address);
@@ -47,11 +44,8 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
     }
 
     /**
-     * Initialize a consist for the specific address.
-     * Default consist type is an advanced consist.
-     * @param address loco address.
-     * @param controller system connection traffic controller.
-     * @param systemMemo system connection.
+     * Initialize a consist for the specific address. Default consist type is an
+     * advanced consist.
      */
     public XNetConsist(DccLocoAddress address, XNetTrafficController controller, XNetSystemConnectionMemo systemMemo) {
         super(address);
@@ -63,7 +57,7 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
                 this);
     }
 
-    final XNetSystemConnectionMemo systemMemo;
+    XNetSystemConnectionMemo systemMemo;
 
     /**
      * Clean Up local storage, and remove the XNetListener.
@@ -109,7 +103,11 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
      */
     @Override
     public boolean isAddressAllowed(DccLocoAddress address) {
-        return address.getNumber() != 0;
+        if (address.getNumber() != 0) {
+            return (true);
+        } else {
+            return (false);
+        }
     }
 
     /**
@@ -438,8 +436,6 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
      * Listeners for messages from the command station.
      */
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value = "SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification = "error message built up from parts")
     public synchronized void message(XNetReply l) {
         if (_state != IDLESTATE) {
             // we're waiting for a reply, so examine what we received
@@ -447,15 +443,7 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
             if (l.isOkMessage()) {
                 if (_state == ADDREQUESTSENTSTATE) {
                     addToConsistList(_locoAddress, _directionNormal);
-                    if (consistType == ADVANCED_CONSIST) {
-                       //set the value in the roster entry for CV19
-                       setRosterEntryCVValue(_locoAddress);
-                    }
                 } else if (_state == REMOVEREQUESTSENTSTATE) {
-                    if (consistType == ADVANCED_CONSIST) {
-                       //reset the value in the roster entry for CV19
-                       resetRosterEntryCVValue(_locoAddress);
-                    }
                     removeFromConsistList(_locoAddress);
                 }
                 _state = IDLESTATE;
@@ -549,7 +537,7 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
     @Override
     public void notifyTimeout(XNetMessage msg) {
         if (log.isDebugEnabled()) {
-            log.debug("Notified of timeout on message{}", msg.toString());
+            log.debug("Notified of timeout on message" + msg.toString());
         }
     }
 
@@ -565,13 +553,13 @@ public class XNetConsist extends jmri.implementation.DccConsist implements XNetL
      */
     private void sendDirection(DccLocoAddress address, boolean isForward) {
         XNetMessage msg = XNetMessage.getSpeedAndDirectionMsg(address.getNumber(),
-                jmri.SpeedStepMode.NMRA_DCC_28,
+                jmri.DccThrottle.SpeedStepMode28,
                 (float) 0.0,
                 isForward);
         // now, we send the message to the command station
         tc.sendXNetMessage(msg, this);
     }
 
-    private static final Logger log = LoggerFactory.getLogger(XNetConsist.class);
+    private final static Logger log = LoggerFactory.getLogger(XNetConsist.class);
 
 }

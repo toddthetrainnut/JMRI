@@ -3,7 +3,7 @@ package jmri.jmrit.display.layoutEditor.configurexml;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Locale;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -23,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 public class Bundle extends jmri.jmrit.display.layoutEditor.Bundle {
  
-    @CheckForNull
+    @Nullable
     private static final String name = null;
 
     //
@@ -83,7 +83,7 @@ public class Bundle extends jmri.jmrit.display.layoutEditor.Bundle {
      * @return the name of the bundle
      */
     @Override
-    @CheckForNull
+    @Nullable
     protected String bundleName() {
         return name;
     }

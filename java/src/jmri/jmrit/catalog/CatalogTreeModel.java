@@ -3,6 +3,7 @@ package jmri.jmrit.catalog;
 import java.io.File;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import jmri.InstanceManager;
 import jmri.InstanceManagerAutoDefault;
 import jmri.util.FileUtil;
 
@@ -32,8 +33,8 @@ public class CatalogTreeModel extends DefaultTreeModel implements InstanceManage
 
         // we manually create the first node, rather than use
         // the routine, so we can name it.
-        CatalogTreeModel.this.insertResourceNodes(resourceRoot, resourceRoot, dRoot);
-        FileUtil.createDirectory(FileUtil.getUserResourcePath());
+        CatalogTreeModel.this.insertResourceNodes("resources", resourceRoot, dRoot);
+        FileUtil.createDirectory(FileUtil.getUserFilesPath() + "resources");
         CatalogTreeModel.this.insertFileNodes("files", fileRoot, dRoot);
 
     }
@@ -111,11 +112,9 @@ public class CatalogTreeModel extends DefaultTreeModel implements InstanceManage
         if (fp.isDirectory()) {
             // work on the kids
             String[] sp = fp.list();
-            if (sp!=null) {
-                for (String sp1 : sp) {
-                    log.debug("Descend into file: {}",sp1);
-                    insertFileNodes(sp1, path + "/" + sp1, newElement);
-                }
+            for (String sp1 : sp) {
+                //if (log.isDebugEnabled()) log.debug("Descend into file: "+sp[i]);
+                insertFileNodes(sp1, path + "/" + sp1, newElement);
             }
         }
     }
@@ -126,8 +125,8 @@ public class CatalogTreeModel extends DefaultTreeModel implements InstanceManage
      * Starting point in the .jar file for the "icons" part of the tree
      */
     static final String resourceRoot = "resources";
-    static final String fileRoot = FileUtil.getUserResourcePath();
+    static final String fileRoot = FileUtil.getUserFilesPath() + "resources";
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CatalogTreeModel.class);
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CatalogTreeModel.class);
 
 }

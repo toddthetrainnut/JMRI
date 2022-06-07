@@ -1,8 +1,8 @@
 package jmri.jmrix.qsi;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the QsiPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class QsiPortControllerTest extends jmri.jmrix.AbstractSerialPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        QsiSystemConnectionMemo memo = new QsiSystemConnectionMemo();
@@ -56,7 +56,7 @@ public class QsiPortControllerTest extends jmri.jmrix.AbstractSerialPortControll
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

@@ -4,15 +4,17 @@ import jmri.jmrix.can.CanMessage;
 import jmri.jmrix.can.CanReply;
 import jmri.jmrix.can.cbus.CbusConstants;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of CbusSlotMonitorDataModel
  *
- * @author Paul Bender Copyright (C) 2016
- * @author Steve Young Copyright (C) 2019
+ * @author	Paul Bender Copyright (C) 2016
+ * @author	Steve Young Copyright (C) 2019
  */
 public class CbusSlotMonitorDataModelTest {
  
@@ -112,8 +114,8 @@ public class CbusSlotMonitorDataModelTest {
         Assert.assertEquals("reply ploc 4 cell val speedstep","128",spdStepb );
         String funcb = (String) t.getValueAt(2,CbusSlotMonitorDataModel.FUNCTION_LIST);
         Assert.assertEquals("reply ploc 4 cell val funcs","2 5 6 8 ",funcb );
-        String locoSpd = (String) t.getValueAt(2,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN);
-        Assert.assertEquals("reply ploc 4 cell val speed","38",locoSpd );
+        int locoSpd = (Integer) t.getValueAt(2,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN);
+        Assert.assertEquals("reply ploc 4 cell val speed",39,locoSpd );
         String dirb = (String) t.getValueAt(2,CbusSlotMonitorDataModel.LOCO_DIRECTION_COLUMN);
         Assert.assertEquals("reply ploc 4 cell val direction",Bundle.getMessage("FWD"),dirb );
         
@@ -160,7 +162,7 @@ public class CbusSlotMonitorDataModelTest {
         Assert.assertTrue("table listening",1 == tcis.numListeners());
         t.dispose();
         Assert.assertEquals("no listener after didpose",0,tcis.numListeners());
-        t = new CbusSlotMonitorDataModel(memo);
+        t = new CbusSlotMonitorDataModel(memo,5,CbusSlotMonitorDataModel.MAX_COLUMN);
         Assert.assertTrue("table listening again",1 == tcis.numListeners());     
     }
     
@@ -172,10 +174,12 @@ public class CbusSlotMonitorDataModelTest {
         
         for (int i = 0; i <t.getColumnCount(); i++) {
             Assert.assertFalse("column has name", t.getColumnName(i).isEmpty() );
-          
+            Assert.assertTrue("column has a width", CbusSlotMonitorDataModel.getPreferredWidth(i) > 0 );
+            
         }
         
         Assert.assertTrue("column has NO name", t.getColumnName(999).equals("unknown") );
+        Assert.assertTrue("column has NO width", CbusSlotMonitorDataModel.getPreferredWidth(999) > 0 );
         
         Assert.assertTrue("column class integer",
             t.getColumnClass(CbusSlotMonitorDataModel.SESSION_ID_COLUMN) ==  Integer.class );
@@ -221,13 +225,14 @@ public class CbusSlotMonitorDataModelTest {
         Assert.assertFalse("not editable",t.isCellEditable(0,CbusSlotMonitorDataModel.LOCO_ID_LONG_COLUMN)); 
         Assert.assertTrue("clickable",t.isCellEditable(0,CbusSlotMonitorDataModel.ESTOP_COLUMN)); 
 
-        Assert.assertEquals("Session 1",1, (int) t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
-        Assert.assertEquals("loco 4 ",4, (int) t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_COLUMN) );
-        Assert.assertFalse("Not Long", (boolean) t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_LONG_COLUMN) );
-        Assert.assertEquals("No consist",0, (int) t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_CONSIST_COLUMN) );
+        Assert.assertEquals("Session 1",1, t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
+        Assert.assertEquals("loco 4 ",4,t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_COLUMN) );
+        Assert.assertEquals("Not Long",false, t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_LONG_COLUMN) );
+        Assert.assertEquals("No consist",0, t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_CONSIST_COLUMN) );
         Assert.assertEquals("Flags","", t.getValueAt(0,CbusSlotMonitorDataModel.FLAGS_COLUMN) );
-        Assert.assertEquals("speed 38","38", t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN) );
-
+        Assert.assertEquals("speed 39",39,
+            t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN) );
+        
         t.setValueAt("do button Click",0,CbusSlotMonitorDataModel.ESTOP_COLUMN);
         Assert.assertEquals("table sends estop session 1", "[5f8] 47 01 81",
             tcis.outbound.elementAt(tcis.outbound.size() - 1).toString());
@@ -240,8 +245,9 @@ public class CbusSlotMonitorDataModelTest {
         r.setElement(2, 77); // integer speed 77
         t.reply(r);
         
-        Assert.assertEquals("speed 76","76", t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN) );
-
+        Assert.assertEquals("speed 77",77,
+            t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN) );
+        
         String dirb = (String) t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_DIRECTION_COLUMN);
         Assert.assertEquals("dir rev",Bundle.getMessage("REV"),dirb );
         
@@ -388,7 +394,7 @@ public class CbusSlotMonitorDataModelTest {
         r.setElement(1, 0x01); // session 1
         t.reply(r);
         
-        Assert.assertEquals("Session Unset CanReply","", t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
+        Assert.assertEquals("Session Unset CanReply",0, t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
         
     }
     
@@ -419,9 +425,9 @@ public class CbusSlotMonitorDataModelTest {
         r.setElement(7, 0x00); // function f9 to f12
         t.reply(r);
     
-        Assert.assertEquals("loco 777",777,(int) t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_COLUMN) );
-        Assert.assertEquals("Long",true, (boolean) t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_LONG_COLUMN) );
-        Assert.assertEquals("speed 0","0", t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN) );
+        Assert.assertEquals("loco 777",777,t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_COLUMN) );
+        Assert.assertEquals("Long",true, t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_ID_LONG_COLUMN) );
+        Assert.assertEquals("speed 0",0,t.getValueAt(0,CbusSlotMonitorDataModel.LOCO_COMMANDED_SPEED_COLUMN) );
         Assert.assertEquals("speed step 128","128",t.getValueAt(0,CbusSlotMonitorDataModel.SPEED_STEP_COLUMN) );
         
         r = new CanReply();
@@ -461,7 +467,7 @@ public class CbusSlotMonitorDataModelTest {
         r.setElement(3, 8); // error byte 3 session cancelled
         t.reply(r);
         
-        Assert.assertEquals("Session cancelled err CanReply","", t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
+        Assert.assertEquals("Session cancelled err CanReply",0, t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
         
       //  Assert.assertEquals("feedb","",t.tablefeedback().getText() );
         
@@ -479,7 +485,7 @@ public class CbusSlotMonitorDataModelTest {
         r.setElement(6, 0x00); // function f5 to f8
         r.setElement(7, 0x00); // function f9 to f12
         t.reply(r);
-        Assert.assertEquals("Session resumed CanReply",1, (int) t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
+        Assert.assertEquals("Session resumed CanReply",1, t.getValueAt(0,CbusSlotMonitorDataModel.SESSION_ID_COLUMN) );
         
         r = new CanReply();
         r.setHeader(tcis.getCanid());
@@ -524,16 +530,16 @@ public class CbusSlotMonitorDataModelTest {
     
     }
     
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tcis = new jmri.jmrix.can.TrafficControllerScaffold();
         memo = new jmri.jmrix.can.CanSystemConnectionMemo();
         memo.setTrafficController(tcis);
-        t = new CbusSlotMonitorDataModel(memo);
+        t = new CbusSlotMonitorDataModel(memo,5,5);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         t.dispose();
         t = null;

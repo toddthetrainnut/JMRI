@@ -1,14 +1,15 @@
 package jmri.jmrix.rfid.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * RfidReporterManagerXmlTest.java
  *
- * Test for the RfidReporterManagerXml class
+ * Description: tests for the RfidReporterManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class RfidReporterManagerXmlTest {
       Assert.assertNotNull("RfidReporterManagerXml constructor",new RfidReporterManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

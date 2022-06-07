@@ -1,10 +1,8 @@
 package jmri.jmrit.powerpanel;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -12,7 +10,7 @@ import org.junit.jupiter.api.*;
  */
 public class PowerPanelFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -22,7 +20,7 @@ public class PowerPanelFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();

@@ -1,13 +1,15 @@
 package jmri.util.swing;
 
 import jmri.util.JUnitUtil;
+import org.junit.Test;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  *
- * @author Bob Jacobsen Copyright 2014
+ * @author	Bob Jacobsen Copyright 2014
  */
 public class JCBHandleTest {
 
@@ -31,12 +33,12 @@ public class JCBHandleTest {
         }
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

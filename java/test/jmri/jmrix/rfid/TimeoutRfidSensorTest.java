@@ -1,16 +1,17 @@
 package jmri.jmrix.rfid;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TimeoutRfidSensorTest.java
  *
- * Test for the jmri.jmrix.rfid.TimeoutRfidSensor class
+ * Description:	tests for the jmri.jmrix.rfid.TimeoutRfidSensor class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class TimeoutRfidSensorTest extends jmri.implementation.AbstractSensorTestBase {
 
@@ -18,10 +19,10 @@ public class TimeoutRfidSensorTest extends jmri.implementation.AbstractSensorTes
     public int numListeners() {return 0;}
 
     @Override
-    public void checkActiveMsgSent() {}
+    public void checkOnMsgSent() {}
 
     @Override
-    public void checkInactiveMsgSent() {}
+    public void checkOffMsgSent() {}
 
     @Override
     public void checkStatusRequestMsgSent() {}
@@ -32,15 +33,16 @@ public class TimeoutRfidSensorTest extends jmri.implementation.AbstractSensorTes
        Assert.assertNotNull("exists", s);
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
         JUnitUtil.setUp();
         t = new TimeoutRfidSensor("FSA");
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         t.dispose();
         JUnitUtil.tearDown();

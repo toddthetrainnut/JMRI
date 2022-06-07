@@ -1,11 +1,9 @@
 package jmri.util.managers;
 
 import javax.annotation.Nonnull;
-import javax.annotation.CheckForNull;
-import jmri.InstanceManager;
+import javax.annotation.Nullable;
 import jmri.Sensor;
 import jmri.jmrix.internal.InternalSensorManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 
 /**
  * This manager always throws an IllegalArgumentException from provide and get methods.
@@ -17,19 +15,17 @@ import jmri.jmrix.internal.InternalSystemConnectionMemo;
 public class SensorManagerThrowExceptionScaffold extends InternalSensorManager {
 
     public SensorManagerThrowExceptionScaffold() {
-        super(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
+        super("I");
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
-    protected Sensor createNewSensor(@Nonnull String systemName, String userName) {
+    protected Sensor createNewSensor(String systemName, String userName) {
         throw new IllegalArgumentException("Illegal argument");
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
     public Sensor provideSensor(@Nonnull String name) {
         throw new IllegalArgumentException("Illegal argument");
     }
@@ -48,14 +44,13 @@ public class SensorManagerThrowExceptionScaffold extends InternalSensorManager {
     
     /** {@inheritDoc} */
     @Override
-    public Sensor getByUserName(@Nonnull String key) {
+    public Sensor getByUserName(String key) {
         throw new IllegalArgumentException("Illegal argument");
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
-    public Sensor newSensor(@Nonnull String systemName, @CheckForNull String userName) {
+    public Sensor newSensor(@Nonnull String systemName, @Nullable String userName) {
         throw new IllegalArgumentException("Illegal argument");
     }
     

@@ -1,11 +1,8 @@
 package jmri.implementation;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import jmri.JmriException;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for AbstractStringIO
@@ -20,36 +17,6 @@ public class AbstractStringIOTest {
     public void testCtor() {
         MyAbstractStringIO stringIO = new MyAbstractStringIO();
         Assert.assertNotNull("AbstractStringIO constructor return", stringIO);
-    }
-    
-    @Test
-    public void testSystemNames() {
-        MyAbstractStringIO myStringIO_1 = new MyAbstractStringIO("IZ1");
-        MyAbstractStringIO myStringIO_2 = new MyAbstractStringIO("IZ01");
-        Assert.assertEquals("StringIO system name is correct", "IZ1", myStringIO_1.getSystemName());
-        Assert.assertEquals("StringIO system name is correct", "IZ01", myStringIO_2.getSystemName());
-    }
-    
-    @Test
-    public void testCompareTo() {
-        MyAbstractStringIO myStringIO_1 = new MyAbstractStringIO("IZ1");
-        MyAbstractStringIO myStringIO_2 = new MyAbstractStringIO("IZ01");
-        Assert.assertNotEquals("StringIOs are different", myStringIO_1, myStringIO_2);
-        Assert.assertNotEquals("StringIO compareTo returns not zero", 0, myStringIO_1.compareTo(myStringIO_2));
-    }
-    
-    @Test
-    public void testCompareSystemNameSuffix() {
-        MyAbstractStringIO myStringIO_1 = new MyAbstractStringIO("IZ1");
-        MyAbstractStringIO myStringIO_2 = new MyAbstractStringIO("IZ01");
-        Assert.assertEquals("compareSystemNameSuffix returns correct value",
-                -1, myStringIO_1.compareSystemNameSuffix("01", "1", myStringIO_2));
-        Assert.assertEquals("compareSystemNameSuffix returns correct value",
-                0, myStringIO_1.compareSystemNameSuffix("1", "1", myStringIO_2));
-        Assert.assertEquals("compareSystemNameSuffix returns correct value",
-                0, myStringIO_1.compareSystemNameSuffix("01", "01", myStringIO_2));
-        Assert.assertEquals("compareSystemNameSuffix returns correct value",
-                +1, myStringIO_1.compareSystemNameSuffix("1", "01", myStringIO_2));
     }
     
     @Test
@@ -78,17 +45,18 @@ public class AbstractStringIOTest {
         Assert.assertTrue("string is cut",
                 "8:20. Trai".equals(myStringIO.getKnownStringValue()));
         
-        Assert.assertEquals("toString() matches", "IZMySystemName", myStringIO.toString());
+        Assert.assertTrue("toString() matches",
+                "jmri.implementation.AbstractStringIOTest$MyAbstractStringIO (MySystemName)".equals(myStringIO.toString()));
         
         Assert.assertTrue("getBeanType() matches", "String I/O".equals(myStringIO.getBeanType()));
     }
     
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }
@@ -100,15 +68,11 @@ public class AbstractStringIOTest {
         private boolean _cut = false;
         
         MyAbstractStringIO() {
-            super("IZMySystemName");
-        }
-
-        MyAbstractStringIO(String sysName) {
-            super(sysName);
+            super("MySystemName");
         }
 
         MyAbstractStringIO(int maxLen, boolean cut) {
-            super("IZMySystemName");
+            super("MySystemName");
             _maxLen = maxLen;
             _cut = cut;
         }

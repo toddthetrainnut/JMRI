@@ -4,15 +4,16 @@ import jmri.InstanceManager;
 import jmri.JmriException;
 import jmri.Sensor;
 import jmri.Turnout;
-import jmri.util.JUnitUtil;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for classes in the jmri.jmrit.ussctc.OsIndicator class
  *
- * @author Bob Jacobsen Copyright 2003, 2007, 2015
+ * @author	Bob Jacobsen Copyright 2003, 2007, 2015
  */
 public class OsIndicatorTest {
 
@@ -129,20 +130,18 @@ public class OsIndicatorTest {
 
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
-        JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp();
 
-        JUnitUtil.resetInstanceManager();
-        JUnitUtil.initInternalTurnoutManager();
-        JUnitUtil.initInternalSensorManager();
+        jmri.util.JUnitUtil.resetInstanceManager();
+        jmri.util.JUnitUtil.initInternalTurnoutManager();
+        jmri.util.JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
 }

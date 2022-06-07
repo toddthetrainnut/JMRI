@@ -6,16 +6,14 @@ import jmri.util.JUnitUtil;
 import jmri.jmrix.lenz.LenzCommandStation;
 import jmri.jmrix.lenz.XNetInterfaceScaffold;
 import jmri.jmrix.lenz.XNetReply;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * LI100XNetProgrammerTest.java
- * <p>
- * Test for the jmri.jmrix.lenz.li100.LI100XNetProgrammer class
  *
- * @author Paul Bender
+ * Description:	tests for the jmri.jmrix.lenz.li100.LI100XNetProgrammer class
+ *
+ * @author	Paul Bender
  */
 public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest {
 
@@ -62,8 +60,8 @@ public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest 
         t.sendTestMessage(mr3);
 
         //failure in this test occurs with the next line.
-        jmri.util.JUnitUtil.waitFor(() -> l.getRcvdInvoked() != 0, "Receive Called not set");
-        Assert.assertNotEquals("Receive Called by Programmer", 0, l.getRcvdInvoked());
+        jmri.util.JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;},"Receive Called not set");
+        Assert.assertFalse("Receive Called by Programmer", l.getRcvdInvoked() == 0);
         Assert.assertEquals("Direct mode received value", 34, l.getRcvdValue());
     }
 
@@ -113,8 +111,8 @@ public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest 
         t.sendTestMessage(mr3);
 
         //failure in this test occurs with the next line.
-        jmri.util.JUnitUtil.waitFor(() -> l.getRcvdInvoked() != 0, "Receive Called not set");
-        Assert.assertNotEquals("Receive Called by Programmer", 0, l.getRcvdInvoked());
+        jmri.util.JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;},"Receive Called not set");
+        Assert.assertFalse("Receive Called by Programmer", l.getRcvdInvoked() == 0);
         Assert.assertEquals("Register mode received value", 12, l.getRcvdValue());
 
     }
@@ -162,8 +160,8 @@ public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest 
         t.sendTestMessage(mr3);
 
         //failure in this test occurs with the next line.
-        jmri.util.JUnitUtil.waitFor(() -> l.getRcvdInvoked() != 0, "Receive Called not set");
-        Assert.assertNotEquals("Receive Called by Programmer", 0, l.getRcvdInvoked());
+        jmri.util.JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;},"Receive Called not set");
+        Assert.assertFalse("Receive Called by Programmer", l.getRcvdInvoked() == 0);
         Assert.assertEquals("Direct mode received value", 34, l.getRcvdValue());
 
     }
@@ -213,8 +211,8 @@ public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest 
         t.sendTestMessage(mr3);
 
         //failure in this test occurs with the next line.
-        jmri.util.JUnitUtil.waitFor(() -> l.getRcvdInvoked() != 0, "Receive Called not set");
-        Assert.assertNotEquals("Receive Called by Programmer", 0, l.getRcvdInvoked());
+        jmri.util.JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;},"Receive Called not set");
+        Assert.assertFalse("Receive Called by Programmer", l.getRcvdInvoked() == 0);
         Assert.assertEquals("Register mode received value", 34, l.getRcvdValue());
     }
 
@@ -262,8 +260,8 @@ public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest 
         t.sendTestMessage(mr3);
 
         //failure in this test occurs with the next line.
-        jmri.util.JUnitUtil.waitFor(() -> l.getRcvdInvoked() != 0, "Receive Called not set");
-        Assert.assertNotEquals("Receive Called by Programmer", 0, l.getRcvdInvoked());
+        jmri.util.JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;},"Receive Called not set");
+        Assert.assertFalse("Receive Called by Programmer", l.getRcvdInvoked() == 0);
         Assert.assertEquals("Direct mode received value", 34, l.getRcvdValue());
     }
 
@@ -313,14 +311,14 @@ public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest 
         t.sendTestMessage(mr3);
 
         //failure in this test occurs with the next line.
-        jmri.util.JUnitUtil.waitFor(() -> l.getRcvdInvoked() != 0, "Receive Called not set");
-        Assert.assertNotEquals("Receive Called by Programmer", 0, l.getRcvdInvoked());
+        jmri.util.JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;},"Receive Called not set");
+        Assert.assertFalse("Receive Called by Programmer", l.getRcvdInvoked() == 0);
         Assert.assertEquals("Direct mode received value", 34, l.getRcvdValue());
 
     }
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // infrastructure objects
@@ -333,17 +331,16 @@ public class LI100XNetProgrammerTest extends jmri.jmrix.lenz.XNetProgrammerTest 
                 super.restartTimer(RESTART_TIME);
             }
         };
-        programmer = p;
+	programmer = p;
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        t = null;
-        l = null;
-        programmer = p = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+         t = null;
+	 l = null;
+	 programmer = p = null;
+    	 JUnitUtil.tearDown();
     }
 
 }

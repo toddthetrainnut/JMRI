@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Support for GUI to define OBlocks and its parts.
+ * GUI to define OBlocks
  * <hr>
  * This file is part of JMRI.
  * <p>
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * @author Pete Cressman (C) 2010
+ * @author	Pete Cressman (C) 2010
  */
 public class DnDJTable extends JTable implements DropTargetListener,
         DragGestureListener, DragSourceListener, Transferable {
@@ -55,7 +55,7 @@ public class DnDJTable extends JTable implements DropTargetListener,
             "application/x-jmri.jmrit.beantable.oblock.DnDJTable.TableCellSelection");
 
     private Point _dropPoint;
-    private int[] _skipCols;
+    private int[] _skipCols = new int[0];
 
     DnDJTable(TableModel model, int[] skipCols) {
         super(model);
@@ -89,8 +89,8 @@ public class DnDJTable extends JTable implements DropTargetListener,
             //DnDHandler handler = (DnDHandler)getTransferHandler();
             int col = columnAtPoint(_dropPoint);
             int row = rowAtPoint(_dropPoint);
-            for (int skipCol : _skipCols) {
-                if (skipCol == col) {
+            for (int i = 0; i < _skipCols.length; i++) {
+                if (_skipCols[i] == col) {
                     return false;
                 }
             }
@@ -115,37 +115,32 @@ public class DnDJTable extends JTable implements DropTargetListener,
     /**
      * ************************* DropTargetListener ***********************
      */
-    @Override
     public void dragExit(DropTargetEvent evt) {
-        // log.debug("DnDJTable.dragExit ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dragExit ");
         //evt.getDropTargetContext().acceptDrag(DnDConstants.ACTION_COPY);
     }
 
-    @Override
     public void dragEnter(DropTargetDragEvent evt) {
-        // log.debug("DnDJTable.dragEnter ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dragEnter ");
         if (!dropOK(evt)) {
             evt.rejectDrag();
         }
     }
 
-    @Override
     public void dragOver(DropTargetDragEvent evt) {
         if (!dropOK(evt)) {
             evt.rejectDrag();
         }
     }
 
-    @Override
     public void dropActionChanged(DropTargetDragEvent dtde) {
-        // log.debug("DnDJTable.dropActionChanged ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dropActionChanged ");
     }
 
-    @Override
     public void drop(DropTargetDropEvent evt) {
         try {
             Point pt = evt.getLocation();
-            String data;
+            String data = null;
             Transferable tr = evt.getTransferable();
             if (tr.isDataFlavorSupported(TABLECELL_FLAVOR)
                     || tr.isDataFlavorSupported(DataFlavor.stringFlavor)) {
@@ -158,28 +153,31 @@ public class DnDJTable extends JTable implements DropTargetListener,
                     data = (String) sel.getTransferData(DataFlavor.stringFlavor);
                     model.setValueAt(data, row, col);
                     model.fireTableDataChanged();
-                    // log.debug("DnDJTable.drop: data= {} dropped at ({}, {})", data, row, col);
+                    //if (log.isDebugEnabled()) 
+                    //    log.debug("DnDJTable.drop: data= "+data+" dropped at ("+row+", "+col+")");
                     evt.dropComplete(true);
                     return;
                 }
             } else {
-                log.warn("TransferHandler.importData: supported DataFlavors not avaialable at table from {}", tr.getClass().getName());
+                log.warn("TransferHandler.importData: supported DataFlavors not avaialable at table from "
+                        + tr.getClass().getName());
             }
         } catch (IOException ioe) {
             log.warn("caught IOException", ioe);
         } catch (UnsupportedFlavorException ufe) {
             log.warn("caught UnsupportedFlavorException", ufe);
         }
-        log.debug("DropJTree.drop REJECTED!");
+        if (log.isDebugEnabled()) {
+            log.debug("DropJTree.drop REJECTED!");
+        }
         evt.rejectDrop();
     }
 
     /**
      * ************** DragGestureListener **************
      */
-    @Override
     public void dragGestureRecognized(DragGestureEvent e) {
-        // log.debug("DnDJTable.dragGestureRecognized ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dragGestureRecognized ");
         //Transferable t = getTransferable(this);
         //e.startDrag(DragSource.DefaultCopyDrop, this, this); 
     }
@@ -187,50 +185,42 @@ public class DnDJTable extends JTable implements DropTargetListener,
     /**
      * ************** DragSourceListener ***********
      */
-    @Override
     public void dragDropEnd(DragSourceDropEvent e) {
-        // log.debug("DnDJTable.dragDropEnd ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dragDropEnd ");
     }
 
-    @Override
     public void dragEnter(DragSourceDragEvent e) {
-        // log.debug("DnDJTable.DragSourceDragEvent ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.DragSourceDragEvent ");
     }
 
-    @Override
     public void dragExit(DragSourceEvent e) {
-        // log.debug("DnDJTable.dragExit ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dragExit ");
     }
 
-    @Override
     public void dragOver(DragSourceDragEvent e) {
-        // log.debug("DnDJTable.dragOver ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dragOver ");
     }
 
-    @Override
     public void dropActionChanged(DragSourceDragEvent e) {
-        // log.debug("DnDJTable.dropActionChanged ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.dropActionChanged ");
     }
 
     /**
      * ************* Transferable ********************
      */
-    @Override
     public DataFlavor[] getTransferDataFlavors() {
-        // log.debug("DnDJTable.getTransferDataFlavors ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.getTransferDataFlavors ");
         return new DataFlavor[]{TABLECELL_FLAVOR};
     }
 
-    @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-        // log.debug("DnDJTable.isDataFlavorSupported ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.isDataFlavorSupported ");
         return TABLECELL_FLAVOR.equals(flavor);
     }
 
     @Nonnull
-    @Override
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        // log.debug("DnDJTable.getTransferData ");
+        //if (log.isDebugEnabled()) log.debug("DnDJTable.getTransferData ");
         if (isDataFlavorSupported(TABLECELL_FLAVOR)) {
             int row = getSelectedRow();
             int col = getSelectedColumn();
@@ -242,7 +232,7 @@ public class DnDJTable extends JTable implements DropTargetListener,
         return "";
     }
 
-    static class TableCellSelection extends StringSelection {
+    class TableCellSelection extends StringSelection {
 
         int _row;
         int _col;
@@ -276,18 +266,15 @@ public class DnDJTable extends JTable implements DropTargetListener,
             _tcss = tcss;
         }
 
-        @Override
         public DataFlavor[] getTransferDataFlavors() {
             return new DataFlavor[]{TABLECELL_FLAVOR, DataFlavor.stringFlavor};
         }
 
-        @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             return (flavor.equals(TABLECELL_FLAVOR) || flavor.equals(DataFlavor.stringFlavor));
         }
 
         @Nonnull
-        @Override
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
             if (flavor.equals(TABLECELL_FLAVOR)) {
                 return _tcss;
@@ -298,7 +285,7 @@ public class DnDJTable extends JTable implements DropTargetListener,
         }
     }
 
-    static class DnDHandler extends TransferHandler {
+    class DnDHandler extends TransferHandler {
 
         JTable _table;
 
@@ -322,10 +309,11 @@ public class DnDJTable extends JTable implements DropTargetListener,
                     return null;
                 }
                 row = table.convertRowIndexToModel(row);
-                // log.debug("DnDHandler.createTransferable: at table "+
+                //if (log.isDebugEnabled()) log.debug("DnDHandler.createTransferable: at table "+
                 //                                    getName()+" from ("+row+", "+col+") data= \""
                 //                                    +table.getModel().getValueAt(row, col)+"\"");
-                TableCellSelection tcss = new TableCellSelection((String) table.getModel().getValueAt(row, col), row, col, _table);
+                TableCellSelection tcss = new TableCellSelection((String) table.getModel().getValueAt(row, col),
+                        row, col, _table);
                 return new TableCellTransferable(tcss);
             }
             return null;
@@ -333,7 +321,7 @@ public class DnDJTable extends JTable implements DropTargetListener,
     
         @Override
         public void exportDone(JComponent c, Transferable t, int action) {
-            // log.debug("DnDHandler.exportDone at table ");
+            //if (log.isDebugEnabled()) log.debug("DnDHandler.exportDone at table ");
         }
 
         /////////////////////import
@@ -341,8 +329,9 @@ public class DnDJTable extends JTable implements DropTargetListener,
         public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
 
             boolean canDoIt = false;
-            for (DataFlavor transferFlavor : transferFlavors) {
-                if (transferFlavor.equals(TABLECELL_FLAVOR) || transferFlavor.equals(DataFlavor.stringFlavor)) {
+            for (int k = 0; k < transferFlavors.length; k++) {
+                if (transferFlavors[k].equals(TABLECELL_FLAVOR)
+                        || transferFlavors[k].equals(DataFlavor.stringFlavor)) {
                     if (comp instanceof JTable) {
                         canDoIt = true;
                         break;
@@ -386,7 +375,7 @@ public class DnDJTable extends JTable implements DropTargetListener,
                     }
                 }
             } catch (UnsupportedFlavorException | IOException ex) {
-                log.warn("DnDHandler.importData: at table e= ", ex);
+                log.warn("DnDHandler.importData: at table e= " + ex);
             }
             return false;
         }

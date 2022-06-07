@@ -3,13 +3,11 @@ package jmri.jmrix.bachrus;
 import java.awt.GraphicsEnvironment;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SpeedoConsoleActionTest {
 
@@ -34,22 +32,20 @@ public class SpeedoConsoleActionTest {
         // then close the frame.
         JFrameOperator fo = new JFrameOperator(f);
         fo.requestClose();
-        JUnitUtil.dispose(f);
     }
 
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.initRosterConfigManager();
         JUnitUtil.initDefaultUserMessagePreferences();
         JUnitUtil.initDebugThrottleManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

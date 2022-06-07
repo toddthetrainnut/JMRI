@@ -2,7 +2,8 @@ package jmri.beans;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.event.SwingPropertyChangeSupport;
+import java.beans.PropertyChangeSupport;
+import jmri.util.ThreadingUtil;
 
 /**
  * Generic implementation of {@link jmri.beans.BeanInterface} with a complete
@@ -10,40 +11,21 @@ import javax.swing.event.SwingPropertyChangeSupport;
  * <p>
  * See the PropertyChangeSupport documentation for complete documentation of
  * those methods.
- * <p>
- * This class is thread safe.
  *
- * @author Randall Wood (c) 2011, 2014, 2015, 2016, 2020
+ * @author Randall Wood (c) 2011, 2014, 2015, 2016
  * @see java.beans.PropertyChangeSupport
  */
-public abstract class Bean extends UnboundBean implements PropertyChangeFirer, PropertyChangeProvider {
+public abstract class Bean extends UnboundBean implements PropertyChangeProvider {
 
     /**
      * Provide a {@link java.beans.PropertyChangeSupport} helper.
      */
-    protected final SwingPropertyChangeSupport propertyChangeSupport;
+    protected final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
-     * Create a bean that notifies property change listeners on the thread the
-     * event was generated on.
-     */
-    protected Bean() {
-        this(false);
-    }
-
-    /**
-     * Create a bean.
+     * Add a PropertyChangeListener to the listener list.
      *
-     * @param notifyOnEDT true to notify property change listeners on the EDT;
-     *                    false to notify listeners on the thread the event was
-     *                    generated on (which may or may not be the EDT)
-     */
-    protected Bean(boolean notifyOnEDT) {
-        propertyChangeSupport = new SwingPropertyChangeSupport(this, notifyOnEDT);
-    }
-
-    /**
-     * {@inheritDoc}
+     * @param listener The PropertyChangeListener to be added
      */
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -51,7 +33,10 @@ public abstract class Bean extends UnboundBean implements PropertyChangeFirer, P
     }
 
     /**
-     * {@inheritDoc}
+     * Add a PropertyChangeListener for a specific property.
+     *
+     * @param propertyName The name of the property to listen on.
+     * @param listener     The PropertyChangeListener to be added
      */
     @Override
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
@@ -59,102 +44,134 @@ public abstract class Bean extends UnboundBean implements PropertyChangeFirer, P
     }
 
     /**
-     * {@inheritDoc}
+     * Fire an indexed property change on the Event dispatch (Swing) thread. Use
+     * {@link java.beans.PropertyChangeSupport#fireIndexedPropertyChange(java.lang.String, int, boolean, boolean)}
+     * directly to fire this notification on another thread.
+     *
+     * @param propertyName the programmatic name of the property that was
+     *                     changed
+     * @param index        the index of the property element that was changed
+     * @param oldValue     the old value of the property
+     * @param newValue     the new value of the property
      */
-    @Override
-    public void fireIndexedPropertyChange(String propertyName, int index, boolean oldValue, boolean newValue) {
-        propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+    protected void fireIndexedPropertyChange(String propertyName, int index, boolean oldValue, boolean newValue) {
+        ThreadingUtil.runOnGUIEventually(() -> {
+            propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+        });
     }
 
     /**
-     * {@inheritDoc}
+     * Fire an indexed property change on the Event dispatch (Swing) thread. Use
+     * {@link java.beans.PropertyChangeSupport#fireIndexedPropertyChange(java.lang.String, int, int, int)}
+     * directly to fire this notification on another thread.
+     *
+     * @param propertyName the programmatic name of the property that was
+     *                     changed
+     * @param index        the index of the property element that was changed
+     * @param oldValue     the old value of the property
+     * @param newValue     the new value of the property
      */
-    @Override
-    public void fireIndexedPropertyChange(String propertyName, int index, int oldValue, int newValue) {
-        propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+    protected void fireIndexedPropertyChange(String propertyName, int index, int oldValue, int newValue) {
+        ThreadingUtil.runOnGUIEventually(() -> {
+            propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+        });
     }
 
     /**
-     * {@inheritDoc}
+     * Fire an indexed property change on the Event dispatch (Swing) thread. Use
+     * {@link java.beans.PropertyChangeSupport#fireIndexedPropertyChange(java.lang.String, int, java.lang.Object, java.lang.Object)}
+     * directly to fire this notification on another thread.
+     *
+     * @param propertyName the programmatic name of the property that was
+     *                     changed
+     * @param index        the index of the property element that was changed
+     * @param oldValue     the old value of the property
+     * @param newValue     the new value of the property
      */
-    @Override
-    public void fireIndexedPropertyChange(String propertyName, int index, Object oldValue, Object newValue) {
-        propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+    protected void fireIndexedPropertyChange(String propertyName, int index, Object oldValue, Object newValue) {
+        ThreadingUtil.runOnGUIEventually(() -> {
+            propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+        });
     }
 
     /**
-     * {@inheritDoc}
+     * Fire a property change on the Event dispatch (Swing) thread. Use
+     * {@link java.beans.PropertyChangeSupport#firePropertyChange(java.lang.String, boolean, boolean)}
+     * directly to fire this notification on another thread.
+     *
+     * @param propertyName the programmatic name of the property that was
+     *                     changed
+     * @param oldValue     the old value of the property
+     * @param newValue     the new value of the property
      */
-    @Override
-    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
-        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    protected void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+        ThreadingUtil.runOnGUIEventually(() -> {
+            propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+        });
     }
 
     /**
-     * {@inheritDoc}
+     * Fire a property change on the Event dispatch (Swing) thread. Use
+     * {@link java.beans.PropertyChangeSupport#firePropertyChange(java.beans.PropertyChangeEvent)}
+     * directly to fire this notification on another thread.
+     *
+     * @param event the PropertyChangeEvent to be fired
      */
-    @Override
-    public void firePropertyChange(PropertyChangeEvent event) {
-        propertyChangeSupport.firePropertyChange(event);
+    protected void firePropertyChange(PropertyChangeEvent event) {
+        ThreadingUtil.runOnGUIEventually(() -> {
+            propertyChangeSupport.firePropertyChange(event);
+        });
     }
 
     /**
-     * {@inheritDoc}
+     * Fire a property change on the Event dispatch (Swing) thread. Use
+     * {@link java.beans.PropertyChangeSupport#firePropertyChange(java.lang.String, int, int)}
+     * directly to fire this notification on another thread.
+     *
+     * @param propertyName the programmatic name of the property that was
+     *                     changed
+     * @param oldValue     the old value of the property
+     * @param newValue     the new value of the property
      */
-    @Override
-    public void firePropertyChange(String propertyName, int oldValue, int newValue) {
-        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    protected void firePropertyChange(String propertyName, int oldValue, int newValue) {
+        ThreadingUtil.runOnGUIEventually(() -> {
+            propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+        });
     }
 
     /**
-     * {@inheritDoc}
+     * Fire a property change on the Event dispatch (Swing) thread. Use
+     * {@link java.beans.PropertyChangeSupport#firePropertyChange(java.lang.String, java.lang.Object, java.lang.Object)}
+     * directly to fire this notification on another thread.
+     *
+     * @param propertyName the programmatic name of the property that was
+     *                     changed
+     * @param oldValue     the old value of the property
+     * @param newValue     the new value of the property
      */
-    @Override
-    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        ThreadingUtil.runOnGUIEventually(() -> {
+            propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+        });
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public PropertyChangeListener[] getPropertyChangeListeners() {
         return propertyChangeSupport.getPropertyChangeListeners();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
         return propertyChangeSupport.getPropertyChangeListeners(propertyName);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
-    }
-
-    /**
-     * Is this Bean assuring that all property change listeners will be notified
-     * on the EDT?
-     *
-     * @return true if notifying listeners of events on the EDT; false if
-     *         notifying listeners on the thread that the event was generated on
-     *         (which may or may not be the EDT)
-     */
-    public boolean isNotifyOnEDT() {
-        return propertyChangeSupport.isNotifyOnEDT();
     }
 }

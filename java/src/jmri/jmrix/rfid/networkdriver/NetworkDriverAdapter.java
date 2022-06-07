@@ -57,29 +57,26 @@ public class NetworkDriverAdapter extends RfidNetworkPortController {
                 // create a Generic Stand-alone port controller
                 log.debug("Create Generic Standalone SpecificTrafficController"); // NOI18N
                 control = new StandaloneTrafficController(this.getSystemConnectionMemo());
-                this.getSystemConnectionMemo().setRfidTrafficController(control);
                 this.getSystemConnectionMemo().configureManagers(
-                        new StandaloneSensorManager(this.getSystemConnectionMemo()),
-                        new StandaloneReporterManager(this.getSystemConnectionMemo()));
+                        new StandaloneSensorManager(control, this.getSystemPrefix()),
+                        new StandaloneReporterManager(control, this.getSystemPrefix()));
                 break;
             case "MERG Concentrator": // NOI18N
                 // create a MERG Concentrator port controller
                 log.debug("Create MERG Concentrator SpecificTrafficController"); // NOI18N
                 control = new ConcentratorTrafficController(this.getSystemConnectionMemo(), getOptionState(option2Name));
-                this.getSystemConnectionMemo().setRfidTrafficController(control);
                 this.getSystemConnectionMemo().configureManagers(
-                        new ConcentratorSensorManager(this.getSystemConnectionMemo()),
-                        new ConcentratorReporterManager(this.getSystemConnectionMemo()));
+                        new ConcentratorSensorManager(control, this.getSystemPrefix()),
+                        new ConcentratorReporterManager(control, this.getSystemPrefix()));
                 break;
             default:
                 // no connection at all - warn
-                log.warn("adapter option {} defaults to Generic Stand-alone", opt1); // NOI18N
+                log.warn("adapter option " + opt1 + " defaults to Generic Stand-alone"); // NOI18N
                 // create a Generic Stand-alone port controller
                 control = new StandaloneTrafficController(this.getSystemConnectionMemo());
-                this.getSystemConnectionMemo().setRfidTrafficController(control);
                 this.getSystemConnectionMemo().configureManagers(
-                        new StandaloneSensorManager(this.getSystemConnectionMemo()),
-                        new StandaloneReporterManager(this.getSystemConnectionMemo()));
+                        new StandaloneSensorManager(control, this.getSystemPrefix()),
+                        new StandaloneReporterManager(control, this.getSystemPrefix()));
                 break;
         }
 
@@ -130,7 +127,7 @@ public class NetworkDriverAdapter extends RfidNetworkPortController {
                     break;
                 default:
                     // no protocol at all - warn
-                    log.warn("protocol option {} defaults to CORE-ID", opt3); // NOI18N
+                    log.warn("protocol option " + opt3 + " defaults to CORE-ID"); // NOI18N
                     // create a coreid protocol
                     protocol = new CoreIdRfidProtocol();
                     break;

@@ -1,10 +1,10 @@
 package jmri.jmrix.can.swing.send;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -70,7 +70,7 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
 
         entry.add(jLabel1);
         entry.add(packetTextField);
-        packetTextField.setToolTipText(Bundle.getMessage("EnterFrameToolTip"));
+        packetTextField.setToolTipText(Bundle.getMessage("EnterHexToolTip"));
         topPane.add(entry);
         topPane.add(sendButton);
         
@@ -101,7 +101,7 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
             numbercheckboxpane.add(mUseField[i]);
             pane2.add(numbercheckboxpane);
             pane2.add(mPacketField[i]);
-            mPacketField[i].setToolTipText(Bundle.getMessage("EnterFrameToolTip"));
+            mPacketField[i].setToolTipText(Bundle.getMessage("EnterHexToolTip"));
             pane2.add(numberSpinner[i]);
         }
         
@@ -129,7 +129,12 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
         add(optionholder);     
         
         mRunButton.setToolTipText(Bundle.getMessage("StartToolTip"));
-        mRunButton.addActionListener(this::runButtonActionPerformed);
+        mRunButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                runButtonActionPerformed(e);
+            }
+        });
     }
 
     // internal members to hold sequence widgets
@@ -138,7 +143,7 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
     JCheckBox mUseField[] = new JCheckBox[MAXSEQUENCE];
     JSpinner numberSpinner[] =  new JSpinner[MAXSEQUENCE];
     JToggleButton mRunButton = new JToggleButton(Bundle.getMessage("ButtonStart"));
-    static final Color[] FILTERCOLORS = {
+    static final Color[] filterColors = {
         new Color(110, 235, 131), // green ish as will have black text on top
         new Color(68, 235, 255), // cyan ish
         new Color(228, 255, 26), // yellow ish
@@ -158,14 +163,15 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
 
     @Override
     public String getTitle() {
-        return prependConnToString(Bundle.getMessage("MenuItemSendFrame"));
+        if (memo != null) {
+            return (memo.getUserName() + " " + Bundle.getMessage("MenuItemSendFrame"));
+        }
+        return Bundle.getMessage("MenuItemSendFrame");
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
         try {
-            CanMessage m = createPacket(input.replaceAll("\\s", ""));
+            CanMessage m = createPacket(packetTextField.getText().replaceAll("\\s",""));
             if (cbusPriorityCheckbox.isSelected()) {
                 CbusMessage.setPri(m, CbusConstants.DEFAULT_DYNAMIC_PRIORITY * 4 + CbusConstants.DEFAULT_MINOR_PRIORITY);
             }
@@ -176,9 +182,13 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
                 CanReply mr = new CanReply(m);
                 tc.sendCanReply(mr, null);
             }
-        } catch (StringIndexOutOfBoundsException | IllegalArgumentException ex) {
+        } catch (StringIndexOutOfBoundsException ex) {
             JOptionPane.showMessageDialog(null, 
-            (Bundle.getMessage("NoMakeFrame",ex.getMessage())), Bundle.getMessage("WarningTitle"),
+            (Bundle.getMessage("NoMakeFrame")), Bundle.getMessage("WarningTitle"),
+                JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, 
+            (Bundle.getMessage("NoMakeFrame")), Bundle.getMessage("WarningTitle"),
                 JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -188,13 +198,15 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
     javax.swing.Timer timer = null;
 
     /**
-     * Internal routine to handle timer starts and restarts
-     * @param delay in ms
+     * Internal routine to handle timer starts {@literal &} restarts
      */
     protected void restartTimer(int delay) {
         if (timer == null) {
-            timer = new javax.swing.Timer(delay, (ActionEvent e) -> {
-                sendNextItem();
+            timer = new javax.swing.Timer(delay, new java.awt.event.ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    sendNextItem();
+                }
             });
         }
         timer.stop();
@@ -212,9 +224,8 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
 
     /**
      * Run button pressed down, start the sequence operation.
-     * @param e Button Event
      */
-    public void runButtonActionPerformed(ActionEvent e) {
+    public void runButtonActionPerformed(java.awt.event.ActionEvent e) {
         if (!mRunButton.isSelected()) {            
             mRunButton.setText(Bundle.getMessage("ButtonStart"));
             return;
@@ -242,7 +253,7 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
     /**
      * Echo has been heard, start delay for next packet.
      */
-    private void startSequenceDelay() {
+    void startSequenceDelay() {
         // at the start, mNextSequenceElement contains index we're
         // working on
         int delay = (Integer) numberSpinner[mNextSequenceElement].getValue();
@@ -256,7 +267,7 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
      * Send next item; may be used for the first item or when a delay has
      * elapsed.
      */
-    private void sendNextItem() {
+    void sendNextItem() {
         // reset all backgrounds
         for (int i = 0; i < MAXSEQUENCE; i++) {
             mPacketField[i].setBackground(packetTextField.getBackground()); // known unaltered textfield
@@ -275,11 +286,11 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
         // is this one enabled?
         if (mUseField[mNextSequenceElement].isSelected()) {
             
-            mPacketField[mNextSequenceElement].setBackground(FILTERCOLORS[mNextSequenceElement]);
+            mPacketField[mNextSequenceElement].setBackground(filterColors[mNextSequenceElement]);
             
             try {
                 // make the packet
-                CanMessage m = createPacket(mPacketField[mNextSequenceElement].getText().replaceAll("\\s", ""));
+                CanMessage m = createPacket(mPacketField[mNextSequenceElement].getText().replaceAll("\\s",""));
                 if (cbusPriorityCheckbox.isSelected()) {
                     CbusMessage.setPri(m, CbusConstants.DEFAULT_DYNAMIC_PRIORITY * 4 + CbusConstants.DEFAULT_MINOR_PRIORITY);
                 }
@@ -293,12 +304,20 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
                     tc.sendCanReply(mr, null);
                 }
                 startSequenceDelay();
-            } catch (StringIndexOutOfBoundsException | IllegalArgumentException ex) {
+            } catch (StringIndexOutOfBoundsException ex) {
                 JOptionPane.showMessageDialog(null, 
-                (Bundle.getMessage("NoMakeFrame", ex.getMessage())), Bundle.getMessage("WarningTitle"),
+                (Bundle.getMessage("NoMakeFrame")), Bundle.getMessage("WarningTitle"),
                     JOptionPane.ERROR_MESSAGE);
                 mRunButton.setSelected(false);
                 mRunButton.setText(Bundle.getMessage("ButtonStart"));
+                return;
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, 
+                (Bundle.getMessage("NoMakeFrame")), Bundle.getMessage("WarningTitle"),
+                    JOptionPane.ERROR_MESSAGE);
+                mRunButton.setSelected(false);
+                mRunButton.setText(Bundle.getMessage("ButtonStart"));
+                return;
             }
         } else {
             // ask for the next one
@@ -310,7 +329,7 @@ public class CanSendPane extends jmri.jmrix.can.swing.CanPanel {
     /**
      * Create a well-formed message from a String. String is expected to be space
      * seperated hex bytes or CbusAddress, e.g.: 12 34 56 or +n4e1
-     * @param s Input information
+     *
      * @return The packet, with contents filled-in
      */
     CanMessage createPacket(String s) {

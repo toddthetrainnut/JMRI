@@ -3,7 +3,7 @@ package apps.TrainCrew;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Locale;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -23,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 public class Bundle extends apps.Bundle {
 
-    @CheckForNull
+    @Nullable
     private static final String name = "apps.TrainCrew.TrainCrew"; // NOI18N
 
     //
@@ -80,7 +80,7 @@ public class Bundle extends apps.Bundle {
     private final static Bundle b = new Bundle();
 
     @Override
-    @CheckForNull
+    @Nullable
     protected String bundleName() {
         return name;
     }

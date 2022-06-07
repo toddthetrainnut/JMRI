@@ -4,16 +4,17 @@ import jmri.util.JUnitUtil;
 import jmri.jmrix.roco.z21.RocoZ21CommandStation;
 import jmri.jmrix.roco.z21.Z21InterfaceScaffold;
 import jmri.jmrix.roco.z21.Z21SystemConnectionMemo;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Z21MonPaneTest.java
  * <p>
- * Test for the jmri.jmrix.roco.z21.swing.mon.Z21MonPane class
+ * Description:	tests for the jmri.jmrix.roco.z21.swing.mon.Z21MonPane class
  *
- * @author Paul Bender Copyright (C) 2014,2016
+ * @author	Paul Bender Copyright (C) 2014,2016
  */
 public class Z21MonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
 
@@ -26,7 +27,8 @@ public class Z21MonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
         Assert.assertNotNull(f);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -43,13 +45,12 @@ public class Z21MonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
         title = Bundle.getMessage("Z21TrafficTitle");
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         memo=null;
         tc.terminateThreads();
         tc=null;
-        panel = pane = null;
         JUnitUtil.tearDown();
     }
 

@@ -1,10 +1,9 @@
 package apps.startup;
 
-import jmri.util.startup.StartupModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 /**
- * Render a {@link StartupModel} in a table.
+ * Render a {@link apps.startup.StartupModel} in a table.
  *
  * @author Randall Wood Copyright (C) 2015, 2016
  */

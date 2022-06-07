@@ -1,13 +1,6 @@
 package jmri.jmrit.operations.rollingstock.cars;
 
 import java.io.File;
-
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.ProcessingInstruction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.InstanceManagerAutoDefault;
 import jmri.InstanceManagerAutoInitialize;
@@ -16,6 +9,11 @@ import jmri.jmrit.operations.locations.LocationManagerXml;
 import jmri.jmrit.operations.rollingstock.RollingStockLogger;
 import jmri.jmrit.operations.setup.OperationsSetupXml;
 import jmri.jmrit.operations.setup.Setup;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.ProcessingInstruction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Loads and stores cars using xml files. Also loads and stores car road names,
@@ -26,6 +24,18 @@ import jmri.jmrit.operations.setup.Setup;
 public class CarManagerXml extends OperationsXml implements InstanceManagerAutoDefault, InstanceManagerAutoInitialize {
 
     public CarManagerXml() {
+    }
+
+    /**
+     * Get the default instance of this class.
+     *
+     * @return the default instance of this class
+     * @deprecated since 4.9.2; use
+     * {@link jmri.InstanceManager#getDefault(java.lang.Class)} instead
+     */
+    @Deprecated
+    public static synchronized CarManagerXml instance() {
+        return InstanceManager.getDefault(CarManagerXml.class);
     }
 
     @Override
@@ -54,7 +64,6 @@ public class CarManagerXml extends OperationsXml implements InstanceManagerAutoD
         InstanceManager.getDefault(CarLengths.class).store(root);
         InstanceManager.getDefault(CarOwners.class).store(root);
         InstanceManager.getDefault(CarLoads.class).store(root);
-        InstanceManager.getDefault(KernelManager.class).store(root);
         InstanceManager.getDefault(CarManager.class).store(root);
 
         writeXML(file, doc);
@@ -87,7 +96,6 @@ public class CarManagerXml extends OperationsXml implements InstanceManagerAutoD
         InstanceManager.getDefault(CarLengths.class).load(root);
         InstanceManager.getDefault(CarOwners.class).load(root);
         InstanceManager.getDefault(CarLoads.class).load(root);
-        InstanceManager.getDefault(KernelManager.class).load(root);
         InstanceManager.getDefault(CarManager.class).load(root);
 
         log.debug("Cars have been loaded!");

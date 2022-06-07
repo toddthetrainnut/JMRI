@@ -3,17 +3,18 @@ package jmri.jmrix.ieee802154;
 import jmri.jmrix.AbstractMRListener;
 import jmri.jmrix.AbstractMRMessage;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * IEEE802154NodeTest.java
  *
- * Test for the jmri.jmrix.ieee802154.IEEE802154Node
+ * Description:	tests for the jmri.jmrix.ieee802154.IEEE802154Node
  * class
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class IEEE802154NodeTest{
 
@@ -67,7 +68,8 @@ public class IEEE802154NodeTest{
         }
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         m = new IEEE802154Node() {
@@ -93,7 +95,7 @@ public class IEEE802154NodeTest{
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

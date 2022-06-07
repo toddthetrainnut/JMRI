@@ -40,14 +40,20 @@ public class SprogCSTurnout extends AbstractTurnout {
     }
 
     /**
-     * {@inheritDoc}
-     * Sends a command via the commandStation.
+     * Handle a request to change state by sending a formatted DCC packet.
+     *
+     * @param s commanded state to set
      */
     @Override
-    protected void forwardCommandChangeToLayout(int newState) {
+    protected void forwardCommandChangeToLayout(int s) {
         // sort out states
-        if ((newState & Turnout.CLOSED) != 0) {
-            if (statesOk(newState)) {
+        if ((s & Turnout.CLOSED) != 0) {
+            // first look for the double case, which we can't handle
+            if ((s & Turnout.THROWN) != 0) {
+                // this is the disaster case!
+                log.error("Cannot command both CLOSED and THROWN {}", s);
+                return;
+            } else {
                 // send a CLOSED command
                 commandStation.forwardCommandChangeToLayout(_number, true ^ getInverted());
             }

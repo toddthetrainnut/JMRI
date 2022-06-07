@@ -16,8 +16,12 @@ import jmri.jmrit.operations.rollingstock.cars.CarsTableFrame;
  */
 public class ShowCarsByLocationAction extends AbstractAction {
 
+    public ShowCarsByLocationAction(String s) {
+        super(s);
+    }
+
     public ShowCarsByLocationAction(boolean showAllCars, Location location, Track track) {
-        super(Bundle.getMessage("MenuItemShowCars"));
+        this(Bundle.getMessage("MenuItemShowCars"));
         this.showAllCars = showAllCars;
         if (location != null) {
             this.locationName = location.getName();
@@ -25,7 +29,7 @@ public class ShowCarsByLocationAction extends AbstractAction {
         if (track != null) {
             this.trackName = track.getName();
         }
-
+        
     }
 
     boolean showAllCars = true;

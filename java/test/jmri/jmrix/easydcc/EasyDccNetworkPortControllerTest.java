@@ -1,8 +1,8 @@
 package jmri.jmrix.easydcc;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the EasyDccNetworkPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class EasyDccNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        EasyDccSystemConnectionMemo memo = new EasyDccSystemConnectionMemo();
@@ -24,7 +24,7 @@ public class EasyDccNetworkPortControllerTest extends jmri.jmrix.AbstractNetwork
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

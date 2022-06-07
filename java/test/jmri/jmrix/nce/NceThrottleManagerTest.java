@@ -1,13 +1,14 @@
 package jmri.jmrix.nce;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class NceThrottleManagerTest extends jmri.managers.AbstractThrottleManagerTestBase {
 
@@ -16,11 +17,11 @@ public class NceThrottleManagerTest extends jmri.managers.AbstractThrottleManage
 
     @Test
     public void testCTor() {
-        Assert.assertNotNull("exists", tm);
+        Assert.assertNotNull("exists",tm);
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tcis = new NceTrafficControlScaffold();
@@ -29,14 +30,8 @@ public class NceThrottleManagerTest extends jmri.managers.AbstractThrottleManage
         tm = new NceThrottleManager(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        tm.dispose();
-        tm = null;
-        memo.dispose();
-        memo = null;
-        tcis.terminateThreads();
-        tcis = null;
         JUnitUtil.tearDown();
     }
 

@@ -1,25 +1,25 @@
 package jmri.jmrix.tams;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class TamsMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = new TamsMessage();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = null;
+	m = null;
         JUnitUtil.tearDown();
     }
 

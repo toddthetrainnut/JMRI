@@ -9,8 +9,6 @@ import javax.usb.UsbControlIrp;
 import javax.usb.UsbDevice;
 import javax.usb.UsbDisconnectedException;
 import javax.usb.UsbException;
-
-import jmri.SystemConnectionMemo;
 import jmri.util.usb.UsbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +76,7 @@ public class UsbPortAdapter extends AbstractPortController {
             log.debug("Getting device at {}", port);
             String error = openPort(port, serialNumber);
             if (error != null) {
-                log.error("Could not open {}",error);
+                log.error(error);
             }
         }
         return usbDevice;

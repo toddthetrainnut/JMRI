@@ -1,8 +1,8 @@
 package jmri.jmrix.rfid;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the RfidPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class RfidPortControllerTest extends jmri.jmrix.AbstractSerialPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        RfidTrafficController tc = new RfidTrafficController(){
@@ -46,7 +46,8 @@ public class RfidPortControllerTest extends jmri.jmrix.AbstractSerialPortControl
              */
             @Override
             public String[] validBaudRates(){
-                return new String[]{"9600"};
+               String[] retval = {"9600"};
+               return retval;
             }
 
             /**
@@ -61,10 +62,9 @@ public class RfidPortControllerTest extends jmri.jmrix.AbstractSerialPortControl
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+       JUnitUtil.tearDown();
     }
 
 }

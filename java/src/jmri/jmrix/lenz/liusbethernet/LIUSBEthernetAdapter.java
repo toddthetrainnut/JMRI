@@ -66,12 +66,7 @@ public class LIUSBEthernetAdapter extends XNetNetworkPortController {
         // packets.startThreads();
         this.getSystemConnectionMemo().setXNetTrafficController(packets);
 
-        new XNetInitializationManager()
-                .memo(this.getSystemConnectionMemo())
-                .setDefaults()
-                .versionCheck()
-                .setTimeout(30000)
-                .init();
+        new XNetInitializationManager(this.getSystemConnectionMemo());
         new jmri.jmrix.lenz.XNetHeartBeat(this.getSystemConnectionMemo());
     }
 
@@ -170,6 +165,6 @@ public class LIUSBEthernetAdapter extends XNetNetworkPortController {
         return Bundle.getMessage("defaultMDNSServiceType");
     }
 
-    private static final Logger log = LoggerFactory.getLogger(LIUSBEthernetAdapter.class);
+    private final static Logger log = LoggerFactory.getLogger(LIUSBEthernetAdapter.class);
 
 }

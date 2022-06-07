@@ -2,9 +2,7 @@ package jmri.jmrit.operations.trains.tools;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import jmri.jmrit.operations.trains.Train;
 
 /**
@@ -15,14 +13,14 @@ import jmri.jmrit.operations.trains.Train;
  */
 public class TrainCopyAction extends AbstractAction {
 
-    public TrainCopyAction() {
-        super(Bundle.getMessage("TitleTrainCopy"));
+    public TrainCopyAction(String s) {
+        super(s);
     }
 
     Train _train = null;
 
-    public TrainCopyAction(Train train) {
-        super(Bundle.getMessage("TitleTrainCopy"));
+    public TrainCopyAction(String s, Train train) {
+        super(s);
         _train = train;
         setEnabled(train != null);
     }

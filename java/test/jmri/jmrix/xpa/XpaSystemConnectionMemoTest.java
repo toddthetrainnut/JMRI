@@ -1,53 +1,57 @@
 package jmri.jmrix.xpa;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.xpa.XpaSystemConnectionMemo class.
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
-public class XpaSystemConnectionMemoTest extends SystemConnectionMemoTestBase<XpaSystemConnectionMemo> {
+public class XpaSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
     @Test
-    public void testGetAndSetXpaTrafficController() {
-        // first, check to see that an exception is 
-        // thrown when null is passed. 
-        boolean exceptionThrown = false;
-        try {
-            scm.setXpaTrafficController(null);
-        } catch (IllegalArgumentException iae) {
-            exceptionThrown = true;
-        }
-        Assert.assertTrue(exceptionThrown);
+    public void testGetandSetXpaTrafficController(){
+        XpaSystemConnectionMemo t = (XpaSystemConnectionMemo) scm; 
+       // first, check to see that an exception is 
+       // thrown when null is passed. 
+       boolean exceptionThrown = false;
+       try {
+         t.setXpaTrafficController(null);
+       } catch(java.lang.IllegalArgumentException iae){
+         exceptionThrown = true;
+       }
+       Assert.assertTrue(exceptionThrown);
 
-        scm.setXpaTrafficController(new XpaTrafficController());
+       t.setXpaTrafficController(new XpaTrafficController());
 
-        Assert.assertNotNull("TrafficController set correctly", scm.getXpaTrafficController());
+       Assert.assertNotNull("TrafficController set correctly",t.getXpaTrafficController());    
 
     }
 
     @Override
     @Test
-    public void testProvidesConsistManager() {
-        Assert.assertFalse("Provides ConsistManager", scm.provides(jmri.ConsistManager.class));
+    public void testProvidesConsistManager(){
+       Assert.assertFalse("Provides ConsistManager",scm.provides(jmri.ConsistManager.class));
     }
 
+
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         XpaTrafficController tc = new XpaTrafficControlScaffold();
-        scm = new XpaSystemConnectionMemo();
-        scm.setXpaTrafficController(tc);
+        XpaSystemConnectionMemo memo = new XpaSystemConnectionMemo();
+        memo.setXpaTrafficController(tc);
+        scm = memo;
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

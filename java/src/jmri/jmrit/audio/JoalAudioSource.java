@@ -82,7 +82,9 @@ public class JoalAudioSource extends AbstractAudioSource {
      */
     public JoalAudioSource(String systemName) {
         super(systemName);
-        log.debug("New JoalAudioSource: {}", systemName);
+        if (log.isDebugEnabled()) {
+            log.debug("New JoalAudioSource: " + systemName);
+        }
         _initialised = init();
     }
 
@@ -95,7 +97,7 @@ public class JoalAudioSource extends AbstractAudioSource {
     public JoalAudioSource(String systemName, String userName) {
         super(systemName, userName);
         if (log.isDebugEnabled()) {
-            log.debug("New JoalAudioSource: {} ({})", userName, systemName);
+            log.debug("New JoalAudioSource: " + userName + " (" + systemName + ")");
         }
         _initialised = init();
     }
@@ -106,24 +108,13 @@ public class JoalAudioSource extends AbstractAudioSource {
      * @return True if initialised
      */
     private boolean init() {
-        // Check that the JoalAudioFactory exists
-        if (al == null) {
-            log.warn("Al Factory not yet initialised");
-            return false;
-        }
-
-        // Now, check that the audio command thread exists
-        if (!isAudioAlive()) {
-            log.debug("Command thread not yet alive...");
-            return false;
-        } else {
-            log.debug("Command thread is alive - continue.");
-        }
-
         // Generate the AudioSource
+        if (!isAudioAlive()) {
+            return false;
+        }
         al.alGenSources(1, _source, 0);
         if (JoalAudioFactory.checkALError()) {
-            log.warn("Error creating JoalSource ({})", this.getSystemName());
+            log.warn("Error creating JoalSource (" + this.getSystemName() + ")");
             _source = null;
             return false;
         }
@@ -135,14 +126,13 @@ public class JoalAudioSource extends AbstractAudioSource {
      *
      * (called from DefaultAudioFactory command queue)
      *
-     * @param audioBuffer AudioBuffer to queue
      * @return True if successfully queued.
      */
     @Override
     public boolean queueAudioBuffer(AudioBuffer audioBuffer) {
         // First check we've been initialised
         if (!_initialised || !isAudioAlive()) {
-            log.error("Source Not Initialized: {}", this.getSystemName());
+            log.error("Source Not Initialized: " + this.getSystemName());
             return false;
         }
 
@@ -151,18 +141,20 @@ public class JoalAudioSource extends AbstractAudioSource {
             // Make an int[] of the buffer ids
             bids[0] = ((JoalAudioBuffer) audioBuffer).getDataStorageBuffer()[0];
             if (log.isDebugEnabled()) {
-                log.debug("Queueing Buffer: {} bid: {} Source: {}", audioBuffer.getSystemName(), ((JoalAudioBuffer) audioBuffer).getDataStorageBuffer()[0], this.getSystemName());
+                log.debug("Queueing Buffer: " + audioBuffer.getSystemName() + " bid: "
+                        + ((JoalAudioBuffer) audioBuffer).getDataStorageBuffer()[0] + " Source: " + this.getSystemName());
             }
 
             // Bind this AudioSource to the specified AudioBuffer
             al.alSourceQueueBuffers(_source[0], 1, bids, 0);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error queueing JoalSource ({}) to AudioBuffers ({})", this.getSystemName(), audioBuffer.getDisplayName());
+                log.warn("Error queueing JoalSource (" + this.getSystemName() + ") to AudioBuffers (" + audioBuffer.getDisplayName() + ")");
                 return false;
             }
 
             if (log.isDebugEnabled()) {
-                log.debug("Queue JoalAudioBuffer ({}) to JoalAudioSource ({})", audioBuffer.getSystemName(), this.getSystemName());
+                log.debug("Queue JoalAudioBuffer (" + audioBuffer.getSystemName()
+                        + ") to JoalAudioSource (" + this.getSystemName() + ")");
             }
             return true;
         } else {
@@ -175,7 +167,6 @@ public class JoalAudioSource extends AbstractAudioSource {
      *
      * (called from DefaultAudioFactory command queue)
      *
-     * @param audioBuffers AudioBuffers to queue
      * @return True if successfully queued.
      */
     @Override
@@ -198,11 +189,11 @@ public class JoalAudioSource extends AbstractAudioSource {
             }
             al.alSourceQueueBuffers(_source[0], 1, bids, 0);
             if (log.isDebugEnabled()) {
-                log.debug("Queueing Buffer [{}] {}", i, b.getSystemName());
+                log.debug("Queueing Buffer [" + i + "] " + b.getSystemName());
             }
             i++;
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error queueing JoalSource ({}) to AudioBuffers ({}) etc.", this.getSystemName(), b.getDisplayName());
+                log.warn("Error queueing JoalSource (" + this.getSystemName() + ") to AudioBuffers (" + b.getDisplayName() + ") etc.");
                 return false;
             }
         }
@@ -230,7 +221,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         // How many processed buffers are there?
         al.alGetSourcei(_source[0], AL.AL_BUFFERS_PROCESSED, num_processed, 0);
         if (JoalAudioFactory.checkALError()) {
-            log.warn("Error getting # processed buffers from  JoalSource ({})", this.getSystemName());
+            log.warn("Error getting # processed buffers from  JoalSource (" + this.getSystemName() + ")");
             return false;
         }
 
@@ -239,14 +230,18 @@ public class JoalAudioSource extends AbstractAudioSource {
             int[] bids = new int[num_processed[0]];
             al.alSourceUnqueueBuffers(_source[0], num_processed[0], bids, 0);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error removing {} buffers from  JoalSource ({})", num_processed[0], this.getSystemName());
+                log.warn("Error removing " + num_processed[0] + " buffers from  JoalSource (" + this.getSystemName() + ")");
                 return false;
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Removed {} buffers from JoalAudioSource ({})", num_processed[0], this.getSystemName());
+            log.debug("Removed " + num_processed[0] + " buffers from JoalAudioSource (" + this.getSystemName() + ")");
         }
-        return (numQueuedBuffers() != 0);
+        if (numQueuedBuffers() == 0) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     @Override
@@ -260,7 +255,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         // How many processed buffers are there?
         al.alGetSourcei(_source[0], AL.AL_BUFFERS_PROCESSED, num_processed, 0);
         if (JoalAudioFactory.checkALError()) {
-            log.warn("Error getting # processed buffers from  JoalSource ({})", this.getSystemName());
+            log.warn("Error getting # processed buffers from  JoalSource (" + this.getSystemName() + ")");
             return 0;
         }
         return (num_processed[0]);
@@ -282,12 +277,12 @@ public class JoalAudioSource extends AbstractAudioSource {
         // How many queued buffers are there?
         al.alGetSourcei(_source[0], AL.AL_BUFFERS_QUEUED, num_queued, 0);
         if (JoalAudioFactory.checkALError()) {
-            log.warn("Error getting # queued buffers from  JoalSource ({})", this.getSystemName());
+            log.warn("Error getting # queued buffers from  JoalSource (" + this.getSystemName() + ")");
             return 0;
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Queued {} buffers on JoalAudioSource ({})", num_queued[0], this.getSystemName());
+            log.debug("Queued " + num_queued[0] + " buffers on JoalAudioSource (" + this.getSystemName() + ")");
         }
         return (num_queued[0]);
     }
@@ -302,12 +297,13 @@ public class JoalAudioSource extends AbstractAudioSource {
         // Bind this AudioSource to the specified AudioBuffer
         al.alSourcei(_source[0], AL.AL_BUFFER, ((JoalAudioBuffer) audioBuffer).getDataStorageBuffer()[0]);
         if (JoalAudioFactory.checkALError()) {
-            log.warn("Error binding JoalSource ({}) to AudioBuffer ({})", this.getSystemName(), this.getAssignedBufferName());
+            log.warn("Error binding JoalSource (" + this.getSystemName() + ") to AudioBuffer (" + this.getAssignedBufferName() + ")");
             return false;
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Bind JoalAudioSource ({}) to JoalAudioBuffer ({})", this.getSystemName(), audioBuffer.getSystemName());
+            log.debug("Bind JoalAudioSource (" + this.getSystemName()
+                    + ") to JoalAudioBuffer (" + audioBuffer.getSystemName() + ")");
         }
         return true;
     }
@@ -317,7 +313,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSource3f(_source[0], AL.AL_POSITION, pos.x, pos.y, pos.z);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating position of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating position of JoalAudioSource (" + this.getSystemName() + ")");
             }
         }
     }
@@ -328,7 +324,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSourcei(_source[0], AL.AL_SOURCE_RELATIVE, relative ? AL.AL_TRUE : AL.AL_FALSE);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating relative position property of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating relative position property of JoalAudioSource (" + this.getSystemName() + ")");
             }
         }
     }
@@ -339,7 +335,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSource3f(_source[0], AL.AL_VELOCITY, vel.x, vel.y, vel.z);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating velocity of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating velocity of JoalAudioSource (" + this.getSystemName() + ")");
             }
         }
     }
@@ -358,7 +354,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSourcef(_source[0], AL.AL_PITCH, pitch);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating pitch of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating pitch of JoalAudioSource (" + this.getSystemName() + ")");
             }
         }
     }
@@ -369,7 +365,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSourcef(_source[0], AL.AL_REFERENCE_DISTANCE, referenceDistance);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating reference distance of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating reference distance of JoalAudioSource (" + this.getSystemName() + ")");
             }
         }
     }
@@ -380,7 +376,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSourcei(_source[0], AL.AL_SAMPLE_OFFSET, (int) getOffset());
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating Sample Offset of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating Sample Offset of JoalAudioSource (" + this.getSystemName() + ")");
              }
         }
     }
@@ -391,7 +387,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSourcef(_source[0], AL.AL_MAX_DISTANCE, maximumDistance);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating maximum distance of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating maximum distance of JoalAudioSource (" + this.getSystemName() + ")");
             }
         }
     }
@@ -402,7 +398,7 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSourcef(_source[0], AL.AL_ROLLOFF_FACTOR, rollOffFactor);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating roll-off factor of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating roll-off factor of JoalAudioSource (" + this.getSystemName() + ")");
             }
         }
     }
@@ -435,7 +431,7 @@ public class JoalAudioSource extends AbstractAudioSource {
             al.alSource3f(_source[0], AL.AL_VELOCITY, this.getVelocity().x, this.getVelocity().y, this.getVelocity().z);
             al.alSourcei(_source[0], AL.AL_LOOPING, this.isLooped() ? AL.AL_TRUE : AL.AL_FALSE);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating JoalAudioSource (" + this.getSystemName() + ")");
             }
         } else {
             _initialised = init();
@@ -444,7 +440,9 @@ public class JoalAudioSource extends AbstractAudioSource {
 
     @Override
     protected void doPlay() {
-        log.debug("Play JoalAudioSource ({})", this.getSystemName());
+        if (log.isDebugEnabled()) {
+            log.debug("Play JoalAudioSource (" + this.getSystemName() + ")");
+        }
         if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             doRewind();
             doResume();
@@ -454,7 +452,9 @@ public class JoalAudioSource extends AbstractAudioSource {
     @SuppressWarnings("SleepWhileInLoop")
     @Override
     protected void doStop() {
-        log.debug("Stop JoalAudioSource ({})", this.getSystemName());
+        if (log.isDebugEnabled()) {
+            log.debug("Stop JoalAudioSource (" + this.getSystemName() + ")");
+        }
         if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             al.alSourceStop(_source[0]);
             doRewind();
@@ -475,7 +475,9 @@ public class JoalAudioSource extends AbstractAudioSource {
 
     @Override
     protected void doPause() {
-        log.debug("Pause JoalAudioSource ({})", this.getSystemName());
+        if (log.isDebugEnabled()) {
+            log.debug("Pause JoalAudioSource (" + this.getSystemName() + ")");
+        }
         if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             al.alSourcePause(_source[0]);
         }
@@ -484,7 +486,9 @@ public class JoalAudioSource extends AbstractAudioSource {
 
     @Override
     protected void doResume() {
-        log.debug("Resume JoalAudioSource ({})", this.getSystemName());
+        if (log.isDebugEnabled()) {
+            log.debug("Resume JoalAudioSource (" + this.getSystemName() + ")");
+        }
         if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             calculateGain();
             al.alSourcei(_source[0], AL.AL_LOOPING, this.isLooped() ? AL.AL_TRUE : AL.AL_FALSE);
@@ -492,7 +496,7 @@ public class JoalAudioSource extends AbstractAudioSource {
             int numLoops = this.getNumLoops();
             if (numLoops > 0) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Create LoopThread for JoalAudioSource {}", this.getSystemName());
+                    log.debug("Create LoopThread for JoalAudioSource " + this.getSystemName());
                 }
                 AudioSourceLoopThread aslt = new AudioSourceLoopThread(this, numLoops);
                 aslt.start();
@@ -503,7 +507,9 @@ public class JoalAudioSource extends AbstractAudioSource {
 
     @Override
     protected void doRewind() {
-        log.debug("Rewind JoalAudioSource ({})", this.getSystemName());
+        if (log.isDebugEnabled()) {
+            log.debug("Rewind JoalAudioSource (" + this.getSystemName() + ")");
+        }
         if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             al.alSourceRewind(_source[0]);
         }
@@ -511,7 +517,9 @@ public class JoalAudioSource extends AbstractAudioSource {
 
     @Override
     protected void doFadeIn() {
-        log.debug("Fade-in JoalAudioSource ({})", this.getSystemName());
+        if (log.isDebugEnabled()) {
+            log.debug("Fade-in JoalAudioSource (" + this.getSystemName() + ")");
+        }
         if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             doPlay();
             AudioSourceFadeThread asft = new AudioSourceFadeThread(this);
@@ -521,7 +529,9 @@ public class JoalAudioSource extends AbstractAudioSource {
 
     @Override
     protected void doFadeOut() {
-        log.debug("Fade-out JoalAudioSource ({})", this.getSystemName());
+        if (log.isDebugEnabled()) {
+            log.debug("Fade-out JoalAudioSource (" + this.getSystemName() + ")");
+        }
         if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             AudioSourceFadeThread asft = new AudioSourceFadeThread(this);
             asft.start();
@@ -531,14 +541,13 @@ public class JoalAudioSource extends AbstractAudioSource {
     @Override
     protected void cleanup() {
         log.debug("Cleanup JoalAudioSource ({})", this.getSystemName());
-        int[] source_type = new int[1];
-        al.alGetSourcei(_source[0], AL.AL_SOURCE_TYPE, source_type, 0);
-        if (_initialised && (isBound() || isQueued() || source_type[0] == AL.AL_UNDETERMINED) || source_type[0] == AL.AL_STREAMING) {
+        if (_initialised && isAudioAlive() && (isBound() || isQueued())) {
             al.alSourceStop(_source[0]);
             al.alDeleteSources(1, _source, 0);
             this._source = null;
             log.debug("...done cleanup");
         }
+        this.dispose();
     }
 
     @Override
@@ -551,10 +560,10 @@ public class JoalAudioSource extends AbstractAudioSource {
         if (_initialised && isAudioAlive()) {
             al.alSourcef(_source[0], AL.AL_GAIN, currentGain);
             if (JoalAudioFactory.checkALError()) {
-                log.warn("Error updating gain setting of JoalAudioSource ({})", this.getSystemName());
+                log.warn("Error updating gain setting of JoalAudioSource (" + this.getSystemName() + ")");
             }
             if (log.isDebugEnabled()) {
-                log.debug("Set current gain of JoalAudioSource {} to {}", this.getSystemName(), currentGain);
+                log.debug("Set current gain of JoalAudioSource " + this.getSystemName() + " to " + currentGain);
             }
         }
     }
@@ -599,8 +608,8 @@ public class JoalAudioSource extends AbstractAudioSource {
             this.sourceBuffer = audioSource.getSourceBuffer();
             this.numLoops = numLoops;
             if (log.isDebugEnabled()) {
-                log.debug("Created AudioSourceLoopThread for AudioSource {} loopcount {}",
-                        audioSource.getSystemName(), this.numLoops);
+                log.debug("Created AudioSourceLoopThread for AudioSource " + audioSource.getSystemName()
+                        + " loopcount " + this.numLoops);
             }
         }
 
@@ -631,7 +640,7 @@ public class JoalAudioSource extends AbstractAudioSource {
                 // If so, we've looped so increment the loop counter
                 if (oldPos > newPos[0]) {
                     loopCount++;
-                    log.debug("Loop count {}", loopCount);
+                    log.debug("Loop count " + loopCount);
                 }
                 oldPos = newPos[0];
 
@@ -649,7 +658,7 @@ public class JoalAudioSource extends AbstractAudioSource {
 
             // Finish up
             if (log.isDebugEnabled()) {
-                log.debug("Clean up thread {}", this.getName());
+                log.debug("Clean up thread " + this.getName());
             }
             cleanup();
         }

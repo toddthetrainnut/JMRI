@@ -1,12 +1,7 @@
 package jmri.jmrix.bachrus;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
-
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
 import jmri.InstanceManager;
-import jmri.NamedBean;
-import jmri.util.NamedBeanComparator;
 
 /**
  * Lightweight class to denote that a system is active, and provide general
@@ -17,13 +12,13 @@ import jmri.util.NamedBeanComparator;
  *
  * @author Bob Jacobsen Copyright (C) 2010
  */
-public class SpeedoSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class SpeedoSystemConnectionMemo extends jmri.jmrix.SystemConnectionMemo {
 
     public SpeedoSystemConnectionMemo(SpeedoTrafficController tc) {
         super("A", "Speedo");
         this.tc = tc;
         register();
-        InstanceManager.store(cf = new jmri.jmrix.bachrus.swing.SpeedoComponentFactory(this),
+        InstanceManager.store(cf = new jmri.jmrix.bachrus.swing.SpeedoComponentFactory(this), 
          jmri.jmrix.swing.ComponentFactory.class);
     }
 
@@ -40,7 +35,6 @@ public class SpeedoSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnecti
 
     /**
      * Provide access to the TrafficController for this particular connection.
-     * @return traffic controller.
      */
     public SpeedoTrafficController getTrafficController() {
         return tc;
@@ -64,11 +58,6 @@ public class SpeedoSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnecti
     protected ResourceBundle getActionModelResourceBundle() {
         // No Actions at start up to return
         return null;
-    }
-
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
     }
 
     @Override

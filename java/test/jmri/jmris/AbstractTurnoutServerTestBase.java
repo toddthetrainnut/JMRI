@@ -1,10 +1,9 @@
 package jmri.jmris;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import jmri.util.JUnitUtil;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmris.AbstractTurnoutServer class
@@ -16,7 +15,7 @@ abstract public class AbstractTurnoutServerTestBase {
     protected AbstractTurnoutServer ts = null;
 
     @Test public void testCtor() {
-        assertThat(ts).isNotNull();
+        Assert.assertNotNull(ts);
     }
 
     // test sending an error message.
@@ -30,7 +29,7 @@ abstract public class AbstractTurnoutServerTestBase {
     @Test 
     public void checkInitTurnout() {
         ts.initTurnout("IT1");
-        assertThat((jmri.InstanceManager.getDefault(jmri.TurnoutManager.class)).getTurnout("IT1")).isNotNull();
+        Assert.assertNotNull((jmri.InstanceManager.getDefault(jmri.TurnoutManager.class)).getTurnout("IT1"));
     }
 
     // test sending an Thrown status message.
@@ -60,30 +59,33 @@ abstract public class AbstractTurnoutServerTestBase {
     // test the property change sequence for an THROWN property change.
     @Test
     public void testPropertyChangeThrownStatus() {
-        Throwable thrown = catchThrowable(() -> {
+        try {
             ts.initTurnout("IT1");
-            jmri.InstanceManager.getDefault(jmri.TurnoutManager.class).provideTurnout("IT1").setState(jmri.Turnout.THROWN);
-        });
-        assertThat(thrown).withFailMessage("Exception setting Status").isNull();
-        checkTurnoutThrownSent();
+            jmri.InstanceManager.getDefault(jmri.TurnoutManager.class)
+                            .provideTurnout("IT1").setState(jmri.Turnout.THROWN);
+            checkTurnoutThrownSent();
+        } catch (jmri.JmriException je){
+            Assert.fail("Exception setting Status");
+        }
     }
 
     // test the property change sequence for an CLOSED property change.
     @Test
     public void testPropertyChangeClosedStatus() {
-        Throwable thrown = catchThrowable( () -> {
+        try {
             ts.initTurnout("IT1");
             jmri.InstanceManager.getDefault(jmri.TurnoutManager.class)
                             .provideTurnout("IT1").setState(jmri.Turnout.CLOSED);
-        });
-        assertThat(thrown).withFailMessage("Exception setting Status").isNull();
-        checkTurnoutClosedSent();
+            checkTurnoutClosedSent();
+        } catch (jmri.JmriException je){
+            Assert.fail("Exception setting Status");
+        }
     }
 
     /**
      * pre test setup.  Must setup TurnoutServer ts.
      */
-    @BeforeEach
+    @Before 
     abstract public void setUp(); 
 
     /**

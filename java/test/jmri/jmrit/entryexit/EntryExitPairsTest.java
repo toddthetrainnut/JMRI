@@ -3,7 +3,6 @@ package jmri.jmrit.entryexit;
 import java.awt.GraphicsEnvironment;
 import java.util.List;
 import java.util.HashMap;
-
 import jmri.InstanceManager;
 import jmri.Sensor;
 import jmri.SensorManager;
@@ -12,11 +11,11 @@ import jmri.TurnoutManager;
 import jmri.jmrit.display.layoutEditor.LayoutBlockManager;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -96,12 +95,12 @@ public class EntryExitPairsTest {
         t.start();
     }
 
-    @BeforeEach
-    public void before() throws Exception {
+    @BeforeClass
+    public static void before() throws Exception {
         JUnitUtil.setUp();
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         jmri.util.JUnitUtil.resetProfileManager();
-        JUnitUtil.initConfigureManager();
+
         tools = new EntryExitTestTools();
         panels = EntryExitTestTools.getPanels();
         Assert.assertNotNull("Get LE panels", panels);  // NOI18N
@@ -111,24 +110,16 @@ public class EntryExitPairsTest {
         tm = InstanceManager.getDefault(TurnoutManager.class);
     }
 
-    @AfterEach
-    public void after() {
-        if (panels != null) {
-            panels.forEach((name, panel) -> JUnitUtil.dispose(panel));
-        }
+    @AfterClass
+    public static void after() {
+        panels.forEach((name, panel) -> JUnitUtil.dispose(panel));
         eep = null;
         lbm = null;
         sm = null;
         tm = null;
         panels = null;
         tools = null;
-
-        JUnitUtil.clearRouteThreads();
-        JUnitUtil.clearTurnoutThreads();
-        JUnitUtil.removeMatchingThreads("Routing stabilising timer");
-
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
+        
         JUnitUtil.tearDown();
     }
 

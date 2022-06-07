@@ -10,7 +10,7 @@ import jmri.NamedBean;
 import jmri.Sensor;
 import jmri.SignalHead;
 import jmri.SignalMast;
-import jmri.jmrit.display.EditorManager;
+import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.SensorIcon;
 import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
@@ -36,7 +36,7 @@ public class PointDetails {
     static int nxButtonTimeout = 10;
 
     Source sourceRoute;
-    transient Hashtable<DestinationPoints, Source> destinations = new Hashtable<>(5);
+    transient Hashtable<DestinationPoints, Source> destinations = new Hashtable<DestinationPoints, Source>(5);
 
     public PointDetails(LayoutBlock facing, List<LayoutBlock> protecting) {
         this.facing = facing;
@@ -67,8 +67,8 @@ public class PointDetails {
     public void setPanel(LayoutEditor panel) {
         this.panel = panel;
         // find the panel that actually contains this sensor, default to the supplied panel
-        for (LayoutEditor layout : InstanceManager.getDefault(EditorManager.class).getAll(LayoutEditor.class)) {
-            for (SensorIcon si : layout.getSensorList()) {
+        for (LayoutEditor layout : InstanceManager.getDefault(PanelMenu.class).getLayoutEditorPanelList()) {
+            for (SensorIcon si : layout.sensorList) {
                 if (sensor == si.getNamedBean()) {
                     this.panel = layout;
                     return;
@@ -111,8 +111,8 @@ public class PointDetails {
         if (!e.getPropertyName().equals("KnownState")) {  // NOI18N
             return;
         }
-        int now = ((Integer) e.getNewValue());
-        int old = ((Integer) e.getOldValue());
+        int now = ((Integer) e.getNewValue()).intValue();
+        int old = ((Integer) e.getOldValue()).intValue();
 
         if ((old == Sensor.UNKNOWN) || (old == Sensor.INCONSISTENT)) {
             setButtonState(EntryExitPairs.NXBUTTONINACTIVE);
@@ -193,7 +193,7 @@ public class PointDetails {
 
     void removeDestination(DestinationPoints srcdp) {
         destinations.remove(srcdp);
-        if (sourceRoute == null && destinations.isEmpty()) {
+        if (sourceRoute == null && destinations.size() == 0) {
             stopFlashSensor();
             sensor.removePropertyChangeListener(nxButtonListener);
             setSensor(null);
@@ -202,7 +202,7 @@ public class PointDetails {
 
     void removeSource(Source src) {
         sourceRoute = null;
-        if (destinations.isEmpty()) {
+        if (destinations.size() == 0) {
             stopFlashSensor();
             setSensor(null);
         }
@@ -249,7 +249,9 @@ public class PointDetails {
     }
 
     public void setRefObject(NamedBean refObs) {
-        for (LayoutEditor pnl : InstanceManager.getDefault(EditorManager.class).getAll(LayoutEditor.class)) {
+        List<LayoutEditor> panels = InstanceManager.getDefault(jmri.jmrit.display.PanelMenu.class).
+                getLayoutEditorPanelList();
+        for (LayoutEditor pnl : panels) {
             if (refLoc == null) {
                 setRefObjectByPanel(refObs, pnl);
             }
@@ -361,7 +363,7 @@ public class PointDetails {
             }
         }
         ButtonTimeOut t = new ButtonTimeOut();
-        nxButtonTimeOutThr = jmri.util.ThreadingUtil.newThread(t, "NX Button Timeout " + getSensor().getDisplayName());  // NOI18N
+        nxButtonTimeOutThr = new Thread(t, "NX Button Timeout " + getSensor().getDisplayName());  // NOI18N
 
         nxButtonTimeOutThr.start();
     }
@@ -376,7 +378,7 @@ public class PointDetails {
     boolean extendedtime = false;
 
     public void flashSensor() {
-        for (SensorIcon si : getPanel().getSensorList()) {
+        for (SensorIcon si : getPanel().sensorList) {
             if (si.getSensor() == getSensor()) {
                 si.flashSensor(2, Sensor.ACTIVE, Sensor.INACTIVE);
             }
@@ -384,7 +386,7 @@ public class PointDetails {
     }
 
     public void stopFlashSensor() {
-        for (SensorIcon si : getPanel().getSensorList()) {
+        for (SensorIcon si : getPanel().sensorList) {
             if (si.getSensor() == getSensor()) {
                 si.stopFlash();
             }
@@ -404,7 +406,7 @@ public class PointDetails {
             }
         }
         setNXState(state);
-        int sensorState;
+        int sensorState = Sensor.UNKNOWN;
         switch (state) {
             case EntryExitPairs.NXBUTTONINACTIVE:
                 sensorState = Sensor.INACTIVE;
@@ -426,18 +428,13 @@ public class PointDetails {
             try {
                 getSensor().setKnownState(sensorState);
             } catch (jmri.JmriException ex) {
-                log.error("Could not set Sensor known state.", ex);
+                log.error(ex.getLocalizedMessage(), ex);
             }
             addSensorList();
         }
     }
 
-    /**
-     * @since 4.17.6
-     * Making the source object available for scripting in Jython.
-     * @return the sensor.
-     */
-    public Sensor getSensor() {
+    Sensor getSensor() {
         if (getRefObject() == null) {
             return null;
         }
@@ -603,13 +600,13 @@ public class PointDetails {
             if (p.getEastBoundSensor() == sen) {
                 if (p.getEastBoundSignalMast() != null) {
                     signal = p.getEastBoundSignalMast();
-                } else if (!p.getEastBoundSignal().isEmpty()) {
+                } else if (!p.getEastBoundSignal().equals("")) {
                     signal = sh.getSignalHead(p.getEastBoundSignal());
                 }
             } else if (p.getWestBoundSensor() == sen) {
                 if (p.getWestBoundSignalMast() != null) {
                     signal = p.getWestBoundSignalMast();
-                } else if (!p.getWestBoundSignal().isEmpty()) {
+                } else if (!p.getWestBoundSignal().equals("")) {
                     signal = sh.getSignalHead(p.getWestBoundSignal());
                 }
             }
@@ -618,25 +615,25 @@ public class PointDetails {
             if (t.getSensorA() == sen) {
                 if (t.getSignalAMast() != null) {
                     signal = t.getSignalAMast();
-                } else if (!t.getSignalA1Name().isEmpty()) {
+                } else if (!t.getSignalA1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalA1Name());
                 }
             } else if (t.getSensorB() == sen) {
                 if (t.getSignalBMast() != null) {
                     signal = t.getSignalBMast();
-                } else if (!t.getSignalB1Name().isEmpty()) {
+                } else if (!t.getSignalB1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalB1Name());
                 }
             } else if (t.getSensorC() == sen) {
                 if (t.getSignalCMast() != null) {
                     signal = t.getSignalCMast();
-                } else if (!t.getSignalC1Name().isEmpty()) {
+                } else if (!t.getSignalC1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalC1Name());
                 }
             } else if (t.getSensorD() == sen) {
                 if (t.getSignalDMast() != null) {
                     signal = t.getSignalDMast();
-                } else if (!t.getSignalD1Name().isEmpty()) {
+                } else if (!t.getSignalD1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalD1Name());
                 }
             }
@@ -648,25 +645,25 @@ public class PointDetails {
             if (t.getSensorA() == sen) {
                 if (t.getSignalAMast() != null) {
                     signal = t.getSignalAMast();
-                } else if (!t.getSignalA1Name().isEmpty()) {
+                } else if (!t.getSignalA1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalA1Name());
                 }
             } else if (t.getSensorB() == sen) {
                 if (t.getSignalBMast() != null) {
                     signal = t.getSignalBMast();
-                } else if (!t.getSignalB1Name().isEmpty()) {
+                } else if (!t.getSignalB1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalB1Name());
                 }
             } else if (t.getSensorC() == sen) {
                 if (t.getSignalCMast() != null) {
                     signal = t.getSignalCMast();
-                } else if (!t.getSignalC1Name().isEmpty()) {
+                } else if (!t.getSignalC1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalC1Name());
                 }
             } else if (t.getSensorD() == sen) {
                 if (t.getSignalDMast() != null) {
                     signal = t.getSignalDMast();
-                } else if (!t.getSignalD1Name().isEmpty()) {
+                } else if (!t.getSignalD1Name().equals("")) {
                     signal = sh.getSignalHead(t.getSignalD1Name());
                 }
             }
@@ -675,25 +672,25 @@ public class PointDetails {
             if (x.getSensorA() == sen) {
                 if (x.getSignalAMast() != null) {
                     signal = x.getSignalAMast();
-                } else if (!x.getSignalAName().isEmpty()) {
+                } else if (!x.getSignalAName().equals("")) {
                     signal = sh.getSignalHead(x.getSignalAName());
                 }
             } else if (x.getSensorB() == sen) {
                 if (x.getSignalBMast() != null) {
                     signal = x.getSignalBMast();
-                } else if (!x.getSignalBName().isEmpty()) {
+                } else if (!x.getSignalBName().equals("")) {
                     signal = sh.getSignalHead(x.getSignalBName());
                 }
             } else if (x.getSensorC() == sen) {
                 if (x.getSignalCMast() != null) {
                     signal = x.getSignalCMast();
-                } else if (!x.getSignalCName().isEmpty()) {
+                } else if (!x.getSignalCName().equals("")) {
                     signal = sh.getSignalHead(x.getSignalCName());
                 }
             } else if (x.getSensorD() == sen) {
                 if (x.getSignalDMast() != null) {
                     signal = x.getSignalDMast();
-                } else if (!x.getSignalDName().isEmpty()) {
+                } else if (!x.getSignalDName().equals("")) {
                     signal = sh.getSignalHead(x.getSignalDName());
                 }
             }

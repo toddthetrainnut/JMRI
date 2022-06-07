@@ -3,12 +3,11 @@ package jmri.jmrit.roster;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.Objects;
 import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import jmri.beans.BeanUtil;
+import jmri.beans.Beans;
 import jmri.jmrit.roster.rostergroup.RosterGroupSelector;
 import jmri.jmrit.roster.swing.RosterEntryComboBox;
 import jmri.util.swing.WindowInterface;
@@ -16,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Actions to copy, export and import RosterEntry objects.
+ * Base class for Actions to copy, export and import RosterEntrys.
  * <p>
  * Note that {@link DeleteRosterItemAction} is sufficiently different that it
  * doesn't use this base class.
@@ -58,6 +57,8 @@ abstract public class AbstractRosterItemAction extends jmri.util.swing.JmriAbstr
         }
         // update roster
         updateRoster();
+
+        return;
     }
 
     protected abstract boolean selectFrom();
@@ -86,25 +87,26 @@ abstract public class AbstractRosterItemAction extends jmri.util.swing.JmriAbstr
     RosterEntry mToEntry = null;
     File mToFile = null;
     String mToFilename = null;
-    String mFullToFilename = null; // includes path to preferences
+    String mFullToFilename = null;  // includes path to preferences
 
     boolean selectExistingFromEntry() {
         // create a dialog to select the roster entry to copy
         String group = null;
-        if (BeanUtil.hasProperty(wi, RosterGroupSelector.SELECTED_ROSTER_GROUP)) {
-            group = (String) BeanUtil.getProperty(wi, RosterGroupSelector.SELECTED_ROSTER_GROUP);
+        if (Beans.hasProperty(wi, RosterGroupSelector.SELECTED_ROSTER_GROUP)) {
+            group = (String) Beans.getProperty(wi, RosterGroupSelector.SELECTED_ROSTER_GROUP);
         }
         JComboBox<?> selections = new RosterEntryComboBox(group);
         int retval = JOptionPane.showOptionDialog(mParent,
-                Bundle.getMessage("CopyEntrySelectDialog"), Bundle.getMessage("CopyEntrySelectDialogTitle"),
+                "Select one roster entry", "Select roster entry",
                 0, JOptionPane.INFORMATION_MESSAGE, null,
                 new Object[]{Bundle.getMessage("ButtonCancel"), Bundle.getMessage("ButtonOK"), selections}, null);
-        log.debug("Dialog value {} selected {}:\"{}\"", retval, selections.getSelectedIndex(), selections.getSelectedItem());
+        log.debug("Dialog value " + retval + " selected " + selections.getSelectedIndex() + ":\""
+                + selections.getSelectedItem() + "\""); // TODO I18N
         if (retval != 1) {
             return false;  // user didn't select
         }
         // find the file for the selected entry to copy
-        setExistingEntry((RosterEntry) Objects.requireNonNull(selections.getSelectedItem()));
+        setExistingEntry((RosterEntry) selections.getSelectedItem());
 
         return true;
     }
@@ -117,33 +119,34 @@ abstract public class AbstractRosterItemAction extends jmri.util.swing.JmriAbstr
     public void setExistingEntry(RosterEntry mFromEntry) {
         this.mFromEntry = mFromEntry;
         mFromFilename = mFromEntry.getFileName();
-        mFullFromFilename = Roster.getDefault().getRosterFilesLocation() + mFromFilename;
-        log.debug(" from resolves to \"{}\", \"{}\"", mFromFilename, mFullFromFilename);
+        mFullFromFilename = LocoFile.getFileLocation() + mFromFilename;
+        log.debug(" from resolves to \"" + mFromFilename + "\", \"" + mFullFromFilename + "\"");
     }
 
     boolean selectNewToEntryID() {
         do {
             // prompt for the new ID
-            mToID = JOptionPane.showInputDialog(mParent, Bundle.getMessage("NewEntryDialog"));
+            mToID = JOptionPane.showInputDialog(mParent, "Enter id for new roster entry:");
             if (mToID == null) {
                 return false;
             }
 
             // check for empty
-            if (mToID.isEmpty()) {
-                JOptionPane.showMessageDialog(mParent, Bundle.getMessage("NewEntryEmptyWarn"));
+            if (mToID.equals("")) {
+                JOptionPane.showMessageDialog(mParent,
+                        "The ID cannot be blank");
                 // ask again
                 continue;
             }
 
             // check for duplicate
-            if (0 == Roster.getDefault().matchingList(null, null, null, null,
-                    null, null, mToID).size()) {
+            if (0 == Roster.getDefault().matchingList(null, null, null, null, null, null, mToID).size()) {
                 break;
             }
 
             // here it is a duplicate, reprompt
-            JOptionPane.showMessageDialog(mParent, Bundle.getMessage("NewEntryDuplicateWarn"));
+            JOptionPane.showMessageDialog(mParent,
+                    "That entry already exists, please choose another");
 
         } while (true);
         return true;
@@ -167,7 +170,7 @@ abstract public class AbstractRosterItemAction extends jmri.util.swing.JmriAbstr
         mFromFile = fileChooser.getSelectedFile();
         mFromFilename = mFromFile.getName();
         mFullFromFilename = mFromFile.getAbsolutePath();
-        log.debug("New from file: {} at {}", mFromFilename, mFullFromFilename); // NOI18N
+        log.debug("New from file: " + mFromFilename + " at " + mFullFromFilename);
         return true;
     }
 
@@ -186,7 +189,7 @@ abstract public class AbstractRosterItemAction extends jmri.util.swing.JmriAbstr
         mToFile = fileChooser.getSelectedFile();
         mToFilename = mToFile.getName();
         mFullToFilename = mToFile.getAbsolutePath();
-        log.debug("New to file: {} at {}", mToFilename, mFullToFilename); // NOI18N
+        log.debug("New to file: " + mToFilename + " at " + mFullToFilename);
         return true;
     }
 

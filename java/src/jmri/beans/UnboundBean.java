@@ -10,7 +10,7 @@ import java.util.Set;
  * {@link java.beans.PropertyChangeSupport}. Subclass {@link jmri.beans.Bean} if
  * you need to support property change listeners.
  *
- * @author Randall Wood
+ * @author rhwood
  */
 public abstract class UnboundBean implements BeanInterface {
 
@@ -30,7 +30,7 @@ public abstract class UnboundBean implements BeanInterface {
      */
     @Override
     public Object getIndexedProperty(String key, int index) {
-        return BeanUtil.getIntrospectedIndexedProperty(this, key, index);
+        return Beans.getIntrospectedIndexedProperty(this, key, index);
     }
 
     /**
@@ -46,7 +46,7 @@ public abstract class UnboundBean implements BeanInterface {
      */
     @Override
     public Object getProperty(String key) {
-        return BeanUtil.getIntrospectedProperty(this, key);
+        return Beans.getIntrospectedProperty(this, key);
     }
 
     /**
@@ -57,7 +57,7 @@ public abstract class UnboundBean implements BeanInterface {
      */
     @Override
     public Set<String> getPropertyNames() {
-        return BeanUtil.getIntrospectedPropertyNames(this);
+        return Beans.getIntrospectedPropertyNames(this);
     }
 
     /**
@@ -68,12 +68,12 @@ public abstract class UnboundBean implements BeanInterface {
      */
     @Override
     public boolean hasProperty(String key) {
-        return BeanUtil.hasIntrospectedProperty(this, key);
+        return Beans.hasIntrospectedProperty(this, key);
     }
 
     @Override
     public boolean hasIndexedProperty(String key) {
-        return BeanUtil.hasIntrospectedIndexedProperty(this, key);
+        return Beans.hasIntrospectedIndexedProperty(this, key);
     }
 
     /**
@@ -89,19 +89,19 @@ public abstract class UnboundBean implements BeanInterface {
      */
     @Override
     public void setIndexedProperty(String key, int index, Object value) {
-        BeanUtil.setIntrospectedIndexedProperty(this, key, index, value);
+        Beans.setIntrospectedIndexedProperty(this, key, index, value);
     }
 
     /**
      * Set property <i>key</i> to <i>value</i>.
      * <p>
-     * This implementation calls a write method for the property using
+     * This implementation calls a write method for the indexed property using
      * JavaBeans introspection.
      *
      * @see BeanInterface#setProperty(java.lang.String, java.lang.Object)
      */
     @Override
     public void setProperty(String key, Object value) {
-        BeanUtil.setIntrospectedProperty(this, key, value);
+        Beans.setIntrospectedProperty(this, key, value);
     }
 }

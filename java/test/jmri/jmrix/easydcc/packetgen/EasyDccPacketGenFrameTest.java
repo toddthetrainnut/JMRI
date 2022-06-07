@@ -1,20 +1,18 @@
 package jmri.jmrix.easydcc.packetgen;
 
 import jmri.jmrix.easydcc.EasyDccSystemConnectionMemo;
-
 import java.awt.GraphicsEnvironment;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmrix.easydcc.packetgen.EasyDccPacketGenFrame
  * class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class EasyDccPacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
@@ -23,10 +21,9 @@ public class EasyDccPacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
         } 
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 }

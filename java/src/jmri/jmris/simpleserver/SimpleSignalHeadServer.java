@@ -3,7 +3,6 @@ package jmri.jmris.simpleserver;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import jmri.InstanceManager;
 import jmri.JmriException;
 import jmri.SignalHead;
@@ -20,13 +19,12 @@ public class SimpleSignalHeadServer extends AbstractSignalHeadServer {
 
     private DataOutputStream output;
     private JmriConnection connection;
-
     public SimpleSignalHeadServer(JmriConnection connection) {
         super();
         this.connection = connection;
     }
 
-    public SimpleSignalHeadServer(DataInputStream inStream, DataOutputStream outStream){
+    public SimpleSignalHeadServer(DataInputStream inStream, DataOutputStream outStream) {
         super();
         output = outStream;
     }

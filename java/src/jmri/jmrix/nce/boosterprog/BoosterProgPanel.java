@@ -1,5 +1,6 @@
 package jmri.jmrix.nce.boosterprog;
 
+import java.util.ResourceBundle;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;

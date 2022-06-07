@@ -2,12 +2,10 @@ package jmri.implementation;
 
 import jmri.util.JUnitUtil;
 import jmri.IdTag;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class AbstractRailComReporterTest extends AbstractReporterTestBase {
 
@@ -40,18 +38,17 @@ public class AbstractRailComReporterTest extends AbstractReporterTestBase {
         Assert.assertEquals("IdTag Seen",IdTag.UNSEEN,r.getState());
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         r = new AbstractRailComReporter("IR1");
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         r = null;
-        JUnitUtil.clearShutDownManager(); // would be better to check and clean up specifics in tests
         JUnitUtil.tearDown();
     }
 

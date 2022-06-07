@@ -1,10 +1,8 @@
 package jmri.util.managers;
 
 import javax.annotation.Nonnull;
-import javax.annotation.CheckForNull;
-import jmri.InstanceManager;
+import javax.annotation.Nullable;
 import jmri.Memory;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.managers.DefaultMemoryManager;
 
 /**
@@ -17,19 +15,17 @@ import jmri.managers.DefaultMemoryManager;
 public class MemoryManagerThrowExceptionScaffold extends DefaultMemoryManager {
 
     public MemoryManagerThrowExceptionScaffold() {
-        super(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
+        super();
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
-    protected Memory createNewMemory(@Nonnull String systemName, @CheckForNull String userName) {
+    protected Memory createNewMemory(String systemName, String userName) {
         throw new IllegalArgumentException("Illegal argument");
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
     public Memory provideMemory(@Nonnull String name) {
         throw new IllegalArgumentException("Illegal argument");
     }
@@ -48,14 +44,13 @@ public class MemoryManagerThrowExceptionScaffold extends DefaultMemoryManager {
     
     /** {@inheritDoc} */
     @Override
-    public Memory getByUserName(@Nonnull String key) {
+    public Memory getByUserName(String key) {
         throw new IllegalArgumentException("Illegal argument");
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
-    public Memory newMemory(@Nonnull String systemName, @CheckForNull String userName) {
+    public Memory newMemory(@Nonnull String systemName, @Nullable String userName) {
         throw new IllegalArgumentException("Illegal argument");
     }
     

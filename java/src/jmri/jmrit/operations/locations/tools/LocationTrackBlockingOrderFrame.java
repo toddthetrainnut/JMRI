@@ -2,12 +2,14 @@ package jmri.jmrit.operations.locations.tools;
 
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-
-import javax.swing.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ScrollPaneConstants;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsXml;
@@ -16,6 +18,8 @@ import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.jmrit.operations.trains.TrainManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame for user edit of location
@@ -53,8 +57,7 @@ public class LocationTrackBlockingOrderFrame extends OperationsFrame {
         if (_location != null) {
             trackModel.initTable(trackTable, location);
             locationName.setText(_location.getName());
-            trackTable.setEnabled(!Setup.isSortByTrackNameEnabled());
-            enableButtons(!Setup.isSortByTrackNameEnabled());
+            enableButtons(true);
         } else {
             enableButtons(false);
         }

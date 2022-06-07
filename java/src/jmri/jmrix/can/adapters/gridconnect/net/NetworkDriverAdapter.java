@@ -24,7 +24,7 @@ public class NetworkDriverAdapter extends jmri.jmrix.AbstractNetworkPortControll
         options.put(option1Name, new Option(Bundle.getMessage("ConnectionGateway"), new String[]{"Pass All", "Filtering"}));
         option2Name = "Protocol"; // NOI18N
         options.put(option2Name, new Option(Bundle.getMessage("ConnectionProtocol"), jmri.jmrix.can.ConfigurationManager.getSystemOptions(), false));
-        super.setManufacturer(jmri.jmrix.openlcb.OlcbConnectionTypeList.OPENLCB); // overriden by MERG Connections.
+        setManufacturer(jmri.jmrix.openlcb.OlcbConnectionTypeList.OPENLCB);
         allowConnectionRecovery = true;
     }
 
@@ -35,21 +35,17 @@ public class NetworkDriverAdapter extends jmri.jmrix.AbstractNetworkPortControll
     @Override
     public void configure() {
         TrafficController tc;
-        switch (getOptionState(option2Name)) {
-            case ConfigurationManager.MERGCBUS:
-            case ConfigurationManager.SPROGCBUS:
-                // Register the CAN traffic controller being used for this connection
-                tc = new MergTrafficController();
-                 try {
-                    tc.setCanId(Integer.parseInt(getOptionState("CANID")));
-                } catch (NumberFormatException e) {
-                    log.error("Cannot parse CAN ID \"{}\" - check your preference settings", getOptionState("CANID"), e);
-                    log.error("Now using default CAN ID {}",tc.getCanid());
-                }
-                break;
-            default:
-                tc = new GcTrafficController();
-                break;
+        if (getOptionState(option2Name).equals(ConfigurationManager.MERGCBUS)) {
+            // Register the CAN traffic controller being used for this connection
+            tc = new MergTrafficController();
+            try {
+                tc.setCanId(Integer.parseInt(getOptionState("CANID")));
+            } catch (Exception e) {
+                log.error("Cannot parse CAN ID - check your preference settings " + e);
+                log.error("Now using default CAN ID");
+            }
+        } else {
+            tc = new GcTrafficController();
         }
         this.getSystemConnectionMemo().setTrafficController(tc);
 
@@ -58,12 +54,10 @@ public class NetworkDriverAdapter extends jmri.jmrix.AbstractNetworkPortControll
         tc.connectPort(this);
         this.getSystemConnectionMemo().setProtocol(getOptionState(option2Name));
 
-        // do central protocol-specific configuration
+        // do central protocol-specific configuration    
         this.getSystemConnectionMemo().configureManagers();
         if (socketConn != null) {
-            log.info("{} Connection via {} complete with {}",
-                this.getSystemConnectionMemo().getUserName(),
-                getOptionState(option2Name), socketConn.getInetAddress());
+            log.info("Connection complete with {}", socketConn.getInetAddress());
         }
     }
 
@@ -76,7 +70,7 @@ public class NetworkDriverAdapter extends jmri.jmrix.AbstractNetworkPortControll
     public CanSystemConnectionMemo getSystemConnectionMemo() {
         return (CanSystemConnectionMemo) super.getSystemConnectionMemo();
     }
-
+    
     /**
      * {@inheritDoc}
      */

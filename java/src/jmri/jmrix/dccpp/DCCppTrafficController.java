@@ -23,17 +23,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class DCCppTrafficController extends AbstractMRTrafficController implements DCCppInterface {
 
-    @Override
-    protected void transmitLoop() {
-        log.debug("Don't start sending for 1.5 seconds to avoid Arduino restart");
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ignore) {
-            Thread.currentThread().interrupt();
-        }
-        super.transmitLoop();
-    }
-
     /**
      * Create a new DCCppTrafficController instance.
      * Must provide a DCCppCommandStation reference at creation time.
@@ -75,9 +64,7 @@ public abstract class DCCppTrafficController extends AbstractMRTrafficController
      */
     @Override
     public void forwardMessage(AbstractMRListener reply, AbstractMRMessage m) {
-        if (reply instanceof DCCppListener && m instanceof DCCppMessage) {
-            ((DCCppListener) reply).message((DCCppMessage) m);
-        }
+        ((DCCppListener) reply).message((DCCppMessage) m);
     }
 
     /**
@@ -93,12 +80,6 @@ public abstract class DCCppTrafficController extends AbstractMRTrafficController
     @Override
     public void forwardReply(AbstractMRListener client, AbstractMRReply m) {
         // check parity
-        if (!(client instanceof DCCppListener)) { // split check to prevent class cast exception later
-            return;
-        }
-        if (!(m instanceof DCCppReply)){
-            return;
-        }
         try {
             // NOTE: For now, just forward ALL messages without filtering
             ((DCCppListener) client).message((DCCppReply) m);
@@ -155,8 +136,8 @@ public abstract class DCCppTrafficController extends AbstractMRTrafficController
     // We use the pollMessage routines for high priority messages.
     // This means responses to time critical messages (turnout off
     // messages).
-    LinkedBlockingQueue<DCCppMessage> highPriorityQueue;
-    LinkedBlockingQueue<DCCppListener> highPriorityListeners;
+    LinkedBlockingQueue<DCCppMessage> highPriorityQueue = null;
+    LinkedBlockingQueue<DCCppListener> highPriorityListeners = null;
 
     public void sendHighPriorityDCCppMessage(DCCppMessage m, DCCppListener reply) {
         try {
@@ -198,15 +179,15 @@ public abstract class DCCppTrafficController extends AbstractMRTrafficController
     @Override
     public synchronized void addDCCppListener(int mask, DCCppListener l) {
         addListener(l);
-        // This adds all the mask information.  A better way to do
+        // This is adds all the mask information.  A better way to do
         // this would be to allow updating individual bits
-        mListenerMasks.put(l, mask);
+        mListenerMasks.put(l, Integer.valueOf(mask));
     }
 
     @Override
     public synchronized void removeDCCppListener(int mask, DCCppListener l) {
         removeListener(l);
-        // This removes all the mask information.  A better way to do
+        // This is removes all the mask information.  A better way to do
         // this would be to allow updating of individual bits
         mListenerMasks.remove(l);
     }
@@ -239,18 +220,17 @@ public abstract class DCCppTrafficController extends AbstractMRTrafficController
         if (mMemo == null) {
             return true;
         }
-        DCCppProgrammer progrmr = (jmri.jmrix.dccpp.DCCppProgrammer) mMemo.getProgrammerManager().getGlobalProgrammer();
-        if ( progrmr!=null ) {
-            return !(progrmr.programmerBusy());
-        }
-        log.warn("Unable to fetch DCCppProgrammer");
-        return true;
+        return !(((jmri.jmrix.dccpp.DCCppProgrammer) mMemo.getProgrammerManager().getGlobalProgrammer()).programmerBusy());
     }
 
     @Override
     // endOfMessage() not really used in DCC++ .. it's handled in the Packetizer.
     protected boolean endOfMessage(AbstractMRReply msg) {
-        return msg.getElement(msg.getNumDataElements() - 1) == '>';
+        if (msg.getElement(msg.getNumDataElements() - 1) == '>') {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

@@ -2,16 +2,14 @@ package jmri.jmrix.openlcb;
 
 import jmri.util.JUnitUtil;
 import jmri.ProgrammingMode;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * OlcbProgrammerTest.java
  *
- * Test for the jmri.jmrix.openlcb.OlcbProgrammer class
+ * Description:	tests for the jmri.jmrix.openlcb.OlcbProgrammer class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class OlcbProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
 
@@ -29,14 +27,18 @@ public class OlcbProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
                 ((OlcbProgrammer)programmer).getBestMode());        
     }
 
-    @Test
-    @Override
+    @Test(expected=java.lang.IllegalArgumentException.class)
     public void testSetGetMode() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> programmer.setMode(ProgrammingMode.REGISTERMODE));
+        programmer.setMode(ProgrammingMode.REGISTERMODE);
+        Assert.assertEquals("Check mode matches set", ProgrammingMode.REGISTERMODE,
+                programmer.getMode());        
     }
+    
+    @Test
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         //new OlcbSystemConnectionMemo();
@@ -44,7 +46,7 @@ public class OlcbProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         programmer = null;
         JUnitUtil.tearDown();

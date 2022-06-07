@@ -1,9 +1,7 @@
 package jmri.jmrit.operations.rollingstock.cars.tools;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +12,8 @@ import org.slf4j.LoggerFactory;
  */
 final class CarAttributeAction extends AbstractAction {
 
-    public CarAttributeAction(CarAttributeEditFrame caef) {
-        super(Bundle.getMessage("CarQuantity"));
+    public CarAttributeAction(String actionName, CarAttributeEditFrame caef) {
+        super(actionName);
         this.caef = caef;
     }
 

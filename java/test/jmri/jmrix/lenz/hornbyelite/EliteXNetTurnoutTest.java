@@ -4,18 +4,16 @@ import jmri.jmrix.lenz.XNetInterfaceScaffold;
 import jmri.jmrix.lenz.XNetReply;
 import jmri.Turnout;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Tests for the {@link jmri.jmrix.lenz.hornbyelite.EliteXNetTurnout} class.
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
-public class EliteXNetTurnoutTest extends jmri.jmrix.lenz.XNetTurnoutTest {
+public class EliteXNetTurnoutTest extends jmri.jmrix.lenz.XNetTurnoutTest{
 
     @Override
     public void checkClosedMsgSent() {
@@ -29,16 +27,6 @@ public class EliteXNetTurnoutTest extends jmri.jmrix.lenz.XNetTurnoutTest {
                 lnis.outbound.elementAt(lnis.outbound.size() - 1).toString());
     }
 
-    @Override
-    protected void checkClosedOffSent() {
-        // We do not send off messages to the Elite
-    }
-
-    @Override
-    protected void checkThrownOffSent() {
-        // We do not send off messages to the Elite
-    }
-
     // Test the XNetTurnout message sequence.
     @Test
     @Override
@@ -48,10 +36,10 @@ public class EliteXNetTurnoutTest extends jmri.jmrix.lenz.XNetTurnoutTest {
         try {
             t.setCommandedState(jmri.Turnout.CLOSED);
         } catch (Exception e) {
-            log.error("TO exception: {}", e);
+            log.error("TO exception: " + e);
         }
 
-        Assert.assertEquals(Turnout.CLOSED, t.getCommandedState());
+        Assert.assertTrue(t.getCommandedState() == jmri.Turnout.CLOSED);
 
         Assert.assertEquals("on message sent", "52 05 8A DD",
                 lnis.outbound.elementAt(lnis.outbound.size() - 1).toString());
@@ -67,34 +55,40 @@ public class EliteXNetTurnoutTest extends jmri.jmrix.lenz.XNetTurnoutTest {
 
         // no wait here.  The last reply should cause the turnout to
         // set it's state, but it will not cause another reply.
-        Assert.assertEquals(Turnout.CLOSED, t.getKnownState());
+        Assert.assertTrue(t.getKnownState() == jmri.Turnout.CLOSED);
     }
 
     @Test
-    @Override
     public void checkIncoming() {
         t.setFeedbackMode(Turnout.MONITORING);
-        jmri.util.JUnitUtil.waitFor(() -> t.getFeedbackMode() == Turnout.MONITORING, "Feedback mode set");
+        jmri.util.JUnitUtil.waitFor(() -> {
+            return t.getFeedbackMode() == Turnout.MONITORING;
+        }, "Feedback mode set");
 
-        listenStatus = Turnout.UNKNOWN;
-        t.addPropertyChangeListener(new Listen());
+	    listenStatus = Turnout.UNKNOWN;
+	    t.addPropertyChangeListener(new Listen());
 
         // notify the object that somebody else changed it...
         XNetReply m = new XNetReply("42 05 04 43"); // set CLOSED
         ((EliteXNetTurnout) t).message(m);
-        jmri.util.JUnitUtil.waitFor(() -> listenStatus != Turnout.UNKNOWN, "Turnout state changed");
-        Assert.assertEquals("state after CLOSED message", Turnout.CLOSED, t.getKnownState());
+        jmri.util.JUnitUtil.waitFor(() -> {
+            return listenStatus != Turnout.UNKNOWN;
+        }, "Turnout state changed");
+        Assert.assertEquals("state after CLOSED message",Turnout.CLOSED,t.getKnownState());
 
-        listenStatus = Turnout.UNKNOWN;
+	    listenStatus = Turnout.UNKNOWN;
 
         m = new XNetReply("42 05 08 4F"); // set THROWN
         ((EliteXNetTurnout) t).message(m);
-        jmri.util.JUnitUtil.waitFor(() -> listenStatus != Turnout.UNKNOWN, "Turnout state changed");
-        Assert.assertEquals("state after THROWN message", Turnout.THROWN, t.getKnownState());
+        jmri.util.JUnitUtil.waitFor(() -> {
+            return listenStatus != Turnout.UNKNOWN;
+        }, "Turnout state changed");
+        Assert.assertEquals("state after THROWN message",Turnout.THROWN,t.getKnownState());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
@@ -107,9 +101,8 @@ public class EliteXNetTurnoutTest extends jmri.jmrix.lenz.XNetTurnoutTest {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        lnis.terminateThreads();
         JUnitUtil.tearDown();
     }
 

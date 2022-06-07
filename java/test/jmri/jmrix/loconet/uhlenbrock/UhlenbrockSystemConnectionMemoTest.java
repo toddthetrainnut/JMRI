@@ -1,35 +1,37 @@
 package jmri.jmrix.loconet.uhlenbrock;
 
-import jmri.jmrix.loconet.LnSystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.After;
+import org.junit.Before;
 import jmri.jmrix.loconet.LocoNetInterfaceScaffold;
+import jmri.jmrix.loconet.UhlenbrockSlotManager;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class UhlenbrockSystemConnectionMemoTest extends LnSystemConnectionMemoTestBase<UhlenbrockSystemConnectionMemo> {
+public class UhlenbrockSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
-        super.setUp();
-        scm = new UhlenbrockSystemConnectionMemo();
-        LocoNetInterfaceScaffold lnis = new LocoNetInterfaceScaffold(scm);
-        scm.setLnTrafficController(lnis);
-        scm.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_IBX_TYPE_2, false, false, false, false);
-        scm.configureManagers();
+       JUnitUtil.setUp();
+       UhlenbrockSystemConnectionMemo memo = new UhlenbrockSystemConnectionMemo();
+       LocoNetInterfaceScaffold lnis = new LocoNetInterfaceScaffold(memo);
+       memo.setLnTrafficController(lnis);
+       memo.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_IBX_TYPE_2,false,false,false);
+       memo.configureManagers();
+       scm = memo;
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        scm.dispose();
-        super.tearDown();
+        ((UhlenbrockSystemConnectionMemo)scm).dispose();
+        JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(UhlenbrockSystemConnectionMemoTest.class);
+
 }

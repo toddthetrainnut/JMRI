@@ -43,22 +43,15 @@ public class SwingShutDownTask extends AbstractShutDownTask {
     String warning;
     String action;
     Component component;
-    private boolean didPrompt = false;
 
     /**
-     * {@inheritDoc}
+     * Take the necessary action.
      *
-     * This implementation displays a dialog allowing a user continue stopping
-     * the app, abort stopping the app, or take a custom action. Closing the
-     * dialog without choosing any button is treated as aborting stopping the
-     * app.
-     *
-     * @see #didPrompt()
-     * @see #doPrompt()
+     * @return true if the shutdown should continue, false to abort.
      */
     @Override
-    public final Boolean call() {
-        if (!checkPromptNeeded()) {
+    public boolean execute() {
+        while (!checkPromptNeeded()) {
             // issue prompt
             Object[] possibleValues;
             if (action != null) {
@@ -78,7 +71,6 @@ public class SwingShutDownTask extends AbstractShutDownTask {
                     possibleValues, possibleValues[possibleValues.length - 1]);
             switch (selectedValue) {
                 case 1:
-                case -1:
                     // abort quit
                     return false;
                 case 0:
@@ -86,28 +78,18 @@ public class SwingShutDownTask extends AbstractShutDownTask {
                     return true;
                 case 2:
                     // take action and try again
-                    didPrompt = true;
                     return doPrompt();
+                case -1:
+                    // dialog window closed
+                    return doClose();
                 default:
                     // unexpected value, log but continue
-                    log.error("unexpected selection: {}", selectedValue);
+                    log.error("unexpected selection: " + selectedValue);
                     return true;
             }
         }
+        // break out of loop when ready to continue       
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * This implementation calls {@link #didPrompt()} if the user took the
-     * prompt action.
-     */
-    @Override
-    public void run() {
-        if (didPrompt) {
-            didPrompt();
-        }
     }
 
     /**
@@ -123,24 +105,22 @@ public class SwingShutDownTask extends AbstractShutDownTask {
     }
 
     /**
-     * Handle the request to address a potential blocker to stopping. This
-     * method is called in {@link #run()} and must not interact with the user.
-     * <p>
-     * This is a dummy implementation, intended to be overloaded.
-     */
-    protected void didPrompt() {
-        // do nothing
-    }
-
-    /**
-     * Handle the request to address a potential blocker to stopping. This
-     * method is called in {@link #call()} and can interact with the user.
-     * <p>
-     * This is a dummy implementation, intended to be overloaded.
+     * Provide a subclass-specific method to handle the request to fix the
+     * problem. This is a dummy implementation, intended to be overloaded.
      *
      * @return true if ready to shutdown, false to end shutdown
      */
     protected boolean doPrompt() {
+        return true;
+    }
+
+    /**
+     * Provide a subclass-specific method to handle the case where the user has
+     * chosen the close window option.
+     *
+     * @return true if ready to shutdown, false to end shutdown
+     */
+    protected boolean doClose() {
         return true;
     }
 

@@ -3,15 +3,17 @@ package jmri.jmrit.symbolicprog;
 import jmri.progdebugger.ProgDebugger;
 import jmri.util.JUnitUtil;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Test CvValue class
  *
- * @author Bob Jacobsen Copyright 2004, 2006, 2015
+ * @author	Bob Jacobsen Copyright 2004, 2006, 2015
  */
 public class CvValueTest {
 
@@ -124,12 +126,12 @@ public class CvValueTest {
 
     private final static Logger log = LoggerFactory.getLogger(CvValueTest.class);
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,13 +1,14 @@
 package jmri.util.swing;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ComboBoxColorChooserPanelTest {
 
@@ -23,13 +24,14 @@ public class ComboBoxColorChooserPanelTest {
         Assert.assertEquals("display name",Bundle.getMessage("ComboBoxColorChooserName"),panel.getDisplayName());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         panel = new ComboBoxColorChooserPanel();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

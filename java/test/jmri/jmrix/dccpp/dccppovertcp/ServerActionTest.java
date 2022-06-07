@@ -1,9 +1,10 @@
 package jmri.jmrix.dccpp.dccppovertcp;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for ServerAction class.
@@ -18,7 +19,7 @@ public class ServerActionTest {
       Assert.assertNotNull("ServerAction constructor",new ServerAction());
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
@@ -26,7 +27,7 @@ public class ServerActionTest {
         jmri.InstanceManager.setDefault(jmri.jmrix.dccpp.DCCppSystemConnectionMemo.class, memo);
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         JUnitUtil.tearDown();
    }

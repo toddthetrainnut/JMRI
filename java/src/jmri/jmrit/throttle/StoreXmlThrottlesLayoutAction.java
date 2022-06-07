@@ -65,20 +65,15 @@ public class StoreXmlThrottlesLayoutAction extends AbstractAction {
 
         try {
             Element root = new Element("throttle-layout-config");
-            root.setAttribute("noNamespaceSchemaLocation",  // NOI18N
-                    "http://jmri.org/xml/schema/throttle-layout-config.xsd",  // NOI18N
-                    org.jdom2.Namespace.getNamespace("xsi",
-                            "http://www.w3.org/2001/XMLSchema-instance"));  // NOI18N
-            Document doc = new Document(root);
+            Document doc = XmlFile.newDocument(root, XmlFile.getDefaultDtdLocation() + "throttle-layout-config.dtd");
 
             // add XSLT processing instruction
             // <?xml-stylesheet type="text/xsl" href="XSLT/throttle-layout-config.xsl"?>
-            java.util.Map<String,String> m = new java.util.HashMap<String,String>();
-            m.put("type", "text/xsl");
-            m.put("href", jmri.jmrit.XmlFile.xsltLocation + "throttle-layout-config.xsl");
-            org.jdom2.ProcessingInstruction p = new org.jdom2.ProcessingInstruction("xml-stylesheet", m);
-            doc.addContent(0, p);
-
+/*TODO   java.util.Map<String,String> m = new java.util.HashMap<String,String>();
+             m.put("type", "text/xsl");
+             m.put("href", jmri.jmrit.XmlFile.xsltLocation + "throttle-layout-config.xsl");
+             ProcessingInstruction p = new ProcessingInstruction("xml-stylesheet", m);
+             doc.addContent(0, p); */
             java.util.ArrayList<Element> children = new java.util.ArrayList<Element>(5);
 
             // throttle list window
@@ -97,17 +92,17 @@ public class StoreXmlThrottlesLayoutAction extends AbstractAction {
                 XMLOutputter fmt = new XMLOutputter();
                 fmt.setFormat(Format.getPrettyFormat()
                         .setLineSeparator(System.getProperty("line.separator"))
-                        .setTextMode(Format.TextMode.TRIM_FULL_WHITE));
+                        .setTextMode(Format.TextMode.PRESERVE));
                 fmt.output(doc, o);
             } catch (IOException ex) {
-                log.warn("Exception in storing throttle xml", ex);
+                log.warn("Exception in storing throttle xml: " + ex);
             } finally {
                 o.close();
             }
         } catch (FileNotFoundException ex) {
-            log.warn("Exception in storing throttle xml", ex);
+            log.warn("Exception in storing throttle xml: " + ex);
         } catch (IOException ex) {
-            log.warn("Exception in storing throttle xml", ex);
+            log.warn("Exception in storing throttle xml: " + ex);
         }
     }
 

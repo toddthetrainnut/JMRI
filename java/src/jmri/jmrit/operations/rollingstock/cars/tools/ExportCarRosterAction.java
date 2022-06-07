@@ -1,9 +1,7 @@
 package jmri.jmrit.operations.rollingstock.cars.tools;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import jmri.jmrit.operations.rollingstock.cars.CarsTableFrame;
 
 /**
@@ -15,8 +13,8 @@ public class ExportCarRosterAction extends AbstractAction {
 
     CarsTableFrame _carsTableFrame;
 
-    public ExportCarRosterAction(CarsTableFrame carsTableFrame) {
-        super(Bundle.getMessage("MenuItemExport"));
+    public ExportCarRosterAction(String actionName, CarsTableFrame carsTableFrame) {
+        super(actionName);
         _carsTableFrame = carsTableFrame;
     }
 

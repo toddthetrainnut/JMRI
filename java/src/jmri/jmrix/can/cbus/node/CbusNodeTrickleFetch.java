@@ -5,6 +5,7 @@ import jmri.jmrix.can.CanMessage;
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.CanReply;
 import jmri.jmrix.can.TrafficController;
+import jmri.jmrix.can.cbus.node.CbusNodeTableDataModel;
 import java.util.TimerTask;
 import jmri.util.TimerUtil;
 
@@ -20,24 +21,31 @@ import jmri.util.TimerUtil;
 
 public class CbusNodeTrickleFetch implements CanListener {
     
-    private final CbusBasicNodeTableFetch nodeModel;
-    private final TrafficController tc;
+    private CbusNodeTableDataModel nodeModel;
+    private TrafficController tc;
     private TimerTask trickleTimer;
-    private final long trickleTimeoutValue;
-    private boolean networkActive;
     
-    public CbusNodeTrickleFetch(CanSystemConnectionMemo memo, CbusBasicNodeTableFetch model, long timeoutValue) {
+    // next fetch call is double this as there should be a response from a module
+    private long trickleTimeoutValue;
+    
+    Boolean networkActive;
+    
+    public CbusNodeTrickleFetch(CanSystemConnectionMemo memo, CbusNodeTableDataModel model, long timeoutValue) {
         
         nodeModel = model;
         trickleTimeoutValue = timeoutValue;
+        // connect to the CanInterface
         tc = memo.getTrafficController();
+        tc.addCanListener(this);
+        
         networkActive = false;
         // start timer
         if ( timeoutValue > 0L ) {
-            // connect to the CanInterface
-            addTc(tc);
             startTrickleTimer();
+        } else {
+            dispose();
         }
+        
     }
 
     /**
@@ -73,7 +81,7 @@ public class CbusNodeTrickleFetch implements CanListener {
     }
     
     /**
-     * {@inheritDoc}
+     * 
      */
     @Override
     public void message(CanMessage m) { // outgoing cbus message
@@ -81,7 +89,7 @@ public class CbusNodeTrickleFetch implements CanListener {
     }
     
     /**
-     * {@inheritDoc}
+     * @param m canmessage
      */
     @Override
     public void reply(CanReply m) { // incoming cbus message
@@ -90,7 +98,7 @@ public class CbusNodeTrickleFetch implements CanListener {
     
     public void dispose(){
         stopTrickleTimer();
-        removeTc(tc);
+        tc.removeCanListener(this);
     }
 
     // private final static Logger log = LoggerFactory.getLogger(CbusNodeTrickleFetch.class);

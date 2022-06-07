@@ -1,8 +1,8 @@
 package jmri.jmrix.powerline;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
-import jmri.*;
+import jmri.Sensor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manage the system-specific Sensor implementation.
@@ -11,51 +11,53 @@ import jmri.*;
  * the unit number without padding.
  *
  * @author Bob Jacobsen Copyright (C) 2003, 2006, 2007, 2008
- * @author Ken Cameron, (C) 2009, sensors from poll replies. Converted to
- * multiple connection support
+ * @author Ken Cameron, (C) 2009, sensors from poll replies Converted to
+ * multiple connection
  * @author kcameron Copyright (C) 2011
  */
 abstract public class SerialSensorManager extends jmri.managers.AbstractSensorManager implements SerialListener {
 
-    private SerialTrafficController tc = null;
+    SerialTrafficController tc = null;
 
     public SerialSensorManager(SerialTrafficController tc) {
-        super(tc.getAdapterMemo());
+        super();
         this.tc = tc;
         tc.addSerialListener(this);
     }
 
     /**
-     * {@inheritDoc}
+     * Return the system letter
      */
     @Override
-    @Nonnull
-    public SerialSystemConnectionMemo getMemo() {
-        return (SerialSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return tc.getAdapterMemo().getSystemPrefix();
+    }
+
+    // to free resources when no longer used
+    @Override
+    public void dispose() {
+        super.dispose();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * System name is normalized to ensure uniqueness.
-     * @throws IllegalArgumentException when SystemName can't be converted
+     * Create a new sensor if all checks are passed System name is normalized to
+     * ensure uniqueness.
      */
     @Override
-    @Nonnull
-    protected Sensor createNewSensor(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    protected Sensor createNewSensor(String systemName, String userName) {
         Sensor s;
         // validate the system name, and normalize it
         String sName = tc.getAdapterMemo().getSerialAddress().normalizeSystemName(systemName);
-        if (sName.isEmpty()) {
+        if (sName.equals("")) {
             // system name is not valid
-            throw new IllegalArgumentException("Invalid Powerline Sensor system name - " +  // NOI18N
-                    systemName);
+            log.error("Invalid Sensor system name - {}", systemName);
+            return null;
         }
-        // does this Sensor already exist?
+        // does this Sensor already exist
         s = getBySystemName(sName);
         if (s != null) {
-            throw new IllegalArgumentException("Powerline Sensor with this name already exists - " +  // NOI18N
-                    systemName);
+            log.error("Sensor with this name already exists - {}", systemName);
+            return null;
         }
         // Sensor system name is valid and Sensor doesn't exist, make a new one
         if (userName == null) {
@@ -63,6 +65,7 @@ abstract public class SerialSensorManager extends jmri.managers.AbstractSensorMa
         } else {
             s = new SerialSensor(sName, tc, userName);
         }
+
         return s;
     }
 
@@ -82,32 +85,60 @@ abstract public class SerialSensorManager extends jmri.managers.AbstractSensorMa
     abstract public void reply(SerialReply r);
 
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return false;
     }
 
     @Override
-    @javax.annotation.Nonnull
-    @javax.annotation.CheckReturnValue
-    public String getNextValidSystemName(@Nonnull NamedBean currentBean) throws JmriException {
-        throw new jmri.JmriException("getNextValidSystemName should not have been called");
+    public String getNextValidAddress(String curAddress, String prefix) {
+
+        //If the hardware address passed does not already exist then this can
+        //be considered the next valid address.
+        Sensor s = getBySystemName(prefix + typeLetter() + curAddress);
+        if (s == null) {
+            return curAddress;
+        }
+
+        // This bit deals with handling the curAddress, and how to get the next address.
+        int iName = 0;
+        //Address starts with a single letter called a house code.
+        String houseCode = curAddress.substring(0, 1);
+        try {
+            iName = Integer.parseInt(curAddress.substring(1));
+        } catch (NumberFormatException ex) {
+            log.error("Unable to convert {} Hardware Address to a number", curAddress);
+            jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).
+                    showErrorMessage(Bundle.getMessage("ErrorTitle"),
+                            Bundle.getMessage("ErrorConvertNumberX", curAddress), "" + ex, "", true, false);
+            return null;
+        }
+
+        //Check to determine if the systemName is in use, return null if it is,
+        //otherwise return the next valid address.
+        s = getBySystemName(prefix + typeLetter() + curAddress);
+        if (s != null) {
+            for (int x = 1; x < 10; x++) {
+                iName++;
+                s = getBySystemName(prefix + typeLetter() + houseCode + (iName));
+                if (s == null) {
+                    return houseCode + iName;
+                }
+            }
+            return null;
+        } else {
+            return houseCode + iName;
+        }
     }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format.
+     *
+     * @return 'true' if system name has a valid format, else returns 'false'
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull Locale locale) {
-        return tc.getAdapterMemo().getSerialAddress().validateSystemNameFormat(name, typeLetter(), locale);
-    }
+    public NameValidity validSystemNameFormat(String systemName) {
+        return (tc.getAdapterMemo().getSerialAddress().validSystemNameFormat(systemName, 'S'));
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
-        return tc.getAdapterMemo().getSerialAddress().validSystemNameFormat(systemName, typeLetter());
     }
 
     /**
@@ -118,6 +149,6 @@ abstract public class SerialSensorManager extends jmri.managers.AbstractSensorMa
         return Bundle.getMessage("AddInputEntryToolTip");
     }
 
-    // private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SerialSensorManager.class);
+    private final static Logger log = LoggerFactory.getLogger(SerialSensorManager.class);
 
 }

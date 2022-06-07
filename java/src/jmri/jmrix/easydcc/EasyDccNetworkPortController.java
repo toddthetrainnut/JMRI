@@ -1,6 +1,6 @@
 package jmri.jmrix.easydcc;
 
-import jmri.SystemConnectionMemo;
+import jmri.jmrix.SystemConnectionMemo;
 
 /**
  * Abstract base for classes representing an EasyDCC communications port.

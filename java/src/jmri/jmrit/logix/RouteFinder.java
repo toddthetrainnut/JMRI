@@ -39,7 +39,7 @@ public class RouteFinder implements Runnable {
         _maxBlocks = maxB;
     }
 
-    protected synchronized void quit() {
+    synchronized protected void quit() {
         log.debug("quit= {}", _quit);
         _quit = true;
     }
@@ -103,6 +103,9 @@ public class RouteFinder implements Runnable {
                 log.debug("level {} has {} nodes. quit= {}", level, nodes.size(), _quit);
             }
             level++;
+            if (_quit) {
+                break;
+            }
         }
         jmri.util.ThreadingUtil.runOnLayout(() -> {
             if (_destNodes.isEmpty()) {
@@ -155,8 +158,7 @@ public class RouteFinder implements Runnable {
                         }
                     }
                     String exitName = path.getOppositePortalName(pName);
-                    OBlock pathBlock = (OBlock) path.getBlock();
-                    BlockOrder nOrder = new BlockOrder(pathBlock, path.getName(), pName, exitName);
+                    BlockOrder nOrder = new BlockOrder((OBlock) path.getBlock(), path.getName(), pName, exitName);
                     RouteNode child = new RouteNode(nOrder, node.needsViaAncestor());
                     _tree.insertNodeInto(child, node, node.getChildCount());
                     if (_viaBlock != null && _viaBlock.equals(nextBlock)) {
@@ -173,10 +175,10 @@ public class RouteFinder implements Runnable {
                                 && _dEntryName.equals(pName)) {
                             _destNodes.add(child);
                         }
-                    }
-                    children.add(child);
-                    if (_quit) {
-                        break;
+                        children.add(child);
+                        if (_quit) {
+                            break;
+                        }
                     }
                 }
             } else {
@@ -191,5 +193,5 @@ public class RouteFinder implements Runnable {
         return children;
     }
 
-    private static final Logger log = LoggerFactory.getLogger(RouteFinder.class);
+    private final static Logger log = LoggerFactory.getLogger(RouteFinder.class);
 }

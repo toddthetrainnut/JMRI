@@ -2,7 +2,6 @@ package jmri.jmrit.operations.trains.excel;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -13,8 +12,8 @@ import javax.swing.AbstractAction;
  */
 public class SetupExcelProgramFrameAction extends AbstractAction {
 
-    public SetupExcelProgramFrameAction() {
-        super(Bundle.getMessage("MenuItemSetupExcelProgram"));
+    public SetupExcelProgramFrameAction(String s) {
+        super(s);
     }
 
     SetupExcelProgramManifestFrame f = null;

@@ -30,7 +30,6 @@ public class ActiveSystemsMenu extends JMenu {
 
     /**
      * Add menus for active systems to the menu bar.
-     * @param m the menu bar to add the system menu to.
      */
     static public void addItems(JMenuBar m) {
 
@@ -52,7 +51,6 @@ public class ActiveSystemsMenu extends JMenu {
 
     /**
      * Add active systems as submenus inside a single menu entry.
-     * @param m menu to add the sub menus to.
      */
     static public void addItems(JMenu m) {
 

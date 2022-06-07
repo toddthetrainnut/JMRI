@@ -2,14 +2,12 @@ package jmri.jmrix.rps;
 
 import java.io.File;
 import java.io.IOException;
-
 import javax.vecmath.Point3d;
-
 import jmri.util.FileUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.Before;
 import org.jdom2.Element;
+import org.junit.Assert;
 
 /**
  * JUnit tests for the rps.PositionFile class.
@@ -17,7 +15,7 @@ import org.jdom2.Element;
  * Stores a PositionFileTest.xml file in the temp directory below current
  * working directory.
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class PositionFileTest {
 
@@ -96,13 +94,9 @@ public class PositionFileTest {
         Assert.assertEquals("no 2nd calibration reading", null, fin.getCalibrationReading(1));
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
-    
-    @AfterEach
-    public void tearDown() {
-        jmri.util.JUnitUtil.tearDown();
-    }
+
 }

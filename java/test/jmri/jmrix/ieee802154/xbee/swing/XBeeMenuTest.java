@@ -1,19 +1,19 @@
 package jmri.jmrix.ieee802154.xbee.swing;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.ieee802154.xbee.XBeeConnectionMemo;
 import jmri.jmrix.ieee802154.xbee.XBeeTrafficController;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of XBeeMenu.
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class XBeeMenuTest {
 
@@ -27,7 +27,7 @@ public class XBeeMenuTest {
         Assert.assertNotNull("exists", action);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tc = new XBeeTrafficController() {
@@ -47,11 +47,9 @@ public class XBeeMenuTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 }

@@ -4,14 +4,15 @@ import jmri.util.JUnitUtil;
 import jmri.jmrix.powerline.SerialReply;
 import jmri.jmrix.powerline.SerialSystemConnectionMemo;
 import jmri.jmrix.powerline.SerialTrafficController;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the simulator.SpecficReply class.
  *
- * @author Bob Jacobsen Copyright 2003, 2007, 2008, 2009, 2010 Converted to
+ * @author	Bob Jacobsen Copyright 2003, 2007, 2008, 2009, 2010 Converted to
  * multiple connection
  * @author kcameron Copyright (C) 2011
  */
@@ -32,21 +33,20 @@ public class SpecificReplyTest extends jmri.jmrix.AbstractMessageTestBase {
     }
 
     @Override
-    @BeforeEach
-    public void setUp() {
-        JUnitUtil.setUp();
+    @Before
+    public void setUp(){
+	JUnitUtil.setUp();
         memo = new SpecificSystemConnectionMemo();
         t = new SpecificTrafficController(memo);
         m = msg = new SpecificReply(t);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo = null;
-        t = null;
-        m = msg = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+	memo = null;
+	t = null;
+	m = msg = null;
+	JUnitUtil.tearDown();
     }
 
 }

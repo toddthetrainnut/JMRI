@@ -6,9 +6,10 @@ import jmri.jmrix.can.cbus.simulator.CbusSimulator;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.jmrix.can.TrafficControllerScaffoldLoopback;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
@@ -21,9 +22,9 @@ import org.junit.jupiter.api.*;
  */
 public class CbusCommandStationTest {
 
-    private CbusCommandStation t;
-    private CanSystemConnectionMemo memo;
-    private TrafficControllerScaffold lnis;
+    CbusCommandStation t;
+    CanSystemConnectionMemo memo;
+    TrafficControllerScaffold lnis;
 
     @Test
     public void testCTor() {
@@ -48,7 +49,8 @@ public class CbusCommandStationTest {
         Assert.assertNotNull("exists",ta);
         Assert.assertNotNull(InstanceManager.getDefault(CbusSimulator.class));
         
-        tc.terminateThreads();
+        tc = null;
+        ta = null;
     }
 
     // test originates from loconet
@@ -183,11 +185,13 @@ public class CbusCommandStationTest {
         Assert.assertEquals("nmra packet 21",
             "[78] A0 02 80 55 10 C5",
             lnis.outbound.elementAt(lnis.outbound.size() - 1).toString());
-        
+                
+        lnis = null;
     }
     
     
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         lnis = new TrafficControllerScaffold();
@@ -196,14 +200,12 @@ public class CbusCommandStationTest {
         t = new CbusCommandStation(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
-        lnis.terminateThreads();
+        JUnitUtil.tearDown();
         memo = null;
         t = null;
         lnis = null;
-        JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(CbusCommandStationTest.class);

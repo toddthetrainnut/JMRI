@@ -1,7 +1,6 @@
 package jmri.jmrit.operations.trains;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -13,12 +12,12 @@ import javax.swing.AbstractAction;
  */
 public class TrainRoadOptionsAction extends AbstractAction {
 
-    public TrainRoadOptionsAction(TrainEditFrame frame) {
-        super(Bundle.getMessage("MenuItemRoadOptions"));
-        _frame = frame;
+    public TrainRoadOptionsAction(String s, TrainEditFrame frame) {
+        super(s);
+        this.frame = frame;
     }
 
-    TrainEditFrame _frame; // the parent frame that is launching the TrainEditBuildOptionsFrame.
+    TrainEditFrame frame; // the parent frame that is launching the TrainEditBuildOptionsFrame.
 
     TrainRoadOptionsFrame f = null;
 
@@ -29,7 +28,7 @@ public class TrainRoadOptionsAction extends AbstractAction {
             f.dispose();
         }
         f = new TrainRoadOptionsFrame();
-        f.initComponents(_frame);
+        f.initComponents(frame);
     }
 }
 

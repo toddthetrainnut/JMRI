@@ -1,17 +1,18 @@
 package jmri.jmrix.lenz.liusbethernet;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * LIUSBEthernetAdapterTest.java
  *
- * Test for the jmri.jmrix.lenz.liusbethernet.LIUSBEthernetAdapter
+ * Description:	tests for the jmri.jmrix.lenz.liusbethernet.LIUSBEthernetAdapter
  * class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class LIUSBEthernetAdapterTest {
 
@@ -21,12 +22,12 @@ public class LIUSBEthernetAdapterTest {
         Assert.assertNotNull(a);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

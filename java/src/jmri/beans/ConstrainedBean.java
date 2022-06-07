@@ -5,6 +5,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Bean with support for {@link java.beans.VetoableChangeListener}s.
@@ -21,9 +22,11 @@ public abstract class ConstrainedBean extends Bean implements VetoableChangeProv
             this.fireVetoableChange(key, getProperty(key), value);
             super.setProperty(key, value);
         } catch (PropertyVetoException ex) {
+            // use the logger for the implementing class instead of a logger for ConstrainedBean
+            LoggerFactory.getLogger(this.getClass()).warn("Property {} change vetoed.", key, ex);
             // fire a property change that does not have the new value to indicate
             // to any other listeners that the property was "reset" back to its
-            // original value as a result of the veto
+            // orginal value as a result of the veto
             this.firePropertyChange(key, getProperty(key), getProperty(key));
         }
     }
@@ -31,13 +34,14 @@ public abstract class ConstrainedBean extends Bean implements VetoableChangeProv
     @Override
     public void setIndexedProperty(String key, int index, Object value) {
         try {
-            Object old = this.getIndexedPropertyOrNull(key, index);
-            this.fireVetoableChange(new IndexedPropertyChangeEvent(this, key, old, value, index));
+            this.fireVetoableChange(new IndexedPropertyChangeEvent(this, key, this.getIndexedProperty(key, index), value, index));
             super.setIndexedProperty(key, index, value);
         } catch (PropertyVetoException ex) {
+            // use the logger for the implementing class instead of a logger for ConstrainedBean
+            LoggerFactory.getLogger(this.getClass()).warn("Property {} change vetoed.", key, ex);
             // fire a property change that does not have the new value to indicate
             // to any other listeners that the property was "reset" back to its
-            // original value as a result of the veto
+            // orginal value as a result of the veto
             this.fireIndexedPropertyChange(key, index, getProperty(key), getProperty(key));
         }
     }
@@ -75,8 +79,9 @@ public abstract class ConstrainedBean extends Bean implements VetoableChangeProv
     /**
      * Fire a vetoable property change on the current thread. Use
      * {@link java.beans.VetoableChangeSupport#fireVetoableChange(java.beans.PropertyChangeEvent)}
-     * directly to fire this notification on another thread. If a
-     * PropertyVetoException is thrown, ensure the property change does not
+     * directly to fire this notification on another thread.
+     *
+     * If a PropertyVetoException is thrown, ensure the property change does not
      * complete.
      *
      * @param event {@link PropertyChangeEvent} to be fired
@@ -89,8 +94,9 @@ public abstract class ConstrainedBean extends Bean implements VetoableChangeProv
     /**
      * Fire a vetoable property change on the current thread. Use
      * {@link java.beans.VetoableChangeSupport#fireVetoableChange(java.lang.String, java.lang.Object, java.lang.Object)}
-     * directly to fire this notification on another thread. If a
-     * PropertyVetoException is thrown, ensure the property change does not
+     * directly to fire this notification on another thread.
+     *
+     * If a PropertyVetoException is thrown, ensure the property change does not
      * complete.
      *
      * @param propertyName property that is about to change
@@ -105,8 +111,9 @@ public abstract class ConstrainedBean extends Bean implements VetoableChangeProv
     /**
      * Fire a vetoable property change on the current thread. Use
      * {@link java.beans.VetoableChangeSupport#fireVetoableChange(java.lang.String, int, int)}
-     * directly to fire this notification on another thread. If a
-     * PropertyVetoException is thrown, ensure the property change does not
+     * directly to fire this notification on another thread.
+     *
+     * If a PropertyVetoException is thrown, ensure the property change does not
      * complete.
      *
      * @param propertyName property that is about to change
@@ -121,8 +128,9 @@ public abstract class ConstrainedBean extends Bean implements VetoableChangeProv
     /**
      * Fire a vetoable property change on the current thread. Use
      * {@link java.beans.VetoableChangeSupport#fireVetoableChange(java.lang.String, boolean, boolean)}
-     * directly to fire this notification on another thread. If a
-     * PropertyVetoException is thrown, ensure the property change does not
+     * directly to fire this notification on another thread.
+     *
+     * If a PropertyVetoException is thrown, ensure the property change does not
      * complete.
      *
      * @param propertyName property that is about to change
@@ -130,26 +138,7 @@ public abstract class ConstrainedBean extends Bean implements VetoableChangeProv
      * @param newValue     new value of the property
      * @throws PropertyVetoException if property update vetoed
      */
-    public void fireVetoableChange(String propertyName, boolean oldValue, boolean newValue)
-            throws PropertyVetoException {
+    public void fireVetoableChange(String propertyName, boolean oldValue, boolean newValue) throws PropertyVetoException {
         this.vetoableChangeSupport.fireVetoableChange(propertyName, oldValue, newValue);
-    }
-
-    /**
-     * Get the indexed property or return null if the index is invalid. Used to
-     * get the old value when setting an indexed property where the index may
-     * not previously have been set.
-     * 
-     * @param key   the property name
-     * @param index the index
-     * @return the value at index or null
-     */
-    protected Object getIndexedPropertyOrNull(String key, int index) {
-        try {
-            return this.getIndexedProperty(key, index);
-        } catch (IndexOutOfBoundsException ex) {
-            return null;
-        }
-
     }
 }

@@ -1,34 +1,32 @@
 package apps;
 
-import jmri.InstanceManager;
-import jmri.implementation.FileLocationsPreferences;
-import jmri.swing.PreferencesPanelTestBase;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.mockito.Mockito;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class FileLocationPaneTest extends PreferencesPanelTestBase<FileLocationPane> {
+public class FileLocationPaneTest {
 
-    @BeforeEach
-    public void setUp() {
-        JUnitUtil.setUp();
-        InstanceManager.setDefault(FileLocationsPreferences.class, Mockito.mock(FileLocationsPreferences.class));
-        prefsPanel = new FileLocationPane();
+    @Test
+    public void testCTor() {
+        FileLocationPane t = new FileLocationPane();
+        Assert.assertNotNull("exists",t);
     }
 
-    @Override
-    @Test
-    public void isPersistant() {
-        assertThat(prefsPanel.isPersistant()).isTrue();
+    // The minimal setup for log4J
+    @Before
+    public void setUp() {
+        JUnitUtil.setUp();
+    }
+
+    @After
+    public void tearDown() {
+        JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(FileLocationPaneTest.class);

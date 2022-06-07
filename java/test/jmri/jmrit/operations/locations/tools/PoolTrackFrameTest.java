@@ -1,24 +1,22 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.GraphicsEnvironment;
-
+import jmri.jmrit.operations.OperationsTestCase;
+import jmri.jmrit.operations.locations.TrackEditFrame;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
-import jmri.jmrit.operations.OperationsTestCase;
-import jmri.jmrit.operations.locations.YardEditFrame;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class PoolTrackFrameTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        YardEditFrame tf = new YardEditFrame();
+        TrackEditFrame tf = new TrackEditFrame();
         PoolTrackFrame t = new PoolTrackFrame(tf);
         Assert.assertNotNull("exists",t);
     }

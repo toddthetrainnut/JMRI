@@ -34,21 +34,14 @@ public class GuiUtilBase {
             return createEmptyMenuItem(null, "<none>");
         }
         name = LocaleSelector.getAttribute(child, "name");
-        if ((name == null) || (name.isEmpty())) {
+        if ((name == null) || (name.equals(""))) {
             if (child.getChild("name") != null) {
                 name = child.getChild("name").getText();
             }
         }
 
-        Element childUrl = child.getChild("icon"); // NOI18N
-        if ( childUrl != null) {
-            java.net.URL iconUrl =  FileUtil.findURL(childUrl.getText());
-            if (iconUrl!=null) {
-                icon = new ImageIcon(iconUrl);
-            }
-            else {
-                log.warn("Unable to locate icon :{}:",childUrl.getText());
-            }
+        if (child.getChild("icon") != null) {
+            icon = new ImageIcon(FileUtil.findURL(child.getChild("icon").getText()));
         }
         //This bit does not size very well, but it works for now.
         if (child.getChild("option") != null) {
@@ -108,7 +101,7 @@ public class GuiUtilBase {
                 log.warn("Did not find suitable ctor for {}{} icon", classname, icon != null ? " with" : " without");
                 return createEmptyMenuItem(icon, name);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                log.warn("failed to load GUI adapter class: {}", classname, e);
+                log.warn("failed to load GUI adapter class: {} due to: {}", classname, e);
                 return createEmptyMenuItem(icon, name);
             }
         } else if (child.getChild("panel") != null) {
@@ -123,7 +116,7 @@ public class GuiUtilBase {
                 setParameters(act, parameters);
                 return act;
             } catch (Exception ex) {
-                log.warn("could not load toolbar adapter class: {}", child.getChild("panel").getText(), ex);
+                log.warn("could not load toolbar adapter class: {} due to {}", child.getChild("panel").getText(), ex);
                 return createEmptyMenuItem(icon, name);
             }
         } else if (child.getChild("help") != null) {
@@ -254,7 +247,7 @@ public class GuiUtilBase {
             return new jmri.jmrit.XmlFile() {
             }.rootFromName(name);
         } catch (JDOMException | IOException e) {
-            log.error("Could not parse file \"{}\" due to", name, e);
+            log.error("Could not parse file \"{}\" due to: {}", name, e);
             return null;
         }
     }

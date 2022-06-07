@@ -5,7 +5,6 @@
 var minFontSize = parseInt(10);
 var maxFontSize = parseInt(48);
 var nbJmri = null;
-var log = new Logger();
 
 /*
  * Populate the panels menu with a list of open panels
@@ -158,7 +157,9 @@ function setFontSize(change) {
     if (size <= minFontSize) {
         $("#font-size-smaller").parent().addClass("disabled");
     }
-    log.log("Body font size is " + $("body").css("fontSize"));
+    if (window.console) {
+        console.log("Body font size is " + $("body").css("fontSize"));
+    }
 }
 
 /*
@@ -197,7 +198,9 @@ function setNavbarFixed(fixed) {
     }
     $("#navbar-fixed-position").prop("checked", (fixed === true) ? "checked" : "");
     window.localStorage.setItem("jmri.css.navbar.fixed", ((fixed === true) ? 1 : 0));
-    log.log("Navbar is " + ((fixed === true) ? "fixed" : "floating"));
+    if (window.console) {
+        console.log("Navbar is " + ((fixed === true) ? "fixed" : "floating"));
+    }
 }
 
 /*
@@ -294,7 +297,6 @@ $(document).ready(function () {
         setFontSize(14); // reset to default
         return false;
     });
-    // note: the functions and parameter names must match exactly those in jquery.jmri.js
     nbJmri = $.JMRI({
         open: function () {
             nbJmri.getPower();

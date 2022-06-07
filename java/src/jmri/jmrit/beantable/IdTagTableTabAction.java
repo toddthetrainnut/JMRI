@@ -2,12 +2,12 @@ package jmri.jmrit.beantable;
 
 import java.awt.BorderLayout;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import jmri.*;
+import jmri.util.ConnectionNameFromSystemName;
 
 public class IdTagTableTabAction extends AbstractTableTabAction<IdTag> {
 
@@ -21,7 +21,6 @@ public class IdTagTableTabAction extends AbstractTableTabAction<IdTag> {
 
     /** {@inheritDoc} */
     @Override
-    @Nonnull
     protected Manager<IdTag> getManager() {
         return InstanceManager.getDefault(IdTagManager.class);
     }
@@ -53,29 +52,32 @@ public class IdTagTableTabAction extends AbstractTableTabAction<IdTag> {
             // build the list, with default at start and internal at end (if present)
             jmri.managers.AbstractProxyManager<IdTag> proxy = (jmri.managers.AbstractProxyManager<IdTag>) getManager();
 
-            tabbedTableArray.add(new TabbedTableItem<>(Bundle.getMessage("All"), true, getManager(), getNewTableAction("All"))); // NOI18N
+            tabbedTableArray.add(new TabbedTableItem<IdTag>(Bundle.getMessage("All"), true, getManager(), getNewTableAction("All"))); // NOI18N
 
             List<jmri.Manager<IdTag>> managerList = proxy.getDisplayOrderManagerList();
             for (Manager<IdTag> manager : managerList) {
-                String manuName = manager.getMemo().getUserName();
-                if (manuName == null && (manager instanceof jmri.managers.DefaultRailComManager)) {
-                    manuName = "RailCom"; // NOI18N (proper name).
+                String manuName = ConnectionNameFromSystemName.getConnectionName(manager.getSystemPrefix());
+                if(manuName == null && (manager instanceof jmri.managers.DefaultRailComManager )) {
+                   manuName = "RailCom"; // NOI18N (proper name).
                 }
-                TabbedTableItem<IdTag> itemModel = new TabbedTableItem<>(manuName, true, manager, getNewTableAction(manuName)); // connection name to display in Tab
+                TabbedTableItem<IdTag> itemModel = new TabbedTableItem<IdTag>(manuName, true, manager, getNewTableAction(manuName)); // connection name to display in Tab
                 tabbedTableArray.add(itemModel);
             }
             
         } else {
-            String manuName = getManager().getMemo().getUserName();
-            tabbedTableArray.add(new TabbedTableItem<>(manuName, true, getManager(), getNewTableAction(manuName)));
+            String manuName = ConnectionNameFromSystemName.getConnectionName(getManager().getSystemPrefix());
+            tabbedTableArray.add(new TabbedTableItem<IdTag>(manuName, true, getManager(), getNewTableAction(manuName)));
         }
         for (int x = 0; x < tabbedTableArray.size(); x++) {
             AbstractTableAction<IdTag> table = tabbedTableArray.get(x).getAAClass();
             table.addToPanel(this);
             dataTabs.addTab(tabbedTableArray.get(x).getItemString(), null, tabbedTableArray.get(x).getPanel(), null);
         }
-        dataTabs.addChangeListener((ChangeEvent evt) -> {
-            setMenuBar(f);
+        dataTabs.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent evt) {
+                setMenuBar(f);
+            }
         });
         dataPanel.add(dataTabs, BorderLayout.CENTER);
         init = true;

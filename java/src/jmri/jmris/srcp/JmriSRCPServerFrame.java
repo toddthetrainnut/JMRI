@@ -7,16 +7,14 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
-import jmri.InstanceManager;
 import jmri.jmris.JmriServer;
 
 /**
- * Frame displaying start/stop buttons for the JMRI SRCP server.
+ * Frame displaying start/stop buttons for the JMRI server.
  *
  * @author Paul Bender Copyright (C) 2009
  */
 public class JmriSRCPServerFrame extends jmri.util.JmriJFrame {
-
 
     public JmriSRCPServerFrame() {
         this("Jmri SRCP Server Starter");
@@ -37,16 +35,32 @@ public class JmriSRCPServerFrame extends jmri.util.JmriJFrame {
         pack();
 
         // install start button handler
-        startButton.addActionListener(a -> startSRCPServer());
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                startSRCPServer();
+            }
+        }
+        );
 
         // install stop button handler
-        stopButton.addActionListener(a -> stopSRCPServer());
+        stopButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                stopSRCPServer();
+            }
+        }
+        );
 
         // install close button handler
-        closeButton.addActionListener(a -> {
-            setVisible(false);
-            dispose();
-        });
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                setVisible(false);
+                dispose();
+            }
+        }
+        );
 
     }
 
@@ -67,11 +81,11 @@ public class JmriSRCPServerFrame extends jmri.util.JmriJFrame {
     }
 
     public void startSRCPServer() {
-        InstanceManager.getDefault(JmriServer.class).start();
+        jmri.InstanceManager.getDefault(JmriServer.class).start();
     }
 
     public void stopSRCPServer() {
-        InstanceManager.getDefault(JmriServer.class).stop();
+        jmri.InstanceManager.getDefault(JmriServer.class).stop();
     }
 
 }

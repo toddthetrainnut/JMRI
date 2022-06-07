@@ -1,12 +1,12 @@
 package jmri.jmrit;
 
 import java.awt.GraphicsEnvironment;
-
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
-
+import org.junit.After;
 import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +18,13 @@ public class SoundTest {
 
     private static final Logger log = LoggerFactory.getLogger(SoundTest.class);
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
 

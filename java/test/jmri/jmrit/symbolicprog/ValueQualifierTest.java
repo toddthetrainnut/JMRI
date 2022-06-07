@@ -1,18 +1,18 @@
 package jmri.jmrit.symbolicprog;
 
 import java.util.HashMap;
-
 import javax.swing.JLabel;
-
 import jmri.progdebugger.ProgDebugger;
 import jmri.util.JUnitUtil;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Bob Jacobsen, Copyright 2014, 2017
+ * @author	Bob Jacobsen, Copyright 2014, 2017
  */
 public class ValueQualifierTest {
 
@@ -98,7 +98,7 @@ public class ValueQualifierTest {
         return m;
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         v = createCvMap();
@@ -112,7 +112,7 @@ public class ValueQualifierTest {
         watched = makeVar("label check", "comment", "", false, false, false, false, "81", "XXVVVVVV", 0, 255, v, null, "item check");
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

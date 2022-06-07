@@ -3,13 +3,14 @@ package jmri.managers.configurexml;
 import jmri.NamedBean;
 import jmri.implementation.AbstractNamedBean;
 import jmri.util.JUnitUtil;
-
+import org.junit.Test;
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
- * Checks of basic NamedBean storage.
+ * Checks of basic NamedBean storage
  *
  * @author Bob Jacobsen Copyright 2009
  */
@@ -280,13 +281,13 @@ public class AbstractNamedBeanManagerConfigXMLTest {
         Assert.assertEquals(new jmri.NamedBeanHandle<jmri.Turnout>("foo", nb), x.checkedNamedBeanHandle("foo", t, tm));        
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetInstanceManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

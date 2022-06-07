@@ -10,14 +10,12 @@ import jmri.jmrix.loconet.LocoNetMessage;
 import jmri.jmrix.loconet.SlotManager;
 import jmri.util.JUnitUtil;
 import jmri.util.junit.annotations.*;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * tests for the Jmri package LnPr2PowerManager
  *
- * @author Bob Jacobsen Copyright 2001
+ * @author	Bob Jacobsen Copyright 2001
  */
 public class LnPr2PowerManagerTest extends AbstractPowerManagerTestBase {
 
@@ -129,14 +127,14 @@ public class LnPr2PowerManagerTest extends AbstractPowerManagerTestBase {
 
     @Test
     @Override
-    @Disabled("test in parent class fails for some reason")
+    @Ignore("test in parent class fails for some reason")
     @ToDo("investigate failure in parent class test and make corrections, either to initialization or to this overriden test")
     public void testDispose2() throws JmriException {
     }
 
     @Test
     @Override
-    @Disabled("test in parent class fails for some reason")
+    @Ignore("test in parent class fails for some reason")
     @ToDo("investigate failure in parent class test and make corrections, either to initialization or to this overriden test")
     public void testStateOff() throws JmriException {
     }
@@ -146,12 +144,16 @@ public class LnPr2PowerManagerTest extends AbstractPowerManagerTestBase {
     public void testImplementsIdle() {
         if (p.implementsIdle()) {
             hearIdle();
-            Assert.assertEquals("power state", PowerManager.IDLE, p.getPower());
+            try {
+                Assert.assertEquals("power state", PowerManager.IDLE, p.getPower());
+            } catch (JmriException e) {
+                Assert.fail("JmriJException occured invoking p.getPower()");
+            }
         }
     }
 
     // setup a default interface
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -164,10 +166,9 @@ public class LnPr2PowerManagerTest extends AbstractPowerManagerTestBase {
         p = pwr = memo.get(jmri.PowerManager.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         pwr.dispose();
-        if (slotmanager != null) slotmanager.dispose();
         JUnitUtil.tearDown();
     }
 

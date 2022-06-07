@@ -1,9 +1,10 @@
 package jmri.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for JmriConfigureXmlException class.
@@ -23,7 +24,7 @@ public class JmriConfigureXmlExceptionTest {
       Assert.assertNotNull("JmriConfigureXmlException string constructor",new JmriConfigureXmlException("test exception"));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -31,7 +32,7 @@ public class JmriConfigureXmlExceptionTest {
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         JUnitUtil.tearDown();
    }

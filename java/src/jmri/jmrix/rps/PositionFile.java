@@ -147,10 +147,7 @@ public class PositionFile extends XmlFile {
     }
 
     /**
-     * Read in the file, and make available for examination.
-     * @param f file to load.
-     * @throws org.jdom2.JDOMException other errors
-     * @throws java.io.IOException error accessing file
+     * Read in the file, and make available for examination
      */
     public void loadFile(File f)
             throws org.jdom2.JDOMException, java.io.IOException {
@@ -175,7 +172,6 @@ public class PositionFile extends XmlFile {
 
     /**
      * FInd the highest numbered receiver in the file
-     * @return highest numbered receiver.
      */
     public int maxReceiver() {
         List<Element> kids = root.getChildren("receiver");
@@ -199,7 +195,6 @@ public class PositionFile extends XmlFile {
     /**
      * Get the nth receiver position in the file.
      *
-     * @param n receiver index.
      * @return null if not present
      */
     public Point3d getReceiverPosition(int n) {
@@ -226,7 +221,6 @@ public class PositionFile extends XmlFile {
     /**
      * Get the nth receiver active state in the file.
      *
-     * @param n receiver index.
      * @return true if not present
      */
     public boolean getReceiverActive(int n) {
@@ -261,7 +255,6 @@ public class PositionFile extends XmlFile {
     /**
      * Get the nth receiver min time.
      *
-     * @param n receiver index.
      * @return 0 if not present
      */
     public int getReceiverMin(int n) {
@@ -297,7 +290,6 @@ public class PositionFile extends XmlFile {
     /**
      * Get the nth receiver max time.
      *
-     * @param n receiver index.
      * @return 0 if not present
      */
     public int getReceiverMax(int n) {
@@ -333,7 +325,6 @@ public class PositionFile extends XmlFile {
     /**
      * Get the nth calibration position in the file.
      *
-     * @param n calibration index.
      * @return null if not present
      */
     public Point3d getCalibrationPosition(int n) {
@@ -348,7 +339,6 @@ public class PositionFile extends XmlFile {
     /**
      * Get the nth calibration reading in the file.
      *
-     * @param n reading index.
      * @return null if not present
      */
     public Reading getCalibrationReading(int n) {

@@ -40,7 +40,7 @@ public class RawTurnoutOperator extends TurnoutOperator {
         }
         if (c == null) {
             c = InstanceManager.getNullableDefault(CommandStation.class);
-            log.error("No match against the command station for {}, so will use the default", sysName);
+            log.error("No match against the command station for " + sysName + ", so will use the default");
         }
         interval = i;
         maxTries = mt;

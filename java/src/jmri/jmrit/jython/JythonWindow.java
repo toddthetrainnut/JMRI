@@ -17,7 +17,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import jmri.InstanceManager;
 import jmri.UserPreferencesManager;
-import jmri.script.swing.ScriptOutput;
+import jmri.script.ScriptOutput;
 import jmri.util.JmriJFrame;
 
 /**
@@ -73,9 +73,9 @@ public class JythonWindow extends AbstractAction {
         p.add(clearButton = new JButton(Bundle.getMessage("ButtonClear")));
         p.add(autoScroll = new JCheckBox(Bundle.getMessage("CheckBoxAutoScroll"), true));
         autoScroll.setSelected(pref.getSimplePreferenceState(alwaysScrollCheck));
-        alwaysOnTopCheckBox.setText(Bundle.getMessage("WindowAlwaysOnTop"));
+        alwaysOnTopCheckBox.setText("Window always on Top");
         alwaysOnTopCheckBox.setVisible(true);
-        alwaysOnTopCheckBox.setToolTipText(Bundle.getMessage("WindowAlwaysOnTopToolTip"));
+        alwaysOnTopCheckBox.setToolTipText("If checked, this window be always be displayed in front of any other window");
         alwaysOnTopCheckBox.setSelected(pref.getSimplePreferenceState(alwaysOnTopCheck));
         p.add(alwaysOnTopCheckBox);
         f.setAlwaysOnTop(alwaysOnTopCheckBox.isSelected());

@@ -2,7 +2,6 @@ package jmri.jmrit.operations.trains.schedules;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -14,6 +13,10 @@ public class TrainsScheduleAction extends AbstractAction {
     
     public TrainsScheduleAction() {
         super(Bundle.getMessage("TitleScheduleTrains"));
+    }
+
+    public TrainsScheduleAction(String s) {
+        super(s);
     }
 
     TrainsScheduleTableFrame f = null;

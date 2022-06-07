@@ -1,11 +1,10 @@
 package jmri.jmris.srcp;
 
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -17,25 +16,25 @@ public class JmriSRCPServerPreferencesTest {
 
     @Test public void testCtor() {
         JmriSRCPServerPreferences a = new JmriSRCPServerPreferences();
-        assertThat(a).isNotNull();
+        Assert.assertNotNull(a);
     }
 
     @Test public void testStringCtor() {
         JmriSRCPServerPreferences a = new JmriSRCPServerPreferences("Hello World");
-        assertThat(a).isNotNull();
+        Assert.assertNotNull(a);
     }
 
     @Test public void defaultPort() {
         JmriSRCPServerPreferences a = new JmriSRCPServerPreferences();
-        assertThat(a.getDefaultPort()).withFailMessage("Default Port").isEqualTo(4303);
+        Assert.assertEquals("Default Port",4303,a.getDefaultPort());
     }
 
-    @BeforeEach public void setUp() {
+    @Before public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach public void tearDown() {
+    @After public void tearDown() throws Exception {
         JUnitUtil.tearDown();
     }
 

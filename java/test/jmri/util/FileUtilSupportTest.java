@@ -1,17 +1,10 @@
 package jmri.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -19,8 +12,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.util.FileUtilSupport class.
@@ -43,7 +38,7 @@ public class FileUtilSupportTest {
     @Test
     public void testGEFRel() {
         String name = instance.getExternalFilename("resources/non-existant-file-foo");
-        assertEquals("resources" + File.separator + "non-existant-file-foo", name);
+        Assert.assertEquals("resources" + File.separator + "non-existant-file-foo", name);
     }
 
     // relative file with no prefix: Leave relative in system-specific form
@@ -51,14 +46,14 @@ public class FileUtilSupportTest {
     public void testGEFAbs() {
         File f = new File("resources/non-existant-file-foo");
         String name = instance.getExternalFilename(f.getAbsolutePath());
-        assertEquals(f.getAbsolutePath(), name);
+        Assert.assertEquals(f.getAbsolutePath(), name);
     }
 
     // program: prefix with relative path, convert to relative in system-specific form
     @Test
     public void testGEFProgramRel() {
         String name = instance.getExternalFilename("program:jython");
-        assertEquals(new File("jython").getAbsolutePath(), name);
+        Assert.assertEquals(new File("jython").getAbsolutePath(), name);
     }
 
     // program: prefix with absolute path, convert to absolute in system-specific form
@@ -66,14 +61,14 @@ public class FileUtilSupportTest {
     public void testGEFProgramAbs() {
         File f = new File("resources/non-existant-file-foo");
         String name = instance.getExternalFilename("program:" + f.getAbsolutePath());
-        assertEquals(f.getAbsolutePath(), name);
+        Assert.assertEquals(f.getAbsolutePath(), name);
     }
 
     // preference: prefix with relative path, convert to absolute in system-specific form
     @Test
     public void testGEFPrefRel() {
         String name = instance.getExternalFilename("preference:non-existant-file-foo");
-        assertEquals(instance.getUserFilesPath() + "non-existant-file-foo", name);
+        Assert.assertEquals(instance.getUserFilesPath() + "non-existant-file-foo", name);
     }
 
     // preference: prefix with absolute path, convert to absolute in system-specific form
@@ -81,14 +76,14 @@ public class FileUtilSupportTest {
     public void testGEFPrefAbs() {
         File f = new File("resources/non-existant-file-foo");
         String name = instance.getExternalFilename("preference:" + f.getAbsolutePath());
-        assertEquals(f.getAbsolutePath(), name);
+        Assert.assertEquals(f.getAbsolutePath(), name);
     }
 
     // home: prefix with relative path, convert to absolute in system-specific form
     @Test
     public void testGEFHomeRel() {
         String name = instance.getExternalFilename("home:non-existant-file-foo");
-        assertEquals(System.getProperty("user.home") + File.separator + "non-existant-file-foo", name);
+        Assert.assertEquals(System.getProperty("user.home") + File.separator + "non-existant-file-foo", name);
     }
 
     // home: prefix with absolute path, convert to absolute in system-specific form
@@ -96,7 +91,7 @@ public class FileUtilSupportTest {
     public void testGEFHomeAbs() {
         File f = new File("resources/non-existant-file-foo");
         String name = instance.getExternalFilename("home:" + f.getAbsolutePath());
-        assertEquals(f.getAbsolutePath(), name);
+        Assert.assertEquals(f.getAbsolutePath(), name);
     }
 
     // tests of external to internal mapping
@@ -104,40 +99,40 @@ public class FileUtilSupportTest {
     public void testGetpfPreferenceF() throws IOException {
         File f = new File(instance.getUserFilesPath() + "non-existant-file-foo");
         String name = instance.getPortableFilename(f);
-        assertEquals("preference:non-existant-file-foo", name);
+        Assert.assertEquals("preference:non-existant-file-foo", name);
     }
 
     @Test
     public void testGetpfPreferenceS() {
         String name = instance.getPortableFilename("preference:non-existant-file-foo");
-        assertEquals("preference:non-existant-file-foo", name);
+        Assert.assertEquals("preference:non-existant-file-foo", name);
     }
 
     @Test
     public void testGetpfResourceF() throws IOException {
         File f = new File(instance.getUserFilesPath() + "resources" + File.separator + "non-existant-file-foo");
         String name = instance.getPortableFilename(f);
-        assertEquals("preference:resources/non-existant-file-foo", name);
+        Assert.assertEquals("preference:resources/non-existant-file-foo", name);
     }
 
     @Test
     public void testGetpfPrefF() throws IOException {
         File f = new File(instance.getUserFilesPath() + "resources" + File.separator + "non-existant-file-foo");
         String name = instance.getPortableFilename(f);
-        assertEquals("preference:resources/non-existant-file-foo", name);
+        Assert.assertEquals("preference:resources/non-existant-file-foo", name);
     }
 
     @Test
     public void testGetpfProgramF() throws IOException {
         File f = new File("resources" + File.separator + "non-existant-file-foo");
         String name = instance.getPortableFilename(f);
-        assertEquals("program:resources/non-existant-file-foo", name);
+        Assert.assertEquals("program:resources/non-existant-file-foo", name);
     }
 
     @Test
     public void testGetpfProgramS() {
         String name = instance.getPortableFilename("program:resources/non-existant-file-foo");
-        assertEquals("program:resources/non-existant-file-foo", name);
+        Assert.assertEquals("program:resources/non-existant-file-foo", name);
     }
 
     /*
@@ -146,20 +141,20 @@ public class FileUtilSupportTest {
     @Test
     public void testGetpfProgramDirS() {
         String name = instance.getPortableFilename("program:resources/icons");
-        assertEquals("program:resources/icons/", name);
+        Assert.assertEquals("program:resources/icons/", name);
     }
 
     @Test
     public void testGetpfHomeS() {
         String name = instance.getPortableFilename("home:non-existant-file-foo");
-        assertEquals("home:non-existant-file-foo", name);
+        Assert.assertEquals("home:non-existant-file-foo", name);
     }
 
     @Test
     public void testGetpfHomeF() throws IOException {
         File f = new File(System.getProperty("user.home") + File.separator + "resources" + File.separator + "non-existant-file-foo");
         String name = instance.getPortableFilename(f);
-        assertEquals("home:resources/non-existant-file-foo", name);
+        Assert.assertEquals("home:resources/non-existant-file-foo", name);
     }
 
     /*
@@ -169,14 +164,14 @@ public class FileUtilSupportTest {
     @Test
     public void testGAFRel() {
         String name = instance.getAbsoluteFilename("resources/non-existant-file-foo");
-        assertEquals(null, name);
+        Assert.assertEquals(null, name);
     }
 
     // program: prefix with relative path, convert to relative in system-specific form
     @Test
     public void testGAFProgRel() throws IOException {
         String name = instance.getAbsoluteFilename(FileUtil.PROGRAM + "jython");
-        assertEquals(new File("jython").getCanonicalPath(), name);
+        Assert.assertEquals(new File("jython").getCanonicalPath(), name);
     }
 
     // program: prefix with absolute path, convert to absolute in system-specific form
@@ -184,14 +179,14 @@ public class FileUtilSupportTest {
     public void testGAFProgAbs() throws IOException {
         File f = new File("resources/non-existant-file-foo");
         String name = instance.getAbsoluteFilename(FileUtil.PROGRAM + f.getAbsolutePath());
-        assertEquals(f.getCanonicalPath(), name);
+        Assert.assertEquals(f.getCanonicalPath(), name);
     }
 
     // preference: prefix with relative path, convert to absolute in system-specific form
     @Test
     public void testGAFPrefRel() throws IOException {
         String name = instance.getAbsoluteFilename(FileUtil.PREFERENCES + "non-existant-file-foo");
-        assertEquals(new File(instance.getUserFilesPath() + "non-existant-file-foo").getCanonicalPath(), name);
+        Assert.assertEquals(new File(instance.getUserFilesPath() + "non-existant-file-foo").getCanonicalPath(), name);
     }
 
     // preference: prefix with absolute path, convert to absolute in system-specific form
@@ -199,14 +194,14 @@ public class FileUtilSupportTest {
     public void testGAFPrefAbs() throws IOException {
         File f = new File("resources/non-existant-file-foo");
         String name = instance.getAbsoluteFilename(FileUtil.PREFERENCES + f.getAbsolutePath());
-        assertEquals(f.getCanonicalPath(), name);
+        Assert.assertEquals(f.getCanonicalPath(), name);
     }
 
     // home: prefix with relative path, convert to absolute in system-specific form
     @Test
     public void testGAFHomeRel() throws IOException {
         String name = instance.getAbsoluteFilename(FileUtil.HOME + "non-existant-file-foo");
-        assertEquals(new File(System.getProperty("user.home") + File.separator + "non-existant-file-foo").getCanonicalPath(), name);
+        Assert.assertEquals(new File(System.getProperty("user.home") + File.separator + "non-existant-file-foo").getCanonicalPath(), name);
     }
 
     // home: prefix with absolute path, convert to absolute in system-specific form
@@ -214,7 +209,7 @@ public class FileUtilSupportTest {
     public void testGAFHomeAbs() throws IOException {
         File f = new File("resources/non-existant-file-foo");
         String name = instance.getAbsoluteFilename(FileUtil.HOME + f.getAbsolutePath());
-        assertEquals(f.getCanonicalPath(), name);
+        Assert.assertEquals(f.getCanonicalPath(), name);
     }
 
     @Test
@@ -237,10 +232,10 @@ public class FileUtilSupportTest {
             s.close();
         } catch (IOException ex) {
             instance.delete(dest);
-            fail("Unable to copy");
+            Assert.fail("Unable to copy");
         }
         instance.delete(dest);
-        assertTrue(sl.equals(dl));
+        Assert.assertTrue(sl.equals(dl));
     }
 
     @Test
@@ -253,7 +248,7 @@ public class FileUtilSupportTest {
         Arrays.sort(destFiles);
         Arrays.sort(srcFiles);
         instance.delete(dest);
-        assertTrue(Arrays.equals(srcFiles, destFiles));
+        Assert.assertTrue(Arrays.equals(srcFiles, destFiles));
     }
 
     @Test
@@ -261,7 +256,7 @@ public class FileUtilSupportTest {
         File file = File.createTempFile("FileUtilTest", null);
         instance.copy(instance.getFile(instance.getAbsoluteFilename("program:default.lcf")), file);
         instance.delete(file);
-        assertFalse(file.exists());
+        Assert.assertFalse(file.exists());
     }
 
     @Test
@@ -269,67 +264,67 @@ public class FileUtilSupportTest {
         File file = File.createTempFile("FileUtilTest", null);
         String text = "jmri.util.FileUtil#appendTextToFile";
         instance.appendTextToFile(file, text);
-        List<String> lines = Files.readAllLines(Paths.get(file.toURI()), StandardCharsets.UTF_8);
-        assertEquals(text, lines.get(0));
+        List<String> lines = Files.readAllLines(Paths.get(file.toURI()), Charset.forName("UTF-8"));
+        Assert.assertEquals(text, lines.get(0));
     }
 
     @Test
     public void testFindURIPath() {
         URI uri = this.programTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findURI(this.programTestFile.getName()));
-        assertEquals(uri, instance.findURI(FileUtil.PROGRAM + this.programTestFile.getName()));
-        assertNull(instance.findURI(FileUtil.PREFERENCES + this.programTestFile.getName()));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findURI(this.programTestFile.getName()));
+        Assert.assertEquals(uri, instance.findURI(FileUtil.PROGRAM + this.programTestFile.getName()));
+        Assert.assertNull(instance.findURI(FileUtil.PREFERENCES + this.programTestFile.getName()));
         uri = this.preferencesTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findURI(this.preferencesTestFile.getName()));
-        assertEquals(uri, instance.findURI(FileUtil.PREFERENCES + this.preferencesTestFile.getName()));
-        assertNull(instance.findURI(FileUtil.PROGRAM + this.preferencesTestFile.getName()));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findURI(this.preferencesTestFile.getName()));
+        Assert.assertEquals(uri, instance.findURI(FileUtil.PREFERENCES + this.preferencesTestFile.getName()));
+        Assert.assertNull(instance.findURI(FileUtil.PROGRAM + this.preferencesTestFile.getName()));
     }
 
     @Test
     public void testFindURIPathLocation() {
         URI uri = this.programTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findURI(this.programTestFile.getName(), FileUtil.Location.INSTALLED));
-        assertEquals(uri, instance.findURI(this.programTestFile.getName(), FileUtil.Location.ALL));
-        assertNull(instance.findURI(this.programTestFile.getName(), FileUtil.Location.USER));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findURI(this.programTestFile.getName(), FileUtil.Location.INSTALLED));
+        Assert.assertEquals(uri, instance.findURI(this.programTestFile.getName(), FileUtil.Location.ALL));
+        Assert.assertNull(instance.findURI(this.programTestFile.getName(), FileUtil.Location.USER));
         uri = this.preferencesTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), FileUtil.Location.USER));
-        assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), FileUtil.Location.ALL));
-        assertNull(instance.findURI(this.preferencesTestFile.getName(), FileUtil.Location.INSTALLED));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), FileUtil.Location.USER));
+        Assert.assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), FileUtil.Location.ALL));
+        Assert.assertNull(instance.findURI(this.preferencesTestFile.getName(), FileUtil.Location.INSTALLED));
     }
 
     @Test
     public void testFindURIPathSearchPaths() {
         URI uri = this.programTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findURI(this.programTestFile.getName(), new String[]{instance.getProgramPath()}));
-        assertEquals(uri, instance.findURI(this.programTestFile.getName(), new String[]{instance.getPreferencesPath(), instance.getProgramPath()}));
-        assertEquals(uri, instance.findURI(this.programTestFile.getName(), new String[]{instance.getPreferencesPath()}));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findURI(this.programTestFile.getName(), new String[]{instance.getProgramPath()}));
+        Assert.assertEquals(uri, instance.findURI(this.programTestFile.getName(), new String[]{instance.getPreferencesPath(), instance.getProgramPath()}));
+        Assert.assertEquals(uri, instance.findURI(this.programTestFile.getName(), new String[]{instance.getPreferencesPath()}));
         uri = this.preferencesTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), new String[]{instance.getPreferencesPath()}));
-        assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), new String[]{instance.getPreferencesPath(), instance.getProgramPath()}));
-        assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), new String[]{instance.getProgramPath()}));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), new String[]{instance.getPreferencesPath()}));
+        Assert.assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), new String[]{instance.getPreferencesPath(), instance.getProgramPath()}));
+        Assert.assertEquals(uri, instance.findURI(this.preferencesTestFile.getName(), new String[]{instance.getProgramPath()}));
     }
 
     @Test
     public void testFindExternalFilename() {
         URI uri = this.programTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findExternalFilename(this.programTestFile.getName()));
-        assertEquals(uri, instance.findExternalFilename(FileUtil.PROGRAM + this.programTestFile.getName()));
-        assertNull(instance.findExternalFilename(FileUtil.PREFERENCES + this.programTestFile.getName()));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findExternalFilename(this.programTestFile.getName()));
+        Assert.assertEquals(uri, instance.findExternalFilename(FileUtil.PROGRAM + this.programTestFile.getName()));
+        Assert.assertNull(instance.findExternalFilename(FileUtil.PREFERENCES + this.programTestFile.getName()));
         uri = this.preferencesTestFile.toURI();
-        assertNotNull(uri);
-        assertEquals(uri, instance.findExternalFilename(this.preferencesTestFile.getName()));
-        assertEquals(uri, instance.findExternalFilename(FileUtil.PREFERENCES + this.preferencesTestFile.getName()));
-        assertNull(instance.findExternalFilename(FileUtil.PROGRAM + this.preferencesTestFile.getName()));
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(uri, instance.findExternalFilename(this.preferencesTestFile.getName()));
+        Assert.assertEquals(uri, instance.findExternalFilename(FileUtil.PREFERENCES + this.preferencesTestFile.getName()));
+        Assert.assertNull(instance.findExternalFilename(FileUtil.PROGRAM + this.preferencesTestFile.getName()));
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -348,7 +343,7 @@ public class FileUtilSupportTest {
         }, "Create program test file");
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         this.programTestFile.delete();
         JUnitUtil.waitFor(() -> {

@@ -9,22 +9,29 @@ import jmri.jmrix.openlcb.OlcbTestInterface;
 import jmri.util.JUnitUtil;
 
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * OlcbLightManagerXmlTest.java
  *
- * Test for the OlcbLightManagerXml class
+ * Description: tests for the OlcbLightManagerXml class
  *
  * @author   Jeff Collell
  */
 public class OlcbLightManagerXmlTest {
 
     @Test
-    public void testSaveAndRestore() {
+    public void testCtor(){
+      Assert.assertNotNull("OlcbLightManagerXml constructor",new OlcbLightManagerXml());
+    }
+
+    @Test
+    public void testSaveAndRestore() throws Exception {
         log.debug("FIRST START");
         t = new OlcbTestInterface(new OlcbTestInterface.CreateConfigurationManager());
         OlcbLightManager mgr = t.configurationManager.getLightManager();
@@ -69,22 +76,15 @@ public class OlcbLightManagerXmlTest {
     OlcbTestInterface t;
     private final static Logger log = LoggerFactory.getLogger(OlcbLightManagerXmlTest.class);
 
-    @BeforeAll
-    static public void checkSeparate() {
-       // this test is run separately because it leaves a lot of threads behind
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
-    }
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

@@ -1,6 +1,5 @@
 package jmri.jmrix.marklin;
 
-import javax.annotation.Nonnull;
 import jmri.Turnout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,33 +14,30 @@ import org.slf4j.LoggerFactory;
 public class MarklinTurnoutManager extends jmri.managers.AbstractTurnoutManager {
 
     public MarklinTurnoutManager(MarklinSystemConnectionMemo memo) {
-        super(memo);
-        tc = memo.getTrafficController();
+
+        adaptermemo = memo;
+        prefix = adaptermemo.getSystemPrefix();
+        tc = adaptermemo.getTrafficController();
     }
 
     MarklinTrafficController tc;
+    MarklinSystemConnectionMemo adaptermemo;
 
-    /**
-     * {@inheritDoc}
-     */
+    String prefix;
+
     @Override
-    @Nonnull
-    public MarklinSystemConnectionMemo getMemo() {
-        return (MarklinSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return prefix;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Turnout createNewTurnout(String systemName, String userName) {
         int addr;
         try {
             addr = Integer.parseInt(systemName.substring(getSystemPrefix().length() + 1));
-        } catch (NumberFormatException e) {
-            log.error("Failed to convert systemName {} to a turnout address", systemName);
-            throw new IllegalArgumentException("failed to convert systemName '"+systemName+"' to a Turnout address");
+        } catch (java.lang.NumberFormatException e) {
+            log.error("failed to convert systemName " + systemName + " to a turnout address");
+            return null;
         }
         Turnout t = new MarklinTurnout(addr, getSystemPrefix(), tc);
         t.setUserName(userName);
@@ -49,7 +45,7 @@ public class MarklinTurnoutManager extends jmri.managers.AbstractTurnoutManager 
     }
 
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return true;
     }
 

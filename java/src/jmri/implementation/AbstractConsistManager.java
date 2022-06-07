@@ -15,14 +15,14 @@ import jmri.LocoAddress;
  * @author Paul Bender Copyright (C) 2004
  * @author Randall Wood Copyright (C) 2013
  */
-public abstract class AbstractConsistManager implements ConsistManager {
+abstract public class AbstractConsistManager implements ConsistManager {
 
     protected HashMap<LocoAddress, Consist> consistTable = null;
     private ArrayList<ConsistListListener> changeListeners = null;
 
     public AbstractConsistManager() {
-        consistTable = new HashMap<>();
-        changeListeners = new ArrayList<>();
+        consistTable = new HashMap<LocoAddress, Consist>();
+        changeListeners = new ArrayList<ConsistListListener>();
     }
 
     /**
@@ -44,7 +44,7 @@ public abstract class AbstractConsistManager implements ConsistManager {
      * @return a consist at address; this will be the existing consist if a
      *         consist is already known to exist at address
      */
-    protected abstract  Consist addConsist(LocoAddress address);
+    abstract protected Consist addConsist(LocoAddress address);
 
     // remove the old Consist
     @Override
@@ -54,50 +54,63 @@ public abstract class AbstractConsistManager implements ConsistManager {
     }
 
     /**
+     * Does this implementation support a command station consist?
+     */
+    @Override
+    abstract public boolean isCommandStationConsistPossible();
+
+    /**
+     * Does a CS consist require a separate consist address? (or is the lead
+     * loco to be used for the consist address)
+     */
+    @Override
+    abstract public boolean csConsistNeedsSeperateAddress();
+
+    /**
      * Return the list of consists we know about.
      */
     @Override
     public ArrayList<LocoAddress> getConsistList() {
-        return new ArrayList<>(consistTable.keySet());
+        return new ArrayList<LocoAddress>(consistTable.keySet());
     }
 
     @Override
-    public String decodeErrorCode(int errorCode) {
+    public String decodeErrorCode(int ErrorCode) {
         StringBuilder buffer = new StringBuilder("");
-        if ((errorCode & ConsistListener.NotImplemented) != 0) {
+        if ((ErrorCode & ConsistListener.NotImplemented) != 0) {
             buffer.append("Not Implemented ");
         }
-        if ((errorCode & ConsistListener.OPERATION_SUCCESS) != 0) {
+        if ((ErrorCode & ConsistListener.OPERATION_SUCCESS) != 0) {
             buffer.append("Operation Completed Successfully ");
         }
-        if ((errorCode & ConsistListener.CONSIST_ERROR) != 0) {
+        if ((ErrorCode & ConsistListener.CONSIST_ERROR) != 0) {
             buffer.append("Consist Error ");
         }
-        if ((errorCode & ConsistListener.LOCO_NOT_OPERATED) != 0) {
+        if ((ErrorCode & ConsistListener.LOCO_NOT_OPERATED) != 0) {
             buffer.append("Address not controled by this device.");
         }
-        if ((errorCode & ConsistListener.ALREADY_CONSISTED) != 0) {
+        if ((ErrorCode & ConsistListener.ALREADY_CONSISTED) != 0) {
             buffer.append("Locomotive already consisted");
         }
-        if ((errorCode & ConsistListener.NOT_CONSISTED) != 0) {
+        if ((ErrorCode & ConsistListener.NOT_CONSISTED) != 0) {
             buffer.append("Locomotive Not Consisted ");
         }
-        if ((errorCode & ConsistListener.NONZERO_SPEED) != 0) {
+        if ((ErrorCode & ConsistListener.NONZERO_SPEED) != 0) {
             buffer.append("Speed Not Zero ");
         }
-        if ((errorCode & ConsistListener.NOT_CONSIST_ADDR) != 0) {
+        if ((ErrorCode & ConsistListener.NOT_CONSIST_ADDR) != 0) {
             buffer.append("Address Not Conist Address ");
         }
-        if ((errorCode & ConsistListener.DELETE_ERROR) != 0) {
+        if ((ErrorCode & ConsistListener.DELETE_ERROR) != 0) {
             buffer.append("Delete Error ");
         }
-        if ((errorCode & ConsistListener.STACK_FULL) != 0) {
+        if ((ErrorCode & ConsistListener.STACK_FULL) != 0) {
             buffer.append("Stack Full ");
         }
 
         String retval = buffer.toString();
         if (retval.equals("")) {
-            return "Unknown Status Code: " + errorCode;
+            return "Unknown Status Code: " + ErrorCode;
         } else {
             return retval;
         }

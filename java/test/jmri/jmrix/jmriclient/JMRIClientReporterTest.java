@@ -1,13 +1,12 @@
 package jmri.jmrix.jmriclient;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmrix.jmriclient.JMRIClientReporter class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class JMRIClientReporterTest extends jmri.implementation.AbstractReporterTestBase{
 
@@ -16,7 +15,7 @@ public class JMRIClientReporterTest extends jmri.implementation.AbstractReporter
         return new jmri.implementation.DefaultIdTag("ID0413276BC1", "Test Tag");
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -30,11 +29,9 @@ public class JMRIClientReporterTest extends jmri.implementation.AbstractReporter
         r = new JMRIClientReporter(3, new JMRIClientSystemConnectionMemo(tc));
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        r = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+	r = null;
         JUnitUtil.tearDown();
     }
 

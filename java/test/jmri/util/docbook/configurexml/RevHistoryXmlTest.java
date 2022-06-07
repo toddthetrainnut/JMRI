@@ -1,14 +1,15 @@
 package jmri.util.docbook.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * RevHistoryXmlTest.java
  *
- * Test for the RevHistoryXml class
+ * Description: tests for the RevHistoryXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class RevHistoryXmlTest {
       Assert.assertNotNull("RevHistoryXml constructor",new RevHistoryXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

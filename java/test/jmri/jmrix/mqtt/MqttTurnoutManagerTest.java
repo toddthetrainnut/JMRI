@@ -1,9 +1,10 @@
 package jmri.jmrix.mqtt;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for MqttTurnoutManager class.
@@ -15,16 +16,17 @@ public class MqttTurnoutManagerTest {
 
     @Test
     public void ConstructorTest() {
-        new MqttAdapter();
+        MqttAdapter a = new MqttAdapter();
+        Assert.assertNotNull("constructor", new MqttTurnoutManager(a, "P"));
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

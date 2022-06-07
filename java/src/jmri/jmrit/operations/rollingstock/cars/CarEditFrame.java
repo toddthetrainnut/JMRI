@@ -3,11 +3,15 @@ package jmri.jmrit.operations.rollingstock.cars;
 import java.awt.GridBagLayout;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +65,7 @@ public class CarEditFrame extends RollingStockEditFrame {
     @Override
     public void initComponents() {
 
-        groupComboBox = InstanceManager.getDefault(KernelManager.class).getComboBox();
+        groupComboBox = InstanceManager.getDefault(CarManager.class).getKernelComboBox();
 
         super.initComponents();
 
@@ -157,7 +161,6 @@ public class CarEditFrame extends RollingStockEditFrame {
     }
 
     public void load(Car car) {
-        setTitle(Bundle.getMessage("TitleCarEdit"));
         super.load(car);
 
         passengerCheckBox.setSelected(car.isPassenger());
@@ -191,6 +194,8 @@ public class CarEditFrame extends RollingStockEditFrame {
         }
         colorComboBox.setSelectedItem(car.getColor());
         groupComboBox.setSelectedItem(car.getKernelName());
+        
+        setTitle(Bundle.getMessage("TitleCarEdit"));
     }
 
     @Override
@@ -276,9 +281,12 @@ public class CarEditFrame extends RollingStockEditFrame {
         if (lengthComboBox.getSelectedItem() != null) {
             String length = (String) lengthComboBox.getSelectedItem();
             try {
-                String carWeight = CarManager.calculateCarWeight(length);
-                weightTextField.setText(carWeight); // car weight in ounces.
-                int tons = (int) (NumberFormat.getNumberInstance().parse(carWeight).doubleValue() * Setup.getScaleTonRatio());
+                double carLength = Double.parseDouble(length) * 12 / Setup.getScaleRatio();
+                double carWeight = (Setup.getInitalWeight() + carLength * Setup.getAddWeight()) / 1000;
+                NumberFormat nf = NumberFormat.getNumberInstance();
+                nf.setMaximumFractionDigits(1);
+                weightTextField.setText((nf.format(carWeight))); // car weight in ounces.
+                int tons = (int) (carWeight * Setup.getScaleTonRatio());
                 // adjust weight for caboose
                 if (cabooseCheckBox.isSelected() || passengerCheckBox.isSelected()) {
                     tons = (int) (Double.parseDouble(length) * .9); // .9 tons/foot
@@ -286,9 +294,6 @@ public class CarEditFrame extends RollingStockEditFrame {
                 weightTonsTextField.setText(Integer.toString(tons));
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, Bundle.getMessage("carLengthMustBe"), Bundle
-                        .getMessage("carWeigthCanNot"), JOptionPane.ERROR_MESSAGE);
-            } catch (ParseException ex) {
-                JOptionPane.showMessageDialog(this, Bundle.getMessage("carWeightFormat"), Bundle
                         .getMessage("carWeigthCanNot"), JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -398,7 +403,7 @@ public class CarEditFrame extends RollingStockEditFrame {
             if (groupComboBox.getSelectedItem().equals(CarManager.NONE)) {
                 car.setKernel(null);
             } else if (!car.getKernelName().equals(groupComboBox.getSelectedItem())) {
-                car.setKernel(InstanceManager.getDefault(KernelManager.class).getKernelByName((String) groupComboBox.getSelectedItem()));
+                car.setKernel(carManager.getKernelByName((String) groupComboBox.getSelectedItem()));
                 // if car has FRED or caboose make lead
                 if (car.hasFred() || car.isCaboose()) {
                     car.getKernel().setLead(car);
@@ -511,7 +516,6 @@ public class CarEditFrame extends RollingStockEditFrame {
     protected void addPropertyChangeListeners() {
         InstanceManager.getDefault(CarLoads.class).addPropertyChangeListener(this);
         InstanceManager.getDefault(CarColors.class).addPropertyChangeListener(this);
-        InstanceManager.getDefault(KernelManager.class).addPropertyChangeListener(this);
         carManager.addPropertyChangeListener(this);
         super.addPropertyChangeListeners();
     }
@@ -520,7 +524,6 @@ public class CarEditFrame extends RollingStockEditFrame {
     protected void removePropertyChangeListeners() {
         InstanceManager.getDefault(CarLoads.class).removePropertyChangeListener(this);
         InstanceManager.getDefault(CarColors.class).removePropertyChangeListener(this);
-        InstanceManager.getDefault(KernelManager.class).removePropertyChangeListener(this);
         carManager.removePropertyChangeListener(this);
         if (_rs != null) {
             _rs.removePropertyChangeListener(this);
@@ -548,9 +551,9 @@ public class CarEditFrame extends RollingStockEditFrame {
                 colorComboBox.setSelectedItem(_rs.getColor());
             }
         }
-        if (e.getPropertyName().equals(KernelManager.LISTLENGTH_CHANGED_PROPERTY) ||
+        if (e.getPropertyName().equals(CarManager.KERNEL_LISTLENGTH_CHANGED_PROPERTY) ||
                 e.getPropertyName().equals(Car.KERNEL_NAME_CHANGED_PROPERTY)) {
-            InstanceManager.getDefault(KernelManager.class).updateComboBox(groupComboBox);
+            carManager.updateKernelComboBox(groupComboBox);
             if (_rs != null) {
                 groupComboBox.setSelectedItem(((Car) _rs).getKernelName());
             }

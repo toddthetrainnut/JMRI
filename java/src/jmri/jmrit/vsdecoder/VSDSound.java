@@ -6,8 +6,6 @@ import jmri.util.PhysicalLocation;
 import org.jdom2.Element;
 
 /**
- * Superclass for all Sound types.
- *
  * <hr>
  * This file is part of JMRI.
  * <p>
@@ -32,12 +30,10 @@ abstract public class VSDSound {
 
     public final static float default_gain = 0.8f;
     public final static float default_reference_distance = 1.0f;
-    public final static float tunnel_volume = 0.5f;
 
     Timer t;
 
     boolean is_playing;
-    boolean is_tunnel;
     String name;
     float gain;  // this is the (fixed) gain relative to the other sounds in this Profile
     float volume; // this is the (active) volume level (product of fixed gain and volume slider).
@@ -49,12 +45,6 @@ abstract public class VSDSound {
         gain = default_gain;
     }
 
-    /**
-     * Get the audio playing state.
-     * @return the playing state
-     * @deprecated As of 4.99.6, use {Audio.STATE_PLAYING} instead
-     */
-    @Deprecated(since="4.99.6")
     public boolean isPlaying() {
         return is_playing;
     }
@@ -117,14 +107,6 @@ abstract public class VSDSound {
 
     double speedCurve(float s) {
         return s;
-    }
-
-    public void setTunnel(boolean t) {
-        is_tunnel = t;
-    }
-
-    boolean getTunnel() {
-        return is_tunnel;
     }
 
     public Element getXml() {

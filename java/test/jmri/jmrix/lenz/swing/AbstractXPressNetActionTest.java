@@ -1,47 +1,37 @@
 package jmri.jmrix.lenz.swing;
 
-import jmri.jmrix.lenz.LenzCommandStation;
-import jmri.jmrix.lenz.XNetSystemConnectionMemo;
-import jmri.jmrix.lenz.XNetTrafficController;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class AbstractXPressNetActionTest {
 
-    private XNetSystemConnectionMemo memo;
-
     @Test
     public void testCTor() {
+        jmri.jmrix.lenz.XNetInterfaceScaffold tc = new jmri.jmrix.lenz.XNetInterfaceScaffold(new jmri.jmrix.lenz.LenzCommandStation());
+        jmri.jmrix.lenz.XNetSystemConnectionMemo memo = new jmri.jmrix.lenz.XNetSystemConnectionMemo(tc);
         AbstractXPressNetAction t = new AbstractXPressNetAction("test",memo){
            @Override
            public void actionPerformed(java.awt.event.ActionEvent ae){
            }
         };
-        assertThat(t).isNotNull();
+        Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
-        JUnitUtil.setUpLoggingAndCommonProperties();
-        XNetTrafficController tc = Mockito.mock(XNetTrafficController.class);
-        LenzCommandStation cs = Mockito.mock(LenzCommandStation.class);
-        Mockito.when(tc.getCommandStation()).thenReturn(cs);
-        memo = Mockito.mock(XNetSystemConnectionMemo.class);
-        Mockito.when(memo.getXNetTrafficController()).thenReturn(tc);
+        JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo = null;
         JUnitUtil.tearDown();
     }
 

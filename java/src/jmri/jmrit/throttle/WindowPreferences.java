@@ -49,8 +49,10 @@ public class WindowPreferences {
             if (e.getAttribute("isIconified") != null) {
                 c.setIcon(e.getAttribute("isIconified").getBooleanValue());
             }
-        } catch (org.jdom2.DataConversionException | PropertyVetoException ex) {
-            log.warn("Exception setting preferences", ex);
+        } catch (org.jdom2.DataConversionException ex) {
+            System.out.println(ex);
+        } catch (PropertyVetoException ex) {
+            System.out.println(ex);
         }
     }
 
@@ -88,7 +90,6 @@ public class WindowPreferences {
      * <li> width
      * <li> height
      * </ul>
-     * @param ignorePosition true to not set location, false to set.
      */
     public static void setPreferences(Container c, Element e, boolean ignorePosition) {
         try {
@@ -104,13 +105,11 @@ public class WindowPreferences {
                 c.setVisible(e.getAttribute("isVisible").getBooleanValue());
             }
         } catch (org.jdom2.DataConversionException ex) {
-            log.warn("Exception setting preferences", ex);
+            System.out.println(ex);
         }
     }
 
     public static void setPreferences(Container c, Element e) {
         setPreferences(c, e, false);
     }
-
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WindowPreferences.class);
 }

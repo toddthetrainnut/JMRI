@@ -1,6 +1,7 @@
 package jmri.jmrix.lenz.xntcp;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -21,13 +22,11 @@ import jmri.jmrix.JmrixConfigPane;
  */
 public class ConnectionConfig extends jmri.jmrix.AbstractNetworkConnectionConfig {
 
-    private static final String XN_TCP_INTERFACE = "XnTcpInterface";
-    private static final String MANUAL = "Manual";
+    private boolean manualInput = false;
 
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p network port adapter.
      */
     public ConnectionConfig(jmri.jmrix.NetworkPortAdapter p) {
         super(p);
@@ -68,11 +67,11 @@ public class ConnectionConfig extends jmri.jmrix.AbstractNetworkConnectionConfig
     @Override
     public String getInfo() {
         // GT 2.14 retrieving adapter name from CurrentOption1Setting, since Opt1Box now returns null
-        String x = adapter.getOptionState(XN_TCP_INTERFACE);
+        String x = adapter.getOptionState("XnTcpInterface");
         if (x == null) {
             return JmrixConfigPane.NONE;
         }
-        if (x.equals(Bundle.getMessage(MANUAL))) {
+        if (x.equals(Bundle.getMessage("Manual"))) {
             x = "";
         } else {
             x += ":";
@@ -97,8 +96,13 @@ public class ConnectionConfig extends jmri.jmrix.AbstractNetworkConnectionConfig
     public void loadDetails(final JPanel d) {
         super.loadDetails(d);
 
-        if (options.get(XN_TCP_INTERFACE).getComponent() instanceof JComboBox) {
-            ((JComboBox<Option>) options.get(XN_TCP_INTERFACE).getComponent()).addActionListener((ActionEvent e) -> enableInput());
+        if (options.get("XnTcpInterface").getComponent() instanceof JComboBox) {
+            ((JComboBox<Option>) options.get("XnTcpInterface").getComponent()).addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    enableInput();
+                }
+            });
         }
     }
 
@@ -110,11 +114,12 @@ public class ConnectionConfig extends jmri.jmrix.AbstractNetworkConnectionConfig
     }
 
     private void enableInput() {
-        String choice = options.get(XN_TCP_INTERFACE).getItem();
+        String choice = options.get("XnTcpInterface").getItem();
         //GT 2.14 - Added test for null, now returned by opt1Box at startup (somewhere the initialization is missing)
-        boolean manualInput = false;
         if (choice != null) {
-            manualInput = (choice.equals(Bundle.getMessage(MANUAL)) || choice.equals(MANUAL)); // support pre-i18n configurations
+            manualInput = (choice.equals(Bundle.getMessage("Manual")) || choice.equals("Manual")); // support pre-i18n configurations
+        } else {
+            manualInput = false;
         }
         hostNameField.setEnabled(manualInput);
         portField.setEnabled(manualInput);

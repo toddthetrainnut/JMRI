@@ -13,12 +13,12 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MaintenanceTest {
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(10);
+    public Timeout globalTimeout = Timeout.seconds(1000);
 
     @Rule
     public RetryRule retryRule = new RetryRule(1); // allow 1 retry
@@ -26,7 +26,7 @@ public class MaintenanceTest {
     @Test
     public void testCTor() {
         Maintenance t = new Maintenance();
-        Assert.assertNotNull("exists", t);
+        Assert.assertNotNull("exists",t);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class MaintenanceTest {
         // nothing present
         result = Maintenance.getTypeAndNames("foo");
         checkReturnString(result, "", "foo", "foo", "0");
-
+        
         // hit on sensor via system name
         InstanceManager.getDefault(SensorManager.class).provideSensor("IS1");
         result = Maintenance.getTypeAndNames("IS1");
@@ -63,15 +63,15 @@ public class MaintenanceTest {
 
         // hit sensors before turnouts with same user name
         result = Maintenance.getTypeAndNames("bar");
-        checkReturnString(result, "Sensor", "bar", "IS3", "1");  //num listeners is empirical
+        checkReturnString(result, "Sensor", "bar", "IS3", "1");  //num listeners is empirical   
     }
 
     @Test
     public void testGetTypeAndNamesObsoleteCase() {
         // This is checking the obsolete cases where UPPER CASE names are forced
-
+        
         String[] result;
-
+        
         // hit on sensor via to-capital system name
         InstanceManager.getDefault(SensorManager.class).provideSensor("is1");
         result = Maintenance.getTypeAndNames("IS1");
@@ -87,41 +87,37 @@ public class MaintenanceTest {
         Assert.assertEquals("SystemName", systemname, result[2]);
         Assert.assertEquals("Listeners", listeners, result[3]);
     }
-
-    // @Test - testing for dialog fails when run separately
+   
+    @Test
     public void testDeviceReportPressed() throws InterruptedException {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         Thread t = new Thread(() -> {
             // constructor for jdo will wait until the dialog is visible
             JDialogOperator jdo = new JDialogOperator(Maintenance.rbm.getString("CrossReferenceTitle"));
             jdo.close();
-        });
+	    });
         t.setName("Cross Reference Dialog Close Thread");
         t.start();
-        JmriJFrame parent = new jmri.util.JmriJFrame("DeviceReportParent");
         ThreadingUtil.runOnGUI(() -> {
-            Maintenance.deviceReportPressed("IS1", parent);
+            Maintenance.deviceReportPressed("IS1",new jmri.util.JmriJFrame("DeviceReportParent"));
         });
         t.join(); // only proceed when all done
-        JUnitUtil.dispose(parent);
     }
 
-    // @Test - testing for dialog fails when run separately
+    @Test
     public void testFindOrphansPressed() throws InterruptedException {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         Thread t = new Thread(() -> {
             // constructor for jdo will wait until the dialog is visible
             JDialogOperator jdo = new JDialogOperator(Maintenance.rbm.getString("OrphanTitle"));
             jdo.close();
-        });
+	    });
         t.setName("Find Orphan Dialog Close Thread");
         t.start();
-        JmriJFrame parent = new jmri.util.JmriJFrame("FindOrphansParent");
         ThreadingUtil.runOnGUI(() -> {
-            Maintenance.findOrphansPressed(parent);
+            Maintenance.findOrphansPressed(new jmri.util.JmriJFrame("FindOrphansParent"));
         });
         t.join(); // only proceed when all done
-        JUnitUtil.dispose(parent);
     }
 
     //@Test
@@ -131,17 +127,17 @@ public class MaintenanceTest {
             // constructor for jdo will wait until the dialog is visible
             JDialogOperator jdo = new JDialogOperator(Maintenance.rbm.getString("EmptyConditionalTitle"));
             jdo.close();
-        });
+	    });
         t.setName("Find Empty Dialog Close Thread");
         t.start();
-        JmriJFrame parent = new jmri.util.JmriJFrame("FindEmptyParent");
         ThreadingUtil.runOnGUI(() -> {
-            Maintenance.findEmptyPressed(parent);
+            Maintenance.findEmptyPressed(new jmri.util.JmriJFrame("FindEmptyParent"));
         });
         t.join(); // only proceed when all done
-        JUnitUtil.dispose(parent);
     }
 
+
+    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -153,11 +149,9 @@ public class MaintenanceTest {
 
     @After
     public void tearDown() {
-        JUnitUtil.resetWindows(false, false);
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(MaintenanceTest.class);
+
 }

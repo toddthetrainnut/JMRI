@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
@@ -29,7 +29,7 @@ public class PrintLocationsActionTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
-        PrintLocationsAction t = new PrintLocationsAction(true);
+        PrintLocationsAction t = new PrintLocationsAction("test action", true);
         Assert.assertNotNull("exists", t);
     }
 
@@ -96,7 +96,7 @@ public class PrintLocationsActionTest extends OperationsTestCase {
         stagingTrack.setShipLoadOption(Track.EXCLUDE_LOADS);
         stagingTrack.addShipLoadName("Screws");
 
-        PrintLocationsAction pla = new PrintLocationsAction(true);
+        PrintLocationsAction pla = new PrintLocationsAction("test action", true);
         Assert.assertNotNull("exists", pla);
         // select all options
         pla.printLocations.setSelected(true);
@@ -115,7 +115,6 @@ public class PrintLocationsActionTest extends OperationsTestCase {
         
         Assert.assertNotNull("exists", printPreviewFrame);
         JUnitUtil.dispose(printPreviewFrame);
-
     }
 
     @Test
@@ -123,7 +122,7 @@ public class PrintLocationsActionTest extends OperationsTestCase {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         JUnitOperationsUtil.initOperationsData();
-        PrintLocationsAction pla = new PrintLocationsAction(true);
+        PrintLocationsAction pla = new PrintLocationsAction("test action", true);
         Assert.assertNotNull("exists", pla);
 
         LocationPrintOptionFrame f = pla.new LocationPrintOptionFrame(pla);
@@ -140,7 +139,6 @@ public class PrintLocationsActionTest extends OperationsTestCase {
 
         JUnitUtil.dispose(f);
         JUnitUtil.dispose(printPreviewFrame);
-
     }
 
     @Test
@@ -150,10 +148,10 @@ public class PrintLocationsActionTest extends OperationsTestCase {
         JUnitOperationsUtil.initOperationsData();
         Location location = InstanceManager.getDefault(LocationManager.class).getLocationByName("North Industries");
 
-        PrintLocationsAction pla = new PrintLocationsAction(true, location);
+        PrintLocationsAction pla = new PrintLocationsAction("test action", true, location);
         Assert.assertNotNull("exists", pla);
 
-        pla.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+        pla.actionPerformed(new ActionEvent("Test Action", 0, null));
 
         // confirm print option window is showing
         LocationPrintOptionFrame printOptionFrame =
@@ -172,7 +170,6 @@ public class PrintLocationsActionTest extends OperationsTestCase {
         JUnitUtil.dispose(printPreviewFrame);
 
         JUnitUtil.dispose(printOptionFrame);
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(PrintLocationsActionTest.class);

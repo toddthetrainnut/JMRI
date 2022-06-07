@@ -63,7 +63,7 @@ log4j.appender.A1.layout=org.apache.log4j.PatternLayout
 # Justification, padding and truncation can be controlled e.g. %-5.10p
 # is left justified, at least 5 and no more than 10 characters wide
 
-log4j.appender.A1.layout.ConversionPattern=%d{ABSOLUTE} %-37.37c{2} %-5p - %m [%t]%n
+log4j.appender.A1.layout.ConversionPattern=%d{ISO8601} %-37.37c{2} %-5p - %m [%t]%n
 
 # R is set to output to a single log file. This is defined
 # for systems that can't (or don't want to) have rolling files.
@@ -101,6 +101,7 @@ log4j.category.org.jdom2.transform=SEVERE
 # log4j.category.jmri.jmrit.beantable.LogixTableAction=DEBUG
 # log4j.category.jmri.jmrit.display=DEBUG
 # log4j.category.jmri.jmrit.display.IndicatorTrackPaths=DEBUG
+# log4j.category.jmri.jmrit.logix=DEBUG
 # log4j.category.jmri.jmrit.progsupport=TRACE
 # log4j.category.jmri.jmrit.symbolicprog.tabbedframe=DEBUG
 # log4j.category.jmri.jmrit.symbolicprog.DecVariableValue=DEBUG
@@ -110,4 +111,3 @@ log4j.category.org.jdom2.transform=SEVERE
 
 #log4j.category.jmri.jmrit.display.layoutEditor=DEBUG
 #log4j.category.jmri.jmrit.display.layoutEditor.LayoutBlock=DEBUG
-#log4j.category.jmri.jmrit.operations=DEBUG

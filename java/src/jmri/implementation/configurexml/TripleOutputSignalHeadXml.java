@@ -69,8 +69,9 @@ public class TripleOutputSignalHeadXml extends DoubleTurnoutSignalHeadXml {
 
         loadCommon(h, shared);
 
-        SignalHead existingBean = InstanceManager.getDefault(jmri.SignalHeadManager.class)
-                        .getBySystemName(sys);
+        SignalHead existingBean =
+                InstanceManager.getDefault(jmri.SignalHeadManager.class)
+                        .getBeanBySystemName(sys);
 
         if ((existingBean != null) && (existingBean != h)) {
             log.error("systemName is already registered: {}", sys);
@@ -87,5 +88,4 @@ public class TripleOutputSignalHeadXml extends DoubleTurnoutSignalHeadXml {
     }
 
     private final static Logger log = LoggerFactory.getLogger(TripleOutputSignalHeadXml.class);
-
 }

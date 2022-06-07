@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Table data model for display of slot manager contents.
  *
- * @author Bob Jacobsen Copyright (C) 2001 
+ * @author	Bob Jacobsen Copyright (C) 2001 
  * @author  Andrew Crosland (C) 2006 ported to SPROG
  */
 public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel implements SprogSlotListener {
@@ -35,6 +35,22 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
     }
 
     /**
+     * Check the requested number of slots against limits and return a valid slot
+     * count.
+     * 
+     * @return validated number of slots
+     */
+    public static int getSlotCount() {
+        int numSlots = SprogConstants.MAX_SLOTS;
+        if (numSlots < SprogConstants.MIN_SLOTS) {
+            numSlots = SprogConstants.MIN_SLOTS;
+        } else if (numSlots > SprogConstants.SLOTS_LIMIT) {
+            numSlots = SprogConstants.SLOTS_LIMIT;
+        }
+        return numSlots;
+    }
+    
+    /**
      * Return the number of rows to be displayed. This can vary depending on
      * whether only active rows are displayed.
      * <p>
@@ -43,7 +59,7 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
      */
     @Override
     public int getRowCount() {
-        int nMax = _memo.getNumSlots();
+        int nMax = getSlotCount();
         if (_allSlots) {
             // will show the entire set, so don't bother counting
             return nMax;
@@ -123,7 +139,7 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
     public Object getValueAt(int row, int col) {
         SprogSlot s = _memo.getCommandStation().slot(slotNum(row));
         if (s == null) {
-            log.error("slot pointer was null for slot row: {} col: {}", row, col);
+            log.error("slot pointer was null for slot row: " + row + " col: " + col);
         }
 
         switch (col) {
@@ -149,10 +165,6 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
                             return "F5to8Pkt";
                         } else if (s.isF9to12Packet()) {
                             return "F9to12Pkt";
-                        } else if (s.isF13to20Packet()) {
-                            return "F13to20Pkt";
-                        } else if (s.isF21to28Packet()) {
-                            return "F21to28Pkt";
                         } else if (s.isOpsPkt()) {
                             return "OpsPkt";
                         } else if (s.isSpeedPacket()) {
@@ -234,7 +246,7 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
         // check for in use
         SprogSlot s = _memo.getCommandStation().slot(slotNum(row));
         if (s == null) {
-            log.error("slot pointer was null for slot row: {} col: {}", row, col);
+            log.error("slot pointer was null for slot row: " + row + " col: " + col);
             return;
         }
 //        if (col == ESTOPCOLUMN) {
@@ -248,11 +260,10 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
     }
 
     /**
-     * Configure a table to have our standard rows and columns.
-     * This is optional, in that other table formats can use this table model. 
-     * But we put it here to help keep it consistent.
+     * Configure a table to have our standard rows and columns. This is
+     * optional, in that other table formats can use this table model. But we
+     * put it here to help keep it consistent.
      *
-     * @param slotTable the slot table to configure.
      */
     public void configureTable(JTable slotTable) {
         // allow reordering of the columns
@@ -285,7 +296,7 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
 //        // ensure the table rows, columns have enough room for buttons
 //        slotTable.setRowHeight(new JButton("  "+getValueAt(1, column)).getPreferredSize().height);
 //        slotTable.getColumnModel().getColumn(column)
-//                .setPreferredWidth(new JButton("  "+getValueAt(1, column)).getPreferredSize().width);
+//			.setPreferredWidth(new JButton("  "+getValueAt(1, column)).getPreferredSize().width);
 //    }
 //
 //    void setColumnToHoldEStopButton(JTable slotTable, int column) {
@@ -302,7 +313,7 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
 //        // ensure the table rows, columns have enough room for buttons
 //        slotTable.setRowHeight(new JButton("  "+getValueAt(1, column)).getPreferredSize().height);
 //        slotTable.getColumnModel().getColumn(column)
-//                .setPreferredWidth(new JButton("  "+getValueAt(1, column)).getPreferredSize().width);
+//			.setPreferredWidth(new JButton("  "+getValueAt(1, column)).getPreferredSize().width);
 //    }
     // methods to communicate with SprogSlotManager
     @Override
@@ -313,7 +324,7 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
         if (_allSlots) {          // this will be row until we show only active slots
             slotNum = s.getSlotNumber();  // and we are displaying the System slots
         }
-        log.debug("Received notification of changed slot: {}", slotNum);
+        log.debug("Received notification of changed slot: " + slotNum);
         // notify the JTable object that a row has changed; do that in the Swing thread!
         Runnable r = new Notify(slotNum, this);   // -1 in first arg means all
         javax.swing.SwingUtilities.invokeLater(r);
@@ -354,14 +365,13 @@ public class SprogSlotMonDataModel extends javax.swing.table.AbstractTableModel 
      * time.
      *
      * @param row Row number in the displayed table
-     * @return Matching slot number
      */
     protected int slotNum(int row) {
         // ??? Can't this just return row ???
         int slotNum;
         int n = -1;   // need to find a used slot to have the 0th one!
         int nMin = 0;
-        int nMax = _memo.getNumSlots();
+        int nMax = getSlotCount();
         for (slotNum = nMin; slotNum < nMax; slotNum++) {
             SprogSlot s = _memo.getCommandStation().slot(slotNum);
             if (_allSlots || s.slotStatus() != SprogConstants.SLOT_FREE) {

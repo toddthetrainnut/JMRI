@@ -1,13 +1,11 @@
 package jmri.jmrix.ecos.swing.packetgen;
 
 import java.awt.Dimension;
-
 import javax.swing.BoxLayout;
-
-import jmri.jmrix.ecos.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jmri.jmrix.ecos.EcosListener;
+import jmri.jmrix.ecos.EcosMessage;
+import jmri.jmrix.ecos.EcosReply;
+import jmri.jmrix.ecos.EcosSystemConnectionMemo;
 
 /**
  * Frame for user input of ECoS messages
@@ -15,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author Bob Jacobsen Copyright (C) 2001, 2008
  * @author Dan Boudreau Copyright (C) 2007
  */
-public class PacketGenPanel extends jmri.jmrix.ecos.swing.EcosPanel {
+public class PacketGenPanel extends jmri.jmrix.ecos.swing.EcosPanel implements EcosListener {
 
     // member declarations
     javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
@@ -50,7 +48,12 @@ public class PacketGenPanel extends jmri.jmrix.ecos.swing.EcosPanel {
             add(packetTextField);
             add(sendButton);
 
-            sendButton.addActionListener(this::sendButtonActionPerformed);
+            sendButton.addActionListener(new java.awt.event.ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    sendButtonActionPerformed(e);
+                }
+            });
         }
     }
 
@@ -73,25 +76,39 @@ public class PacketGenPanel extends jmri.jmrix.ecos.swing.EcosPanel {
         return Bundle.getMessage("MenuItemSendPacket");
     }
 
-    public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        EcosMessage m = new EcosMessage(input.length());
-        for (int i = 0; i < input.length(); i++) {
-            m.setElement(i, input.charAt(i));
-        }
-        if ( memo == null ) {
-            log.error("no System Connection Memo Found when sending {}", m);
-            return; 
-        }
-        EcosTrafficController tc = memo.getTrafficController();
-        if (tc ==null ) {
-            log.error("no Traffic Controller for Memo {} when sending {}", memo.getUserName(), m);
-            return; 
-        }
-        tc.sendEcosMessage(m, null);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void initComponents(EcosSystemConnectionMemo memo) {
+        super.initComponents(memo);
+
+        memo.getTrafficController().addEcosListener(this);
     }
 
-    private final static Logger log = LoggerFactory.getLogger(PacketGenPanel.class);
-        
+    public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
+
+        EcosMessage m = new EcosMessage(packetTextField.getText().length());
+        for (int i = 0; i < packetTextField.getText().length(); i++) {
+            m.setElement(i, packetTextField.getText().charAt(i));
+        }
+
+        memo.getTrafficController().sendEcosMessage(m, this);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void message(EcosMessage m) {
+    }  // ignore replies
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reply(EcosReply r) {
+    } // ignore replies
+
 }

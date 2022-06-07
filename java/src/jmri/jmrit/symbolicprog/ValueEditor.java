@@ -47,7 +47,9 @@ public class ValueEditor extends JComboBox<Object> implements TableCellEditor, F
             int row, int column) {
         mValue = value;
         if (log.isDebugEnabled()) {
-            log.debug("getTableCellEditorComponent {} {} {} {}", row, column, isSelected, value.getClass());
+            log.debug("getTableCellEditorComponent " + row + " "
+                    + column + " " + isSelected + " "
+                    + value.getClass());
         }
         table.setRowSelectionInterval(row, row);
         table.setColumnSelectionInterval(column, column);
@@ -113,7 +115,7 @@ public class ValueEditor extends JComboBox<Object> implements TableCellEditor, F
     @Override
     public Object getCellEditorValue() {
         if (log.isDebugEnabled()) {
-            log.debug("getCellEditorValue with 'value' object of type {}", mValue.getClass());
+            log.debug("getCellEditorValue with 'value' object of type " + mValue.getClass());
         }
         if (mValue instanceof JTextField) {
             // extract the string from the JTextField and return it
@@ -122,7 +124,8 @@ public class ValueEditor extends JComboBox<Object> implements TableCellEditor, F
             // extract the string from the JTextField and return it
             return mValue;
         } else {
-            log.error("getCellEditorValue unable to return a value from unknown type {}", mValue.getClass());
+            log.error("getCellEditorValue unable to return a value from unknown type "
+                    + mValue.getClass());
             return null;
         }
     }

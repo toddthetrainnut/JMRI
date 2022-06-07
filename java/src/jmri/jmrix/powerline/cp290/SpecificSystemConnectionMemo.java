@@ -31,7 +31,6 @@ public class SpecificSystemConnectionMemo extends jmri.jmrix.powerline.SerialSys
         InstanceManager.setSensorManager(getSensorManager());
         setTurnoutManager(new jmri.jmrix.powerline.SerialTurnoutManager(getTrafficController()));
         InstanceManager.setTurnoutManager(getTurnoutManager());
-        register();
     }
 
     @Override

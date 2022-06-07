@@ -59,6 +59,7 @@ public class SimpleServerPreferencesPanel extends JPanel implements PreferencesP
         int portNum;
         try {
             portNum = (Integer) port.getValue();
+//            Integer currentValue = (Integer)jSpinner1.getValue();
         } catch (NumberFormatException NFE) { //  Not a number
             portNum = 0;
         }
@@ -84,7 +85,7 @@ public class SimpleServerPreferencesPanel extends JPanel implements PreferencesP
 
     protected void cancelValues() {
         java.awt.Container ancestor = getTopLevelAncestor();
-        if (ancestor instanceof JFrame) {
+        if (ancestor != null && ancestor instanceof JFrame) {
             ((JFrame) ancestor).setVisible(false);
         }
     }
@@ -94,7 +95,9 @@ public class SimpleServerPreferencesPanel extends JPanel implements PreferencesP
         port = new JSpinner(new SpinnerNumberModel(preferences.getPort(), 1, 65535, 1));
         ((JSpinner.DefaultEditor) port.getEditor()).getTextField().setEditable(true);
         port.setEditor(new JSpinner.NumberEditor(port, "#"));
-        this.port.addChangeListener((ChangeEvent e) -> this.setValues());
+        this.port.addChangeListener((ChangeEvent e) -> {
+            this.setValues();
+        });
         this.port.setToolTipText(Bundle.getMessage("PortToolTip"));
         panel.add(port);
         panel.add(new JLabel(Bundle.getMessage("LabelPort")));

@@ -1,16 +1,17 @@
 package jmri.jmrix.bachrus;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * SpeedoTrafficControllerTest.java
  *
- * Test for the jmri.jmrix.bachrus.SpeedoTrafficController class
+ * Description:	tests for the jmri.jmrix.bachrus.SpeedoTrafficController class
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class SpeedoTrafficControllerTest {
 
@@ -20,12 +21,13 @@ public class SpeedoTrafficControllerTest {
         Assert.assertNotNull(tc);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
    
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

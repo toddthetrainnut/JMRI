@@ -3,18 +3,18 @@ package jmri.managers;
 import jmri.InstanceManager;
 import jmri.Reporter;
 import jmri.ReporterManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the ProxyReporterManager
  *
- * @author Bob Jacobsen 2003, 2006, 2008
- * @author Mark Underwood 2012
- * @author Paul Bender 2016
+ * @author	Bob Jacobsen 2003, 2006, 2008
+ * @author	Mark Underwood 2012
+ * @author	Paul Bender 2016
  */
 public class ProxyReporterManagerTest extends AbstractReporterMgrTestBase {
 
@@ -81,24 +81,22 @@ public class ProxyReporterManagerTest extends AbstractReporterMgrTestBase {
         Assert.assertNotNull(InstanceManager.getDefault(ReporterManager.class));
         Assert.assertNotNull(InstanceManager.getDefault(ReporterManager.class).provideReporter("IR1"));
 
-        ReporterManager m = new jmri.jmrix.internal.InternalReporterManager(new InternalSystemConnectionMemo("J", "Juliet"));
+        ReporterManager m = new jmri.jmrix.internal.InternalReporterManager() {
+
+            @Override
+            public String getSystemPrefix() {
+                return "J";
+            }
+        };
         InstanceManager.setReporterManager(m);
 
         Assert.assertNotNull(InstanceManager.getDefault(ReporterManager.class).provideReporter("JR1"));
         Assert.assertNotNull(InstanceManager.getDefault(ReporterManager.class).provideReporter("IR2"));
     }
 
-    // No manager-specific system name validation
-    @Test
-    @Override
-    public void testMakeSystemNameWithNoPrefixNotASystemName() {}
 
-    // No manager-specific system name validation
-    @Test
-    @Override
-    public void testMakeSystemNameWithPrefixNotASystemName() {}
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -106,7 +104,7 @@ public class ProxyReporterManagerTest extends AbstractReporterMgrTestBase {
         l = InstanceManager.getDefault(jmri.ReporterManager.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

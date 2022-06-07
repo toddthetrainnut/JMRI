@@ -1,12 +1,10 @@
 package jmri.jmrix.ecos;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
-
-import jmri.*;
-import jmri.managers.DefaultProgrammerManager;
-import jmri.util.NamedBeanComparator;
-
+import jmri.GlobalProgrammerManager;
+import jmri.InstanceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lightweight class to denote that a system is active, and provide general
@@ -17,32 +15,34 @@ import jmri.util.NamedBeanComparator;
  *
  * @author Bob Jacobsen Copyright (C) 2010
  */
-public class EcosSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnectionMemo {
+public class EcosSystemConnectionMemo extends jmri.jmrix.SystemConnectionMemo {
 
     public EcosSystemConnectionMemo(EcosTrafficController et) {
         super("U", "ECoS");
         this.et = et;
-        et.setAdapterMemo(EcosSystemConnectionMemo.this);
-        init();
+        et.setAdapterMemo(this);
+        register();
+        InstanceManager.store(this, EcosSystemConnectionMemo.class); // also register as specific type
+        InstanceManager.store(cf = new jmri.jmrix.ecos.swing.EcosComponentFactory(this),
+                jmri.jmrix.swing.ComponentFactory.class);
+        prefManager = new jmri.jmrix.ecos.EcosPreferences(this);
     }
 
     public EcosSystemConnectionMemo() {
         super("U", "ECoS");
-        init();
-    }
-
-    private void init() {
+        register(); // registers general type
         InstanceManager.store(this, EcosSystemConnectionMemo.class); // also register as specific type
+        //Needs to be implemented
         InstanceManager.store(cf = new jmri.jmrix.ecos.swing.EcosComponentFactory(this),
                 jmri.jmrix.swing.ComponentFactory.class);
-        store(new EcosPreferences(this), EcosPreferences.class);
+        //jmri.InstanceManager.store(new jmri.jmrix.ecos.EcosPreferences(thie), jmri.jmrix.ecos.EcosPreferences.class);
+        prefManager = new jmri.jmrix.ecos.EcosPreferences(this);
     }
 
-    private jmri.jmrix.swing.ComponentFactory cf = null;
+    jmri.jmrix.swing.ComponentFactory cf = null;
 
     /**
      * Provides access to the TrafficController for this particular connection.
-     * @return Ecos traffic controller.
      */
     public EcosTrafficController getTrafficController() {
         return et;
@@ -59,36 +59,26 @@ public class EcosSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnection
      */
     public void configureManagers() {
 
-        SensorManager sensorManager = new EcosSensorManager(this);
-        InstanceManager.setSensorManager(sensorManager);
-        store(sensorManager, SensorManager.class);
-        
-        PowerManager powerManager = new EcosPowerManager(getTrafficController());
-        InstanceManager.store(powerManager, PowerManager.class);
-        store(powerManager, PowerManager.class);
+        powerManager = new jmri.jmrix.ecos.EcosPowerManager(getTrafficController());
+        jmri.InstanceManager.store(powerManager, jmri.PowerManager.class);
 
-        TurnoutManager turnoutManager = new EcosTurnoutManager(this);
-        InstanceManager.setTurnoutManager(turnoutManager);
-        store(turnoutManager,TurnoutManager.class);
+        turnoutManager = new jmri.jmrix.ecos.EcosTurnoutManager(this);
+        jmri.InstanceManager.setTurnoutManager(turnoutManager);
 
-        EcosLocoAddressManager locoManager = new EcosLocoAddressManager(this);
-        store(locoManager,EcosLocoAddressManager.class);
+        locoManager = new jmri.jmrix.ecos.EcosLocoAddressManager(this);
 
-        ThrottleManager throttleManager = new EcosDccThrottleManager(this);
-        InstanceManager.setThrottleManager(throttleManager);
-        store(throttleManager,ThrottleManager.class);
+        throttleManager = new jmri.jmrix.ecos.EcosDccThrottleManager(this);
+        jmri.InstanceManager.setThrottleManager(throttleManager);
 
-        ReporterManager reporterManager = new EcosReporterManager(this);
-        InstanceManager.setReporterManager(reporterManager);
-        store(reporterManager,ReporterManager.class);
+        reporterManager = new jmri.jmrix.ecos.EcosReporterManager(this);
+        jmri.InstanceManager.setReporterManager(reporterManager);
 
-        InstanceManager.store(getProgrammerManager(), GlobalProgrammerManager.class);
-        store(getProgrammerManager(), GlobalProgrammerManager.class);
+        sensorManager = new jmri.jmrix.ecos.EcosSensorManager(this);
+        jmri.InstanceManager.setSensorManager(sensorManager);
 
-        InstanceManager.store(getProgrammerManager(), AddressedProgrammerManager.class);
-        store(getProgrammerManager(), AddressedProgrammerManager.class);
+        jmri.InstanceManager.store(getProgrammerManager(), GlobalProgrammerManager.class);
+        jmri.InstanceManager.store(getProgrammerManager(), jmri.AddressedProgrammerManager.class);
 
-        register(); // registers general type
     }
 
     @Override
@@ -96,61 +86,144 @@ public class EcosSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnection
         return ResourceBundle.getBundle("jmri.jmrix.ecos.EcosActionListBundle");
     }
 
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
-    }
+    private EcosSensorManager sensorManager;
+    private EcosTurnoutManager turnoutManager;
+    private EcosLocoAddressManager locoManager;
+    private EcosPreferences prefManager;
+    private EcosDccThrottleManager throttleManager;
+    private EcosPowerManager powerManager;
+    private EcosReporterManager reporterManager;
+    private EcosProgrammerManager programmerManager;
 
     public EcosLocoAddressManager getLocoAddressManager() {
-        return get(EcosLocoAddressManager.class);
+        return locoManager;
     }
 
     public EcosTurnoutManager getTurnoutManager() {
-        return get(TurnoutManager.class);
+        return turnoutManager;
     }
 
     public EcosSensorManager getSensorManager() {
-        return get(SensorManager.class);
+        return sensorManager;
     }
 
     public EcosPreferences getPreferenceManager() {
-        return get(EcosPreferences.class);
+        return prefManager;
     }
 
     public EcosDccThrottleManager getThrottleManager() {
-        return get(ThrottleManager.class);
+        return throttleManager;
     }
 
     public EcosPowerManager getPowerManager() {
-        return get(PowerManager.class);
+        return powerManager;
     }
 
     public EcosReporterManager getReporterManager() {
-        return get(ReporterManager.class);
+        return reporterManager;
     }
 
     public EcosProgrammerManager getProgrammerManager() {
-        return (EcosProgrammerManager) classObjectMap.computeIfAbsent(EcosProgrammerManager.class, (Class<?> c) ->
-            new EcosProgrammerManager(new EcosProgrammer(getTrafficController()), this));
+        if (programmerManager == null) {
+            programmerManager = new EcosProgrammerManager(new EcosProgrammer(getTrafficController()), this);
+        }
+        return programmerManager;
+    }
+
+    /**
+     * Tell which managers this class provides.
+     */
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        }
+        if (type.equals(jmri.ThrottleManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.PowerManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.SensorManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.TurnoutManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.ReporterManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.GlobalProgrammerManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.AddressedProgrammerManager.class)) {
+            return true;
+        }
+        return super.provides(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.ThrottleManager.class)) {
+            return (T) getThrottleManager();
+        }
+        if (T.equals(jmri.PowerManager.class)) {
+            return (T) getPowerManager();
+        }
+        if (T.equals(jmri.SensorManager.class)) {
+            return (T) getSensorManager();
+        }
+        if (T.equals(jmri.TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        if (T.equals(jmri.ReporterManager.class)) {
+            return (T) getReporterManager();
+        }
+        if (T.equals(jmri.GlobalProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+        if (T.equals(jmri.AddressedProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+        return super.get(T);
     }
 
     @Override
     public void dispose() {
-        EcosLocoAddressManager locoManager = get(EcosLocoAddressManager.class);
-        if (locoManager != null) {
-            locoManager.dispose();
-            deregister(locoManager, EcosLocoAddressManager.class);
+        if (sensorManager != null) {
+            sensorManager.dispose();
+            sensorManager = null;
         }
+        if (turnoutManager != null) {
+            turnoutManager.dispose();
+            turnoutManager = null;
+        }
+        if (reporterManager != null) {
+            reporterManager.dispose();
+            reporterManager = null;
+        }
+        if (programmerManager != null) {
+            InstanceManager.deregister(programmerManager, jmri.jmrix.ecos.EcosProgrammerManager.class);
+        }
+
+        if (powerManager != null) {
+            InstanceManager.deregister(powerManager, jmri.jmrix.ecos.EcosPowerManager.class);
+        }
+
+        if (throttleManager != null) {
+            InstanceManager.deregister(throttleManager, jmri.jmrix.ecos.EcosDccThrottleManager.class);
+        }
+
         et = null;
         InstanceManager.deregister(this, EcosSystemConnectionMemo.class);
         if (cf != null) {
             InstanceManager.deregister(cf, jmri.jmrix.swing.ComponentFactory.class);
         }
-        EcosPreferences prefManager = get(EcosPreferences.class);
-        if (prefManager != null) {
-            InstanceManager.getDefault(ShutDownManager.class).deregister(prefManager.ecosPreferencesShutDownTask);
-            deregister(prefManager, EcosPreferences.class);
-        }
+
         super.dispose();
     }
 

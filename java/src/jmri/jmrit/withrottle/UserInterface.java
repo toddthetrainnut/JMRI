@@ -1,8 +1,10 @@
 package jmri.jmrit.withrottle;
 
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
@@ -31,7 +33,6 @@ import jmri.jmrit.throttle.LargePowerManagerButton;
 import jmri.jmrit.throttle.StopAllButton;
 import jmri.util.FileUtil;
 import jmri.util.JmriJFrame;
-import jmri.util.prefs.JmriPreferencesActionFactory;
 import jmri.util.zeroconf.ZeroConfServiceManager;
 
 /**
@@ -247,8 +248,8 @@ public class UserInterface extends JmriJFrame implements DeviceListener, RosterG
 
         menu.add(new ControllerFilterAction());
 
-        Action prefsAction = InstanceManager.getDefault(JmriPreferencesActionFactory.class).getCategorizedAction(
-                Bundle.getMessage("MenuMenuPrefs"),
+        Action prefsAction = new apps.gui3.tabbedpreferences.TabbedPreferencesAction(
+                ResourceBundle.getBundle("apps.AppsBundle").getString("MenuItemPreferences"),
                 "WITHROTTLE");
 
         menu.add(prefsAction);
@@ -263,12 +264,8 @@ public class UserInterface extends JmriJFrame implements DeviceListener, RosterG
     public void notifyDeviceConnected(DeviceServer device) {
 
         deviceList.add(device);
-        if (withrottlesListModel != null) {
-            withrottlesListModel.updateDeviceList(deviceList);
-        }
-        if (numConnected != null) {
-            numConnected.setText(Bundle.getMessage("LabelClients") + " " + deviceList.size());
-        }
+        numConnected.setText(Bundle.getMessage("LabelClients") + " " + deviceList.size());
+        withrottlesListModel.updateDeviceList(deviceList);
     }
 
     @Override
@@ -280,20 +277,14 @@ public class UserInterface extends JmriJFrame implements DeviceListener, RosterG
             return;
         }
 
-        if (numConnected != null) {
-            numConnected.setText(Bundle.getMessage("LabelClients") + " " + deviceList.size());
-        }
-        if (withrottlesListModel != null) {
-            withrottlesListModel.updateDeviceList(deviceList);
-        }
+        numConnected.setText(Bundle.getMessage("LabelClients") + " " + deviceList.size());
+        withrottlesListModel.updateDeviceList(deviceList);
         device.removeDeviceListener(this);
     }
 
     @Override
     public void notifyDeviceAddressChanged(DeviceServer device) {
-        if (withrottlesListModel != null) {
-            withrottlesListModel.updateDeviceList(deviceList);
-        }
+        withrottlesListModel.updateDeviceList(deviceList);
     }
 
     /**
@@ -303,9 +294,7 @@ public class UserInterface extends JmriJFrame implements DeviceListener, RosterG
      */
     @Override
     public void notifyDeviceInfoChanged(DeviceServer device) {
-        if (withrottlesListModel != null) {
-            withrottlesListModel.updateDeviceList(deviceList);
-        }
+        withrottlesListModel.updateDeviceList(deviceList);
     }
 
     // this is package protected so tests can trigger easily.

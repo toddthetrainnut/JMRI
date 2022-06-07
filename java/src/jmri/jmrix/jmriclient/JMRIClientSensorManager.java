@@ -1,6 +1,5 @@
 package jmri.jmrix.jmriclient;
 
-import javax.annotation.Nonnull;
 import jmri.Sensor;
 
 /**
@@ -13,37 +12,24 @@ import jmri.Sensor;
  */
 public class JMRIClientSensorManager extends jmri.managers.AbstractSensorManager {
 
+    private JMRIClientSystemConnectionMemo memo = null;
+    private String prefix = null;
+
     public JMRIClientSensorManager(JMRIClientSystemConnectionMemo memo) {
-        super(memo);
+        this.memo = memo;
+        this.prefix = memo.getSystemPrefix();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public JMRIClientSystemConnectionMemo getMemo() {
-        return (JMRIClientSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return prefix;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws IllegalArgumentException when SystemName can't be converted
-     */
     @Override
-    @Nonnull
-    protected Sensor createNewSensor(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Sensor createNewSensor(String systemName, String userName) {
         Sensor t;
-        int addr;
-        try {
-            addr = Integer.parseInt(systemName.substring(getSystemPrefix().length() + 1)); // .length() only? TODO
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Can't convert " +  // NOI18N
-                    systemName.substring(getSystemPrefix().length() + 1) +
-                    " to JMRIClient sensor address"); // NOI18N
-        }
-        t = new JMRIClientSensor(addr, getMemo());
+        int addr = Integer.parseInt(systemName.substring(prefix.length() + 1));
+        t = new JMRIClientSensor(addr, memo);
         t.setUserName(userName);
         return t;
     }
@@ -53,20 +39,8 @@ public class JMRIClientSensorManager extends jmri.managers.AbstractSensorManager
      * on the server.
      */
     @Override
-    @Nonnull
-    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws jmri.JmriException {
+    public String createSystemName(String curAddress, String prefix) throws jmri.JmriException {
         return prefix + typeLetter() + curAddress;
     }
-    
-    /**
-     * Validates to only numeric.
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull java.util.Locale locale) throws jmri.NamedBean.BadSystemNameException {
-        return validateSystemNameFormatOnlyNumeric(name,locale);
-    }
-    
 
 }

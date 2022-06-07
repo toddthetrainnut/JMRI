@@ -2,19 +2,30 @@ package jmri.jmrit.operations.locations;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-
-import javax.swing.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.locations.schedules.SchedulesTableAction;
-import jmri.jmrit.operations.locations.tools.*;
+import jmri.jmrit.operations.locations.tools.ExportLocationsRosterAction;
+import jmri.jmrit.operations.locations.tools.LocationCopyAction;
+import jmri.jmrit.operations.locations.tools.ModifyLocationsAction;
+import jmri.jmrit.operations.locations.tools.ModifyLocationsCarLoadsAction;
+import jmri.jmrit.operations.locations.tools.PrintLocationsAction;
+import jmri.jmrit.operations.locations.tools.SetPhysicalLocationAction;
+import jmri.jmrit.operations.locations.tools.ShowCarsByLocationAction;
+import jmri.jmrit.operations.locations.tools.TrackCopyAction;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.swing.JTablePersistenceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame for adding and editing the location roster for operations.
@@ -78,18 +89,17 @@ public class LocationsTableFrame extends OperationsFrame {
         JMenu toolMenu = new JMenu(Bundle.getMessage("MenuTools"));
         toolMenu.add(new LocationCopyAction());
         toolMenu.add(new TrackCopyAction());
-        toolMenu.add(new SchedulesTableAction());
-        toolMenu.add(new ModifyLocationsAction());
+        toolMenu.add(new SchedulesTableAction(Bundle.getMessage("Schedules")));
+        toolMenu.add(new ModifyLocationsAction(Bundle.getMessage("TitleModifyLocations")));
         toolMenu.add(new ModifyLocationsCarLoadsAction());
         toolMenu.add(new ShowCarsByLocationAction(false, null, null));
-        toolMenu.add(new ExportLocationsRosterAction());
-        toolMenu.add(new ImportLocationsRosterAction() );
+        toolMenu.add(new ExportLocationsRosterAction(Bundle.getMessage("TitleExportLocations")));
         if (Setup.isVsdPhysicalLocationEnabled()) {
-            toolMenu.add(new SetPhysicalLocationAction(null));
+            toolMenu.add(new SetPhysicalLocationAction(Bundle.getMessage("MenuSetPhysicalLocation"), null));
         }
         toolMenu.addSeparator();
-        toolMenu.add(new PrintLocationsAction(false));
-        toolMenu.add(new PrintLocationsAction(true));
+        toolMenu.add(new PrintLocationsAction(Bundle.getMessage("MenuItemPrint"), false));
+        toolMenu.add(new PrintLocationsAction(Bundle.getMessage("MenuItemPreview"), true));
         menuBar.add(toolMenu);
         menuBar.add(new jmri.jmrit.operations.OperationsMenu());
         setJMenuBar(menuBar);

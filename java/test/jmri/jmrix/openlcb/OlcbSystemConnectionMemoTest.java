@@ -1,49 +1,43 @@
 package jmri.jmrix.openlcb;
 
-import jmri.InstanceManager;
-import jmri.jmrix.SystemConnectionMemoTestBase;
-import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
+import org.junit.Before;
+import org.junit.Test;
 import jmri.jmrix.can.TestTrafficController;
 
 /**
  * OlcbSystemConnectionMemoTest.java
- * <p>
- * Test for the jmri.jmrix.openlcb.OlcbSystemConnectionMemo class
  *
- * @author Bob Jacobsen
- * @author Paul Bender Copyright (C) 2016
+ * Description:	tests for the jmri.jmrix.openlcb.OlcbSystemConnectionMemo class
+ *
+ * @author	Bob Jacobsen
+ * @author      Paul Bender Copyright (C) 2016	
  */
-public class OlcbSystemConnectionMemoTest extends SystemConnectionMemoTestBase<OlcbSystemConnectionMemo> {
+public class OlcbSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
     @Override
     @Test
-    public void testProvidesConsistManager() {
-        Assert.assertFalse("Provides ConsistManager", scm.provides(jmri.ConsistManager.class));
+    public void testProvidesConsistManager(){
+       ((OlcbSystemConnectionMemo)scm).configureManagers();
+       Assert.assertFalse("Provides ConsistManager",scm.provides(jmri.ConsistManager.class));
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        scm = new OlcbSystemConnectionMemo();
+        scm  = new OlcbSystemConnectionMemo();
         TestTrafficController tc = new TestTrafficController();
-        scm.setTrafficController(tc);
-        InstanceManager.setDefault(CanSystemConnectionMemo.class,scm);
-        scm.configureManagers();
+        ((OlcbSystemConnectionMemo)scm).setTrafficController(tc);
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        scm.getTrafficController().terminateThreads();
-        scm.dispose();
         scm = null;
         JUnitUtil.tearDown();
-
     }
 }

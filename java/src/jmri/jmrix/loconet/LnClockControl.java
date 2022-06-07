@@ -1,7 +1,6 @@
 package jmri.jmrix.loconet;
 
 import java.util.Date;
-import jmri.JmriException;
 
 import jmri.PowerManager;
 import jmri.implementation.DefaultClockControl;
@@ -54,6 +53,18 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
      */
     public LnClockControl(LocoNetSystemConnectionMemo scm) {
         this(scm.getSlotManager(), scm.getLnTrafficController(), scm.getPowerManager());
+    }
+
+    /**
+     * Create a ClockControl object for a LocoNet clock.
+     *
+     * @deprecated 4.11.5
+     * @param sm the Slot Manager associated with this object
+     * @param tc the Traffic Controller associated with this object
+     */
+    @Deprecated // 4.11.5
+    public LnClockControl(SlotManager sm, LnTrafficController tc) {
+        this(sm, tc, null);
     }
 
     /**
@@ -150,7 +161,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
         return curRate;
     }
 
-    @SuppressWarnings("deprecation") // Date.getHours, Date.getMinutes
+    @SuppressWarnings("deprecation")
     @Override
     public void setTime(Date now) {
         curDays = now.getDate();
@@ -159,7 +170,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
         setClock();
     }
 
-    @SuppressWarnings("deprecation") // Date.getTime, Date.getHours
+    @SuppressWarnings("deprecation")
     @Override
     public Date getTime() {
         Date tem = clock.getTime();
@@ -186,7 +197,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
         setClock();
     }
 
-    @SuppressWarnings("deprecation") // Date.getDate, Date.getHours
+    @SuppressWarnings("deprecation")
     @Override
     public void initializeHardwareClock(double rate, Date now, boolean getTime) {
         synchronizeWithInternalClock = clock.getSynchronize();
@@ -232,7 +243,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
     /**
      * Corrects the LocoNet Fast Clock
      */
-    @SuppressWarnings("deprecation") // Date.getDate, Date.getHours, Date.getMinutes
+    @SuppressWarnings("deprecation")
     public void newMinute() {
         // ignore if waiting on LocoNet clock read
         if (!inSyncWithInternalFastClock) {
@@ -257,7 +268,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
                 curFractionalMinutes = (int) CORRECTION - (int) (CORRECTION * frac_min);
                 setClock();
             }
-        } else if (setInternal) {
+        } else if (setInternal && !correctFastClock && !synchronizeWithInternalClock) {
             inSyncWithInternalFastClock = false;
             initiateRead();
         }
@@ -271,7 +282,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
      *
      * @param s the LocoNetSlot object which has been changed
      */
-    @SuppressWarnings("deprecation") // Date.getTime, Date.getHours
+    @SuppressWarnings("deprecation")
     @Override
     public void notifyChangedSlot(LocoNetSlot s) {
         // only watch the clock slot
@@ -283,7 +294,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug("slot update {}", s);
+            log.debug("slot update " + s);
         }
         // update current clock variables from the new slot contents
         curDays = s.getFcDays();
@@ -347,7 +358,7 @@ public class LnClockControl extends DefaultClockControl implements SlotListener 
             if (pm != null) {
                 power = (pm.getPower() == PowerManager.ON);
             } else {
-                jmri.util.LoggingUtil.warnOnce(log, "Can't access power manager for fast clock");
+                jmri.util.Log4JUtil.warnOnce(log, "Can't access power manager for fast clock");
             }
             s.setTrackStatus(s.getTrackStatus() &  (~LnConstants.GTRK_POWER) );
             if (power) s.setTrackStatus(s.getTrackStatus() | LnConstants.GTRK_POWER);

@@ -1,13 +1,15 @@
 package jmri.jmris;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
+import jmri.LocoAddress;
 import jmri.DccLocoAddress;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import jmri.DccThrottle;
+import jmri.Throttle;
+import jmri.ThrottleListener;
 
 /**
  * Common tests for classes derived from jmri.jmris.AbstractThrottleServer class
@@ -20,7 +22,7 @@ abstract public class AbstractThrottleServerTestBase {
 
     @Test
     public void testCtor() {
-        assertThat(ats).isNotNull();
+        Assert.assertNotNull(ats);
     }
 
     @Test
@@ -37,9 +39,12 @@ abstract public class AbstractThrottleServerTestBase {
 
     @Test
     public void sendErrorStatusTest(){
-        Throwable thrown = catchThrowable( () ->  ats.sendErrorStatus());
-        assertThat(thrown).withFailMessage("failed sending status").isNull();
-        confirmThrottleErrorStatusSent();
+       try {
+          ats.sendErrorStatus();
+       } catch (java.io.IOException ioe) {
+          Assert.fail("failed sending status");
+       }
+       confirmThrottleErrorStatusSent();
     }
 
     /**
@@ -51,8 +56,11 @@ abstract public class AbstractThrottleServerTestBase {
     public void sendStatusTest(){
        DccLocoAddress address = new DccLocoAddress(42,false);
        ats.requestThrottle(address);
-       Throwable thrown = catchThrowable( () -> ats.sendStatus(address));
-       assertThat(thrown).withFailMessage("failed sending status").isNull();
+       try {
+          ats.sendStatus(address);
+       } catch (java.io.IOException ioe) {
+          Assert.fail("failed sending status");
+       }
        confirmThrottleStatusSent();
     }
 
@@ -61,12 +69,12 @@ abstract public class AbstractThrottleServerTestBase {
      */
     abstract public void confirmThrottleStatusSent();
 
-    @BeforeEach
+    @Before
     // derived classes must configure the ThrottleServer variable (ats)
     // and should also install a throttle manager.
     abstract public void setUp();
 
-    @AfterEach
+    @After
     public void postTestReset(){
        ats = null;
     }

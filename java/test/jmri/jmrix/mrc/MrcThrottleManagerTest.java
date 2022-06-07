@@ -1,13 +1,14 @@
 package jmri.jmrix.mrc;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MrcThrottleManagerTest extends jmri.managers.AbstractThrottleManagerTestBase {
 
@@ -16,8 +17,8 @@ public class MrcThrottleManagerTest extends jmri.managers.AbstractThrottleManage
         Assert.assertNotNull("exists",tm);
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         MrcSystemConnectionMemo memo = new MrcSystemConnectionMemo();
@@ -27,9 +28,8 @@ public class MrcThrottleManagerTest extends jmri.managers.AbstractThrottleManage
         tm = new MrcThrottleManager(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        // no need for separate dispose of memo, tc
         JUnitUtil.tearDown();
     }
 

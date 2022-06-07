@@ -264,11 +264,6 @@
                 <li></li>
             </ul>
 
-        <h4>TAMS</h4>
-            <ul>
-                <li></li>
-            </ul>
-
         <h4>TCS</h4>
             <ul>
                 <li></li>
@@ -444,12 +439,6 @@
 
     <h3>Timetable</h3>
         <a id="Timetable" name="Timetable"></a>
-        <ul>
-            <li></li>
-        </ul>
-
-   <h3>Tracker</h3>
-        <a id="Tr" name="Tr"></a>
         <ul>
             <li></li>
         </ul>

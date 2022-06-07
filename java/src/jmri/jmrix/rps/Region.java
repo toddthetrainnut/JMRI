@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * deferring use of the 3rd (Z) dimension to a later implementation. It uses a
  * Java2D GeneralPath to handle the inside/outside calculations.
  *
- * @author Bob Jacobsen Copyright (C) 2007, 2008
+ * @author	Bob Jacobsen Copyright (C) 2007, 2008
  */
 @javax.annotation.concurrent.Immutable
 public class Region {
@@ -41,8 +41,7 @@ public class Region {
     GeneralPath path;
 
     /**
-     * Ctor from a string like "(0,0,0);(1,0,0);(1,1,0);(0,1,0)" .
-     * @param s construction string.
+     * Ctor from a string like "(0,0,0);(1,0,0);(1,1,0);(0,1,0)"
      */
     public Region(String s) {
         String[] pStrings = s.split(";");
@@ -71,7 +70,6 @@ public class Region {
      * underlying object immutable, but by returning a Shape type hopefully we
      * achieve the same result with a little better performance. Please don't
      * assume you can cast and modify this.
-     * @return the path.
      */
     public Shape getPath() {
         return path;

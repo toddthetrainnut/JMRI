@@ -1,17 +1,17 @@
 package jmri.jmrix.nce.boosterprog;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
+import org.junit.Before;
+import org.junit.Test;
 import jmri.jmrix.nce.NceSystemConnectionMemo;
 import jmri.jmrix.nce.NceTrafficController;
 
 /**
  * Test simple functioning of BoosterProgPanel
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class BoosterProgPanelTest extends jmri.util.swing.JmriPanelTest {
 
@@ -42,7 +42,7 @@ public class BoosterProgPanelTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new NceSystemConnectionMemo();
@@ -53,9 +53,6 @@ public class BoosterProgPanelTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @AfterEach
-    public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
-    }
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

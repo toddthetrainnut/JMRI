@@ -1,16 +1,17 @@
 package jmri.web.server;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ServiceLoader;
-
 import javax.annotation.Nonnull;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-
 import jmri.InstanceManager;
 import jmri.ShutDownManager;
+import jmri.ShutDownTask;
+import jmri.implementation.QuietShutDownTask;
 import jmri.server.json.JSON;
 import jmri.server.web.spi.WebServerConfiguration;
 import jmri.util.FileUtil;
@@ -18,9 +19,15 @@ import jmri.util.zeroconf.ZeroConfService;
 import jmri.web.servlet.DenialServlet;
 import jmri.web.servlet.RedirectionServlet;
 import jmri.web.servlet.directory.DirectoryHandler;
-
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.*;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.component.LifeCycle;
@@ -47,15 +54,15 @@ import org.slf4j.LoggerFactory;
  */
 public final class WebServer implements LifeCycle, LifeCycle.Listener {
 
-    private enum Registration {
+    private static enum Registration {
         DENIAL, REDIRECTION, RESOURCE, SERVLET
     }
     private final Server server;
     private ZeroConfService zeroConfService = null;
     private WebServerPreferences preferences = null;
-    private Runnable shutDownTask = null;
+    private ShutDownTask shutDownTask = null;
     private final HashMap<String, Registration> registeredUrls = new HashMap<>();
-    private static final Logger log = LoggerFactory.getLogger(WebServer.class);
+    private final static Logger log = LoggerFactory.getLogger(WebServer.class);
 
     /**
      * Create a WebServer instance with the default preferences.
@@ -85,40 +92,58 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
      */
     @Nonnull
     public static WebServer getDefault() {
-        return InstanceManager.getOptionalDefault(WebServer.class)
-                .orElseGet(() -> InstanceManager.setDefault(WebServer.class, new WebServer()));
+        return InstanceManager.getOptionalDefault(WebServer.class).orElseGet(() -> {
+            return InstanceManager.setDefault(WebServer.class, new WebServer());
+        });
+    }
+
+    /**
+     * Start the web server. Calls {@link #start(boolean)} with {@code true}.
+     */
+    @Override
+    public void start() {
+        this.start(true);
     }
 
     /**
      * Start the web server.
+     *
+     * @param autoLoad true to load all registered
+     *                 {@link WebServerConfiguration}s and {@link HttpServlet}s;
+     *                 false otherwise
      */
-    @Override
-    public void start() {
+    public void start(boolean autoLoad) {
         if (!server.isRunning()) {
-            try (ServerConnector connector = new ServerConnector(server)) {
-                connector.setIdleTimeout(30000); // 5 minutes
-                connector.setPort(preferences.getPort());
-                server.setConnectors(new Connector[]{connector});
-                server.setHandler(new ContextHandlerCollection());
+            ServerConnector connector = new ServerConnector(server);
+            connector.setIdleTimeout(5 * 60 * 1000); // 5 minutes
+            connector.setSoLingerTime(-1);
+            connector.setPort(preferences.getPort());
+            server.setConnectors(new Connector[]{connector});
+            server.setHandler(new ContextHandlerCollection());
 
-                // Load all path handlers
-                ServiceLoader.load(WebServerConfiguration.class).forEach(configuration -> {
-                    configuration.getFilePaths().entrySet()
-                            .forEach(resource -> this.registerResource(resource.getKey(), resource.getValue()));
-                    configuration.getRedirectedPaths().entrySet()
-                            .forEach(redirection -> this.registerRedirection(redirection.getKey(), redirection.getValue()));
-                    configuration.getForbiddenPaths().forEach(this::registerDenial);
+            // Load all path handlers
+            ServiceLoader.load(WebServerConfiguration.class).forEach((configuration) -> {
+                configuration.getFilePaths().entrySet().forEach((resource) -> {
+                    this.registerResource(resource.getKey(), resource.getValue());
                 });
-                // Load all classes that provide the HttpServlet service.
-                ServiceLoader.load(HttpServlet.class)
-                        .forEach(servlet -> registerServlet(servlet.getClass(), servlet));
-                server.addLifeCycleListener(this);
+                configuration.getRedirectedPaths().entrySet().forEach((redirection) -> {
+                    this.registerRedirection(redirection.getKey(), redirection.getValue());
+                });
+                configuration.getForbiddenPaths().forEach((denial) -> {
+                    this.registerDenial(denial);
+                });
+            });
+            // Load all classes that provide the HttpServlet service.
+            ServiceLoader.load(HttpServlet.class).forEach((servlet) -> {
+                this.registerServlet(servlet.getClass(), servlet);
+            });
+            server.addLifeCycleListener(this);
 
-                Thread serverThread = new ServerThread(server);
-                serverThread.setName("WebServer"); // NOI18N
-                serverThread.start();
-            }
+            Thread serverThread = new ServerThread(server);
+            serverThread.setName("WebServer"); // NOI18N
+            serverThread.start();
         }
+
     }
 
     /**
@@ -145,7 +170,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
      * @return The servable URI or null
      * @see jmri.util.FileUtil#getPortableFilename(java.io.File)
      */
-    public static String portablePathToURI(String path) {
+    public static String URIforPortablePath(String path) {
         if (path.startsWith(FileUtil.PREFERENCES)) {
             return path.replaceFirst(FileUtil.PREFERENCES, "/prefs/"); // NOI18N
         } else if (path.startsWith(FileUtil.PROFILE)) {
@@ -178,7 +203,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
         servletContext.setContextPath(urlPattern);
         DenialServlet servlet = new DenialServlet();
         servletContext.addServlet(new ServletHolder(servlet), "/*"); // NOI18N
-        ((HandlerCollection) this.server.getHandler()).addHandler(servletContext);
+        ((ContextHandlerCollection) this.server.getHandler()).addHandler(servletContext);
     }
 
     /**
@@ -200,8 +225,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
      *                                  deny access or for a servlet or if
      *                                  filePath is not allowed
      */
-    public void registerResource(String urlPattern, String filePath) {
-        String debugMsg = "Setting up handler chain for {}";
+    public void registerResource(String urlPattern, String filePath) throws IllegalArgumentException {
         if (this.registeredUrls.get(urlPattern) != null) {
             throw new IllegalArgumentException("urlPattern \"" + urlPattern + "\" is already registered.");
         }
@@ -211,7 +235,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
         HandlerList handlers = new HandlerList();
         if (filePath.startsWith(FileUtil.PROGRAM) && !filePath.equals(FileUtil.PROGRAM)) {
             // make it possible to override anything under program: with an identical path under preference:, profile:, or settings:
-            log.debug(debugMsg, urlPattern);
+            log.debug("Setting up handler chain for {}", urlPattern);
             ResourceHandler preferenceHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath.replace(FileUtil.PROGRAM, FileUtil.PREFERENCES)));
             ResourceHandler projectHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath.replace(FileUtil.PROGRAM, FileUtil.PROFILE)));
             ResourceHandler settingsHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath.replace(FileUtil.PROGRAM, FileUtil.SETTINGS)));
@@ -219,28 +243,28 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
             handlers.setHandlers(new Handler[]{preferenceHandler, projectHandler, settingsHandler, programHandler, new DefaultHandler()});
         } else if (filePath.startsWith(FileUtil.SETTINGS) && !filePath.equals(FileUtil.SETTINGS)) {
             // make it possible to override anything under settings: with an identical path under preference: or profile:
-            log.debug(debugMsg, urlPattern);
+            log.debug("Setting up handler chain for {}", urlPattern);
             ResourceHandler preferenceHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath.replace(FileUtil.SETTINGS, FileUtil.PREFERENCES)));
             ResourceHandler projectHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath.replace(FileUtil.PROGRAM, FileUtil.PROFILE)));
             ResourceHandler settingsHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath));
             handlers.setHandlers(new Handler[]{preferenceHandler, projectHandler, settingsHandler, new DefaultHandler()});
         } else if (filePath.startsWith(FileUtil.PROFILE) && !filePath.equals(FileUtil.PROFILE)) {
             // make it possible to override anything under profile: with an identical path under preference:
-            log.debug(debugMsg, urlPattern);
+            log.debug("Setting up handler chain for {}", urlPattern);
             ResourceHandler preferenceHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath.replace(FileUtil.SETTINGS, FileUtil.PREFERENCES)));
             ResourceHandler projectHandler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath.replace(FileUtil.PROGRAM, FileUtil.PROFILE)));
             handlers.setHandlers(new Handler[]{preferenceHandler, projectHandler, new DefaultHandler()});
         } else if (FileUtil.isPortableFilename(filePath)) {
-            log.debug(debugMsg, urlPattern);
+            log.debug("Setting up handler chain for {}", urlPattern);
             ResourceHandler handler = new DirectoryHandler(FileUtil.getAbsoluteFilename(filePath));
             handlers.setHandlers(new Handler[]{handler, new DefaultHandler()});
-        } else if (portablePathToURI(filePath) == null) {
+        } else if (URIforPortablePath(filePath) == null) {
             throw new IllegalArgumentException("\"" + filePath + "\" is not allowed.");
         }
         ContextHandler handlerContext = new ContextHandler();
         handlerContext.setContextPath(urlPattern);
         handlerContext.setHandler(handlers);
-        ((HandlerCollection) this.server.getHandler()).addHandler(handlerContext);
+        ((ContextHandlerCollection) this.server.getHandler()).addHandler(handlerContext);
     }
 
     /**
@@ -251,7 +275,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
      * @throws IllegalArgumentException if urlPattern is already registered for
      *                                  any other purpose
      */
-    public void registerRedirection(String urlPattern, String redirection) {
+    public void registerRedirection(String urlPattern, String redirection) throws IllegalArgumentException {
         Registration registered = this.registeredUrls.get(urlPattern);
         if (registered != null && registered != Registration.REDIRECTION) {
             throw new IllegalArgumentException("\"" + urlPattern + "\" registered to " + registered);
@@ -261,7 +285,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
         servletContext.setContextPath(urlPattern);
         RedirectionServlet servlet = new RedirectionServlet(urlPattern, redirection);
         servletContext.addServlet(new ServletHolder(servlet), ""); // NOI18N
-        ((HandlerCollection) this.server.getHandler()).addHandler(servletContext);
+        ((ContextHandlerCollection) this.server.getHandler()).addHandler(servletContext);
     }
 
     /**
@@ -293,11 +317,21 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
      * @param instance An un-initialized, un-registered instance of the servlet.
      */
     public void registerServlet(Class<? extends HttpServlet> type, HttpServlet instance) {
-        this.registerServlet(ServletContextHandler.NO_SECURITY, type, instance)
-                .forEach(((HandlerCollection) this.server.getHandler())::addHandler);
+        try {
+            for (ServletContextHandler handler : this.registerServlet(
+                    ServletContextHandler.NO_SECURITY,
+                    type,
+                    instance
+            )) {
+                ((ContextHandlerCollection) this.server.getHandler()).addHandler(handler);
+            }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+            log.error("Unable to register servlet", ex);
+        }
     }
 
-    private List<ServletContextHandler> registerServlet(int options, Class<? extends HttpServlet> type, HttpServlet instance) {
+    private List<ServletContextHandler> registerServlet(int options, Class<? extends HttpServlet> type, HttpServlet instance)
+            throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         WebServlet info = type.getAnnotation(WebServlet.class);
         List<ServletContextHandler> handlers = new ArrayList<>(info.urlPatterns().length);
         for (String pattern : info.urlPatterns()) {
@@ -322,16 +356,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
 
     @Override
     public void lifeCycleStarting(LifeCycle lc) {
-        shutDownTask = () -> {
-            try {
-                server.stop();
-            } catch (Exception ex) {
-                // Error without stack trace
-                log.warn("Error shutting down WebServer", ex);
-                // Full stack trace
-                log.debug("Details follow: ", ex);
-            }
-        };
+        shutDownTask = new ServerShutDownTask(this);
         InstanceManager.getDefault(ShutDownManager.class).register(shutDownTask);
         log.info("Starting Web Server on port {}", preferences.getPort());
     }
@@ -414,7 +439,7 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
         this.server.removeLifeCycleListener(ll);
     }
 
-    private static class ServerThread extends Thread {
+    static private class ServerThread extends Thread {
 
         private final Server server;
 
@@ -430,6 +455,45 @@ public final class WebServer implements LifeCycle, LifeCycle.Listener {
             } catch (Exception ex) {
                 log.error("Exception starting Web Server", ex);
             }
+        }
+    }
+
+    static private class ServerShutDownTask extends QuietShutDownTask {
+
+        private final WebServer server;
+        private boolean isComplete = false;
+
+        public ServerShutDownTask(WebServer server) {
+            super("Stop Web Server"); // NOI18N
+            this.server = server;
+        }
+
+        @Override
+        public boolean execute() {
+            Thread t = new Thread(() -> {
+                try {
+                    server.stop();
+                } catch (Exception ex) {
+                    // Error without stack trace
+                    log.warn("Error shutting down WebServer: {}", ex);
+                    // Full stack trace
+                    log.debug("Details follow: ", ex);
+                }
+                this.isComplete = true;
+            });
+            t.setName("ServerShutDownTask");
+            t.start();
+            return true;
+        }
+
+        @Override
+        public boolean isParallel() {
+            return true;
+        }
+
+        @Override
+        public boolean isComplete() {
+            return this.isComplete;
         }
     }
 }

@@ -36,8 +36,7 @@ import java.util.Date;
 public interface ClockControl {
 
     /**
-     * Get status of the fast clock.
-     * Potentially unused?
+     * Get status of the fast clock
      *
      * @return the status
      */
@@ -59,7 +58,7 @@ public interface ClockControl {
      * @return true if correctable; false otherwise
      */
     public boolean canCorrectHardwareClock();
-    
+
     /**
      * Returns 'true' if hardware clock can be set to 12 or 24 hour display from
      * JMRI software.
@@ -69,16 +68,14 @@ public interface ClockControl {
     public boolean canSet12Or24HourClock();
 
     /**
-     * Returns true if hardware clock requires an integer rate.
+     * Returns true if hardware clock requires an integer rate
      *
      * @return true if integer rates only; false otherwise
      */
     public boolean requiresIntegerRate();
 
     /**
-     * Set the rate of the Fast Clock.
-     * <p>
-     * The rate is a number that
+     * Get and set the rate of the fast clock Note: The rate is a number that
      * multiplies the wall clock time For example, a rate of 4 specifies that
      * the fast clock runs 4 times faster than the wall clock.
      *
@@ -86,33 +83,19 @@ public interface ClockControl {
      */
     public void setRate(double newRate);
 
-    /**
-     * Get the rate of the Fast Clock.
-     * <p>
-     * The rate is a number that multiplies the wall clock. 
-     * For example, a rate of 4 specifies that the
-     * fast clock runs 4 times faster than the wall clock.
-     * 
-     * @return Fast Clock rate.
-     */
     public double getRate();
 
     /**
-     * Set the fast clock time.
+     * Set and get the fast clock time
      *
      * @param now the new time
      */
     public void setTime(Date now);
 
-    /**
-     * Get the fast clock time.
-     *
-     * @return current time.
-     */
     public Date getTime();
 
     /**
-     * Start hardware fast clock Some hardware fast clocks continue to
+     * Start and stop hardware fast clock Some hardware fast clocks continue to
      * run indefinitely. This is provided for the case where the hardware clock
      * can be stopped and started.
      *
@@ -120,12 +103,6 @@ public interface ClockControl {
      */
     public void startHardwareClock(Date now);
 
-    /**
-     * Stop hardware fast clock.
-     * This is provided for the case where the hardware clock
-     * can be stopped and started.
-     *
-     */
     public void stopHardwareClock();
 
     /**

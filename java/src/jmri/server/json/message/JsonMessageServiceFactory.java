@@ -15,22 +15,22 @@ import org.openide.util.lookup.ServiceProvider;
 public class JsonMessageServiceFactory implements JsonServiceFactory<JsonMessageHttpService, JsonMessageSocketService> {
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{JSON.HELLO, JsonMessage.CLIENT};
     }
 
     @Override
-    public String[] getSentTypes(String version) {
+    public String[] getSentTypes() {
         return new String[]{JsonMessage.MESSAGE};
     }
 
     @Override
-    public JsonMessageSocketService getSocketService(JsonConnection connection, String version) {
+    public JsonMessageSocketService getSocketService(JsonConnection connection) {
         return new JsonMessageSocketService(connection);
     }
 
     @Override
-    public JsonMessageHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonMessageHttpService getHttpService(ObjectMapper mapper) {
         return new JsonMessageHttpService(mapper);
     }
 

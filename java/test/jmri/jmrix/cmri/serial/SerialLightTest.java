@@ -3,8 +3,10 @@ package jmri.jmrix.cmri.serial;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import jmri.Light;
 import jmri.util.JUnitUtil;
@@ -12,7 +14,7 @@ import jmri.util.NamedBeanComparator;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SerialLightTest {
 
@@ -89,7 +91,8 @@ public class SerialLightTest {
         Assert.assertEquals("CL3B4", it.next().getSystemName());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
@@ -99,13 +102,12 @@ public class SerialLightTest {
         new SerialNode(0, SerialNode.SMINI,tcis);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
+        JUnitUtil.tearDown();
         if (tcis != null) tcis.terminateThreads();
         tcis = null;
         memo = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
     }
 
 }

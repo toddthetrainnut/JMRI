@@ -5,16 +5,14 @@ import jmri.jmrix.lenz.LenzCommandStation;
 import jmri.jmrix.lenz.XNetInterfaceScaffold;
 import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * LZ100InternalFrameTest.java
  *
- * Test for the jmri.jmrix.lenz.swing.lz100.LZ100InternalFrame class
+ * Description:	tests for the jmri.jmrix.lenz.swing.lz100.LZ100InternalFrame class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class LZ100InternalFrameTest {
 
@@ -28,14 +26,14 @@ public class LZ100InternalFrameTest {
         Assert.assertNotNull(f);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

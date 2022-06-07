@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (C) 2001, 2003, 2004, 2013
  * @author Howard G. Penny Copyright (C) 2005
- * @author Andrew Crosland (C) 2021
  */
 public class CvValue extends AbstractValue implements ProgListener {
 
@@ -39,7 +38,7 @@ public class CvValue extends AbstractValue implements ProgListener {
         _num = num;
         _cvName = cvName;
         if (cvName == null) {
-            log.error("cvName == null in ctor num: {}", num); // NOI18N
+            log.error("cvName == null in ctor num: " + num); // NOI18N
         }
         mProgrammer = pProgrammer;
         _tableEntry = new JTextField("0", 3);
@@ -59,7 +58,7 @@ public class CvValue extends AbstractValue implements ProgListener {
     public String number() {
         return _num;
     }
-    private final String _num;
+    private String _num;
 
     public String cvName() {
         return _cvName;
@@ -83,15 +82,12 @@ public class CvValue extends AbstractValue implements ProgListener {
     }
 
     protected void notifyValueChange(int value) {
-        prop.firePropertyChange("Value", null, value);
+        prop.firePropertyChange("Value", null, Integer.valueOf(value));
     }
 
     /**
-     * Edit a new value into the CV.
-     * <p>
-     * Only use this for external edits, e.g. set from a GUI.
-     * Not for internal uses, as it sets the state to EDITED.
-     * @param value new CV value.
+     * Edit a new value into the CV. Only use this for external edits, e.g. set
+     * form a GUI, not for internal uses, as it sets the state to EDITED
      */
     public void setValue(int value) {
         log.debug("CV {} value changed from {} to {}", number(), _value, value); // NOI18N
@@ -106,7 +102,7 @@ public class CvValue extends AbstractValue implements ProgListener {
     private int _value = 0;
 
     /**
-     * Get the decoder value read during compare.
+     * Get the decoder value read during compare
      *
      * @return _decoderValue
      */
@@ -121,12 +117,11 @@ public class CvValue extends AbstractValue implements ProgListener {
     }
 
     /**
-     * Set state value and send notification.Also sets GUI color as needed.
-     * @param state new state, e.g READ, UNKNOWN, SAME.
+     * Set state value and send notification. Also sets GUI color as needed.
      */
     public void setState(int state) {
         if (log.isDebugEnabled()) {  // stateToString overhead
-            log.debug("cv {} set state from {} to {}", number(), stateToString(_state), stateToString(state)); // NOI18N
+            log.debug("cv " + number() + " set state from " + stateToString(_state) + " to " + stateToString(state)); // NOI18N
         }
         int oldstate = _state;
         _state = state;
@@ -153,7 +148,7 @@ public class CvValue extends AbstractValue implements ProgListener {
                 setColor(COLOR_DIFF);
                 break;
             default:
-                log.error("Inconsistent state: {}", _state); // NOI18N
+                log.error("Inconsistent state: " + _state); // NOI18N
         }
         if (oldstate != state) {
             prop.firePropertyChange("State", Integer.valueOf(oldstate), Integer.valueOf(state));
@@ -161,9 +156,7 @@ public class CvValue extends AbstractValue implements ProgListener {
     }
 
     /**
-     * Intended for debugging only, don't translate.
-     * @param state State to translate to text
-     * @return Text (human readable) representation of state
+     * Intended for debugging only, don't translate
      */
     String stateToString(int state) {
         switch (state) {
@@ -182,7 +175,7 @@ public class CvValue extends AbstractValue implements ProgListener {
             case DIFF:
                 return "DIFF";
             default:
-                log.error("Inconsistent state: {}", _state); // NOI18N
+                log.error("Inconsistent state: " + _state); // NOI18N
                 return "ERROR!!";
         }
     }
@@ -195,8 +188,8 @@ public class CvValue extends AbstractValue implements ProgListener {
     }
 
     /**
-     * Set the busy state and send notification. Should be used _only_ if this
-     * is the only thing changing.
+     * set the busy state and send notification. Should be used _only_ if this
+     * is the only thing changing
      */
     private void setBusy(boolean busy) {
         log.debug("setBusy from {} to {} state {}", _busy, busy, _state); // NOI18N
@@ -207,7 +200,7 @@ public class CvValue extends AbstractValue implements ProgListener {
     }
 
     /**
-     * Notify of changes to the busy state.
+     * Notify of changes to the busy state
      */
     private void notifyBusyChange(boolean oldBusy, boolean newBusy) {
         log.debug("notifyBusyChange from {} to {} current state {}", oldBusy, newBusy, _state); // NOI18N
@@ -243,7 +236,6 @@ public class CvValue extends AbstractValue implements ProgListener {
     /**
      * Set bean keeping track of whether this CV is intended to be read-only.
      * Does not otherwise affect behaviour! Default is "false".
-     * @param is read-only flag, true or false.
      */
     public void setReadOnly(boolean is) {
         _readOnly = is;
@@ -254,7 +246,6 @@ public class CvValue extends AbstractValue implements ProgListener {
     /**
      * Retrieve bean keeping track of whether this CV is intended to be
      * read-only. Does not otherwise affect behaviour! Default is "false".
-     * @return read-only flag.
      */
     public boolean getReadOnly() {
         return _readOnly;
@@ -263,7 +254,6 @@ public class CvValue extends AbstractValue implements ProgListener {
     /**
      * Set bean keeping track of whether this CV is intended to be used as
      * info-only. Does not otherwise affect behaviour! Default is "false".
-     * @param is info-only flag, true or false.
      */
     public void setInfoOnly(boolean is) {
         _infoOnly = is;
@@ -274,7 +264,6 @@ public class CvValue extends AbstractValue implements ProgListener {
     /**
      * Retrieve bean keeping track of whether this CV is intended to be used as
      * info-only. Does not otherwise affect behaviour! Default is "false".
-     * @return write-only flag.
      */
     public boolean getInfoOnly() {
         return _infoOnly;
@@ -283,7 +272,6 @@ public class CvValue extends AbstractValue implements ProgListener {
     /**
      * Set bean keeping track of whether this CV is intended to be used as
      * write-only. Does not otherwise affect behaviour! Default is "false".
-     * @param is write-only flag, true or false.
      */
     public void setWriteOnly(boolean is) {
         _writeOnly = is;
@@ -293,11 +281,7 @@ public class CvValue extends AbstractValue implements ProgListener {
 
     /**
      * Retrieve bean keeping track of whether this CV is intended to be used as
-     * write-only.
-     * <p>
-     * Does not otherwise affect behaviour!
-     * Default is "false".
-     * @return write-only flag.
+     * write-only. Does not otherwise affect behaviour! Default is "false".
      */
     public boolean getWriteOnly() {
         return _writeOnly;
@@ -354,8 +338,7 @@ public class CvValue extends AbstractValue implements ProgListener {
             _reading = true;
             _confirm = false;
             try {
-                //mProgrammer.readCV(_num, this);
-                mProgrammer.readCV(_num, this, this.getValue());
+                mProgrammer.readCV(_num, this);
             } catch (Exception e) {
                 if (status != null) {
                     status.setText(
@@ -364,7 +347,7 @@ public class CvValue extends AbstractValue implements ProgListener {
                                     new Object[]{e.toString()}));
                 }
 
-                log.warn("Exception during CV read", e); // NOI18N
+                log.warn("Exception during CV read: " + e); // NOI18N
                 setBusy(false);
             }
         } else {
@@ -401,7 +384,7 @@ public class CvValue extends AbstractValue implements ProgListener {
                                     Bundle.getMessage("StateExceptionDuringConfirm"),
                                     new Object[]{e.toString()}));
                 }
-                log.warn("Exception during CV confirm", e); // NOI18N
+                log.warn("Exception during CV confirm: " + e); // NOI18N
                 setBusy(false);
             }
         } else {
@@ -440,7 +423,7 @@ public class CvValue extends AbstractValue implements ProgListener {
                                     Bundle.getMessage("StateExceptionDuringWrite"),
                                     new Object[]{e.toString()}));
                 }
-                log.warn("Exception during write CV '{}' to '{}'", _num, _value, e); // NOI18N
+                log.warn("Exception during write CV '" + _num + "' to '" + _value + "'", e); // NOI18N
                 setBusy(false);
             }
         } else {
@@ -454,7 +437,10 @@ public class CvValue extends AbstractValue implements ProgListener {
     @Override
     public void programmingOpReply(int value, int retval) {
         if (log.isDebugEnabled()) {
-            log.debug("CV progOpReply for CV {} with retval {} during {}", _num, retval, _reading ? "read sequence" : (_confirm ? "confirm sequence" : "write sequence"));  // NOI18N
+            log.debug("CV progOpReply for CV " + _num + " with retval " + retval
+                    + " during "
+                    + (_reading ? "read sequence"
+                            : (_confirm ? "confirm sequence" : "write sequence")));  // NOI18N
         }
         if (!_busy) {
             log.error("opReply when not busy!"); // NOI18N
@@ -474,7 +460,7 @@ public class CvValue extends AbstractValue implements ProgListener {
                 _busy = false;
                 notifyBusyChange(oldBusy, _busy);
             } else if (_confirm) {
-                // _value doesn't change, just the state, and save the value read
+                // _value doesn't change, just the state, and save the value read 
                 _decoderValue = value;
                 // does the decoder value match the file value
                 if (value == _value) {
@@ -508,7 +494,7 @@ public class CvValue extends AbstractValue implements ProgListener {
             timer.setRepeats(false);
             timer.start();
         }
-
+            
         log.debug("CV progOpReply end of handling CV {}", _num); // NOI18N
     }
 

@@ -2,13 +2,14 @@ package jmri.jmrix.loconet.locormi;
 
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class LnMessageBufferTest {
 
@@ -20,13 +21,14 @@ public class LnMessageBufferTest {
         Assert.assertNotNull("exists", t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new LocoNetSystemConnectionMemo();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         memo.dispose();
         JUnitUtil.tearDown();

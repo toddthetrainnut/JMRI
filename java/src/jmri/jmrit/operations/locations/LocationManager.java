@@ -5,21 +5,17 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-
 import javax.swing.JComboBox;
-
-import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.InstanceManagerAutoDefault;
 import jmri.InstanceManagerAutoInitialize;
 import jmri.Reporter;
-import jmri.beans.PropertyChangeSupport;
 import jmri.jmrit.operations.rollingstock.cars.CarLoad;
 import jmri.jmrit.operations.setup.OperationsSetupXml;
 import jmri.jmrit.operations.trains.TrainCommon;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages locations.
@@ -27,7 +23,7 @@ import jmri.jmrit.operations.trains.TrainCommon;
  * @author Bob Jacobsen Copyright (C) 2003
  * @author Daniel Boudreau Copyright (C) 2008, 2009, 2013, 2014
  */
-public class LocationManager extends PropertyChangeSupport implements InstanceManagerAutoDefault, InstanceManagerAutoInitialize, PropertyChangeListener {
+public class LocationManager implements InstanceManagerAutoDefault, InstanceManagerAutoInitialize, PropertyChangeListener {
 
     public static final String LISTLENGTH_CHANGED_PROPERTY = "locationsListLength"; // NOI18N
 
@@ -35,6 +31,18 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
     }
 
     private int _id = 0;
+
+    /**
+     * Get the default instance of this class.
+     *
+     * @return the default instance of this class
+     * @deprecated since 4.9.2; use
+     * {@link jmri.InstanceManager#getDefault(java.lang.Class)} instead
+     */
+    @Deprecated
+    public static synchronized LocationManager instance() {
+        return InstanceManager.getDefault(LocationManager.class);
+    }
 
     public void dispose() {
         _locationHashTable.clear();
@@ -68,41 +76,6 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
 
     public Location getLocationById(String id) {
         return _locationHashTable.get(id);
-    }
-    
-    /**
-     * Used to determine if a division name has been assigned to a location
-     * @return true if a location has a division name
-     */
-    public boolean hasDivisions() {
-        for (Location location : getList()) {
-            if (location.getDivision() != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public boolean hasWork() {
-        for (Location location : getList()) {
-            if (location.hasWork()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Used to determine if a reporter has been assigned to a location
-     * @return true if a location has a RFID reporter
-     */
-    public boolean hasReporters() {
-        for (Location location : getList()) {
-            if (location.getReporter() != null) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -277,7 +250,7 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
         List<Location> sortList = getList();
         List<Track> trackList = new ArrayList<Track>();
         for (Location location : sortList) {
-            List<Track> tracks = location.getTracksByNameList(type);
+            List<Track> tracks = location.getTrackByNameList(type);
             for (Track track : tracks) {
                 trackList.add(track);
             }
@@ -286,8 +259,7 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
     }
 
     /**
-     * Returns all tracks of type sorted by use. Alternate tracks
-     * are not included.
+     * Returns all tracks of type sorted by use
      *
      * @param type Spur (Track.SPUR), Yard (Track.YARD), Interchange
      *             (Track.INTERCHANGE), Staging (Track.STAGING), or null
@@ -300,9 +272,6 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
         List<Track> moveList = new ArrayList<Track>();
         for (Track track : trackList) {
             boolean locAdded = false;
-            if (track.isAlternate()) {
-                continue;
-            }
             for (int j = 0; j < moveList.size(); j++) {
                 if (track.getMoves() < moveList.get(j).getMoves()) {
                     moveList.add(j, track);
@@ -317,9 +286,6 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
         return moveList;
     }
 
-    /**
-     * Sets move count to 0 for all tracks
-     */
     public void resetMoves() {
         List<Location> locations = getList();
         for (Location loc : locations) {
@@ -328,7 +294,7 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
     }
 
     /**
-     * Returns a JComboBox with locations sorted alphabetically.
+     *
      * @return locations for this railroad
      */
     public JComboBox<Location> getComboBox() {
@@ -337,10 +303,6 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
         return box;
     }
 
-    /**
-     * Updates JComboBox alphabetically with a list of locations.
-     * @param box The JComboBox to update.
-     */
     public void updateComboBox(JComboBox<Location> box) {
         box.removeAllItems();
         box.addItem(null);
@@ -349,18 +311,11 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
         }
     }
 
-    /**
-     * Replace all track car load names for a given type of car
-     * 
-     * @param type type of car
-     * @param oldLoadName load name to replace
-     * @param newLoadName new load name
-     */
     public void replaceLoad(String type, String oldLoadName, String newLoadName) {
         List<Location> locs = getList();
         for (Location loc : locs) {
             // now adjust tracks
-            List<Track> tracks = loc.getTracksList();
+            List<Track> tracks = loc.getTrackList();
             for (Track track : tracks) {
                 for (String loadName : track.getLoadNames()) {
                     if (loadName.equals(oldLoadName)) {
@@ -459,10 +414,6 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
         log.info("Max location and track name ({}) length {}", maxLocationAndTrackName, _maxLocationAndTrackNameLength);
     }
 
-    /**
-     * Load the locations from a xml file.
-     * @param root xml file
-     */
     public void load(Element root) {
         if (root.getChild(Xml.LOCATIONS) != null) {
             List<Element> locs = root.getChild(Xml.LOCATIONS).getChildren(Xml.LOCATION);
@@ -492,10 +443,20 @@ public class LocationManager extends PropertyChangeSupport implements InstanceMa
                 .getOldValue(), e.getNewValue()); // NOI18N
     }
 
+    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
+
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
     protected void setDirtyAndFirePropertyChange(String p, Object old, Object n) {
         // set dirty
         InstanceManager.getDefault(LocationManagerXml.class).setDirty(true);
-        firePropertyChange(p, old, n);
+        pcs.firePropertyChange(p, old, n);
     }
 
     private final static Logger log = LoggerFactory.getLogger(LocationManager.class);

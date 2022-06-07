@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * address; more than one Turnout object pointing to a single device is not
  * allowed.
  *
- * Extend jmri.AbstractTurnout for powerline serial layouts
+ * Description: extend jmri.AbstractTurnout for powerline serial layouts
  *
  * @author Bob Jacobsen Copyright (C) 2003, 2006, 2007, 2008 Converted to
  * multiple connection
@@ -39,13 +39,13 @@ public class SerialTurnout extends AbstractTurnout {
         devicecode = tc.getAdapterMemo().getSerialAddress().deviceCodeAsValueFromSystemName(getSystemName());
     }
 
-    private SerialTrafficController tc = null;
+    SerialTrafficController tc = null;
 
     /**
-     * {@inheritDoc}
+     * Handle a request to change state by sending a turnout command
      */
     @Override
-    protected void forwardCommandChangeToLayout(int newState) {
+    protected void forwardCommandChangeToLayout(int s) {
         // implementing classes will typically have a function/listener to get
         // updates from the layout, which will then call
         //  public void firePropertyChange(String propertyName,
@@ -54,25 +54,27 @@ public class SerialTurnout extends AbstractTurnout {
         // _once_ if anything has changed state (or set the commanded state directly)
 
         // sort out states
-        if ((newState & Turnout.CLOSED) != 0) {
+        if ((s & Turnout.CLOSED) != 0) {
             // first look for the double case, which we can't handle
-            if ((newState & Turnout.THROWN) != 0) {
+            if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN {}", newState);
+                log.error("Cannot command both CLOSED and THROWN " + s);
                 return;
             } else {
                 // send a CLOSED command
-                sendMessage(!getInverted());
+                sendMessage(true ^ getInverted());
             }
         } else {
             // send a THROWN command
-            sendMessage(getInverted());
+            sendMessage(false ^ getInverted());
         }
     }
 
     @Override
     protected void turnoutPushbuttonLockout(boolean _pushButtonLockout) {
-        log.debug("Send command to {} Pushbutton", (_pushButtonLockout ? "Lock" : "Unlock"));
+        if (log.isDebugEnabled()) {
+            log.debug("Send command to " + (_pushButtonLockout ? "Lock" : "Unlock") + " Pushbutton");
+        }
     }
 
     // data members holding the X10 address
@@ -81,7 +83,7 @@ public class SerialTurnout extends AbstractTurnout {
 
     protected void sendMessage(boolean closed) {
         if (log.isDebugEnabled()) {
-            log.debug("set closed {} house {} device {}", closed, X10Sequence.houseCodeToText(housecode), devicecode);
+            log.debug("set closed " + closed + " house " + X10Sequence.houseCodeToText(housecode) + " device " + devicecode);
         }
         // create output sequence of address, then function
         X10Sequence out = new X10Sequence();

@@ -1,18 +1,25 @@
 package jmri.jmrix.nce.usbinterface;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-
-import javax.swing.*;
-
+import java.util.ResourceBundle;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import jmri.jmrix.nce.NceBinaryCommand;
+import jmri.jmrix.nce.NceMessage;
+import jmri.jmrix.nce.NceReply;
+import jmri.jmrix.nce.NceSystemConnectionMemo;
+import jmri.jmrix.nce.NceTrafficController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jmri.jmrix.nce.*;
 
 /**
  * Panel for configuring an NCE USB interface.
@@ -159,7 +166,7 @@ public class UsbInterfacePanel extends jmri.jmrix.nce.swing.NcePanel implements 
         if (src == setButton) {
             changeCabId();
         } else {
-            log.error("unknown action performed: {}", src);
+            log.error("unknown action performed: " + src);
         }
     }
 
@@ -224,7 +231,7 @@ public class UsbInterfacePanel extends jmri.jmrix.nce.swing.NcePanel implements 
             if (!waitNce()) {
                 return;
             }
-            if (recChar != NceMessage.NCE_OKAY) {
+            if (recChar != '!') {
                 statusText.setText(MessageFormat.format(Bundle.getMessage("StatusUsbErrorCode"), recChars[0]));
             } else {
                 statusText.setText(MessageFormat.format(Bundle.getMessage("StatusSetIdFinished"), setCabId));
@@ -258,7 +265,7 @@ public class UsbInterfacePanel extends jmri.jmrix.nce.swing.NcePanel implements 
             log.debug("Receive character");
         }
         if (waiting <= 0) {
-            log.error("unexpected response. Len: {} code: {}", r.getNumDataElements(), r.getElement(0));
+            log.error("unexpected response. Len: " + r.getNumDataElements() + " code: " + r.getElement(0));
             return;
         }
         waiting--;

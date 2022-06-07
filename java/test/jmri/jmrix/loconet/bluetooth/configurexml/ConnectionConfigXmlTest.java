@@ -1,20 +1,20 @@
 package jmri.jmrix.loconet.bluetooth.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
+import jmri.jmrix.loconet.bluetooth.ConnectionConfig;
 
 /**
  * ConnectionConfigXmlTest.java
  *
- * Test for the ConnectionConfigXml class
+ * Description: tests for the ConnectionConfigXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
 public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractSerialConnectionConfigXmlTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new ConnectionConfigXml();
@@ -24,8 +24,7 @@ public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractSer
         //cc = new ConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
         xmlAdapter = null;

@@ -6,7 +6,9 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 /**
- * Renders enum table cells.
+ * ValueRenderer.java
+ *
+ * Description: Renders enum table cells
  *
  * @author Bob Jacobsen Copyright (C) 2001
  */

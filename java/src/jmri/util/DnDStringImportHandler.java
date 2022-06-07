@@ -22,6 +22,7 @@ public class DnDStringImportHandler extends TransferHandler {
     @Override
     public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
         //if (log.isDebugEnabled()) log.debug("DnDStringImportHandler.canImport ");
+
         for (int k = 0; k < transferFlavors.length; k++) {
             if (transferFlavors[k].equals(DataFlavor.stringFlavor)) {
                 return true;
@@ -35,9 +36,10 @@ public class DnDStringImportHandler extends TransferHandler {
         //if (log.isDebugEnabled()) log.debug("DnDStringImportHandler.importData ");
         DataFlavor[] flavors =  tr.getTransferDataFlavors();
 
-        if ((!canImport(comp, flavors)) || (!(comp instanceof JTextField)) ) {
+        if (!canImport(comp, flavors)) {
             return false;
         }
+
         try {
             String data = (String) tr.getTransferData(DataFlavor.stringFlavor);
             JTextField field = (JTextField) comp;
@@ -45,8 +47,10 @@ public class DnDStringImportHandler extends TransferHandler {
             //Notify listeners drop happened
             field.firePropertyChange("DnDrop", 0, 1);
             return true;
-        } catch (UnsupportedFlavorException | IOException ufe) {
-            log.warn("DnDStringImportHandler.importData: {}", ufe.getMessage());
+        } catch (UnsupportedFlavorException ufe) {
+            log.warn("DnDStringImportHandler.importData: " + ufe.getMessage());
+        } catch (IOException ioe) {
+            log.warn("DnDStringImportHandler.importData: " + ioe.getMessage());
         }
         return false;
     }

@@ -66,20 +66,25 @@ public class OlcbTurnout extends jmri.implementation.AbstractTurnout {
 
     /**
      * Common initialization for constructor.
+     * <p>
+     *
      */
     private void init(String address) {
         // build local addresses
         OlcbAddress a = new OlcbAddress(address);
         OlcbAddress[] v = a.split();
         if (v == null) {
-            log.error("Did not find usable system name: {}", address);
+            log.error("Did not find usable system name: " + address);
             return;
         }
-        if (v.length == 2) {
-            addrThrown = v[0];
-            addrClosed = v[1];
-        } else {
-            log.error("Can't parse OpenLCB Turnout system name: {}", address);
+        switch (v.length) {
+            case 2:
+                addrThrown = v[0];
+                addrClosed = v[1];
+                break;
+            default:
+                log.error("Can't parse OpenLCB Turnout system name: " + address);
+                return;
         }
     }
 
@@ -91,7 +96,7 @@ public class OlcbTurnout extends jmri.implementation.AbstractTurnout {
         // Clear some objects first.
         disposePc();
 
-        int flags;
+        int flags = 0;
         switch (_activeFeedbackType) {
             case MONITORING:
             default:
@@ -168,17 +173,18 @@ public class OlcbTurnout extends jmri.implementation.AbstractTurnout {
     }
 
     @Override
-    public void setProperty(@Nonnull String key, Object value) {
+    public void setProperty(String key, Object value) {
         Object old = getProperty(key);
         super.setProperty(key, value);
-        if (value.equals(old)) return;
+        if (old != null && value.equals(old)) return;
         if (pc == null) return;
         finishLoad();
     }
 
     /**
-     * {@inheritDoc}
-     * Sends an OpenLCB command
+     * Handle a request to change state by sending CBUS events.
+     *
+     * @param s new state value
      */
     @Override
     protected void forwardCommandChangeToLayout(int s) {

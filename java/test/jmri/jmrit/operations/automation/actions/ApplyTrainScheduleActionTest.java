@@ -1,8 +1,5 @@
 package jmri.jmrit.operations.automation.actions;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.automation.AutomationItem;
@@ -11,10 +8,12 @@ import jmri.jmrit.operations.trains.TrainManager;
 import jmri.jmrit.operations.trains.schedules.TrainSchedule;
 import jmri.jmrit.operations.trains.schedules.TrainScheduleManager;
 import jmri.util.JUnitOperationsUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ApplyTrainScheduleActionTest extends OperationsTestCase {
 
@@ -80,8 +79,6 @@ public class ApplyTrainScheduleActionTest extends OperationsTestCase {
         action.doAction();
         Assert.assertFalse(train1.isBuildEnabled());
         Assert.assertTrue(train2.isBuildEnabled());
-        
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(ApplyTrainScheduleActionTest.class);

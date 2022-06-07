@@ -2,14 +2,13 @@ package jmri.jmrit.display.controlPanelEditor.shape;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.Shape;
-
 import jmri.jmrit.display.EditorScaffold;
 import jmri.jmrit.display.Positionable;
 import jmri.jmrit.display.PositionableJComponentTest;
-
-import org.junit.jupiter.api.*;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -35,8 +34,9 @@ public class PositionableShapeTest extends PositionableJComponentTest {
         Assert.assertFalse("showToolTip after set false", p.showToolTip());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         super.setUp();
         if (!GraphicsEnvironment.isHeadless()) {
@@ -49,6 +49,7 @@ public class PositionableShapeTest extends PositionableJComponentTest {
                     return null;
                 }
 
+                @SuppressWarnings("null")
                 @Override
                 protected Shape makeShape() {
                     // bogus body, not used in tests

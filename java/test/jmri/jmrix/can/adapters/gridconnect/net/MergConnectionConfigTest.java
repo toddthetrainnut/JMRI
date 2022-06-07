@@ -1,41 +1,34 @@
 package jmri.jmrix.can.adapters.gridconnect.net;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MergConnectionConfigTest extends jmri.jmrix.AbstractConnectionConfigTestBase {
 
     @Test
     public void testCTor() {
         MergConnectionConfig t = new MergConnectionConfig();
-        Assertions.assertNotNull(t, "exists");
-        t.dispose();
+        Assert.assertNotNull("exists",t);
     }
 
-    @Test
-    public void testMergName() {
-        MergConnectionConfig t = new MergConnectionConfig();
-        Assertions.assertEquals("CAN via MERG Network Interface", t.name(),"MERG name");
-        t.dispose();
-    }
-
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initDefaultUserMessagePreferences();
         cc = new ConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        cc = null;
+        cc=null;
         JUnitUtil.tearDown();
     }
 

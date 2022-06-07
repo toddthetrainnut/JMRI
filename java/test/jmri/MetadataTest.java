@@ -1,12 +1,12 @@
 package jmri;
 
 import java.util.Arrays;
-
 import jmri.profile.ProfileManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -14,13 +14,13 @@ import org.junit.Assert;
  */
 public class MetadataTest {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

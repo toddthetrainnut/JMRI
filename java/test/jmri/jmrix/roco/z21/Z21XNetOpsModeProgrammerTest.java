@@ -1,10 +1,13 @@
 package jmri.jmrix.roco.z21;
 
+import java.util.ArrayList;
+import java.util.List;
+import jmri.ProgrammingMode;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
+import org.junit.Before;
+import org.junit.Test;
 import jmri.jmrix.lenz.XNetInterfaceScaffold;
 import jmri.jmrix.lenz.XNetMessage;
 import jmri.jmrix.lenz.XNetReply;
@@ -12,9 +15,9 @@ import jmri.jmrix.lenz.XNetReply;
 /**
  * Z21XNetOpsModeProgrammerTest.java
  *
- * Test for the jmri.jmrix.roco.z21.Z21XNetOpsModeProgrammer class
+ * Description:	tests for the jmri.jmrix.roco.z21.Z21XNetOpsModeProgrammer class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class Z21XNetOpsModeProgrammerTest extends jmri.jmrix.lenz.XNetOpsModeProgrammerTest {
 
@@ -61,7 +64,8 @@ public class Z21XNetOpsModeProgrammerTest extends jmri.jmrix.lenz.XNetOpsModePro
         Assert.assertEquals("status",jmri.ProgListener.OK,lastStatus);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -84,16 +88,14 @@ public class Z21XNetOpsModeProgrammerTest extends jmri.jmrix.lenz.XNetOpsModePro
 
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         tc = null;
         op = null;
         pl = null;
         programmer = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

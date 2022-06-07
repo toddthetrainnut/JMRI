@@ -1,9 +1,7 @@
 package jmri.jmrix.sprog.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
 import jmri.jmrix.sprog.SprogSystemConnectionMemo;
 import jmri.jmrix.sprog.SprogCSStreamConnectionConfig;
 
@@ -14,16 +12,15 @@ import jmri.jmrix.sprog.SprogCSStreamConnectionConfig;
  */
 public class SprogCSStreamConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractStreamConnectionConfigXmlTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new SprogCSStreamConnectionConfigXml();
         cc = new SprogCSStreamConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         // if we've started a traffic controller, dispose of it
         if (cc.getAdapter() != null) {
@@ -32,8 +29,9 @@ public class SprogCSStreamConnectionConfigXmlTest extends jmri.jmrix.configurexm
                     ((SprogSystemConnectionMemo)cc.getAdapter().getSystemConnectionMemo()).getSprogTrafficController().dispose();
             }
         }
+
+        JUnitUtil.tearDown();
         xmlAdapter = null;
         cc = null;
-        JUnitUtil.tearDown();
     }
 }

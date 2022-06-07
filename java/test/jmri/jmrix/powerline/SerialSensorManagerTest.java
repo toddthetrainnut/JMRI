@@ -8,13 +8,12 @@ import jmri.util.junit.annotations.*;
 
 import java.beans.PropertyVetoException;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * JUnit tests for the SerialSensorManager class.
  *
- * @author Bob Jacobsen Copyright 2003, 2007, 2008 Converted to multiple
+ * @author	Bob Jacobsen Copyright 2003, 2007, 2008 Converted to multiple
  * connection
  * @author kcameron Copyright (C) 2011
  * @author Paul Bender Copyright (C) 2016
@@ -30,12 +29,10 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
      * Number of sensor to test. Made a separate method so it can be overridden
      * in subclasses that do or don't support various numbers
      */
-    @Override
     protected int getNumToTest1() {
         return 8;
     }
 
-    @Override
     protected int getNumToTest2() {
         return 9;
     }
@@ -66,7 +63,6 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
     }
 
     @Test
-    @Override
     public void testProvideName() {
         // create
         Sensor t = l.provide(getSystemName(getNumToTest1()));
@@ -88,14 +84,13 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
     }
 
     @Override
-    @Disabled("ignoring this test due to the system name format, needs to be properly coded")
+    @Ignore("ignoring this test due to the system name format, needs to be properly coded")
     @Test
     @ToDo("modify system name format, then remove this overriden test so that the test in the parent class can run")
     public void testUpperLower() {
     }
 
     @Test
-    @Override
     public void testMoveUserName() {
         Sensor t1 = l.provideSensor(getSystemName(getNumToTest1()));
         Sensor t2 = l.provideSensor(getSystemName(getNumToTest2()));
@@ -124,21 +119,16 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
             l.makeSystemName("1");
             Assert.fail("Expected exception not thrown");
         } catch (NamedBean.BadSystemNameException ex) {
-            Assert.assertEquals("\"PS1\" is not a recognized format.", ex.getMessage());
+            Assert.assertEquals("Invalid system name for Sensor: name \"PS1\" has incorrect format", ex.getMessage());
         }
-        JUnitAppender.assertErrorMessage("Invalid system name for Sensor: \"PS1\" is not a recognized format.");
+        JUnitAppender.assertWarnMessage("address did not match any valid forms: PS1");
         String s = l.makeSystemName("B1");
         Assert.assertNotNull(s);
         Assert.assertFalse(s.isEmpty());
     }
-    
-    @Override
-    protected String getASystemNameWithNoPrefix(){
-        return "B2";
-    }
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // replace the SerialTrafficController to get clean reset
@@ -162,12 +152,10 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         l.dispose();
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

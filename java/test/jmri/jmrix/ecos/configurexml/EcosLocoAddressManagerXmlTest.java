@@ -1,14 +1,15 @@
 package jmri.jmrix.ecos.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * EcosLocoAddressManagerXmlTest.java
  *
- * Test for the EcosLocoAddressManagerXml class
+ * Description: tests for the EcosLocoAddressManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,15 +20,13 @@ public class EcosLocoAddressManagerXmlTest {
       Assert.assertNotNull("EcosLocoAddressManagerXml constructor",new EcosLocoAddressManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDefaultUserMessagePreferences();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,14 +1,15 @@
 package jmri.jmrix.dccpp.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * DCCppSensorManagerXmlTest.java
  *
- * Test for the DCCppSensorManagerXml class
+ * Description: tests for the DCCppSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class DCCppSensorManagerXmlTest {
       Assert.assertNotNull("DCCppSensorManagerXml constructor",new DCCppSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

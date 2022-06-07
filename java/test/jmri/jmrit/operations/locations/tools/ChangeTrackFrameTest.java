@@ -1,20 +1,18 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.locations.Location;
 import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.operations.locations.Track;
-import jmri.jmrit.operations.locations.YardEditFrame;
+import jmri.jmrit.operations.locations.TrackEditFrame;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
@@ -33,7 +31,7 @@ public class ChangeTrackFrameTest extends OperationsTestCase {
 
         Track track = loc.getTrackByName("NI Yard", null);
 
-        YardEditFrame tf = new YardEditFrame();
+        TrackEditFrame tf = new TrackEditFrame();
         tf.initComponents(loc, track);
         Assert.assertNotNull("exists", tf);
 
@@ -41,7 +39,6 @@ public class ChangeTrackFrameTest extends OperationsTestCase {
         Assert.assertNotNull("exists", t);
         JUnitUtil.dispose(t);
         JUnitUtil.dispose(tf);
-
     }
 
     @Test
@@ -55,7 +52,7 @@ public class ChangeTrackFrameTest extends OperationsTestCase {
 
         Track track = loc.getTrackByName("NI Yard", null);
 
-        YardEditFrame tef = new YardEditFrame();
+        TrackEditFrame tef = new TrackEditFrame();
         tef.initComponents(loc, track);
         Assert.assertNotNull("exists", tef);
         
@@ -73,7 +70,6 @@ public class ChangeTrackFrameTest extends OperationsTestCase {
         
         JUnitUtil.dispose(ctf);
         JUnitUtil.dispose(tef);
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(ChangeTrackFrameTest.class);

@@ -1,9 +1,7 @@
 package jmri.jmrit.operations.locations.schedules;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import jmri.InstanceManager;
 
 /**
@@ -13,8 +11,8 @@ import jmri.InstanceManager;
  */
 public class SchedulesResetHitsAction extends AbstractAction {
 
-    public SchedulesResetHitsAction() {
-        super(Bundle.getMessage("MenuItemResetHits"));
+    public SchedulesResetHitsAction(String s) {
+        super(s);
     }
 
     @Override

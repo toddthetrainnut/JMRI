@@ -1,9 +1,10 @@
 package jmri.server.json;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -11,12 +12,12 @@ import org.junit.jupiter.api.*;
  */
 public class JsonWebSocketTest {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         JUnitUtil.tearDown();
     }

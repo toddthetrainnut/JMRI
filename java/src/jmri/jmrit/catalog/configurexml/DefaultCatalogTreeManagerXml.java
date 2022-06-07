@@ -3,6 +3,7 @@ package jmri.jmrit.catalog.configurexml;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.tree.*;
@@ -10,8 +11,8 @@ import jmri.CatalogTree;
 import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
 import jmri.jmrit.XmlFile;
-import jmri.CatalogTreeLeaf;
-import jmri.CatalogTreeNode;
+import jmri.jmrit.catalog.CatalogTreeLeaf;
+import jmri.jmrit.catalog.CatalogTreeNode;
 import jmri.util.FileUtil;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
@@ -53,13 +54,14 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
                 CatalogTreeNode root = tree.getRoot();
                 log.debug("enumerateTree called for root= {}, has {} children", root, root.getChildCount());
 
+                @SuppressWarnings("unchecked") // root.depthFirstEnumeration isn't fully typed in JDOM2
                 Enumeration<TreeNode> e = root.depthFirstEnumeration();
                 while (e.hasMoreElements()) {
                     CatalogTreeNode n = (CatalogTreeNode)e.nextElement();
                     log.debug("nodeName= {} has {} leaves and {} subnodes.", n.getUserObject(), n.getLeaves().size(), n.getChildCount());
                 }
             }
-            if (sname.charAt(1) == CatalogTree.XML) {
+            if (sname != null && sname.charAt(1) == CatalogTree.XML) {
                 found = true;
                 break;
             }
@@ -99,7 +101,7 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
     }
 
     /**
-     * Default implementation for storing the contents of a CatalogTreeManager.
+     * Default implementation for storing the contents of a CatalogTreeManager
      *
      * @param cat   Element to load with contents
      * @param trees List of contents
@@ -137,9 +139,10 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
         Element element = new Element("node");
         element.setAttribute("nodeName", node.toString());
         List<CatalogTreeLeaf> leaves = node.getLeaves();
-        for (CatalogTreeLeaf leaf : leaves) {
+        for (int i = 0; i < leaves.size(); i++) {
             Element el = new Element("leaf");
-            el.setAttribute("name", leaf.getName()); // prefer to store non-localized name
+            CatalogTreeLeaf leaf = leaves.get(i);
+            el.setAttribute("name", leaf.getName());
             el.setAttribute("path", leaf.getPath());
             element.addContent(el);
         }
@@ -163,7 +166,7 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
     }
 
     /*
-     * Read CatalogTree values from a file in the user's preferences directory.
+     *  Reads CatalogTree values from a file in the user's preferences directory
      */
     public void readCatalogTrees() {
         log.debug("entered readCatalogTrees");
@@ -187,7 +190,7 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
      * Create a CatalogTreeManager object of the correct class, then register
      * and fill it.
      *
-     * @param catalogTrees top level Element to unpack
+     * @param catalogTrees Top level Element to unpack.
      * @return true if successful
      */
     public boolean load(Element catalogTrees) {
@@ -205,7 +208,8 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
         log.debug("loadCatalogTrees: found {} CatalogTree objects", catList.size());
         CatalogTreeManager mgr = InstanceManager.getDefault(jmri.CatalogTreeManager.class);
 
-        for (Element elem : catList) {
+        for (int i = 0; i < catList.size(); i++) {
+            Element elem = catList.get(i);
             Attribute attr = elem.getAttribute("systemName");
             if (attr == null) {
                 log.warn("unexpected null systemName. elem= {}, attrs= {}", elem, elem.getAttributes());
@@ -224,19 +228,34 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
             if (ct != null) {
                 continue;   // tree already registered
             }
-            try {
-                ct = mgr.newCatalogTree(sysName, userName);
-            }
-            catch (IllegalArgumentException ex){
-                log.error("Could not create CatalogTree: {}",ex.getMessage());
-                continue;
-            }
+            ct = mgr.newCatalogTree(sysName, userName);
             if (ct instanceof DefaultTreeModel) {
                 log.debug("CatalogTree: sysName= {}, userName= {}", sysName, userName);
                 CatalogTreeNode root = ct.getRoot();
                 elem = elem.getChild("node");
                 loadNode(elem, root, (DefaultTreeModel) ct);
             }
+        }
+    }
+
+    private void addLeaves(Element element, CatalogTreeNode node) {
+        List<Element> leafList = element.getChildren("leaf");
+        for (int i = 0; i < leafList.size(); i++) {
+            Element elem = leafList.get(i);
+            Attribute attr = elem.getAttribute("name");
+            if (attr == null) {
+                log.error("unexpected null leaf name. elem= {}, attrs= {}", elem, elem.getAttributes());
+                continue;
+            }
+            String name = attr.getValue();
+            attr = elem.getAttribute("path");
+            if (attr == null) {
+                log.error("unexpected null leaf path. elem= {}, attrs= {}", elem, elem.getAttributes());
+                continue;
+            }
+            String path = attr.getValue();
+            // use the method that maintains the same order
+            node.addLeaf(new CatalogTreeLeaf(name, path, 0));
         }
     }
 
@@ -265,26 +284,5 @@ public class DefaultCatalogTreeManagerXml extends XmlFile {
         }
     }
 
-    private void addLeaves(Element element, CatalogTreeNode node) {
-        List<Element> leafList = element.getChildren("leaf");
-        for (Element elem : leafList) {
-            Attribute attr = elem.getAttribute("name");
-            if (attr == null) {
-                log.error("unexpected null leaf name. elem= {}, attrs= {}", elem, elem.getAttributes());
-                continue;
-            }
-            String name = attr.getValue();
-            attr = elem.getAttribute("path");
-            if (attr == null) {
-                log.error("unexpected null leaf path. elem= {}, attrs= {}", elem, elem.getAttributes());
-                continue;
-            }
-            String path = attr.getValue();
-            // use the method that maintains the same order
-            node.addLeaf(new CatalogTreeLeaf(name, path, 0));
-        }
-    }
-
     private final static Logger log = LoggerFactory.getLogger(DefaultCatalogTreeManagerXml.class);
-
 }

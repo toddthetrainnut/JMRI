@@ -1,10 +1,7 @@
 package jmri.jmrit.display.controlPanelEditor.shape.configurexml;
 
-import jmri.configurexml.JmriConfigureXmlException;
 import jmri.jmrit.display.Editor;
-import jmri.jmrit.display.Positionable;
 import jmri.jmrit.display.controlPanelEditor.shape.PositionableEllipse;
-
 import org.jdom2.Element;
 
 /**
@@ -49,7 +46,7 @@ public class PositionableEllipseXml extends PositionableShapeXml {
      * @param o       Editor as an Object
      */
     @Override
-    public void load(Element element, Object o) throws JmriConfigureXmlException {
+    public void load(Element element, Object o) {
         // create the objects
         Editor ed = (Editor) o;
         PositionableEllipse ps = new PositionableEllipse(ed);
@@ -58,11 +55,7 @@ public class PositionableEllipseXml extends PositionableShapeXml {
         ps.setWidth(getInt(elem, "width"));
         ps.setHeight(getInt(elem, "height"));
 
-        try {
-            ed.putItem(ps);
-        } catch (Positionable.DuplicateIdException e) {
-            throw new JmriConfigureXmlException("Positionable id is not unique", e);
-        }
+        ed.putItem(ps);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(ps, Editor.MARKERS, element);
     }

@@ -10,6 +10,7 @@ import jmri.jmrix.lenz.XNetInitializationManager;
 import jmri.jmrix.lenz.XNetPacketizer;
 import jmri.jmrix.lenz.XNetSerialPortController;
 import jmri.jmrix.lenz.XNetTrafficController;
+import jmri.util.SerialUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import purejavacomm.CommPortIdentifier;
@@ -19,7 +20,7 @@ import purejavacomm.SerialPort;
 import purejavacomm.UnsupportedCommOperationException;
 
 /**
- * Provide access to XpressNet via a LI100F on an attached serial com port.
+ * Provide access to XpressNet via a LI100F on an attached serial comm port.
  * Normally controlled by the lenz.li100.LI100Frame class.
  *
  * @author Bob Jacobsen Copyright (C) 2002
@@ -50,7 +51,7 @@ public class LI100fAdapter extends XNetSerialPortController {
             try {
                 setSerialPort();
             } catch (UnsupportedCommOperationException e) {
-                log.error("Cannot set serial parameters on port {}: {}", portName, e.getMessage());
+                log.error("Cannot set serial parameters on port " + portName + ": " + e.getMessage());
                 return "Cannot set serial parameters on port " + portName + ": " + e.getMessage();
             }
 
@@ -60,8 +61,8 @@ public class LI100fAdapter extends XNetSerialPortController {
                 log.debug("Serial timeout was observed as: {} {}",
                         activeSerialPort.getReceiveTimeout(),
                         activeSerialPort.isReceiveTimeoutEnabled());
-            } catch (UnsupportedCommOperationException et) {
-                log.info("failed to set serial timeout", et);
+            } catch (Exception et) {
+                log.info("failed to set serial timeout: " + et);
             }
 
             // get and save stream
@@ -73,11 +74,19 @@ public class LI100fAdapter extends XNetSerialPortController {
             // report status?
             if (log.isInfoEnabled()) {
                 // report now
-                log.info("{} port opened at {} baud with DTR: {} RTS: {} DSR: {} CTS: {}  CD: {}", portName, activeSerialPort.getBaudRate(), activeSerialPort.isDTR(), activeSerialPort.isRTS(), activeSerialPort.isDSR(), activeSerialPort.isCTS(), activeSerialPort.isCD());
+                log.info(portName + " port opened at "
+                        + activeSerialPort.getBaudRate() + " baud with"
+                        + " DTR: " + activeSerialPort.isDTR()
+                        + " RTS: " + activeSerialPort.isRTS()
+                        + " DSR: " + activeSerialPort.isDSR()
+                        + " CTS: " + activeSerialPort.isCTS()
+                        + "  CD: " + activeSerialPort.isCD()
+                );
             }
             if (log.isDebugEnabled()) {
                 // report additional status
-                log.debug(" port flow control shows {}", activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? "hardware flow control" : "no flow control"); // NOI18N
+                log.debug(" port flow control shows " // NOI18N
+                        + (activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? "hardware flow control" : "no flow control")); // NOI18N
 
                 // log events
                 setPortEventLogging(activeSerialPort);
@@ -109,12 +118,7 @@ public class LI100fAdapter extends XNetSerialPortController {
         // packets.startThreads();
         this.getSystemConnectionMemo().setXNetTrafficController(packets);
 
-        new XNetInitializationManager()
-                .memo(this.getSystemConnectionMemo())
-                .setDefaults()
-                .versionCheck()
-                .setTimeout(30000)
-                .init();
+        new XNetInitializationManager(this.getSystemConnectionMemo());
     }
 
     // base class methods for the XNetSerialPortController interface
@@ -135,7 +139,7 @@ public class LI100fAdapter extends XNetSerialPortController {
         try {
             return new DataOutputStream(activeSerialPort.getOutputStream());
         } catch (java.io.IOException e) {
-            log.error("getOutputStream exception: {}", e.getMessage());
+            log.error("getOutputStream exception: " + e.getMessage());
         }
         return null;
     }
@@ -147,12 +151,16 @@ public class LI100fAdapter extends XNetSerialPortController {
 
     /**
      * Local method to do specific configuration.
-     * @throws UnsupportedCommOperationException if port can't do as asked
      */
     protected void setSerialPort() throws UnsupportedCommOperationException {
         // find the baud rate value, configure comm options
-        int baud = currentBaudNumber(mBaudRate);
-        activeSerialPort.setSerialPortParams(baud,
+        int baud = validSpeedValues[0];  // default, but also defaulted in the initial value of selectedSpeed
+        for (int i = 0; i < validSpeeds.length; i++) {
+            if (validSpeeds[i].equals(mBaudRate)) {
+                baud = validSpeedValues[i];
+            }
+        }
+        SerialUtil.setSerialPortParams(activeSerialPort, baud,
                 SerialPort.DATABITS_8,
                 SerialPort.STOPBITS_1,
                 SerialPort.PARITY_NONE);
@@ -163,6 +171,7 @@ public class LI100fAdapter extends XNetSerialPortController {
             flow = 0;
         }
         configureLeadsAndFlowControl(activeSerialPort, flow);
+
     }
 
     /**
@@ -183,7 +192,6 @@ public class LI100fAdapter extends XNetSerialPortController {
 
     /**
      * option1 controls flow control option.
-     * @return human readable string, uses IFTypeLI100F .
      */
     public String option1Name() {
         return Bundle.getMessage("XconnectionUsesLabel", Bundle.getMessage("IFTypeLI100F"));
@@ -193,20 +201,24 @@ public class LI100fAdapter extends XNetSerialPortController {
         return Arrays.copyOf(validOption1, validOption1.length);
     }
 
-    protected final String[] validSpeeds = new String[]{Bundle.getMessage("Baud9600"), Bundle.getMessage("LIBaud19200")};
-    protected final int[] validSpeedValues = new int[]{9600, 19200};
-
-    @Override
-    public int defaultBaudIndex() {
-        return 0;
-    }
+    protected String[] validSpeeds = new String[]{Bundle.getMessage("Baud9600"), Bundle.getMessage("LIBaud19200")};
+    protected int[] validSpeedValues = new int[]{9600, 19200};
 
     // meanings are assigned to these above, so make sure the order is consistent
-    protected final String[] validOption1 = new String[]{Bundle.getMessage("FlowOptionHwRecomm"), Bundle.getMessage("FlowOptionNo")};
+    protected String[] validOption1 = new String[]{Bundle.getMessage("FlowOptionHwRecomm"), Bundle.getMessage("FlowOptionNo")};
 
     private boolean opened = false;
     InputStream serialStream = null;
 
-    private static final Logger log = LoggerFactory.getLogger(LI100fAdapter.class);
+    @Deprecated
+    static public LI100fAdapter instance() {
+        if (mInstance == null) {
+            mInstance = new LI100fAdapter();
+        }
+        return mInstance;
+    }
+    volatile static LI100fAdapter mInstance = null;
+
+    private final static Logger log = LoggerFactory.getLogger(LI100fAdapter.class);
 
 }

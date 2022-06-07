@@ -1,24 +1,23 @@
 package jmri.jmrix.rfid;
 
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2018
+ * @author Paul Bender Copyright (C) 2018	
  */
 public class RfidStreamConnectionConfigTest extends jmri.jmrix.AbstractConnectionConfigTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         cc = new RfidStreamConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        cc = null;
+	cc = null;
         jmri.util.JUnitUtil.tearDown();
     }
 

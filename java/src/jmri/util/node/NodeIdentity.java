@@ -9,17 +9,15 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
 import jmri.profile.Profile;
 import jmri.profile.ProfileManager;
 import jmri.util.FileUtil;
@@ -75,8 +73,7 @@ public class NodeIdentity {
             "abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789"; // NOI18N
 
     private NodeIdentity() {
-        init(); // initialize as a method so the initialization can be
-                // synchronized.
+        init(); // initialize as a method so the initialization can be synchronized.
     }
 
     private synchronized void init() {
@@ -91,8 +88,7 @@ public class NodeIdentity {
                     try {
                         String attr = ue.getAttributeValue(UUID_ELEMENT);
                         this.uuid = uuidFromCompactString(attr);
-                        // backwards compatible, see class docs
-                        this.storageIdentity = this.uuid.toString(); 
+                        this.storageIdentity = this.uuid.toString(); // backwards compatible, see class docs
                         this.formerIdentities.add(this.storageIdentity);
                         this.formerIdentities.add(IDENTITY_PREFIX + attr);
                     } catch (IllegalArgumentException ex) {
@@ -120,8 +116,9 @@ public class NodeIdentity {
                 String id = null;
                 try {
                     id = doc.getRootElement().getChild(NODE_IDENTITY).getAttributeValue(NODE_IDENTITY);
-                    doc.getRootElement().getChild(FORMER_IDENTITIES).getChildren().stream()
-                            .forEach(e -> this.formerIdentities.add(e.getAttributeValue(NODE_IDENTITY)));
+                    doc.getRootElement().getChild(FORMER_IDENTITIES).getChildren().stream().forEach((e) -> {
+                        this.formerIdentities.add(e.getAttributeValue(NODE_IDENTITY));
+                    });
                 } catch (NullPointerException ex) {
                     // do nothing -- if id was not set, it will be generated
                 }
@@ -132,14 +129,11 @@ public class NodeIdentity {
                 } else {
                     this.networkIdentity = id;
                 }
-                // save if new identities were created or expected attribute did
-                // not exist
+                // save if new identities were created or expected attribute did not exist
                 if (save) {
                     this.saveIdentity();
                 }
-            } catch (
-                    JDOMException |
-                    IOException ex) {
+            } catch (JDOMException | IOException ex) {
                 log.error("Unable to read node identities: {}", ex.getLocalizedMessage());
                 this.getNetworkIdentity(true);
             }
@@ -169,7 +163,7 @@ public class NodeIdentity {
         }
         if (instance == null) {
             instance = new NodeIdentity();
-            log.info("Using {}{} as the JMRI Node identity", instance.getNetworkIdentity(), uniqueId);
+            log.info("Using {} as the JMRI Node identity", instance.getNetworkIdentity() + uniqueId);
         }
         return instance.getNetworkIdentity() + uniqueId;
     }
@@ -198,8 +192,9 @@ public class NodeIdentity {
      * getPreferencesPath()).
      *
      * @param profile The profile to get the identity for. This is only needed
-     *                to check that the identity should not be in an older
-     *                format.
+     *                    to check that the identity should not be in an older
+     *                    format.
+     *
      * @return A storage identity. If this identity is not in the form of a UUID
      *         or {@code jmri-UUID-profileId}, this identity should be
      *         considered unreliable and subject to change across JMRI restarts.
@@ -212,21 +207,15 @@ public class NodeIdentity {
             instance = new NodeIdentity();
         }
         String id = instance.getStorageIdentity();
-        // this entire check is so that a JMRI 4.14 style identity string can be
-        // built
-        // and checked against the given profile to determine if that should be
-        // used
+        // this entire check is so that a JMRI 4.14 style identity string can be built
+        // and checked against the given profile to determine if that should be used
         // instead of just returning the non-profile-specific machine identity
         if (profile != null) {
-            // using a map to store profile-specific identities allows for the
-            // possibility
-            // that, although there is only one active profile at a time, other
-            // profiles
-            // may be manipulated by JMRI while that profile is active (this
-            // happens to a
+            // using a map to store profile-specific identities allows for the possibility
+            // that, although there is only one active profile at a time, other profiles
+            // may be manipulated by JMRI while that profile is active (this happens to a
             // limited extent already in the profile configuration UI)
-            // (a map also allows for ensuring the info message is displayed
-            // once per profile)
+            // (a map also allows for ensuring the info message is displayed once per profile)
             if (!instance.profileStorageIdentities.containsKey(profile)) {
                 String oldId = IDENTITY_PREFIX + uuidToCompactString(instance.uuid) + "-" + profile.getUniqueId();
                 File local = new File(new File(profile.getPath(), Profile.PROFILE), oldId);
@@ -273,7 +262,7 @@ public class NodeIdentity {
                 }
             }
         } catch (SocketException ex) {
-            log.error("Error accessing interface", ex);
+            log.error("Error accessing interface: {}", ex.getLocalizedMessage(), ex);
         }
         return false;
     }
@@ -285,45 +274,42 @@ public class NodeIdentity {
      */
     private synchronized void getNetworkIdentity(boolean save) {
         try {
-            NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
             try {
-                this.networkIdentity = this.createNetworkIdentity(
-                        NetworkInterface.getByInetAddress(InetAddress.getLocalHost()).getHardwareAddress());
-            } catch (NullPointerException ex) {
-                // NetworkInterface.getByInetAddress(InetAddress.getLocalHost()).getHardwareAddress()
-                // failed.
-                // This can be due to multiple reasons, most likely
-                // getLocalHost() failing on certain platforms.
-                // Only set networkIdentity to null, since the following null
-                // checks address all potential problems
-                // with getLocalHost() including some expected conditions (such
-                // as InetAddress.getLocalHost()
-                // returning the loopback interface).
-                this.networkIdentity = null;
-            }
-            if (this.networkIdentity == null) {
-                Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-                while (nics.hasMoreElements()) {
-                    NetworkInterface nic = nics.nextElement();
-                    if (!nic.isLoopback() && !nic.isVirtual() && (nic.getHardwareAddress() != null)) {
-                        this.networkIdentity = this.createNetworkIdentity(nic.getHardwareAddress());
-                        if (this.networkIdentity != null) {
-                            break;
+                try {
+                    this.networkIdentity = this.createNetworkIdentity(
+                            NetworkInterface.getByInetAddress(InetAddress.getLocalHost()).getHardwareAddress());
+                } catch (NullPointerException ex) {
+                    // NetworkInterface.getByInetAddress(InetAddress.getLocalHost()).getHardwareAddress() failed
+                    // this can be due to multiple reasons, most likely getLocalHost() failing on certain platforms.
+                    // Only set this.identity = null, since the following null checks address all potential problems
+                    // with getLocalHost() including some expected conditions (such as InetAddress.getLocalHost()
+                    // returning the loopback interface).
+                    this.networkIdentity = null;
+                }
+                if (this.networkIdentity == null) {
+                    Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
+                    while (nics.hasMoreElements()) {
+                        NetworkInterface nic = nics.nextElement();
+                        if (!nic.isLoopback() && !nic.isVirtual() && (nic.getHardwareAddress() != null)) {
+                            this.networkIdentity = this.createNetworkIdentity(nic.getHardwareAddress());
+                            if (this.networkIdentity != null) {
+                                break;
+                            }
                         }
                     }
                 }
+            } catch (SocketException ex) {
+                this.networkIdentity = null;
             }
-        } catch (
-                SocketException |
-                UnknownHostException ex) {
+        } catch (UnknownHostException ex) {
             this.networkIdentity = null;
         }
         if (this.networkIdentity == null) {
             log.info("No MAC addresses found, generating a random multicast MAC address as per RFC 4122.");
             byte[] randBytes = new byte[6];
-            ThreadLocalRandom.current().nextBytes(randBytes);
-            // set multicast bit in first octet
-            randBytes[0] = (byte) (randBytes[0] | 0x01);
+            Random randGen = new Random();
+            randGen.nextBytes(randBytes);
+            randBytes[0] = (byte) (randBytes[0] | 0x01); // set multicast bit in first octet
             this.networkIdentity = this.createNetworkIdentity(randBytes);
         }
         this.formerIdentities.add(this.networkIdentity);
@@ -376,7 +362,7 @@ public class NodeIdentity {
         }
         networkIdentityElement.setAttribute(NODE_IDENTITY, this.networkIdentity);
         storageIdentityElement.setAttribute(STORAGE_IDENTITY, this.storageIdentity);
-        this.formerIdentities.stream().forEach(formerIdentity -> {
+        this.formerIdentities.stream().forEach((formerIdentity) -> {
             log.debug("Retaining former node identity {}", formerIdentity);
             Element e = new Element(NODE_IDENTITY);
             e.setAttribute(NODE_IDENTITY, formerIdentity);
@@ -389,7 +375,7 @@ public class NodeIdentity {
             doc.getRootElement().addContent(uuidElement);
         }
         doc.getRootElement().addContent(formerIdentitiesElement);
-        try (Writer w = new OutputStreamWriter(new FileOutputStream(this.identityFile()), StandardCharsets.UTF_8)) {
+        try (Writer w = new OutputStreamWriter(new FileOutputStream(this.identityFile()), "UTF-8")) { // NOI18N
             XMLOutputter fmt = new XMLOutputter();
             fmt.setFormat(Format.getPrettyFormat()
                     .setLineSeparator(System.getProperty("line.separator"))

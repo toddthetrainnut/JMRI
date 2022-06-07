@@ -5,7 +5,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import jmri.InstanceManager;
 import jmri.JmriException;
 import jmri.SignalMast;
@@ -24,8 +23,8 @@ abstract public class AbstractSignalMastServer {
     private final HashMap<String, SignalMastListener> signalMasts;
     static private final Logger log = LoggerFactory.getLogger(AbstractSignalMastServer.class);
 
-    public AbstractSignalMastServer(){
-        signalMasts = new HashMap<>();
+    public AbstractSignalMastServer() {
+        signalMasts = new HashMap<String, SignalMastListener>();
     }
 
     /*
@@ -123,7 +122,7 @@ abstract public class AbstractSignalMastServer {
                 } catch (IOException ie) {
                     // if we get an error, de-register
                     if (log.isDebugEnabled()) {
-                        log.debug("Unable to send status, removing listener from signalMast {}", name);
+                        log.debug("Unable to send status, removing listener from signalMast " + name);
                     }
                     signalMast.removePropertyChangeListener(this);
                     removeSignalMastFromList(name);

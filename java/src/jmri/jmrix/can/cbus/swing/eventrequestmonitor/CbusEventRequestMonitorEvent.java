@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
 import javax.swing.Timer;
+import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.cbus.CbusEvent;
 
 // import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class CbusEventRequestMonitorEvent extends CbusEvent {
     }
     
     private ActionListener eventFeedbackListener;
-    private final CbusEventRequestDataModel _model;
+    private CbusEventRequestDataModel _model;
     private Date _timestamp;
     private int _feedbackTimeout;
     private int _feedbackTotReqd;
@@ -50,7 +51,10 @@ public class CbusEventRequestMonitorEvent extends CbusEvent {
     }
     
     public Boolean matchesFeedback(int nn, int en) {
-        return (nn == _extraNode) && (en == _extraEvent);
+        if ( (nn == _extraNode) && (en == _extraEvent) ) {
+            return true;
+        }
+        return false;
     }
     
     protected Date getDate(){
@@ -126,14 +130,17 @@ public class CbusEventRequestMonitorEvent extends CbusEvent {
     private void startTheTimer(){
         
         final String _evName = this.toString();
-        eventFeedbackListener = (ActionEvent e) -> {
-            _model.setValueAt(0, _model.eventRow( getNn(),getEn() ), 
+        eventFeedbackListener = new ActionListener(){
+            @Override
+            public void actionPerformed( ActionEvent e ){
+                _model.setValueAt(0, _model.eventRow( getNn(),getEn() ), 
                     CbusEventRequestDataModel.FEEDBACKOUTSTANDING_COLUMN);
-            _model.setValueAt(CbusEventRequestMonitorEvent.FbState.LfbBad, _model.eventRow(getNn(),getEn()),
+                _model.setValueAt(CbusEventRequestMonitorEvent.FbState.LfbBad, _model.eventRow(getNn(),getEn()),
                     CbusEventRequestDataModel.LASTFEEDBACK_COLUMN);
-            _model.addToLog(3, Bundle.getMessage("FeedBackNotOK", _evName ) );
-            _timer.stop();
-            _timer = null;
+                _model.addToLog(3, Bundle.getMessage("FeedBackNotOK", _evName ) );
+                _timer.stop();
+                _timer = null;
+            }
         };
         _timer = new Timer( getFeedbackTimeout(), eventFeedbackListener);
         _timer.setRepeats( false );
@@ -168,20 +175,6 @@ public class CbusEventRequestMonitorEvent extends CbusEvent {
                 _model.addToLog(2,Bundle.getMessage("FeedBackOK",this.toString() ) );
             }
         }
-    }
-    
-    /** 
-     * {@inheritDoc} 
-     */
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o);
-    }
-    
-    /** {@inheritDoc} */
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(CbusEventRequestMonitorEvent.class);

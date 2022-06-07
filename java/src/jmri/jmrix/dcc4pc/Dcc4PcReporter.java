@@ -2,9 +2,15 @@ package jmri.jmrix.dcc4pc;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import jmri.DccLocoAddress;
+import jmri.LocoAddress;
+import jmri.PhysicalLocationReporter;
 import jmri.RailCom;
 import jmri.Sensor;
 import jmri.implementation.AbstractRailComReporter;
+import jmri.util.PhysicalLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +39,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
 
     void setPacket(int[] arraytemp, int dcc_addr_type, int dcc_addr, int cvNumber, int speed, int packetTypeCmd) {
         if (log.isDebugEnabled()) {
-            log.debug("{} dcc_addr {} {} {}", getDisplayName(), dcc_addr, cvNumber, speed);
+            log.debug(getDisplayName() + " dcc_addr " + dcc_addr + " " + cvNumber + " " + speed);
         }
         RailComPacket rc = new RailComPacket(arraytemp, dcc_addr_type, dcc_addr, cvNumber, speed);
         decodeRailComInfo(rc, packetTypeCmd);
@@ -41,7 +47,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
         rcPacket[1] = rcPacket[0];
         rcPacket[0] = rc;
         if (log.isDebugEnabled()) {
-            log.debug("Packets Seen {} in error {}", packetseen, packetsinerror);
+            log.debug("Packets Seen " + packetseen + " in error " + packetsinerror);
         }
     }
 
@@ -192,12 +198,12 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
 
     synchronized void decodeRailComInfo(RailComPacket rc, int packetTypeCmd) {
         if (log.isDebugEnabled()) {
-            log.debug("{} packet type {}", getDisplayName(), packetTypeCmd);
+            log.debug(getDisplayName() + " " + packetTypeCmd);
         }
         addressp1found++;
         RailCom rcTag = null;
         if (log.isDebugEnabled()) {
-            log.debug("decodeRailComInfo {} {}", this.getDisplayName(), super.getCurrentReport());
+            log.debug(this.getDisplayName() + " " + super.getCurrentReport());
         }
         if (super.getCurrentReport() instanceof RailCom) {
             rcTag = (RailCom) super.getCurrentReport();
@@ -212,7 +218,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
                 buf.append(packet[i]);
             }
             String s = buf.toString();
-            log.debug("Rail Comm Packets {}", s);
+            log.debug("Rail Comm Packets " + s);
 
         }
         int i = 0;
@@ -222,7 +228,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
             chbyte = decode[chbyte];
             if (chbyte == ERROR) {
                 if (log.isDebugEnabled()) {
-                    log.debug("{} Error packet stage 1: {}", this.getDisplayName(), Integer.toHexString(packet[i]));
+                    log.debug(this.getDisplayName() + " Error packet stage 1: " + Integer.toHexString(packet[i]));
                 }
                 packetsinerror++;
                 return;
@@ -234,7 +240,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
                 chbyte = decode[chbyte];
                 if (chbyte == ERROR) {
                     if (log.isDebugEnabled()) {
-                        log.debug("{} Error packet stage 2", this.getDisplayName());
+                        log.debug(this.getDisplayName() + " Error packet stage 2");
                     }
                     packetsinerror++;
                     return;
@@ -257,7 +263,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
             chbyte = decode[chbyte];
             if ((chbyte == ERROR) || ((chbyte & ACK) == ACK)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("{} Error packet stage 3 {}\n{}", this.getDisplayName(), Integer.toHexString(packet[i]), rc.toHexString());
+                    log.debug(this.getDisplayName() + " Error packet stage 3 " + Integer.toHexString(packet[i]) + "\n" + rc.toHexString());
                 }
                 i++;
                 packetsinerror++;
@@ -270,7 +276,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
             switch (type) {
                 case 0:
                     if (log.isDebugEnabled()) {
-                        log.debug("{} CV Value {}{}", this.getDisplayName(), (int) chbyte, rcTag);
+                        log.debug(this.getDisplayName() + " CV Value " + ((int) chbyte) + rcTag);
                     }
                     cvvalue = chbyte;
                     if (rcTag != null) {
@@ -284,7 +290,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
                     break;
                 case 4:
                     if (log.isDebugEnabled()) {
-                        log.debug("{} Create/Get id tag for {}", this.getDisplayName(), rc.getDccAddress());
+                        log.debug(this.getDisplayName() + " Create/Get id tag for " + rc.getDccAddress());
                     }
                     addr = rc.getDccAddress();
                     addr_type = rc.getAddressType();
@@ -298,7 +304,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
                     break;
                 case 2: //Address byte 2
                     if (log.isDebugEnabled()) {
-                        log.debug("{} Address part 2:", this.getDisplayName());
+                        log.debug(this.getDisplayName() + " Address part 2:");
                     }
                     address_part_2 = chbyte;
                     if (packetTypeCmd == 0x03) {
@@ -308,7 +314,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
                         // break;
                     }
                     if (!((address_part_1 & 0x100) == 0x100)) {
-                        log.debug("{} Break at Address part 1, part one not complete", this.getDisplayName());
+                        log.debug(this.getDisplayName() + " Break at Address part 1, part one not complete");
                         break;
                     }
                     rcTag = decodeAddress();
@@ -316,10 +322,10 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
                 case 3: //Actual Speed / load
                     if ((chbyte & 0x80) == 0x80) {
                         actual_speed = (chbyte & 0x7f);
-                        log.debug("{} Actual Speed: {}", this.getDisplayName(), actual_speed);
+                        log.debug(this.getDisplayName() + " Actual Speed: " + actual_speed);
                     } else {
                         actual_load = (chbyte & 0x7f);
-                        log.debug("{} Actual Load: {}", this.getDisplayName(), actual_load);
+                        log.debug(this.getDisplayName() + " Actual Load: " + actual_load);
                     }
                     if (rcTag != null) {
                         rcTag.setActualLoad(actual_load);
@@ -364,12 +370,12 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
                     }
                     break;
                 case 15: //CV Address  Value
-                    log.debug("{} CV Address and value:", this.getDisplayName());
+                    log.debug(this.getDisplayName() + " CV Address and value:");
                     i = i + 2;
                     //len = 4;
                     break;
                 default:
-                    log.info("unknown railcom type packet {}", type);
+                    log.info("unknown railcom type packet " + type);
                     break;
             }
             i++;
@@ -380,7 +386,7 @@ public class Dcc4PcReporter extends AbstractRailComReporter {
     RailCom decodeAddress() {
         RailCom rcTag;
         if (log.isDebugEnabled()) {
-            log.debug("{} Create/Get id tag for {}", this.getDisplayName(), addr);
+            log.debug(this.getDisplayName() + " Create/Get id tag for " + addr);
         }
         rcTag = (RailCom)jmri.InstanceManager.getDefault(jmri.RailComManager.class).provideIdTag("" + addr);
 

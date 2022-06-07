@@ -1,14 +1,15 @@
 package jmri.jmrix.nce;
 
 import jmri.GlobalProgrammerManager;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * JUnit tests for the NceProgrammerManager class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class NceProgrammerManagerTest {
 
@@ -42,21 +43,18 @@ public class NceProgrammerManagerTest {
         Assert.assertNull("no global Programmer exists", ((GlobalProgrammerManager)memo.get(GlobalProgrammerManager.class)).getGlobalProgrammer());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp(); 
         jmri.util.JUnitUtil.resetInstanceManager();
         
         memo = new NceSystemConnectionMemo();
         memo.setNceTrafficController(new NceTrafficController());
-        memo.configureManagers();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
         memo = null;     
-        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         jmri.util.JUnitUtil.tearDown();
     }
 

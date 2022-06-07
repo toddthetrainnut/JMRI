@@ -1,14 +1,15 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * XNetExceptionTest.java
  *
- * Test for the jmri.jmrix.lenz.XNetException class
+ * Description: tests for the jmri.jmrix.lenz.XNetException class
  *
  * @author Paul Bender
  */
@@ -21,12 +22,12 @@ public class XNetExceptionTest {
         Assert.assertNotNull(c);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

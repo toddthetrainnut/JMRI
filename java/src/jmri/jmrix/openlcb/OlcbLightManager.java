@@ -1,8 +1,12 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package jmri.jmrix.openlcb;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
 import jmri.BooleanPropertyDescriptor;
 import jmri.Light;
 import jmri.NamedBean;
@@ -18,25 +22,24 @@ import org.openlcb.OlcbInterface;
 public class OlcbLightManager extends AbstractLightManager {
 
     public OlcbLightManager(CanSystemConnectionMemo memo) {
-        super(memo);
+        this.memo = memo;
+        prefix = memo.getSystemPrefix();
     }
     
+    CanSystemConnectionMemo memo;
+    
+    String prefix = "M";
     // Whether we accumulate partially loaded lights in pendingLights.
     private boolean isLoading = false;
     // Lights that are being loaded from XML.
     private final ArrayList<OlcbLight> pendingLights = new ArrayList<>();
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public CanSystemConnectionMemo getMemo() {
-        return (CanSystemConnectionMemo) memo;
-    }
-
+    public String getSystemPrefix() {
+        return prefix;
+    } 
+    
     @Override
-    @Nonnull
     public List<NamedBeanPropertyDescriptor<?>> getKnownBeanProperties() {
         List<NamedBeanPropertyDescriptor<?>> l = new ArrayList<>();
         l.add(new BooleanPropertyDescriptor(OlcbUtils.PROPERTY_IS_AUTHORITATIVE, OlcbLight
@@ -73,8 +76,7 @@ public class OlcbLightManager extends AbstractLightManager {
      * @return never null
      */
     @Override
-    @Nonnull
-    protected Light createNewLight(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    protected Light createNewLight(String systemName, String userName) {
         String addr = systemName.substring(getSystemPrefix().length() + 1);
         OlcbLight l = new OlcbLight(getSystemPrefix(), addr, memo.get(OlcbInterface.class));
         l.setUserName(userName);
@@ -115,35 +117,26 @@ public class OlcbLightManager extends AbstractLightManager {
     }
 
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return false;
     }
 
     @Override
-    public boolean validSystemNameConfig(@Nonnull String address) throws IllegalArgumentException {
-        
-        if (address.startsWith("+") || address.startsWith("-")) {
-            return false;
+    public boolean validSystemNameConfig(String address) throws IllegalArgumentException {
+        String withoutPrefix = address.replace("ML", "");
+        OlcbAddress a = new OlcbAddress(withoutPrefix);
+        OlcbAddress[] v = a.split();
+        switch (v.length) {
+            case 1:
+                if (address.startsWith("+") || address.startsWith("-")) {
+                    return false;
+                }
+                throw new IllegalArgumentException("can't make 2nd event from systemname " + address);
+            case 2:
+                return true;
+            default:
+                throw new IllegalArgumentException("Wrong number of events in address: " + address);
         }
-        try {
-            OlcbAddress.validateSystemNameFormat(address,java.util.Locale.getDefault(),getSystemNamePrefix());
-        }
-        catch ( jmri.NamedBean.BadSystemNameException ex ){
-            throw new IllegalArgumentException(ex.getMessage());
-        }
-        return true;
-    }
-    
-    /**
-     * Validates to OpenLCB format.
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull java.util.Locale locale) throws jmri.NamedBean.BadSystemNameException {
-        super.validateSystemNameFormat(name,locale);
-        name = OlcbAddress.validateSystemNameFormat(name,locale,getSystemNamePrefix());
-        return name;
     }
     
     /**

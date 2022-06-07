@@ -1,6 +1,8 @@
 package jmri.jmrix.roco;
 
 import jmri.LocoAddress;
+import jmri.jmrix.lenz.XNetMessage;
+import jmri.jmrix.lenz.XNetReply;
 import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.jmrix.lenz.XNetTrafficController;
 import org.slf4j.Logger;
@@ -16,19 +18,14 @@ import org.slf4j.LoggerFactory;
 public class RocoXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
 
     /**
-     * Constructor.
-     * @param memo system connection.
-     * @param controller traffic controller.
+     * Constructor
      */
     public RocoXNetThrottle(XNetSystemConnectionMemo memo, XNetTrafficController controller) {
         super(memo,controller);
     }
 
     /**
-     * Constructor.
-     * @param memo system connection.
-     * @param address loco address.
-     * @param controller traffic controller.
+     * Constructor
      */
     public RocoXNetThrottle(XNetSystemConnectionMemo memo, LocoAddress address, XNetTrafficController controller) {
         super(memo,address,controller);
@@ -89,7 +86,7 @@ public class RocoXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      * the last user.
      */
     @Override
-    public void throttleDispose() {
+    protected void throttleDispose() {
         active = false;
         stopStatusTimer();
         finishRecord();

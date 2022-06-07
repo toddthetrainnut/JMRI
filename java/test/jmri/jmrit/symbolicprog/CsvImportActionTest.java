@@ -1,15 +1,15 @@
 package jmri.jmrit.symbolicprog;
 
+import org.junit.After;
 import org.junit.Assume;
-import org.junit.jupiter.api.*;
-
+import org.junit.Before;
+import org.junit.Test;
 import javax.swing.JLabel;
-
 import java.awt.GraphicsEnvironment;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class CsvImportActionTest {
 
@@ -22,14 +22,15 @@ public class CsvImportActionTest {
         jf.dispose();
     } 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
         jmri.util.JUnitUtil.resetInstanceManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
 

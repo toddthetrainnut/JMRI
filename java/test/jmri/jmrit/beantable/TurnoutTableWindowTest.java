@@ -1,37 +1,29 @@
 package jmri.jmrit.beantable;
 
 import java.awt.GraphicsEnvironment;
-
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JTextField;
-
 import jmri.InstanceManager;
-import jmri.TurnoutManager;
-import jmri.jmrit.beantable.turnout.TurnoutTableDataModel;
-import jmri.jmrix.cmri.CMRISystemConnectionMemo;
-import jmri.jmrix.cmri.serial.SerialTurnoutManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
+import jmri.Turnout;
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.swing.JemmyUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 import org.netbeans.jemmy.operators.*;
 
 /**
  * Swing tests for the turnout table.
  *
- * @author Bob Jacobsen Copyright 2009, 2010, 2017
+ * @author	Bob Jacobsen Copyright 2009, 2010, 2017
  */
 public class TurnoutTableWindowTest {
 
     @Test
     public void testShowAndClose() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        TurnoutManager cmri = new SerialTurnoutManager(new CMRISystemConnectionMemo("C", "CMRI"));
-        InstanceManager.setTurnoutManager(cmri);
-        TurnoutManager internal = InstanceManager.getDefault(InternalSystemConnectionMemo.class).getTurnoutManager();
 
         // ask for the window to open
         TurnoutTableAction a = new TurnoutTableAction();
@@ -47,25 +39,19 @@ public class TurnoutTableWindowTest {
         Assert.assertNotNull("AR selected", jcbo.getSelectedObjects());
 
         // Find the Show Feedback information checkbox
-        JLabelOperator jlo = new JLabelOperator(jfo,Bundle.getMessage("ShowFeedbackInfo"));
-        JCheckBox jcb = (JCheckBox) jlo.getLabelFor();
-        jcbo = new JCheckBoxOperator(jcb);
+        jcbo = new JCheckBoxOperator(jfo,Bundle.getMessage("ShowFeedbackInfo"));
         // Click checkbox to select Show feedback information
         jcbo.doClick();
         Assert.assertNotNull("FBbox selected", jcbo.getSelectedObjects());
 
         // Find the Show Lock information checkbox
-        jlo = new JLabelOperator(jfo,Bundle.getMessage("ShowLockInfo"));
-        jcb = (JCheckBox) jlo.getLabelFor();
-        jcbo = new JCheckBoxOperator(jcb);
+        jcbo = new JCheckBoxOperator(jfo,Bundle.getMessage("ShowLockInfo"));
         // Click checkbox to select Show feedback information
         jcbo.doClick();
         Assert.assertNotNull("LKbox selected", jcbo.getSelectedObjects());
 
         // Find the Show Turnout Speed details checkbox
-        jlo = new JLabelOperator(jfo,Bundle.getMessage("ShowTurnoutSpeedDetails"));
-        jcb = (JCheckBox) jlo.getLabelFor();
-        jcbo = new JCheckBoxOperator(jcb);
+        jcbo = new JCheckBoxOperator(jfo,Bundle.getMessage("ShowTurnoutSpeedDetails"));
         // Click checkbox to select Show feedback information
         jcbo.doClick();
         Assert.assertNotNull("TSbox selected", jcbo.getSelectedObjects());
@@ -79,18 +65,16 @@ public class TurnoutTableWindowTest {
         JFrameOperator afo = new JFrameOperator(Bundle.getMessage("TitleAddTurnout"));
 
         // Find hardware address field
-        jlo = new JLabelOperator(afo,Bundle.getMessage("LabelHardwareAddress"));
+        JLabelOperator jlo = new JLabelOperator(afo,Bundle.getMessage("LabelHardwareAddress"));
         JTextField hwAddressField = (JTextField) jlo.getLabelFor();
         Assert.assertNotNull("hwAddressTextField", hwAddressField);
 
-        // Find system combobox
-        JComboBoxOperator cbo = new JComboBoxOperator(afo); // finds first combo box.
         // set to "C/MRI"
-        cbo.selectItem("CMRI");
-        // set address to "a" (invalid for C/MRI, but valid for Internal)
+        a.connectionChoice = "C/MRI";
+        // set address to "a" (invalid for C/MRI)
         hwAddressField.setText("a");
         // test silent entry validation
-        boolean _valid = hwAddressField.getInputVerifier().verify(hwAddressField);
+        boolean _valid = hwAddressField.isValid();
         Assert.assertEquals("invalid entry", false, _valid);
 
         // set address to "1"
@@ -103,9 +87,11 @@ public class TurnoutTableWindowTest {
 
         Assert.assertEquals("name content", "1", hwAddressField.getText());
 
-        cbo.selectItem("Internal");
-        jtfo.setText("1");
-        Assert.assertEquals("Selected system item", internal, cbo.getSelectedItem()); // this connection type is always available
+        // Find system combobox
+        JComboBoxOperator cbo = new JComboBoxOperator(afo); // finds first combo box.
+        // set to "Internal"
+        cbo.setSelectedItem("Internal");
+        Assert.assertEquals("Selected system item", "Internal", cbo.getSelectedItem()); // this connection type is always available
 
         // Find the Add Create button
         jbo = new JButtonOperator(afo,Bundle.getMessage("ButtonCreate"));
@@ -113,11 +99,17 @@ public class TurnoutTableWindowTest {
         jbo.doClick();
         // Ask to close Add pane
         afo.requestClose();
-        
-        // Open the Edit Turnout IT1 pane, 
+
+        // Open the Edit Turnout IT1 pane, how to find & click the LT1 Edit col button?
         // Find the Edit button in EDITCOL of line 0 (for LT1)
-        JTableOperator tbl = new JTableOperator(jfo, 0);
-        tbl.clickOnCell(0, TurnoutTableDataModel.EDITCOL);
+        //AbstractButtonFinder edfinder = new AbstractButtonFinder("Edit");
+        //JButton editbutton = (JButton) edfinder.find(ft, 0);
+        //Assert.assertNotNull(editbutton);
+        // Click button to edit turnout
+        //getHelper().enterClickAndLeave(new MouseEventData(this, editbutton));
+        // open Edit pane by method instead
+        Turnout it1 = InstanceManager.turnoutManagerInstance().getTurnout("IT1");
+        a.editButton(it1); // open edit pane
 
         // Find Edit Turnout pane by name
         JFrameOperator efo = new JFrameOperator("Edit Turnout IT1");
@@ -160,7 +152,8 @@ public class TurnoutTableWindowTest {
 
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -169,9 +162,8 @@ public class TurnoutTableWindowTest {
         jmri.util.JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
-        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
     }
 

@@ -6,7 +6,7 @@ import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.trains.TrainManagerXml;
 import jmri.util.JUnitOperationsUtil;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 public class AutomationManagerTest extends OperationsTestCase {
 

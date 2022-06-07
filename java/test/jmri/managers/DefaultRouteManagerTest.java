@@ -1,42 +1,35 @@
 package jmri.managers;
 
-import jmri.InstanceManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * @author Paul Bender Copyright (C) 2017
+ *
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class DefaultRouteManagerTest extends AbstractProvidingManagerTestBase<jmri.RouteManager, jmri.Route> {
+public class DefaultRouteManagerTest extends AbstractProvidingManagerTestBase<jmri.RouteManager,jmri.Route> {
 
     @Test
     public void testCTor() {
-        Assert.assertNotNull("exists", l);
+        Assert.assertNotNull("exists",l);
     }
-    
-    // No manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithNoPrefixNotASystemName() {}
-    
-    // No manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithPrefixNotASystemName() {}
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        l = new DefaultRouteManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
+        l = new DefaultRouteManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         l = null;
         JUnitUtil.tearDown();
     }
+
+    // private final static Logger log = LoggerFactory.getLogger(DefaultRouteManagerTest.class);
 
 }

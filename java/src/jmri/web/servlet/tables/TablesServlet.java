@@ -3,8 +3,6 @@ package jmri.web.servlet.tables;
 import static jmri.web.servlet.ServletUtil.UTF8_TEXT_HTML;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,7 +14,7 @@ import jmri.web.servlet.ServletUtil;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Provide web UI for data, such as turnouts, sensors, etc. displayed in tables
+ * Provide web UI for data, such as turnouts, sensors, etc.
  *
  * Each method of this Servlet responds to a unique URL pattern.
  *
@@ -36,8 +34,7 @@ public class TablesServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         String[] path = request.getRequestURI().split("/"); // NOI18N
-        String tableType = URLDecoder.decode(path[path.length - 1], StandardCharsets.UTF_8.name());
-        if (tableType.equals("tables")) tableType = "type"; // NOI18N redirect to list of table types if none passed in
+        String tableType = java.net.URLDecoder.decode(path[path.length - 1], "UTF-8");
 
         //print the html, using the replacement values listed to fill in the calculated stuff
         response.setHeader("Connection", "Keep-Alive"); // NOI18N

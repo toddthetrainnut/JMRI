@@ -7,8 +7,6 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-
 /**
  * Handle XML persistence of layout connections by persisting the XnTcpAdapter
  * (and connections). Note this is named as the XML version of a
@@ -40,12 +38,12 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
     }
 
     @Override
-    public boolean load(@Nonnull Element shared, Element perNode) {
+    public boolean load(Element shared, Element perNode) {
         boolean result = true;
         try {
             result = super.load(shared, perNode);
             if (log.isDebugEnabled()) {
-                log.debug("result {}", result);
+                log.debug("result " + result);
             }
         } catch (NullPointerException ex) {
             // If the standard configuration fails, try the original 
@@ -143,6 +141,6 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
     }
 
     // initialize logging
-    private static final Logger log = LoggerFactory.getLogger(ConnectionConfigXml.class);
+    private final static Logger log = LoggerFactory.getLogger(ConnectionConfigXml.class);
 
 }

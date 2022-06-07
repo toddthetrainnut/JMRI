@@ -71,7 +71,11 @@ public class AllocationRequest {
     }
 
     public String getSectionName() {
-        String s = mSection.getDisplayName();
+        String s = mSection.getSystemName();
+        String u = mSection.getUserName();
+        if ((u != null) && (!u.equals("") && (!u.equals(s)))) {
+            return (s + "(" + u + ")");
+        }
         return s;
     }
 
@@ -134,7 +138,7 @@ public class AllocationRequest {
         //This forces us to rescan the allocation list if the section has gone unoccupied, thus this might get re-allocated
         if (e.getPropertyName().equals("occupancy")) {
             if (((Integer) e.getNewValue()).intValue() == jmri.Section.UNOCCUPIED) {
-                InstanceManager.getDefault(DispatcherFrame.class).queueScanOfAllocationRequests();
+                InstanceManager.getDefault(DispatcherFrame.class).forceScanOfAllocation();
             }
         }
     }
@@ -172,7 +176,7 @@ public class AllocationRequest {
                     if (e.getPropertyName().equals("Held")) {
                         if (!((Boolean) e.getNewValue()).booleanValue()) {
                             mWaitingForSignalMast.removePropertyChangeListener(mSignalMastListener);
-                            InstanceManager.getDefault(DispatcherFrame.class).queueScanOfAllocationRequests();
+                            InstanceManager.getDefault(DispatcherFrame.class).forceScanOfAllocation();
                         }
                     }
                 }
@@ -198,7 +202,7 @@ public class AllocationRequest {
                     if (e.getPropertyName().equals("state")) {
                         if (((Integer) e.getNewValue()).intValue() == jmri.Block.UNOCCUPIED) {
                             mWaitingOnBlock.removePropertyChangeListener(mWaitingOnBlockListener);
-                            InstanceManager.getDefault(DispatcherFrame.class).queueScanOfAllocationRequests();
+                            InstanceManager.getDefault(DispatcherFrame.class).forceScanOfAllocation();
                         }
                     }
                 }

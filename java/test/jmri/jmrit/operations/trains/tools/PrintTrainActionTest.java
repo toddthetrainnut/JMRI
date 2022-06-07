@@ -4,11 +4,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.trains.Train;
@@ -17,6 +12,9 @@ import jmri.jmrit.operations.trains.TrainManager;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
@@ -29,7 +27,7 @@ public class PrintTrainActionTest extends OperationsTestCase {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         Train train1 = new Train("TESTTRAINID", "TESTTRAINNAME");
         TrainEditFrame tef = new TrainEditFrame(train1);
-        PrintTrainAction t = new PrintTrainAction(true, tef);
+        PrintTrainAction t = new PrintTrainAction("Test Action", true, tef);
         Assert.assertNotNull("exists", t);
         JUnitUtil.dispose(tef);
     }
@@ -44,10 +42,10 @@ public class PrintTrainActionTest extends OperationsTestCase {
         Assert.assertNotNull(train1);
 
         TrainEditFrame tef = new TrainEditFrame(train1);
-        PrintTrainAction pta = new PrintTrainAction(true, tef);
+        PrintTrainAction pta = new PrintTrainAction("Test Action", true, tef);
         Assert.assertNotNull("exists", pta);
 
-        pta.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+        pta.actionPerformed(new ActionEvent(this, 0, null));
 
         // confirm print preview window is showing
         ResourceBundle rb = ResourceBundle
@@ -60,8 +58,6 @@ public class PrintTrainActionTest extends OperationsTestCase {
 
         JUnitUtil.dispose(printPreviewFrame);
         JUnitUtil.dispose(tef);
-        
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(PrintTrainActionTest.class);

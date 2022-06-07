@@ -18,7 +18,7 @@ import jmri.jmrix.dccpp.AbstractDCCppSerialConnectionConfig;
  *
  * Based on AbstractXNetSerialConnectionConfigXml by Paul Bender
  */
-public abstract class AbstractDCCppSerialConnectionConfigXml extends AbstractSerialConnectionConfigXml {
+abstract public class AbstractDCCppSerialConnectionConfigXml extends AbstractSerialConnectionConfigXml {
 
     public AbstractDCCppSerialConnectionConfigXml() {
         super();
@@ -26,7 +26,7 @@ public abstract class AbstractDCCppSerialConnectionConfigXml extends AbstractSer
     
     @Override
     protected void getInstance(Object object) {
-        adapter = ((AbstractDCCppSerialConnectionConfig) object).getAdapter();
+        adapter=((AbstractDCCppSerialConnectionConfig) object).getAdapter();
     }
 
 }

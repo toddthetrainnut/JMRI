@@ -2,9 +2,8 @@ package jmri.jmrit.withrottle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,11 +36,11 @@ public class MultiThrottle {
     private ThrottleControllerListener parentTCL = null;
     private ControllerInterface parentController = null;
     char whichThrottle;
-    ConcurrentHashMap<String, MultiThrottleController> throttles;
+    HashMap<String, MultiThrottleController> throttles;
 
     public MultiThrottle(char id, ThrottleControllerListener tcl, ControllerInterface ci) {
         if (log.isDebugEnabled()) {
-            log.debug("Creating new MultiThrottle for id: {}", id);
+            log.debug("Creating new MultiThrottle for id: " + id);
         }
         whichThrottle = id;
         parentTCL = tcl;
@@ -91,7 +90,7 @@ public class MultiThrottle {
             return null;
         }
         if (throttles == null) {
-            throttles = new ConcurrentHashMap<>(1);
+            throttles = new HashMap<>(1);
         }
 
         if (throttles.containsKey(key)) {
@@ -184,7 +183,7 @@ public class MultiThrottle {
         }
         if (!throttles.containsKey(key)) {
             if (log.isDebugEnabled()) {
-                log.debug("Throttle: {} not in MultiThrottle.", key);
+                log.debug("Throttle: " + key + " not in MultiThrottle.");
             }
             return false;
         }
@@ -195,7 +194,7 @@ public class MultiThrottle {
         mtc.removeThrottleControllerListener(parentTCL);
         throttles.remove(key);
         if (log.isDebugEnabled()) {
-            log.debug("Throttle: {} removed from MultiThrottle.", key);
+            log.debug("Throttle: " + key + " removed from MultiThrottle.");
         }
         return true;
     }
@@ -206,7 +205,7 @@ public class MultiThrottle {
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug("MultiThrottle key: {}, action: {}", key, action);
+            log.debug("MultiThrottle key: " + key + ", action: " + action);
         }
 
         if (key.equals("*")) {

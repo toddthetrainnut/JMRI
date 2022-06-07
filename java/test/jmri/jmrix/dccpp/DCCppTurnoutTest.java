@@ -2,15 +2,18 @@ package jmri.jmrix.dccpp;
 
 import jmri.Turnout;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Tests for the jmri.jmrix.dccpp.DCCppTurnout class
+ * DCCppThrottleTest.java
  *
- * @author Paul Bender
- * @author Mark Underwood
+ * Description:	tests for the jmri.jmrix.dccpp.DCCppTurnout class
+ *
+ * @author	Paul Bender
+ * @author	Mark Underwood
  */
 public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBase {
 
@@ -38,7 +41,7 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         Assert.assertNotNull(t);
     }
 
-    // Test the initialization sequence.
+    // Test the initilization sequence.
     @Test
     public void testInitSequence() throws Exception {
         int num = ((DCCppTurnout)t).getNumber();
@@ -59,8 +62,7 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         Assert.assertTrue(t.canInvert());
         
     }
-    
-    @Test
+   
     public void testMonitoringMode() throws Exception {
         // Set mode to Monitoring
         t.setFeedbackMode(Turnout.MONITORING);
@@ -72,7 +74,6 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         DCCppMessage m = dnis.outbound.elementAt(0);
         Assert.assertTrue(m.isTurnoutCmdMessage());
         Assert.assertEquals(1, m.getTOStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         DCCppReply r = DCCppReply.parseDCCppReply("H 42 1");
         ((DCCppTurnout) t).message(r);
         Assert.assertEquals(Turnout.THROWN, t.getState());
@@ -82,7 +83,6 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         m = dnis.outbound.elementAt(1);
         Assert.assertTrue(m.isTurnoutCmdMessage());
         Assert.assertEquals(0, m.getTOStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         r = DCCppReply.parseDCCppReply("H 42 0");
         ((DCCppTurnout) t).message(r);
         Assert.assertEquals(Turnout.CLOSED, t.getState());
@@ -95,7 +95,6 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         m = dnis.outbound.elementAt(2);
         Assert.assertTrue(m.isTurnoutCmdMessage());
         Assert.assertEquals(0, m.getTOStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         r = DCCppReply.parseDCCppReply("H 42 0");
         ((DCCppTurnout) t).message(r);
         Assert.assertEquals(Turnout.THROWN, t.getState());
@@ -105,7 +104,6 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         m = dnis.outbound.elementAt(3);
         Assert.assertTrue(m.isTurnoutCmdMessage());
         Assert.assertEquals(1, m.getTOStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         r = DCCppReply.parseDCCppReply("H 42 1");
         ((DCCppTurnout) t).message(r);
         Assert.assertEquals(Turnout.CLOSED, t.getState());
@@ -113,7 +111,7 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
 
     @Test
     public void testExactMode() throws Exception {
-        // Set mode to Exact
+        // Set mode to Monitoring
         t.setFeedbackMode(Turnout.EXACT);
         Assert.assertEquals(Turnout.EXACT, t.getFeedbackMode());
         
@@ -123,7 +121,6 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         DCCppMessage m = dnis.outbound.elementAt(0);
         Assert.assertTrue(m.isOutputCmdMessage());
         Assert.assertEquals(0, m.getOutputStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         DCCppReply r = DCCppReply.parseDCCppReply("Y 42 0");
         ((DCCppTurnout) t).message(r);
         Assert.assertEquals(Turnout.THROWN, t.getState());
@@ -133,7 +130,6 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         m = dnis.outbound.elementAt(1);
         Assert.assertTrue(m.isOutputCmdMessage());
         Assert.assertEquals(1, m.getOutputStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         r = DCCppReply.parseDCCppReply("Y 42 1");
         ((DCCppTurnout) t).message(r);
         Assert.assertEquals(Turnout.CLOSED, t.getState());
@@ -146,7 +142,6 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         m = dnis.outbound.elementAt(2);
         Assert.assertTrue(m.isOutputCmdMessage());
         Assert.assertEquals(1, m.getOutputStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         r = DCCppReply.parseDCCppReply("Y 42 1");
         ((DCCppTurnout) t).message(r);
         Assert.assertEquals(Turnout.THROWN, t.getState());
@@ -156,29 +151,8 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         m = dnis.outbound.elementAt(3);
         Assert.assertTrue(m.isOutputCmdMessage());
         Assert.assertEquals(0, m.getOutputStateInt());
-        Assert.assertEquals(Turnout.INCONSISTENT, t.getState());
         r = DCCppReply.parseDCCppReply("Y 42 0");
         ((DCCppTurnout) t).message(r);
-        Assert.assertEquals(Turnout.CLOSED, t.getState());
-    }
-
-    @Test
-    public void testDirectMode() throws Exception {
-        // Set mode to DIRECT
-        t.setFeedbackMode(Turnout.DIRECT);
-        Assert.assertEquals(Turnout.DIRECT, t.getFeedbackMode());
-        
-        // Check that state changes appropriately
-        t.setCommandedState(Turnout.THROWN);
-        DCCppMessage m = dnis.outbound.elementAt(0);
-        Assert.assertTrue(m.isAccessoryMessage());
-        Assert.assertEquals(1, m.getAccessoryStateInt());
-        Assert.assertEquals(Turnout.THROWN, t.getState());
-        
-        t.setCommandedState(Turnout.CLOSED);
-        m = dnis.outbound.elementAt(1);
-        Assert.assertTrue(m.isAccessoryMessage());
-        Assert.assertEquals(0, m.getAccessoryStateInt());
         Assert.assertEquals(Turnout.CLOSED, t.getState());
     }
 
@@ -193,8 +167,9 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
     }
 
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // infrastructure objects
@@ -202,11 +177,9 @@ public class DCCppTurnoutTest extends jmri.implementation.AbstractTurnoutTestBas
         t = new DCCppTurnout("DCCPP", 42, dnis);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

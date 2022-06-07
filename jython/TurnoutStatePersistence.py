@@ -4,13 +4,12 @@
 # when script is launched.
 #
 # This shows how .csv files can be both written and read-back complete with
-# a header row using the Apache Commons CSV library
+# a header row using the javacsv library
 #
 # This also shows how entries can be added to the log as opposed to using
 # 'print' commands
 #
 # Author: Matthew Harris, copyright 2011
-# Author: Randall Wood, copyright 2020
 # Part of the JMRI distribution
 #
 
@@ -19,7 +18,7 @@ import jmri
 import java
 import java.io
 import java.util
-import org.apache.commons.csv
+import com.csvreader
 from org.apache.log4j import Logger
 
 # Define turnout state file
@@ -44,26 +43,24 @@ class PersistTurnoutStateTask(jmri.implementation.AbstractShutDownTask):
     log = Logger.getLogger("jmri.jmrit.jython.exec.TurnoutStatePersistence.PersistTurnoutStateTask")
 
     # Define task to run at ShutDown
-    def run(self):
+    def execute(self):
 
         # Write an info entry to the log
-        self.log.info("Write turnout state to file: '%s'" % turnoutFile)
+        self.log.info("Write turnout state to file: {}}", turnoutFile)
 
         # Open file
-        
-        csvFormat = org.apache.commons.csv.CSVFormat.Builder.create(org.apache.commons.csv.CSVFormat.DEFAULT).setCommentMarker('#').build()
-        csvFile = org.apache.commons.csv.CSVPrinter(java.io.FileWriter(turnoutFile), csvFormat)
+        csvFile = com.csvreader.CsvWriter(turnoutFile)
 
         # Initialise counter
         turnoutCount = 0
 
         # Write header
-        csvFile.print("System Name")
-        csvFile.print("User Name")
-        csvFile.print("Comment")
-        csvFile.print("Is Inverted")
-        csvFile.print("Saved State")
-        csvFile.println()
+        csvFile.write("System Name")
+        csvFile.write("User Name")
+        csvFile.write("Comment")
+        csvFile.write("Is Inverted")
+        csvFile.write("Saved State")
+        csvFile.endRecord()
 
         # Loop through all known turnouts
         for to in turnouts.getNamedBeanSet():
@@ -73,30 +70,30 @@ class PersistTurnoutStateTask(jmri.implementation.AbstractShutDownTask):
                 self.log.debug("Storing turnout: {}", to.getSystemName())
 
             # Retrieve details to persist
-            csvFile.print(to.getSystemName())
-            csvFile.print(to.getUserName())
-            csvFile.print(to.getComment())
-            csvFile.print(self.booleanName(to.getInverted()))
-            csvFile.print(self.stateName(to.getState()))
+            csvFile.write(to.getSystemName())
+            csvFile.write(to.getUserName())
+            csvFile.write(to.getComment())
+            csvFile.write(self.booleanName(to.getInverted()))
+            csvFile.write(self.stateName(to.getState()))
 
             # Notify end of record
-            csvFile.println()
+            csvFile.endRecord()
 
             # Increment counter
             turnoutCount +=1
 
         # Write an info entry to the log
-        self.log.info("Stored state of %d turnouts" % turnoutCount)
+        self.log.info("Stored state of {} turnouts", turnoutCount)
 
         # Append a comment to the end of the file
-        csvFile.printComment("Written by JMRI version %s on %s" % (jmri.Version.name(), (java.util.Date()).toString()))
+        csvFile.writeComment("Written by JMRI version %s on %s" % (jmri.Version.name(), (java.util.Date()).toString()))
 
         # Flush the write buffer and close the file
         csvFile.flush()
         csvFile.close()
 
         # All done
-        return
+        return True     # True to allow ShutDown; False to abort
 
     # Function to convert state values to names
     def stateName(self, state):
@@ -140,24 +137,31 @@ class LoadTurnoutState(jmri.jmrit.automat.AbstractAutomaton):
         if inFile.exists():
 
             # It does, so load it
-            csvFormat = org.apache.commons.csv.CSVFormat.Builder.create(org.apache.commons.csv.CSVFormat.DEFAULT).setHeader().setCommentMarker('#').build()
-            csvFile = org.apache.commons.csv.CSVParser.parse(inFile, java.nio.charset.StandardCharsets.UTF_8, csvFormat)
+            csvFile = com.csvreader.CsvReader(turnoutFile)
+
+            # Configure csv reader
+            csvFile.setUseComments(True)
 
             # Write an info entry to the log
             self.log.info("Loading turnout state file: %s" % turnoutFile)
+
+            # Read the headers
+            csvFile.readHeaders()
 
             # Initialise counter
             turnoutCount = 0
 
             # Loop through each record
-            for record in csvFile.getRecords():
+            # The readRecord() method returns False when the end of the file
+            # is reached
+            while (csvFile.readRecord()):
 
                 # Read the record details
-                systemName = record.get("System Name")
-                userName = record.get("User Name")
-                comment = record.get("Comment")
-                inverted = self.booleanName(record.get("Is Inverted"))
-                savedState = self.stateValue(record.get("Saved State"))
+                systemName = csvFile.get("System Name")
+                userName = csvFile.get("User Name")
+                comment = csvFile.get("Comment")
+                inverted = self.booleanName(csvFile.get("Is Inverted"))
+                savedState = self.stateValue(csvFile.get("Saved State"))
                 
                 # Get reference to the turnout
                 turnout = turnouts.provideTurnout(systemName)

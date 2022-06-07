@@ -8,7 +8,6 @@ var jmri = null;
 var power = 0;
 
 $(document).ready(function() {
-    // note: the functions and parameter names must match exactly those in jquery.jmri.js
     jmri = $.JMRI({
         railroad: function(string) {
             $("#alert-websocket-connecting").addClass("hidden").removeClass("show");

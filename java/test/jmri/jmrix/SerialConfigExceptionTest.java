@@ -1,9 +1,10 @@
 package jmri.jmrix;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for SerialConfigException class.
@@ -23,14 +24,14 @@ public class SerialConfigExceptionTest {
       Assert.assertNotNull("SerialConfigException string constructor",new SerialConfigException("test exception"));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         JUnitUtil.tearDown();
    }

@@ -1,13 +1,21 @@
 package jmri.jmrix.nce.simulator;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.Arrays;
 
+import jmri.jmrix.nce.NceCmdStationMemory;
+import jmri.jmrix.nce.NceMessage;
+import jmri.jmrix.nce.NcePortController;
+import jmri.jmrix.nce.NceReply;
+import jmri.jmrix.nce.NceSystemConnectionMemo;
+import jmri.jmrix.nce.NceTrafficController;
+import jmri.jmrix.nce.NceTurnoutMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jmri.jmrix.nce.*;
-import jmri.util.ImmediatePipedOutputStream;
 
 /**
  * The following was copied from the NCE Power Pro System Reference Manual. It
@@ -115,9 +123,6 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
      */
     public SimulatorAdapter() {
         super(new NceSystemConnectionMemo());
-        option1Name = "Eprom"; // NOI18N
-        options.put(option1Name, new Option(Bundle.getMessage("EpromLabel"), option1Values, false));
-        setOptionState(option1Name, option1Values[1]);
     }
 
     /**
@@ -126,10 +131,10 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
     @Override
     public String openPort(String portName, String appName) {
         try {
-            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeI = new PipedOutputStream();
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
-            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeO = new PipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {
@@ -138,10 +143,6 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
         opened = true;
         return null; // indicates OK return
     }
-
-    // Warning: EPROM revision must match option1Values array index value.
-    String[] option1Values = new String[]{"2006 to Mar 1 2007", "Mar 3 2007 to Jan 24 2008", "Feb 2 2008 to Jan 30 2021", "Feb 22 2021 on"}; // NOI18N
-    int epromRevision = -1;
 
     /**
      * Set up all of the other objects to simulate operation with an NCE command
@@ -153,7 +154,6 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
         this.getSystemConnectionMemo().setNceTrafficController(tc);
         tc.setAdapterMemo(this.getSystemConnectionMemo());
         tc.connectPort(this);
-        tc.setSimulatorRunning(true);
 
         // setting binary mode
         this.getSystemConnectionMemo().configureCommandStation(NceTrafficController.OPTION_2006);
@@ -166,11 +166,6 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
                 | NceTrafficController.CMDS_CLOCK
                 | NceTrafficController.CMDS_ALL_SYS);
         tc.setUsbSystem(NceTrafficController.USB_SYSTEM_NONE);
-
-        epromRevision = Arrays.asList(option1Values).indexOf(getOptionState(option1Name));
-        if (epromRevision == -1) {
-            epromRevision = 1;  // default revision if no match
-        }
 
         this.getSystemConnectionMemo().configureManagers();
 
@@ -254,20 +249,22 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
             NceMessage m = readMessage();
             if (log.isDebugEnabled()) {
                 StringBuilder buf = new StringBuilder();
+                buf.append("Nce Simulator Thread received message: ");
                 for (int i = 0; i < m.getNumDataElements(); i++) {
-                    buf.append(Integer.toHexString(0xFF & m.getElement(i)).toUpperCase()).append(" ");
+                    buf.append(Integer.toHexString(0xFF & m.getElement(i))).append(" ");
                 }
-                log.debug("Nce simulator received message: {}", buf );
+                log.debug(buf.toString());
             }
             if (m != null) {
                 NceReply r = generateReply(m);
                 writeReply(r);
                 if (log.isDebugEnabled() && r != null) {
                     StringBuilder buf = new StringBuilder();
+                    buf.append("Nce Simulator Thread sent reply: ");
                     for (int i = 0; i < r.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & r.getElement(i)).toUpperCase()).append(" ");
+                        buf.append(Integer.toHexString(0xFF & r.getElement(i))).append(" ");
                     }
-                    log.debug("Nce simulator sent reply: {}", buf.toString());
+                    log.debug(buf.toString());
                 }
             }
         }
@@ -311,7 +308,8 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
     private NceReply generateReply(NceMessage m) {
         NceReply reply = new NceReply(this.getSystemConnectionMemo().getNceTrafficController());
         int command = m.getElement(0);
-        if (command < 0x80) {  // NOTE: NCE command station does not respond to
+        if (command < 0x80) // NOTE: NCE command station does not respond to
+        {
             return null;      // command less than 0x80 (times out)
         }
         if (command > 0xBF) { // Command is out of range
@@ -319,10 +317,10 @@ public class SimulatorAdapter extends NcePortController implements Runnable {
             return reply;
         }
         switch (command) {
-            case NceMessage.SW_REV_CMD:  // Get EPROM revision
-                reply.setElement(0, 0x06);    // Send EPROM revision based on Preference setting
+            case NceMessage.SW_REV_CMD:  // Get Eprom revision
+                reply.setElement(0, 0x06);    // Send Eprom revision 6 2 1
                 reply.setElement(1, 0x02);
-                reply.setElement(2, epromRevision);
+                reply.setElement(2, 0x01);
                 break;
             case NceMessage.READ_CLOCK_CMD: // Read clock
                 reply.setElement(0, 0x12);   // Return fixed time

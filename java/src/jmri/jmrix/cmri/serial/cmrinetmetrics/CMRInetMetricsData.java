@@ -77,16 +77,11 @@ package jmri.jmrix.cmri.serial.cmrinetmetrics;
         }
         
         /**
-         * Methods for Metric Error data.
+         * Methods for Metric Error data
          * 
-         */
-        
-        /**
-         * Get the error count.
-         * 
-         * @param metricName metric index.
-         * @return error count.
-         */
+         */        
+        // Get the error count
+        //---------------------
         synchronized public int getMetricErrValue( int metricName ){
             return CMRInetMetricErrCount[metricName];
         }
@@ -114,13 +109,10 @@ package jmri.jmrix.cmri.serial.cmrinetmetrics;
        
         /**
          * Methods for Metric data
-         */
-        
-        /**
-         * Get the metric value.
-         * @param metricName index.
-         * @return data value.
-         */
+         * 
+         */        
+        // Get the metric value
+        //---------------------
         synchronized public int getMetricDataValue( int metricName ){
             return CMRInetMetricDataCount[metricName];
         }

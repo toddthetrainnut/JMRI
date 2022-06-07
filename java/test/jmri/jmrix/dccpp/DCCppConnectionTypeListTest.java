@@ -1,14 +1,15 @@
 package jmri.jmrix.dccpp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * DCCppConnectionTypeListTest.java
  *
- * Test for the jmri.jmrix.dccpp.DCCppConnectionTypeList class
+ * Description: tests for the jmri.jmrix.dccpp.DCCppConnectionTypeList class
  *
  * @author Paul Bender
  * @author Mark Underwood
@@ -22,12 +23,12 @@ public class DCCppConnectionTypeListTest {
         Assert.assertNotNull(c);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

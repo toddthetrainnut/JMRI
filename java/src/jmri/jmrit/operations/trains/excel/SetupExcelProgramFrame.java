@@ -4,10 +4,13 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.util.ResourceBundle;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsManager;
@@ -74,7 +77,7 @@ public class SetupExcelProgramFrame extends OperationsFrame {
         addHelpMenu("package.jmri.jmrit.operations.Operations_SetupExcelProgram", true); // NOI18N
         setTitle(Bundle.getMessage("MenuItemSetupExcelProgram"));
 
-        initMinimumSize(new Dimension(Control.panelWidth500, Control.panelHeight300));
+        initMinimumSize(new Dimension(Control.panelWidth400, Control.panelHeight300));
     }
 
     /**
@@ -85,13 +88,17 @@ public class SetupExcelProgramFrame extends OperationsFrame {
      *
      */
     protected File selectFile(String directoryName) {
-        JFileChooser fc = new JFileChooser(InstanceManager.getDefault(OperationsManager.class).getFile(directoryName));
-        fc.setFileFilter(new FileNameExtensionFilter(Bundle.getMessage("ExcelProgramFiles"), "xls", "xlsm")); // NOI18N
+        JFileChooser fc = jmri.jmrit.XmlFile.userFileChooser(Bundle.getMessage("ExcelProgramFiles"), "xls", "xlsm"); // NOI18N
+        fc.setCurrentDirectory(InstanceManager.getDefault(OperationsManager.class).getFile(directoryName));
         fc.setDialogTitle(Bundle.getMessage("FindDesiredExcelFile"));
+        // when reusing the chooser, make sure new files are included
+        fc.rescanCurrentDirectory();
         int retVal = fc.showOpenDialog(null);
         // handle selection or cancel
         if (retVal == JFileChooser.APPROVE_OPTION) {
-            return fc.getSelectedFile();
+            File file = fc.getSelectedFile();
+            // Run the script from it's filename
+            return file;
         }
         return null;
     }

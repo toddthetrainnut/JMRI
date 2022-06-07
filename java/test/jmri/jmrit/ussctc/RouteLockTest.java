@@ -1,17 +1,14 @@
 package jmri.jmrit.ussctc;
 
 import java.util.*;
-
 import jmri.*;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for RouteLock class in the jmri.jmrit.ussctc package
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class RouteLockTest {
 
@@ -21,7 +18,7 @@ public class RouteLockTest {
 
         RouteLock lock = new RouteLock(list);
 
-        Assert.assertTrue(lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(lock.isLockClear());
     }
 
     @Test
@@ -37,7 +34,7 @@ public class RouteLockTest {
 
         RouteLock lock = new RouteLock(list);
 
-        Assert.assertTrue(lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(lock.isLockClear());
     }
 
     @Test
@@ -53,7 +50,7 @@ public class RouteLockTest {
 
         RouteLock lock = new RouteLock(list);
 
-        Assert.assertTrue( ! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue( ! lock.isLockClear());
     }
 
     @Test
@@ -66,7 +63,7 @@ public class RouteLockTest {
 
         RouteLock lock = new RouteLock(new String[]{"IH1"});
 
-        Assert.assertTrue( ! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue( ! lock.isLockClear());
     }
 
     @Test
@@ -79,7 +76,7 @@ public class RouteLockTest {
 
         RouteLock lock = new RouteLock("IH1");
 
-        Assert.assertTrue( ! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue( ! lock.isLockClear());
     }
 
     @Test
@@ -102,7 +99,7 @@ public class RouteLockTest {
 
         RouteLock lock = new RouteLock(list);
 
-        Assert.assertTrue( ! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue( ! lock.isLockClear());
     }
 
     @Test
@@ -117,7 +114,7 @@ public class RouteLockTest {
         BeanSetting b = new BeanSetting(t, Turnout.CLOSED);
         RouteLock lock = new RouteLock(new String[]{"IH1"}, new BeanSetting[]{b});
 
-        Assert.assertTrue( ! lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue( ! lock.isLockClear());
     }
 
     @Test
@@ -132,19 +129,19 @@ public class RouteLockTest {
         BeanSetting b = new BeanSetting(t, Turnout.THROWN);
         RouteLock lock = new RouteLock(new String[]{"IH1"}, new BeanSetting[]{b});
 
-        Assert.assertTrue( lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue( lock.isLockClear());
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
         JUnitUtil.initConfigureManager();
-        JUnitUtil.initInternalSignalHeadManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

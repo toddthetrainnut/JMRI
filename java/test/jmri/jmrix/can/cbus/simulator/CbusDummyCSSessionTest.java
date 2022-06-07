@@ -1,11 +1,13 @@
 package jmri.jmrix.can.cbus.simulator;
 
 import jmri.jmrix.can.CanSystemConnectionMemo;
+import jmri.jmrix.can.cbus.simulator.CbusDummyCS;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -22,7 +24,11 @@ public class CbusDummyCSSessionTest {
     
     @Test
     public void testFullSession() {
-        
+
+        CanSystemConnectionMemo memo = new CanSystemConnectionMemo();
+        TrafficControllerScaffold tc = new TrafficControllerScaffold();
+        memo.setTrafficController(tc);
+
         CbusDummyCS cs = new CbusDummyCS(memo);
         cs.setDelay(0);
         CbusDummyCSSession t = new CbusDummyCSSession(cs,1,1234,true);
@@ -47,30 +53,18 @@ public class CbusDummyCSSessionTest {
         
         t.dispose();
         cs.dispose();
-    }
-    
-    private TrafficControllerScaffold tc;
-    private CanSystemConnectionMemo memo;
+    }   
     
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        
-        memo = new CanSystemConnectionMemo();
-        tc = new TrafficControllerScaffold();
-        memo.setTrafficController(tc);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        
-        tc.terminateThreads();
-        memo.dispose();
-        tc = null;
-        memo = null;
         JUnitUtil.tearDown();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(CbusDummyCSTest.class);

@@ -1,14 +1,12 @@
 package jmri.jmrit.symbolicprog.tabbedframe;
 
 import java.io.File;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Check the names in an XML programmer file against the names.xml definitions
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2007, 2008
+ * @author	Bob Jacobsen Copyright (C) 2001, 2007, 2008
  * @see jmri.jmrit.XmlFile
  */
 public class CheckProgrammerNamesTest {
@@ -54,13 +52,13 @@ public class CheckProgrammerNamesTest {
     }
 
     @Test
-    @Disabled("Preexisting failing condition")
+    @Ignore("Preexisting failing condition")
     public void testESU() {
         checkAgainstNames(new File("xml/programmers/ESU.xml"));
     }
 
     @Test
-    @Disabled("Preexisting failing condition")
+    @Ignore("Preexisting failing condition")
     public void testZimo() {
         checkAgainstNames(new File("xml/programmers/Zimo.xml"));
     }
@@ -90,12 +88,12 @@ public class CheckProgrammerNamesTest {
         }
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
 

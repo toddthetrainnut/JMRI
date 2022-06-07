@@ -49,16 +49,27 @@ public class DnDTableImportExportHandler extends DnDTableExportHandler {
         if (!canImport(support)) {
             return false;
         }
-        TransferHandler.DropLocation loc = support.getDropLocation();
-        Component comp = support.getComponent();
-        if (!support.isDrop() || (!(loc instanceof JTable.DropLocation)) || (!(comp instanceof JTable))   ) {
+        if (log.isDebugEnabled()) {
+            JTable.DropLocation loc = (JTable.DropLocation)support.getDropLocation();
+            log.debug("importData: isDrop= {} location= {} row= {} col= {}", support.isDrop(), loc.getDropPoint(), loc.getRow(),loc.getColumn());
+        }
+        if (!support.isDrop()) {
             return false;            
         }
+        TransferHandler.DropLocation loc = support.getDropLocation();
+        if (!(loc instanceof JTable.DropLocation)) {
+            return false;
+        }
+        Component comp = support.getComponent();
+        if (!(comp instanceof JTable)) {
+            return false;            
+        }       
         JTable.DropLocation location = (JTable.DropLocation)loc;
-        log.debug("importData: location= {} row= {} col= {}", loc.getDropPoint(), location.getRow(),location.getColumn());
         JTable table = (JTable)comp;
-        int row = table.convertRowIndexToModel(location.getRow());
-        int col = table.convertColumnIndexToModel(location.getColumn());
+        int row = location.getRow();
+        int col = location.getColumn();
+        row = table.convertRowIndexToModel(row);
+        col = table.convertColumnIndexToModel(col);
         for (int i = 0; i < _skipColumns.length; i++) {
             if (_skipColumns[i] == col) {
                 return false;
@@ -69,8 +80,10 @@ public class DnDTableImportExportHandler extends DnDTableExportHandler {
             Object obj = trans.getTransferData(DataFlavor.stringFlavor);
             table.getModel().setValueAt(obj, row, col);
             return true;
-        } catch (UnsupportedFlavorException | IOException ufe) {
-            log.warn("DnDStringImportHandler.importData: {}", ufe.getMessage());
+        } catch (UnsupportedFlavorException ufe) {
+            log.warn("DnDStringImportHandler.importData: " + ufe.getMessage());
+        } catch (IOException ioe) {
+            log.warn("DnDStringImportHandler.importData: " + ioe.getMessage());
         }
         return false;
     }

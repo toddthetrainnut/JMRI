@@ -21,7 +21,7 @@ import javax.annotation.Nonnull;
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * @see jmri.Programmer
- * @author Bob Jacobsen Copyright (C) 2008, 2014
+ * @author	Bob Jacobsen Copyright (C) 2008, 2014
  */
 public class ProgrammerScaffold implements Programmer {
 
@@ -53,7 +53,6 @@ public class ProgrammerScaffold implements Programmer {
         return lastSeenMode;
     }
 
-    @Nonnull
     @Override
     public List<ProgrammingMode> getSupportedModes() {
         return Arrays.asList(
@@ -93,7 +92,6 @@ public class ProgrammerScaffold implements Programmer {
     public void removePropertyChangeListener(PropertyChangeListener p) {
     }
 
-    @Nonnull
     @Override
     public String decodeErrorCode(int i) {
         return null;

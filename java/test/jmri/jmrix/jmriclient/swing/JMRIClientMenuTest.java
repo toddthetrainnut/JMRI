@@ -1,18 +1,19 @@
 package jmri.jmrix.jmriclient.swing;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.jmriclient.JMRIClientSystemConnectionMemo;
+import jmri.jmrix.jmriclient.JMRIClientTrafficController;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of JMRIClientMenu
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class JMRIClientMenuTest {
 
@@ -27,7 +28,7 @@ public class JMRIClientMenuTest {
         Assert.assertNotNull("exists", action);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // tc = new JMRIClientTrafficController();
@@ -36,9 +37,8 @@ public class JMRIClientMenuTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
         // tc = null;
     }

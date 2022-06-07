@@ -3,14 +3,15 @@ package jmri.jmrix.secsi;
 import jmri.Manager.NameValidity;
 import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * JUnit tests for the SerialAddress utility class.
  *
- * @author Dave Duchamp Copyright 2004
+ * @author	Dave Duchamp Copyright 2004
  * @author Bob Jacobsen Copyright 2007
  */
 public class SerialAddressTest {
@@ -19,7 +20,7 @@ public class SerialAddressTest {
     private SecsiSystemConnectionMemo memo = null;
 
     @Test
-    public void testValidSystemNameFormat() {
+    public void testValidateSystemNameFormat() {
         Assert.assertTrue("valid format - VL2", NameValidity.VALID == SerialAddress.validSystemNameFormat("VL2", 'L', "V"));
         Assert.assertTrue("valid format - VL0B2", NameValidity.VALID == SerialAddress.validSystemNameFormat("VL0B2", 'L', "V"));
         Assert.assertTrue("invalid format - VL", NameValidity.VALID != SerialAddress.validSystemNameFormat("VL", 'L', "V"));
@@ -201,7 +202,7 @@ public class SerialAddressTest {
         //JUnitAppender.assertWarnMessage("node address field out of range in system name: VL128B7");
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
@@ -209,9 +210,8 @@ public class SerialAddressTest {
         tcis = new SerialTrafficControlScaffold(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

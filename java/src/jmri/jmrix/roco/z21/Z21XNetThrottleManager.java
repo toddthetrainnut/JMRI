@@ -15,7 +15,6 @@ public class Z21XNetThrottleManager extends jmri.jmrix.roco.RocoXNetThrottleMana
 
     /**
      * Constructor.
-     * @param memo system connection.
      */
     public Z21XNetThrottleManager(XNetSystemConnectionMemo memo) {
         super(memo);
@@ -28,7 +27,9 @@ public class Z21XNetThrottleManager extends jmri.jmrix.roco.RocoXNetThrottleMana
     @Override
     public void requestThrottleSetup(LocoAddress address, boolean control) {
         Z21XNetThrottle throttle;
-        log.debug("Requesting Throttle: {}",address);
+        if (log.isDebugEnabled()) {
+            log.debug("Requesting Throttle: " + address);
+        }
         if (throttles.containsKey(address)) {
             notifyThrottleKnown(throttles.get(address), address);
         } else {
@@ -38,6 +39,6 @@ public class Z21XNetThrottleManager extends jmri.jmrix.roco.RocoXNetThrottleMana
         }
     }
 
-    private static final Logger log = LoggerFactory.getLogger(Z21XNetThrottleManager.class);
+    private final static Logger log = LoggerFactory.getLogger(Z21XNetThrottleManager.class);
 
 }

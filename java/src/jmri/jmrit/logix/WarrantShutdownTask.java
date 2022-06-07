@@ -2,9 +2,6 @@ package jmri.jmrit.logix;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import jmri.InstanceManager;
 import jmri.implementation.AbstractShutDownTask;
 import jmri.jmrit.roster.Roster;
@@ -27,8 +24,8 @@ public class WarrantShutdownTask extends AbstractShutDownTask {
 
     HashMap<String, Boolean> _mergeCandidates;
     HashMap<String, RosterSpeedProfile> _mergeProfiles;
-    Map<String, Map<Integer, Boolean>> _anomalies;
-    
+    HashMap<String, HashMap<Integer, Boolean>> _anomalies;
+
     /**
      * Constructor specifies the warning message and action to take
      *
@@ -39,10 +36,12 @@ public class WarrantShutdownTask extends AbstractShutDownTask {
     }
 
     /**
-     * {@inheritDoc}
+     * Take the necessary action.
+     *
+     * @return true if the shutdown should continue, false to abort.
      */
     @Override
-    public Boolean call() {
+    public boolean execute() {
         WarrantPreferences preferences = WarrantPreferences.getDefault();
         switch (preferences.getShutdown()) {
             case MERGE_ALL:
@@ -50,13 +49,13 @@ public class WarrantShutdownTask extends AbstractShutDownTask {
                     if (_anomalies != null && _anomalies.size() > 0) {
                         makeMergeWindow();
                     }
-                    setDoRun(true);
+                    merge();
                 }
                 break;
             case PROMPT:
                 if (makeMergeCandidates()) {
                     makeMergeWindow();
-                    setDoRun(true);
+                    merge();
                 }
                 break;
             case NO_MERGE:
@@ -69,20 +68,26 @@ public class WarrantShutdownTask extends AbstractShutDownTask {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void run() {
-        if (isDoRun()) {
-            merge();
-        }
-    }
-
     private boolean makeMergeCandidates() {
         WarrantManager manager = InstanceManager.getDefault(WarrantManager.class);
         _mergeProfiles = manager.getMergeProfiles();
         if (_mergeProfiles == null || _mergeProfiles.isEmpty()) {
+            return false;
+        }
+        HashMap<String, RosterSpeedProfile> sessionProfiles = manager.getSessionProfiles();
+        if (sessionProfiles == null || sessionProfiles.isEmpty()) {
+            return false;
+        }
+        boolean allEmpty = true;
+        Iterator<RosterSpeedProfile> it = sessionProfiles.values().iterator();
+        while(it.hasNext()) {
+            RosterSpeedProfile profile = it.next();
+            if (profile.hasForwardSpeeds() || profile.hasReverseSpeeds()) {
+                allEmpty = false;
+                break;
+            }
+        }
+        if (allEmpty) {
             return false;
         }
         _anomalies = new HashMap<>();
@@ -90,17 +95,11 @@ public class WarrantShutdownTask extends AbstractShutDownTask {
         Iterator<java.util.Map.Entry<String, RosterSpeedProfile>> iter = _mergeProfiles.entrySet().iterator();
         while (iter.hasNext()) {
             java.util.Map.Entry<String, RosterSpeedProfile> entry = iter.next();
-            Map<Integer, Boolean> anomaly = MergePrompt.validateSpeedProfile(entry.getValue());
-            if (anomaly != null && anomaly.size() > 0) {
+            HashMap<Integer, Boolean> anomaly = MergePrompt.validateSpeedProfile(entry.getValue());
+            if (anomaly.size() > 0) {
                 _anomalies.put(entry.getKey(), anomaly);
             }
-            String rosterId = entry.getKey();
-            if (Roster.getDefault().getEntryForId(rosterId) != null) {
-                _mergeCandidates.put(rosterId, true);
-            }
-        }
-        if (_mergeCandidates.isEmpty()) {
-            return false;
+            _mergeCandidates.put(entry.getKey(), Boolean.valueOf(true));
         }
         return true;
     }
@@ -110,23 +109,31 @@ public class WarrantShutdownTask extends AbstractShutDownTask {
     }
 
     private void merge() {
-        for (Entry<String, Boolean> entry : _mergeCandidates.entrySet()) {
+        Iterator<java.util.Map.Entry<String, Boolean>> iter = _mergeCandidates.entrySet().iterator();
+        while (iter.hasNext()) {
+            java.util.Map.Entry<String, Boolean> entry = iter.next();
+            String id = entry.getKey();
             if (entry.getValue()) {
-                String id = entry.getKey();
                 RosterEntry rosterEntry = Roster.getDefault().entryFromTitle(id);
                 if (rosterEntry != null) {
                     rosterEntry.setSpeedProfile(_mergeProfiles.get(id));
-                    log.debug("Write SpeedProfile to Roster. id= {}", id);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Write SpeedProfile to Roster. id= {}", id);
+                    }
                 } else {
-                    log.debug("Unable to Write SpeedProfile to Roster. No RosterEntry for {}", id);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Unable to Write SpeedProfile to Roster. No RosterEntry for {}", id);
+                    }
                 }
             } else {
-                log.debug("SpeedProfile not merged to Roster. id= {}", entry.getKey());
+                if (log.isDebugEnabled()) {
+                    log.debug("SpeedProfile not merged to Roster. id= {}", id);
+                }
             }
         }
         Roster.getDefault().writeRoster();
     }
 
-    private static final Logger log = LoggerFactory.getLogger(WarrantShutdownTask.class);
+    private final static Logger log = LoggerFactory.getLogger(WarrantShutdownTask.class);
 
 }

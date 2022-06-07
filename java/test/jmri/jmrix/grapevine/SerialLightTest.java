@@ -2,14 +2,14 @@ package jmri.jmrix.grapevine;
 
 import jmri.implementation.AbstractLightTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * Tests for the jmri.jmrix.grapevine.SerialLight class.
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class SerialLightTest extends AbstractLightTestBase {
 
@@ -17,7 +17,7 @@ public class SerialLightTest extends AbstractLightTestBase {
     private SerialTrafficControlScaffold tcis = null;
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         // prepare an interface
@@ -47,7 +47,7 @@ public class SerialLightTest extends AbstractLightTestBase {
     }
 
     // reset objects
-    @AfterEach
+    @After
     public void tearDown() {
         tcis.terminateThreads();
         tcis = null;

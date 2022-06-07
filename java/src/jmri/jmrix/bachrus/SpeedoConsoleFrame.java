@@ -16,9 +16,24 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import javax.swing.*;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import jmri.AddressedProgrammer;
 import jmri.AddressedProgrammerManager;
 import jmri.CommandStation;
@@ -31,7 +46,6 @@ import jmri.PowerManager;
 import jmri.ProgListener;
 import jmri.Programmer;
 import jmri.ProgrammerException;
-import jmri.SpeedStepMode;
 import jmri.ThrottleListener;
 import jmri.jmrit.DccLocoAddressSelector;
 import jmri.jmrit.roster.RosterEntry;
@@ -82,9 +96,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         READ18,
         READ29,
     }
-
-    static final int SPEEDMATCHWARMUPTIME = 60;
-
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Member Variables">
     //<editor-fold defaultstate="collapsed" desc="General GUI Elements">
@@ -106,9 +117,9 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     protected JRadioButton numButton = new JRadioButton(Bundle.getMessage("Numeric"));
     protected JRadioButton dialButton = new JRadioButton(Bundle.getMessage("Dial"));
     protected SpeedoDial speedoDialDisplay = new SpeedoDial();
-    protected JCheckBox dirFwdButton = new JCheckBox(Bundle.getMessage("ScanForward"));
-    protected JCheckBox dirRevButton = new JCheckBox(Bundle.getMessage("ScanReverse"));
-    protected JCheckBox toggleGridButton = new JCheckBox(Bundle.getMessage("ToggleGrid"));
+    protected JRadioButton dirFwdButton = new JRadioButton(Bundle.getMessage("Forward"));
+    protected JRadioButton dirRevButton = new JRadioButton(Bundle.getMessage("Reverse"));
+    protected JRadioButton toggleGridButton = new JRadioButton(Bundle.getMessage("ToggleGrid"));
 
     protected JLabel statusLabel = new JLabel(" ");
     protected javax.swing.JLabel readerLabel = new javax.swing.JLabel();
@@ -326,7 +337,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     /**
      * Constructor for the SpeedoConsoleFrame
      *
-     * @param memo the memo for the connection the Speedo is using
+     * @param memo
      */
     public SpeedoConsoleFrame(SpeedoSystemConnectionMemo memo) {
         super();
@@ -352,7 +363,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         formatter = new SimpleDateFormat("EEE d MMM yyyy", Locale.getDefault());
         today = new Date();
         result = formatter.format(today);
-        String annotate = Bundle.getMessage("ProfileFor") + " "
+        String annotate = "Bachrus MTS-DCC " + Bundle.getMessage("ProfileFor") + " "
                 + locomotiveAddress.getNumber() + " " + Bundle.getMessage("CreatedOn")
                 + " " + result;
         printTitleText.setText(annotate);
@@ -508,7 +519,8 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             //TODO: TRW - readMomentumButton.setEnabled(false);
             statusLabel.setText(Bundle.getMessage("StatMain"));
         });
-        // added to left side later
+
+        basicPane.add(modePanel);
 
         //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="Speedometer Panel">
@@ -635,7 +647,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
 
         // Listen to read button
         readAddressButton.addActionListener(e -> readAddress());
-        
+
         profileAndSpeedMatchingPane.add(addrPane, BorderLayout.NORTH);
 
         //</editor-fold>
@@ -679,8 +691,8 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         // pane to wrap buttons and title
         JPanel profileSouthPane = new JPanel();
         profileSouthPane.setLayout(new BoxLayout(profileSouthPane, BoxLayout.Y_AXIS));
-        profileSouthPane.add(profileButtonPane);        
-
+        profileSouthPane.add(profileButtonPane);
+        
         profilePane.add(profileSouthPane, BorderLayout.SOUTH);
         
         // Pane to hold controls
@@ -776,9 +788,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             basicSpeedMatchReadMomentumButton.setEnabled(false);
         } else {
             basicSpeedMatchReadMomentumButton.setEnabled(true);
-
-            log.info("{} Connection:{}", Bundle.getMessage("StatNoDCC"), _memo.getUserName());
-            statusLabel.setText(Bundle.getMessage("StatNoDCC"));
         }
         
         basicSpeedMatchTargetStartSpeedUnit.setPreferredSize(new Dimension(35, 16));
@@ -1002,10 +1011,6 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                     circ = 50.2655F;
                     readerLabel.setText(Bundle.getMessage("Reader60"));
                     break;
-                case 103:
-                    circ = (float) ((5.95+0.9) * Math.PI);
-                    readerLabel.setText(Bundle.getMessage("Reader103"));
-                    break;
                 default:
                     speedTextField.setText(Bundle.getMessage("ReaderErr"));
                     LOG.error("Invalid reader type");
@@ -1032,26 +1037,17 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
      */
     protected void calcSpeed() {
         float thisScale = (selectedScale == -1) ? customScale : selectedScale;
-        if (series == 103) {
-            // KPF-Zeller
-            // calculate kph: r/sec * circumference converted to hours and kph in scaleFace()
-            sampleSpeed = (float) ( (count/8.) * circ * 3600 / 1.0E6 * thisScale * speedTestScaleFactor);
-            // data arrives at constant rate, so we don't average nor switch range
-            avSpeed = sampleSpeed;
-            log.debug("New KPF-Zeller sample: {} Average: {}", sampleSpeed, avSpeed);
-
-        } else if (series > 0 && series <= 6) {
-            // Bachrus
+        if (series > 0) {
             // Scale the data and calculate kph
             try {
                 freq = 1500000 / count;
                 sampleSpeed = (freq / 24) * circ * thisScale * 3600 / 1000000 * SPEED_TEST_SCALE_FACTOR;
             } catch (ArithmeticException ae) {
-                log.error("Exception calculating sampleSpeed", ae);
+                LOG.error("Exception calculating sampleSpeed " + ae);
             }
             avFn(sampleSpeed);
-            log.debug("New Bachrus sample: {} Average: {}", sampleSpeed, avSpeed);
-            log.debug("Acc: {} range: {}", acc, range);
+            LOG.debug("New sample: " + sampleSpeed + " Average: " + avSpeed);
+            LOG.debug("Acc: " + acc + " range: " + range);
             switchRange();
         }
     }
@@ -1059,7 +1055,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     /**
      * Calculates the average speed using a filter
      *
-     * @param speed the speed of the latest interaction
+     * @param speed
      */
     protected void avFn(float speed) {
         // Averaging function used for speed is
@@ -1137,7 +1133,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         }
         if (series > 0) {
             if ((currentSpeed < 0) || (currentSpeed > 999)) {
-                log.error("Calculated speed out of range: {}", currentSpeed);
+                LOG.error("Calculated speed out of range: " + currentSpeed);
                 speedTextField.setText("999");
             } else {
                 // Final smoothing as applied by Bachrus Console. Don't update display
@@ -1227,7 +1223,8 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             locomotiveAddress = addrSelector.getAddress();
             setTitle();
         } else {
-            locomotiveAddress = new DccLocoAddress(0, true);
+            locomotiveAddress = new DccLocoAddress(0, false);
+            setTitle();
         }
     }
 
@@ -1255,9 +1252,9 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Power Manager Helper Functions">
     /**
-     * {@inheritDoc}
+     * Property change event handler for the Power Manager
      *
-     * Handles property changes from the power manager.
+     * @param evt
      */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -1271,12 +1268,15 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         if (pm == null) {
             return;
         }
-        if (pm.getPower() == PowerManager.ON) {
-            trackPowerButton.setText(Bundle.getMessage("PowerDown"));
-            //statusLabel.setText(Bundle.getMessage("StatTOn"));
-        } else if (pm.getPower() == PowerManager.OFF) {
-            trackPowerButton.setText(Bundle.getMessage("PowerUp"));
-            //statusLabel.setText(Bundle.getMessage("StatTOff"));
+        try {
+            if (pm.getPower() == PowerManager.ON) {
+                trackPowerButton.setText(Bundle.getMessage("PowerDown"));
+                //statusLabel.setText(Bundle.getMessage("StatTOn"));
+            } else if (pm.getPower() == PowerManager.OFF) {
+                trackPowerButton.setText(Bundle.getMessage("PowerUp"));
+                //statusLabel.setText(Bundle.getMessage("StatTOff"));
+            }
+        } catch (JmriException ex) {
         }
     }
 
@@ -1294,7 +1294,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                 pm.setPower(PowerManager.OFF);
             }
         } catch (JmriException e) {
-            log.error("Exception during power on: {}", e.toString());
+            LOG.error("Exception during power on: " + e.toString());
         }
     }
     //</editor-fold>
@@ -1323,7 +1323,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
                     resetGraphButton.setEnabled(false);
                     profileGraphPane.repaint();
                     profileTimer.start();
-                    log.info("Requesting throttle");
+                    LOG.info("Requesting throttle");
                     boolean requestOK = jmri.InstanceManager.throttleManagerInstance().requestThrottle(locomotiveAddress, this, true);
                     if (!requestOK) {
                         LOG.error("Loco Address in use, throttle request failed.");
@@ -1338,7 +1338,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     }
 
     /**
-     * Profile timer timeout handler
+     * Time to change to next speed increment.
      */
     protected synchronized void profileTimeout() {
         switch (profileState) {
@@ -1467,10 +1467,10 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         stopTimers();
 
         throttle = t;
-        log.info("Throttle acquired");
-        throttle.setSpeedStepMode(SpeedStepMode.NMRA_DCC_28);
-        if (throttle.getSpeedStepMode() != SpeedStepMode.NMRA_DCC_28) {
-            log.error("Failed to set 28 step mode");
+        LOG.info("Throttle acquired");
+        throttle.setSpeedStepMode(DccThrottle.SpeedStepMode28);
+        if (throttle.getSpeedStepMode() != DccThrottle.SpeedStepMode28) {
+            LOG.error("Failed to set 28 step mode");
             statusLabel.setText(Bundle.getMessage("ThrottleError28"));
             InstanceManager.throttleManagerInstance().releaseThrottle(throttle, this);
             return;
@@ -1480,7 +1480,8 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         try {
             pm.setPower(PowerManager.ON);
         } catch (JmriException e) {
-            log.error("Exception during power on: {}", e.toString());
+            LOG.error("Exception during power on: " + e.toString());
+            return;
         }
 
         throttleIncrement = throttle.getSpeedIncrement();
@@ -1518,15 +1519,27 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
     }
     
     /**
-     * Called when we must decide to steal the throttle for the requested address. Since this is a
-     * an automatically stealing implementation, the throttle will be automatically stolen.
+     * @deprecated since 4.15.7; use
+     * #notifyDecisionRequired(LocoAddress, DecisionType) instead
+     * 
+     * @param address the requested address
+     */
+    @Deprecated
+    @Override
+    public void notifyStealThrottleRequired(jmri.LocoAddress address) {
+    }
+    
+    /**
+     * Called when we must decide whether to steal the throttle for the requested address. 
+     * This is an automatically stealing implementation, so the throttle will be automatically stolen
+     *
+     * @param address the requested address
      */
     @Override
     public void notifyDecisionRequired(jmri.LocoAddress address, DecisionType question) {
-        InstanceManager.throttleManagerInstance().responseThrottleDecision(address, this, DecisionType.STEAL );
+        InstanceManager.throttleManagerInstance().responseThrottleDecision(address, this, DecisionType.STEAL);
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="Other Timers">
     javax.swing.Timer replyTimer = null;
     javax.swing.Timer displayTimer = null;
@@ -1636,6 +1649,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         startRead("3");
     }
 
+
     /**
      * Starts reading a CV using the service mode programmer
      *
@@ -1645,7 +1659,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
         try {
             prog.readCV(String.valueOf(cv), this);
         } catch (ProgrammerException e) {
-            log.error("Exception reading CV {}", cv, e);
+            LOG.error("Exception reading CV " + cv + " " + e);
         }
     }
 
@@ -1725,7 +1739,7 @@ public class SpeedoConsoleFrame extends JmriJFrame implements SpeedoListener,
             }
         } else {
             // Error during programming
-            log.error("Status not OK during {}: {}", progState.toString(), status);
+            LOG.error("Status not OK during " + progState.toString() + ": " + status);
             //profileAddressField.setText("Error");
             statusLabel.setText(Bundle.getMessage("ProgError"));
             progState = ProgState.IDLE;

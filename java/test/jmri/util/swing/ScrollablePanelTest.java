@@ -1,9 +1,10 @@
 package jmri.util.swing;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -23,16 +24,17 @@ public class ScrollablePanelTest {
         
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }
 
-    // private final static Logger log = LoggerFactory.getLogger(ScrollablePanelTest.class);
+    // private final static Logger log = LoggerFactory.getLogger(SwingSettingsTest.class);
 
 }

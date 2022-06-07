@@ -2,17 +2,20 @@ package jmri.jmrit.display;
 
 import java.awt.GraphicsEnvironment;
 import java.io.File;
-
 import jmri.ConfigureManager;
 import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
+ * PanelEditorTest.java
+ * <p>
+ * Description:
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class PanelEditorTest {
 
@@ -20,7 +23,7 @@ public class PanelEditorTest {
     public void testShow() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // load and display
-        File f = new File("java/test/jmri/jmrit/display/valid/PanelEditorTest1.xml");
+        File f = new File("java/test/jmri/jmrit/display/verify/PanelEditorTest1.xml");
         InstanceManager.getDefault(ConfigureManager.class).load(f);
     }
 
@@ -42,7 +45,8 @@ public class PanelEditorTest {
 
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -51,11 +55,8 @@ public class PanelEditorTest {
         JUnitUtil.initConfigureManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.resetWindows(false,false);
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

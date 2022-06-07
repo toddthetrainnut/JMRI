@@ -27,11 +27,22 @@ public class TrafficController implements jmri.CommandStation {
 
     /**
      * Create a new Direct TrafficController instance.
-     * @param memo system connection.
      */
     public TrafficController(DirectSystemConnectionMemo memo) {
         super();
         _memo = memo;
+    }
+
+    /**
+     * Static function returning the instance to use.
+     *
+     * @return The registered instance for general use, if need be creating one.
+     * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI
+     * multi-system support structure
+     */
+    @Deprecated
+    static public TrafficController instance() {
+        return null;
     }
 
     /**
@@ -69,11 +80,11 @@ public class TrafficController implements jmri.CommandStation {
         try {
             if (ostream != null) {
                 if (log.isDebugEnabled()) {
-                    StringBuilder f = new StringBuilder();
+                    StringBuilder f = new StringBuilder("write message: ");
                     for (int i = 0; i < msg.length; i++) {
                         f.append(Integer.toHexString(0xFF & msg[i])).append(" ");
                     }
-                    log.debug("write message: {}", f);
+                    log.debug(f.toString());
                 }
                 ostream.write(msg);
             } else {

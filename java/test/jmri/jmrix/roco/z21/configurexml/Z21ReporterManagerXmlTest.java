@@ -1,14 +1,15 @@
 package jmri.jmrix.roco.z21.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Z21ReporterManagerXml.java
  *
- * Test for the Z21ReporterManagerXml class
+ * Description: tests for the Z21ReporterManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class Z21ReporterManagerXmlTest {
       Assert.assertNotNull("Z21ReporterManagerXml constructor",new Z21ReporterManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

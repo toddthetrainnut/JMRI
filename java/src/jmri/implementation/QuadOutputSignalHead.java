@@ -85,7 +85,7 @@ public class QuadOutputSignalHead extends TripleTurnoutSignalHead {
     }
 
     // claim support for Lunar aspects
-    private final static int[] validStates = new int[]{
+    final static private int[] validStates = new int[]{
         DARK,
         RED,
         LUNAR,
@@ -96,45 +96,26 @@ public class QuadOutputSignalHead extends TripleTurnoutSignalHead {
         FLASHYELLOW,
         FLASHGREEN
     };
-    private static final String[] validStateKeys = new String[]{
-            "SignalHeadStateDark",
-            "SignalHeadStateRed",
-            "SignalHeadStateLunar",
-            "SignalHeadStateYellow",
-            "SignalHeadStateGreen",
-            "SignalHeadStateFlashingRed",
-            "SignalHeadStateFlashingLunar",
-            "SignalHeadStateFlashingYellow",
-            "SignalHeadStateFlashingGreen"
+    final static private String[] validStateNames = new String[]{
+        Bundle.getMessage("SignalHeadStateDark"),
+        Bundle.getMessage("SignalHeadStateRed"),
+        Bundle.getMessage("SignalHeadStateLunar"),
+        Bundle.getMessage("SignalHeadStateYellow"),
+        Bundle.getMessage("SignalHeadStateGreen"),
+        Bundle.getMessage("SignalHeadStateFlashingRed"),
+        Bundle.getMessage("SignalHeadStateFlashingLunar"),
+        Bundle.getMessage("SignalHeadStateFlashingYellow"),
+        Bundle.getMessage("SignalHeadStateFlashingGreen")
     };
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int[] getValidStates() {
         return Arrays.copyOf(validStates, validStates.length);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String[] getValidStateKeys() {
-        return Arrays.copyOf(validStateKeys, validStateKeys.length); // includes int for Lunar
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String[] getValidStateNames() {
-        String[] stateNames = new String[validStateKeys.length];
-        int i = 0;
-        for (String stateKey : validStateKeys) {
-            stateNames[i++] = Bundle.getMessage(stateKey);
-        }
-        return stateNames;
+        return Arrays.copyOf(validStateNames, validStateNames.length);
     }
 
     @Override

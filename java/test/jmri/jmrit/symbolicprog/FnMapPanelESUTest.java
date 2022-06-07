@@ -2,14 +2,13 @@ package jmri.jmrit.symbolicprog;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JLabel;
-
 import jmri.jmrit.roster.RosterEntry;
-
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -41,11 +40,12 @@ public class FnMapPanelESUTest {
         t.dispose();
     }
 
+    // The minimal setup for log4J
     jmri.Programmer p;
     CvTableModel cvtm;
     VariableTableModel tableModel;
     
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.initDebugProgrammerManager();
@@ -59,7 +59,7 @@ public class FnMapPanelESUTest {
         );
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         p = null;
         tableModel.dispose();

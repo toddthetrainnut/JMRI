@@ -1,21 +1,20 @@
 package jmri.jmrit.speedometer;
 
 import java.awt.GraphicsEnvironment;
-
 import javax.swing.JFrame;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import org.netbeans.jemmy.operators.JFrameOperator;
 
 
 /**
  * Test simple functioning of SpeedometerAction
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class SpeedometerActionTest {
 
@@ -33,11 +32,11 @@ public class SpeedometerActionTest {
         Assert.assertNotNull("exists", action);
     }
 
-    @Test
+    @Test(expected=java.lang.IllegalArgumentException.class)
     public void testMakePanel(){
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         SpeedometerAction action = new SpeedometerAction("Test SpeedometerAction");
-        Assert.assertThrows(IllegalArgumentException.class, () -> action.makePanel());
+        action.makePanel(); // this should throw an IllegalArgumentException.
     }
 
     @Test
@@ -57,15 +56,12 @@ public class SpeedometerActionTest {
 
 
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
-    public void tearDown() {
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.tearDown();
-    }
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

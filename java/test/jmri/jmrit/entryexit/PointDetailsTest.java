@@ -4,7 +4,6 @@ import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import jmri.InstanceManager;
 import jmri.NamedBean;
 import jmri.Sensor;
@@ -13,11 +12,11 @@ import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.jmrit.display.layoutEditor.LayoutBlockManager;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -71,7 +70,7 @@ public class PointDetailsTest {
         Assert.assertEquals("Button is active", nxState, EntryExitPairs.NXBUTTONINACTIVE);  // NOI18N
     }
 
-    @BeforeAll
+    @BeforeClass
     public static void setUp() throws Exception {
         JUnitUtil.setUp();
 
@@ -86,14 +85,9 @@ public class PointDetailsTest {
         sm = InstanceManager.getDefault(SensorManager.class);
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDown() {
         panels.forEach((name, panel) -> JUnitUtil.dispose(panel));
-        JUnitUtil.clearRouteThreads();
-        JUnitUtil.clearTurnoutThreads();
-        JUnitUtil.removeMatchingThreads("Routing stabilising timer");
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

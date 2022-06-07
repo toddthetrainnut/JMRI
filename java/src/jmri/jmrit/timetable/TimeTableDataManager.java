@@ -36,7 +36,7 @@ public class TimeTableDataManager {
         if (loadData) {
             _lockCalculate = true;
             if (!jmri.jmrit.timetable.configurexml.TimeTableXml.doLoad()) {
-                log.error("Unable to load the time table data");  // NOI18N
+                log.error("Unabled to load the time table data");  // NOI18N
             }
             _lockCalculate = false;
         }
@@ -55,38 +55,38 @@ public class TimeTableDataManager {
     }
 
     // Exception key words
-    public static final String CLOCK_LT_1 = "FastClockLt1";    // NOI18N
-    public static final String DURATION_LT_0 = "DurationLt0";    // NOI18N
-    public static final String THROTTLES_LT_0 = "ThrottlesLt0";    // NOI18N
-    public static final String THROTTLES_IN_USE = "ThrottlesInUse";    // NOI18N
-    public static final String SCALE_NF = "ScaleNotFound";    // NOI18N
-    public static final String TIME_OUT_OF_RANGE = "TimeOutOfRange";    // NOI18N
-    public static final String SEGMENT_CHANGE_ERROR = "SegmentChangeError";    // NOI18N
-    public static final String DISTANCE_LT_0 = "DistanceLt0";    // NOI18N
-    public static final String SIDINGS_LT_0 = "SidingsLt0";    // NOI18N
-    public static final String STAGING_LT_0 = "StagingLt0";    // NOI18N
-    public static final String STAGING_IN_USE = "StagingInUse";    // NOI18N
-    public static final String START_HOUR_RANGE = "StartHourRange";    // NOI18N
-    public static final String DURATION_RANGE = "DurationRange";    // NOI18N
-    public static final String DEFAULT_SPEED_LT_0 = "DefaultSpeedLt0";    // NOI18N
-    public static final String START_TIME_FORMAT = "StartTimeFormat";    // NOI18N
-    public static final String START_TIME_RANGE = "StartTimeRange";    // NOI18N
-    public static final String THROTTLE_RANGE = "ThrottleRange";    // NOI18N
-    public static final String STAGING_RANGE = "StagingRange";    // NOI18N
-    public static final String STOP_DURATION_LT_0 = "StopDurationLt0";    // NOI18N
-    public static final String NEXT_SPEED_LT_0 = "NextSpeedLt0";    // NOI18N
-    public static final String LAYOUT_HAS_CHILDREN = "LayoutHasChildren";    // NOI18N
-    public static final String TYPE_HAS_REFERENCE = "TypeHasReference";    // NOI18N
-    public static final String SEGMENT_HAS_CHILDREN = "SegmentHaSChildren";    // NOI18N
-    public static final String STATION_HAS_REFERENCE = "StationHasReference";    // NOI18N
-    public static final String SCHEDULE_HAS_CHILDREN = "ScheduleHasChildren";    // NOI18N
-    public static final String TRAIN_HAS_CHILDREN = "TrainHasChildren";    // NOI18N
-    public static final String TYPE_ADD_FAIL = "TypeAddFail";    // NOI18N
-    public static final String SEGMENT_ADD_FAIL = "SegmentAddFail";    // NOI18N
-    public static final String STATION_ADD_FAIL = "StationAddFail";    // NOI18N
-    public static final String SCHEDULE_ADD_FAIL = "ScheduleAddFail";    // NOI18N
-    public static final String TRAIN_ADD_FAIL = "TrainAddFail";    // NOI18N
-    public static final String STOP_ADD_FAIL = "StopAddFail";    // NOI18N
+    public final String CLOCK_LT_1 = "FastClockLt1";    // NOI18N
+    public final String DURATION_LT_0 = "DurationLt0";    // NOI18N
+    public final String THROTTLES_LT_0 = "ThrottlesLt0";    // NOI18N
+    public final String THROTTLES_IN_USE = "ThrottlesInUse";    // NOI18N
+    public final String SCALE_NF = "ScaleNotFound";    // NOI18N
+    public final String TIME_OUT_OF_RANGE = "TimeOutOfRange";    // NOI18N
+    public final String SEGMENT_CHANGE_ERROR = "SegmentChangeError";    // NOI18N
+    public final String DISTANCE_LT_0 = "DistanceLt0";    // NOI18N
+    public final String SIDINGS_LT_0 = "SidingsLt0";    // NOI18N
+    public final String STAGING_LT_0 = "StagingLt0";    // NOI18N
+    public final String STAGING_IN_USE = "StagingInUse";    // NOI18N
+    public final String START_HOUR_RANGE = "StartHourRange";    // NOI18N
+    public final String DURATION_RANGE = "DurationRange";    // NOI18N
+    public final String DEFAULT_SPEED_LT_0 = "DefaultSpeedLt0";    // NOI18N
+    public final String START_TIME_FORMAT = "StartTimeFormat";    // NOI18N
+    public final String START_TIME_RANGE = "StartTimeRange";    // NOI18N
+    public final String THROTTLE_RANGE = "ThrottleRange";    // NOI18N
+    public final String STAGING_RANGE = "StagingRange";    // NOI18N
+    public final String STOP_DURATION_LT_0 = "StopDurationLt0";    // NOI18N
+    public final String NEXT_SPEED_LT_0 = "NextSpeedLt0";    // NOI18N
+    public final String LAYOUT_HAS_CHILDREN = "LayoutHasChildren";    // NOI18N
+    public final String TYPE_HAS_REFERENCE = "TypeHasReference";    // NOI18N
+    public final String SEGMENT_HAS_CHILDREN = "SegmentHaSChildren";    // NOI18N
+    public final String STATION_HAS_REFERENCE = "StationHasReference";    // NOI18N
+    public final String SCHEDULE_HAS_CHILDREN = "ScheduleHasChildren";    // NOI18N
+    public final String TRAIN_HAS_CHILDREN = "TrainHasChildren";    // NOI18N
+    public final String TYPE_ADD_FAIL = "TypeAddFail";    // NOI18N
+    public final String SEGMENT_ADD_FAIL = "SegmentAddFail";    // NOI18N
+    public final String STATION_ADD_FAIL = "StationAddFail";    // NOI18N
+    public final String SCHEDULE_ADD_FAIL = "ScheduleAddFail";    // NOI18N
+    public final String TRAIN_ADD_FAIL = "TrainAddFail";    // NOI18N
+    public final String STOP_ADD_FAIL = "StopAddFail";    // NOI18N
 
     private TreeMap<Integer, Layout> _layoutMap = new TreeMap<>();
     private TreeMap<Integer, TrainType> _trainTypeMap = new TreeMap<>();
@@ -118,11 +118,9 @@ public class TimeTableDataManager {
     }
 
     /**
-     * Add a new station.
+     * Add a new station
      * Create a SegmentStation instance.
      * Add it to the SegmentStation list.
-     * @param id map id.
-     * @param newStation the new station.
      */
     public void addStation(int id, Station newStation) {
         _stationMap.put(id, newStation);
@@ -146,13 +144,13 @@ public class TimeTableDataManager {
 
     /**
      * Delete the layout if there are no train types, segments or schedules.
-     * @param id The layout id.
+     * param id The layout id.
      * @throws IllegalArgumentException LAYOUT_HAS_CHILDREN
      */
-    public void deleteLayout(int id) {
-        if (!getTrainTypes(id, false).isEmpty()
-                || !getSegments(id, false).isEmpty()
-                || !getSchedules(id, false).isEmpty()) {
+    public void deleteLayout(int id) throws IllegalArgumentException {
+        if (getTrainTypes(id, false).size() > 0
+                || getSegments(id, false).size() > 0
+                || getSchedules(id, false).size() > 0) {
             throw new IllegalArgumentException(LAYOUT_HAS_CHILDREN);
         }
         _layoutMap.remove(id);
@@ -160,11 +158,11 @@ public class TimeTableDataManager {
 
     /**
      * Delete the train type if there are no train references.
-     * @param id The train type id.
+     * param id The train type id.
      * @throws IllegalArgumentException TYPE_HAS_REFERENCE
      */
-    public void deleteTrainType(int id) {
-        if (!getTrains(0, id, false).isEmpty()) {
+    public void deleteTrainType(int id) throws IllegalArgumentException {
+        if (getTrains(0, id, false).size() > 0) {
             throw new IllegalArgumentException(TYPE_HAS_REFERENCE);
         }
         _trainTypeMap.remove(id);
@@ -172,11 +170,11 @@ public class TimeTableDataManager {
 
     /**
      * Delete the segment if it has no stations.
-     * @param id The segment id.
+     * param id The segment id.
      * @throws IllegalArgumentException SEGMENT_HAS_CHILDREN
      */
-    public void deleteSegment(int id) {
-        if (!getStations(id, false).isEmpty()) {
+    public void deleteSegment(int id) throws IllegalArgumentException {
+        if (getStations(id, false).size() > 0) {
             throw new IllegalArgumentException(SEGMENT_HAS_CHILDREN);
         }
         _segmentMap.remove(id);
@@ -184,11 +182,11 @@ public class TimeTableDataManager {
 
     /**
      * Delete the station if there are no stop references.
-     * @param id The station id.
+     * param id The station id.
      * @throws IllegalArgumentException STATION_HAS_REFERENCE
      */
-    public void deleteStation(int id) {
-        if (!getStops(0, id, false).isEmpty()) {
+    public void deleteStation(int id) throws IllegalArgumentException {
+        if (getStops(0, id, false).size() > 0) {
             throw new IllegalArgumentException(STATION_HAS_REFERENCE);
         }
 
@@ -208,11 +206,11 @@ public class TimeTableDataManager {
 
     /**
      * Delete the schedule if it has no trains.
-     * @param id The schedule id.
+     * param id The schedule id.
      * @throws IllegalArgumentException SCHEDULE_HAS_CHILDREN
      */
-    public void deleteSchedule(int id) {
-        if (!getTrains(id, 0, false).isEmpty()) {
+    public void deleteSchedule(int id) throws IllegalArgumentException {
+        if (getTrains(id, 0, false).size() > 0) {
             throw new IllegalArgumentException(SCHEDULE_HAS_CHILDREN);
         }
         _scheduleMap.remove(id);
@@ -220,11 +218,11 @@ public class TimeTableDataManager {
 
     /**
      * Delete the train if it has no stops.
-     * @param id The train id.
+     * param id The train id.
      * @throws IllegalArgumentException TRAIN_HAS_CHILDREN
      */
-    public void deleteTrain(int id) {
-        if (!getStops(id, 0, false).isEmpty()) {
+    public void deleteTrain(int id) throws IllegalArgumentException {
+        if (getStops(id, 0, false).size() > 0) {
             throw new IllegalArgumentException(TRAIN_HAS_CHILDREN);
         }
         _trainMap.remove(id);
@@ -232,7 +230,7 @@ public class TimeTableDataManager {
 
     /**
      * Delete the stop and update train schedule.
-     * @param id The stop id.
+     * param id The stop id.
      */
     public void deleteStop(int id) {
         int trainId = getStop(id).getTrainId();
@@ -312,7 +310,7 @@ public class TimeTableDataManager {
      * @param sort If true, sort the resulting list
      * @return a list of layouts
      */
-    public List<Layout> getLayouts(boolean sort) {
+    public ArrayList<Layout> getLayouts(boolean sort) {
         // No foreign keys
         ArrayList<Layout> list = new ArrayList<>(_layoutMap.values());
         if (sort) {
@@ -327,7 +325,7 @@ public class TimeTableDataManager {
      * @param sort If true, sort the resulting list
      * @return a list of train types
      */
-    public List<TrainType> getTrainTypes(int fKeyLayout, boolean sort) {
+    public ArrayList<TrainType> getTrainTypes(int fKeyLayout, boolean sort) {
         ArrayList<TrainType> list = new ArrayList<>();
         for (TrainType type : _trainTypeMap.values()) {
             if (fKeyLayout == 0 || fKeyLayout == type.getLayoutId()) {
@@ -346,7 +344,7 @@ public class TimeTableDataManager {
      * @param sort If true, sort the resulting list
      * @return a list of segments
      */
-    public List<Segment> getSegments(int fKeyLayout, boolean sort) {
+    public ArrayList<Segment> getSegments(int fKeyLayout, boolean sort) {
         ArrayList<Segment> list = new ArrayList<>();
         for (Segment segment : _segmentMap.values()) {
             if (fKeyLayout == 0 || fKeyLayout == segment.getLayoutId()) {
@@ -365,7 +363,7 @@ public class TimeTableDataManager {
      * @param sort If true, sort the resulting list
      * @return a list of stations
      */
-    public List<Station> getStations(int fKeySegment, boolean sort) {
+    public ArrayList<Station> getStations(int fKeySegment, boolean sort) {
         ArrayList<Station> list = new ArrayList<>();
         for (Station station : _stationMap.values()) {
             if (fKeySegment == 0 || fKeySegment == station.getSegmentId()) {
@@ -384,7 +382,7 @@ public class TimeTableDataManager {
      * @param sort If true, sort the resulting list
      * @return a list of schedules
      */
-    public List<Schedule> getSchedules(int fKeyLayout, boolean sort) {
+    public ArrayList<Schedule> getSchedules(int fKeyLayout, boolean sort) {
         ArrayList<Schedule> list = new ArrayList<>();
         for (Schedule schedule : _scheduleMap.values()) {
             if (fKeyLayout == 0 || fKeyLayout == schedule.getLayoutId()) {
@@ -404,7 +402,7 @@ public class TimeTableDataManager {
      * @param sort If true, sort the resulting list
      * @return a list of trains
      */
-    public List<Train> getTrains(int fKeySchedule, int fKeyType, boolean sort) {
+    public ArrayList<Train> getTrains(int fKeySchedule, int fKeyType, boolean sort) {
         ArrayList<Train> list = new ArrayList<>();
         for (Train train : _trainMap.values()) {
             if ((fKeySchedule == 0 && fKeyType == 0)
@@ -426,7 +424,7 @@ public class TimeTableDataManager {
      * @param sort If true, sort the resulting list
      * @return a list of stops
      */
-    public List<Stop> getStops(int fKeyTrain, int fKeyStation, boolean sort) {
+    public ArrayList<Stop> getStops(int fKeyTrain, int fKeyStation, boolean sort) {
         ArrayList<Stop> list = new ArrayList<>();
         for (Stop stop : _stopMap.values()) {
             if ((fKeyTrain == 0 && fKeyStation == 0)
@@ -464,7 +462,6 @@ public class TimeTableDataManager {
      * Update the stops for all of the trains for this layout.
      * Invoked by updates to fast clock speed, metric, scale and station distances.
      * @param layoutId The id for the layout that has been updated.
-     * @param updateStops True for update
      */
     void calculateLayoutTrains(int layoutId, boolean updateStops) {
         if (_lockCalculate) return;
@@ -476,7 +473,6 @@ public class TimeTableDataManager {
     /**
      * Update the stop times for all of the trains that use this schedule.
      * @param scheduleId The id for the schedule that has been updated.
-     * @param updateStops True for update
      */
     void calculateScheduleTrains(int scheduleId, boolean updateStops) {
         if (_lockCalculate) return;
@@ -495,12 +491,12 @@ public class TimeTableDataManager {
      * message includes the segment name and the station name.  The tilde
      * character is used as the string separator.
      */
-    public void calculateTrain(int trainId, boolean updateStops) {
+    public void calculateTrain(int trainId, boolean updateStops) throws IllegalArgumentException {
         if (_lockCalculate) return;
         Train train = getTrain(trainId);
         Schedule schedule = getSchedule(train.getScheduleId());
         Layout layout = getLayout(schedule.getLayoutId());
-        List<Stop> stops = getStops(trainId, 0, true);
+        ArrayList<Stop> stops = getStops(trainId, 0, true);
 
         double smile = layout.getScaleMK();
         int startHH = schedule.getStartHour();
@@ -659,5 +655,5 @@ public class TimeTableDataManager {
         }
     }
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TimeTableDataManager.class);
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TimeTableDataManager.class);
 }

@@ -1,62 +1,70 @@
 package jmri.jmrix.dccpp;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.dccpp.DCCppSystemConnectionMemo class.
  *
- * @author Paul Bender
- * @author Mark Underwood (C) 2015
+ * @author	Paul Bender
+ * @author	Mark Underwood (C) 2015
  */
-public class DCCppSystemConnectionMemoTest extends SystemConnectionMemoTestBase<DCCppSystemConnectionMemo> {
+public class DCCppSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
+
+    DCCppInterfaceScaffold tc;
 
     @Override
     @Test
     public void testCtor() {
-        Assert.assertNotNull(scm);
-        Assert.assertNotNull(scm.getDCCppTrafficController());
-        // While we are constructing the scm, we should also set the 
+        DCCppSystemConnectionMemo t = (DCCppSystemConnectionMemo) scm;  
+        Assert.assertNotNull(t);
+        Assert.assertNotNull(t.getDCCppTrafficController());
+        // While we are constructing the memo, we should also set the 
         // SystemMemo parameter in the traffic controller.
-        Assert.assertNotNull(scm.getDCCppTrafficController().getSystemConnectionMemo());
+        Assert.assertNotNull(t.getDCCppTrafficController().getSystemConnectionMemo());
     }
 
     @Test
     public void testDCCppTrafficControllerSetCtor() {
-        // cleanup traffic controller from setup
-        scm.getDCCppTrafficController().terminateThreads();
         // infrastructure objects
-        DCCppTrafficController tc = new DCCppInterfaceScaffold(new DCCppCommandStation());
+        tc = new DCCppInterfaceScaffold(new DCCppCommandStation());
 
+        DCCppSystemConnectionMemo t = new DCCppSystemConnectionMemo();
+        Assert.assertNotNull(t);
         // the default constructor does not set the traffic controller - now it does
-        Assert.assertNotNull(scm.getDCCppTrafficController());
+        Assert.assertNotNull(t.getDCCppTrafficController());
         // but we want to replace it with something special so we need to do this ourselves.
-        scm.setDCCppTrafficController(tc);
-        Assert.assertNotNull(scm.getDCCppTrafficController());
+        t.setDCCppTrafficController(tc);
+        Assert.assertNotNull(t.getDCCppTrafficController());
         // and while we're doing that, we should also set the SystemMemo 
         // parameter in the traffic controller.
         Assert.assertNotNull(tc.getSystemConnectionMemo());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // infrastructure objects
-        scm = new DCCppSystemConnectionMemo(new DCCppInterfaceScaffold(new DCCppCommandStation()));
-        scm.setTurnoutManager(new DCCppTurnoutManager(scm));
-        scm.setSensorManager(new DCCppSensorManager(scm));
-        scm.setLightManager(new DCCppLightManager(scm));
+        tc = new DCCppInterfaceScaffold(new DCCppCommandStation());
+
+        DCCppSystemConnectionMemo memo = new DCCppSystemConnectionMemo(tc);
+        memo.setTurnoutManager(new DCCppTurnoutManager(tc, memo.getSystemPrefix()));
+        memo.setSensorManager(new DCCppSensorManager(tc, memo.getSystemPrefix()));
+        memo.setLightManager(new DCCppLightManager(tc, memo.getSystemPrefix()));
+        scm = memo;      
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        scm.getDCCppTrafficController().terminateThreads();
-        scm.dispose();
+        tc.terminateThreads();
+        tc = null;
+        scm = null;
         JUnitUtil.tearDown();
     }
 

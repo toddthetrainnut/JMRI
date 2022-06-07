@@ -8,17 +8,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Class for replies in a LAWICELL message/reply protocol.
  * <p>
- * The Lawicell adapter protocol encodes messages as an ASCII string of up to 24
- * characters of the form: tiiildd...[CR] Tiiiiiiiildd...[CR] The t or T
- * indicates a standard or extended CAN frame iiiiiiii is the header as hex
- * digits l is the number of bytes of data dd are the (up to) 8 data bytes
- * <p>
- * RTR Extended frames start with an R, RTR standard frames with r.
- * <p>
+ *
  * @author Andrew Crosland Copyright (C) 2008
  * @author Bob Jacobsen Copyright (C) 2008
- * @author Steve Young Copyright (C) 2022 ( added RTR Can Frame support )
-*/
+ */
 public class Reply extends AbstractMRReply {
 
     // Creates a new instance of ConnectReply
@@ -26,6 +19,10 @@ public class Reply extends AbstractMRReply {
         super();
     }
 
+    /*     // copy one */
+    /*     public  Reply(Reply m) { */
+    /*         super(m); */
+    /*     } */
     public Reply(String s) {
         _nDataChars = s.length();
         for (int i = 0; i < s.length(); i++) {
@@ -35,18 +32,16 @@ public class Reply extends AbstractMRReply {
 
     public CanReply createReply() {
         // is this just an ACK to e.g. a send?
-        if (_dataChars[0] != 't' 
-            && _dataChars[0] != 'T'
-            && _dataChars[0] != 'r'
-            && _dataChars[0] != 'R') {
-            log.debug("non-frame reply skipped: {}", this);
+        if (_dataChars[0] != 't' && _dataChars[0] != 'T') {
+            if (log.isDebugEnabled()) {
+                log.debug("non-frame reply skipped: " + this);
+            }
             return null;
         }
         // carries a frame
         CanReply ret = new CanReply();
 
         ret.setExtended(isExtended());
-        ret.setRtr(isRtrSet());
 
         // Copy the header
         ret.setHeader(getHeader());
@@ -69,15 +64,13 @@ public class Reply extends AbstractMRReply {
 
     public void setData(int[] d) {
         int len = (d.length <= 24) ? d.length : 24;
-        System.arraycopy(d, 0, _dataChars, 0, len);
+        for (int i = 0; i < len; i++) {
+            _dataChars[i] = d[i];
+        }
     }
 
     public boolean isExtended() {
-        return _dataChars[0] == 'T' || _dataChars[0] == 'R';
-    }
-    
-    public boolean isRtrSet() {
-        return _dataChars[0] == 'r' || _dataChars[0] == 'R';
+        return _dataChars[0] == 'T';
     }
 
     /**
@@ -137,7 +130,8 @@ public class Reply extends AbstractMRReply {
 
     // Get a single hex digit. returns 0 if digit is invalid
     private int getHexDigit(int index) {
-        int b = _dataChars[index];
+        int b = 0;
+        b = _dataChars[index];
         if ((b >= '0') && (b <= '9')) {
             b = b - '0';
         } else if ((b >= 'A') && (b <= 'F')) {

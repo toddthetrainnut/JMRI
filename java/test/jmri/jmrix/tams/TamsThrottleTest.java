@@ -1,20 +1,16 @@
 package jmri.jmrix.tams;
 
 import jmri.util.JUnitUtil;
-import jmri.SpeedStepMode;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class TamsThrottleTest extends jmri.jmrix.AbstractThrottleTest {
-
-    private TamsTrafficController tc;
-    private TamsSystemConnectionMemo memo;
-    private TamsThrottleManager tm;
 
     @Test
     public void testCTor() {
@@ -38,20 +34,9 @@ public class TamsThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     @Test
     @Override
     public void testGetSpeedStepMode() {
-        SpeedStepMode expResult = SpeedStepMode.NMRA_DCC_128;
-        SpeedStepMode result = instance.getSpeedStepMode();
+        int expResult = 1;
+        int result = instance.getSpeedStepMode();
         Assert.assertEquals(expResult, result);
-    }
-    
-    /**
-     * Test of getSpeedIncrement method, of class AbstractThrottle.
-     */
-    @Test
-    @Override
-    public void testGetSpeedIncrement() {
-        float expResult = SpeedStepMode.NMRA_DCC_128.increment;
-        float result = instance.getSpeedIncrement();
-        Assert.assertEquals(expResult, result, 0.0);
     }
 
     /**
@@ -372,7 +357,6 @@ public class TamsThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup4 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup4() {
     }
 
@@ -380,33 +364,24 @@ public class TamsThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup5 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup5() {
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        tc = new TamsInterfaceScaffold();
-        memo = new TamsSystemConnectionMemo(tc);
-        tm = new TamsThrottleManager(memo);
-        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class, tm);
-        instance = new TamsThrottle(memo, new jmri.DccLocoAddress(1234,true));
+        TamsTrafficController tc = new TamsInterfaceScaffold();
+        TamsSystemConnectionMemo memo = new TamsSystemConnectionMemo(tc);  
+        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class,new TamsThrottleManager(memo));
+        instance = new TamsThrottle(memo,new jmri.DccLocoAddress(1234,true));
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        // no need to dispose of instance
-        if (tm != null) {
-            tm.dispose();
-        }
-        memo.dispose();
-        memo = null;
-        tc.terminateThreads();
-        tc = null;
         JUnitUtil.tearDown();
     }
 

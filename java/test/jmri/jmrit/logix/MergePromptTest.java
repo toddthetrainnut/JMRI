@@ -1,25 +1,25 @@
 package jmri.jmrit.logix;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.awt.GraphicsEnvironment;
 import java.util.HashMap;
-import java.util.Map;
-
 import org.netbeans.jemmy.operators.JDialogOperator;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
-@Timeout(10)
 public class MergePromptTest {
 
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10); // 10 second timeout for methods in this test class.
+
     @Test
-    @Disabled("unreliable; frequently errors or times out")
+    @Ignore("unreliable; frequently errors or times out")
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
@@ -32,17 +32,18 @@ public class MergePromptTest {
         t.start();
 
         MergePrompt m = new MergePrompt("Merge Prompt CTor Test",new HashMap<String,Boolean>(),
-                        new HashMap<String, Map<Integer,Boolean>>());
-        assertThat(m).withFailMessage("exists").isNotNull();
+                        new HashMap<String, HashMap<Integer,Boolean>>());
+        Assert.assertNotNull("exists",m);
         m.dispose();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

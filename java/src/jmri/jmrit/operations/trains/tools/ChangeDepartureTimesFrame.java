@@ -3,22 +3,17 @@ package jmri.jmrit.operations.trains.tools;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.util.List;
-
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
-import jmri.jmrit.operations.routes.Route;
 import jmri.jmrit.operations.routes.RouteLocation;
-import jmri.jmrit.operations.routes.RouteManager;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.TrainManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Change Departure Time frame for operations.
@@ -32,18 +27,17 @@ public class ChangeDepartureTimesFrame extends OperationsFrame {
     javax.swing.JButton changeButton = new javax.swing.JButton(Bundle.getMessage("Change"));
 
     // combo boxes
-    javax.swing.JComboBox<Integer> hourBox = new javax.swing.JComboBox<>();
-
-    javax.swing.JCheckBox routesCheckBox = new javax.swing.JCheckBox(Bundle.getMessage("ModifyRouteTimes"));
+    javax.swing.JComboBox<String> hourBox = new javax.swing.JComboBox<>();
 
     public ChangeDepartureTimesFrame() {
         // general GUI config
 
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
-        // load hour combobox
+        // Set up the panels
+        // Layout the panel by rows
         for (int i = 1; i < 24; i++) {
-            hourBox.addItem(i);
+            hourBox.addItem(Integer.toString(i));
         }
 
         // row 2
@@ -51,7 +45,6 @@ public class ChangeDepartureTimesFrame extends OperationsFrame {
         pHour.setLayout(new GridBagLayout());
         pHour.setBorder(BorderFactory.createTitledBorder(Bundle.getMessage("SelectHours")));
         addItem(pHour, hourBox, 0, 0);
-        addItem(pHour, routesCheckBox, 1, 0);
 
         // row 4
         JPanel pButton = new JPanel();
@@ -63,12 +56,13 @@ public class ChangeDepartureTimesFrame extends OperationsFrame {
         // add help menu to window
         addHelpMenu("package.jmri.jmrit.operations.Operations_ChangeTrainDepartureTimes", true); // NOI18N
 
+        pack();
+        setMinimumSize(new Dimension(Control.panelWidth400, Control.panelHeight200));
+
         setTitle(Bundle.getMessage("TitleChangeDepartureTime"));
 
         // setup buttons
         addButtonAction(changeButton);
-        
-        initMinimumSize(new Dimension(Control.panelWidth500, Control.panelHeight200));
     }
 
     @Override
@@ -79,24 +73,19 @@ public class ChangeDepartureTimesFrame extends OperationsFrame {
             List<Train> trains = trainManager.getTrainsByIdList();
             for (Train train : trains) {
                 train.setDepartureTime(adjustHour(train.getDepartureTimeHour()), train.getDepartureTimeMinute());
-            }
-            // now check every route to see if there are any departure times that need
-            // adjustment
-            if (routesCheckBox.isSelected()) {
-                RouteManager routeManager = InstanceManager.getDefault(RouteManager.class);
-                List<Route> routes = routeManager.getRoutesByNameList();
-                for (Route route : routes) {
-                    for (RouteLocation rl : route.getLocationsBySequenceList()) {
-                        if (!rl.getDepartureTime().equals(RouteLocation.NONE))
-                            rl.setDepartureTime(adjustHour(rl.getDepartureTimeHour()), rl.getDepartureTimeMinute());
-                    }
+                // now check the train's route to see if there are any departure times that need to be modified
+                if (train.getRoute() == null)
+                    continue;
+                for (RouteLocation rl : train.getRoute().getLocationsBySequenceList()) {
+                    if (!rl.getDepartureTime().equals(RouteLocation.NONE))
+                        rl.setDepartureTime(adjustHour(rl.getDepartureTimeHour()), rl.getDepartureTimeMinute());
                 }
             }
         }
     }
-
+    
     private String adjustHour(String time) {
-        int hour = (int) hourBox.getSelectedItem() + Integer.parseInt(time);
+        int hour = Integer.parseInt((String) hourBox.getSelectedItem()) + Integer.parseInt(time);
         if (hour > 23) {
             hour = hour - 24;
         }

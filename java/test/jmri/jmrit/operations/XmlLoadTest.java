@@ -14,7 +14,8 @@ import jmri.jmrit.operations.trains.TrainManager;
 import jmri.jmrit.operations.trains.TrainManagerXml;
 import jmri.util.JUnitUtil;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests to make sure the demo files load and the managers are properly
@@ -115,8 +116,7 @@ public class XmlLoadTest extends OperationsTestCase {
 
     // from here down is testing infrastructure
     // Ensure minimal setup for log4J
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         reset();

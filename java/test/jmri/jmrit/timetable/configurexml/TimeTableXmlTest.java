@@ -1,23 +1,19 @@
 package jmri.jmrit.timetable.configurexml;
 
 import java.awt.GraphicsEnvironment;
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
+import jmri.jmrit.timetable.*;
 import jmri.jmrit.timetable.swing.*;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests for the TimeTableXml Class
  * @author Dave Sand Copyright (C) 2018
  */
 public class TimeTableXmlTest {
+
+    @Rule
+    public org.junit.rules.TemporaryFolder folder = new org.junit.rules.TemporaryFolder();
 
     @Test
     public void testCreate() {
@@ -35,15 +31,19 @@ public class TimeTableXmlTest {
         Assert.assertTrue("Store Failed", storeResult);  // NOI18N
     }
 
-    @BeforeEach
-    public void setUp(@TempDir File folder) throws IOException {
+    @Before
+    public void setUp() {
         jmri.util.JUnitUtil.setUp();
 
         JUnitUtil.resetInstanceManager();
-        JUnitUtil.resetProfileManager(new jmri.profile.NullProfile(folder));
+        try {
+            JUnitUtil.resetProfileManager(new jmri.profile.NullProfile(folder.newFolder(jmri.profile.Profile.PROFILE)));
+        } catch(java.io.IOException ioe){
+          Assert.fail("failed to setup profile for test");
+        }
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
        // use reflection to reset the static file location.
        try {
@@ -54,7 +54,6 @@ public class TimeTableXmlTest {
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException x) {
             Assert.fail("Failed to reset TimeTableXml static fileLocation " + x);
         }
-        JUnitUtil.resetWindows(false,false);
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 }

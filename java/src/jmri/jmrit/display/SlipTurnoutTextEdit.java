@@ -169,17 +169,19 @@ public class SlipTurnoutTextEdit extends JmriJFrame {
     }
 
     private void addButtonAction(JButton b) {
-        b.addActionListener(this::buttonActionPerformed);
+        b.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                buttonActionPerformed(e);
+            }
+        });
     }
 
     public void buttonActionPerformed(java.awt.event.ActionEvent ae) {
-        if ( pl == null ){
-            log.error("No SlipTurnoutIcon defined, call initComponents on this frame.");
-            return;
-        }
+
         if (ae.getSource() == okButton) {
             // save current values in case user cancels
-            if (oldLWUE.equals( INIT ) ) {
+            if (oldLWUE == INIT) {
                 oldLWUE = pl.getLWUEText();
                 oldUWLE = pl.getUWLEText();
                 oldLWLE = pl.getLWLEText();
@@ -203,7 +205,7 @@ public class SlipTurnoutTextEdit extends JmriJFrame {
             }
         }
         if (ae.getSource() == cancelButton) {
-            if (!oldLWUE.equals(INIT)) {
+            if (oldLWUE != INIT) {
                 pl.setUWLEText(oldUWLE);
                 pl.setLWUEText(oldLWUE);
                 pl.setLWLEText(oldLWLE);
@@ -212,6 +214,4 @@ public class SlipTurnoutTextEdit extends JmriJFrame {
             dispose();
         }
     }
-
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SlipTurnoutTextEdit.class);
 }

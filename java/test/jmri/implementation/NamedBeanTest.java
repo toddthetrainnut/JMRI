@@ -4,7 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import jmri.NamedBean;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  * Tests for the NamedBean interface implementation.

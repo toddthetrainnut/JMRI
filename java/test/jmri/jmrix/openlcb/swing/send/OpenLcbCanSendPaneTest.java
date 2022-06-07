@@ -1,9 +1,10 @@
 package jmri.jmrix.openlcb.swing.send;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.openlcb.EventID;
 
 /**
@@ -17,46 +18,41 @@ public class OpenLcbCanSendPaneTest extends jmri.util.swing.JmriPanelTest {
 
     @Test
     @Override
-    public void testInitComponents() {
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
+    public void testInitComponents() throws Exception{
         // for now, just makes ure there isn't an exception.
         ((OpenLcbCanSendPane)panel).initComponents(memo);
     }
 
     @Test
-    public void testInitContext() {
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
+    public void testInitContext() throws Exception {
         // for now, just makes ure there isn't an exception.
-        panel.initContext(memo);
+        ((OpenLcbCanSendPane)panel).initContext(memo);
     }
 
     @Test
-    public void testEventId() {
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
+    public void testEventId() throws Exception {
         OpenLcbCanSendPane p = (OpenLcbCanSendPane) panel;
 
         p.sendEventField.setText("05 01 01 01 14 FF 01 02");
-        EventID expected = new EventID(new byte[]{0x05, 0x01, 0x01, 0x01, 0x14, (byte) 0xff, 0x01, 0x02});
+        EventID expected = new EventID(new byte[]{05, 01, 01, 01, 0x14, (byte) 0xff, 01, 02});
         Assert.assertEquals(expected, p.eventID());
     }
 
     @Test
-    public void testEventIdDotted() {
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
+    public void testEventIdDotted() throws Exception {
         OpenLcbCanSendPane p = (OpenLcbCanSendPane) panel;
 
         p.sendEventField.setText("05.01.01.01.14.FF.01.02");
-        EventID expected = new EventID(new byte[]{0x05, 0x01, 0x01, 0x01, 0x14, (byte) 0xff, 0x01, 0x02});
+        EventID expected = new EventID(new byte[]{05, 01, 01, 01, 0x14, (byte) 0xff, 01, 02});
         Assert.assertEquals(expected, p.eventID());
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-       // this test is run separately because it leaves a lot of threads behind
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
         JUnitUtil.resetProfileManager();
         memo = new jmri.jmrix.can.CanSystemConnectionMemo();
         tc = new jmri.jmrix.can.TestTrafficController();
@@ -64,22 +60,13 @@ public class OpenLcbCanSendPaneTest extends jmri.util.swing.JmriPanelTest {
         memo.setProtocol(jmri.jmrix.can.ConfigurationManager.OPENLCB);
         memo.configureManagers();
         panel = new OpenLcbCanSendPane();
-        helpTarget="package.jmri.jmrix.openlcb.swing.send.OpenLcbCanSendFrame";
+        helpTarget="package.jmri.jmrix.openlcb.swing.send.OpenLcbCanSendPane";
         title="Send CAN Frames and OpenLCB Messages";
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        if (Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning") == false) {
-            memo.dispose();
-            memo = null;
-            tc.terminateThreads();
-            tc = null;
-            panel = null;
-            helpTarget = null;
-            title = null;
-        }
         JUnitUtil.tearDown();
     }
 }

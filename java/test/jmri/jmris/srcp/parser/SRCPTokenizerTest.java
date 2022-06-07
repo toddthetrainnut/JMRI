@@ -2,12 +2,10 @@ package jmri.jmris.srcp.parser;
 
 import java.io.StringReader;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -24,8 +22,8 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for ZEROADDR").isEqualTo(SRCPParserConstants.ZEROADDR);
-        assertThat(t.image).withFailMessage("Wrong image for ZEROADDR").isEqualTo("0234");
+        Assert.assertEquals("Wrong token kind for ZEROADDR", SRCPParserConstants.ZEROADDR, t.kind);
+        Assert.assertEquals("Wrong image for ZEROADDR", "0234", t.image);
     }
 
     @Test
@@ -34,8 +32,8 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for NONZEROADDR").isEqualTo(SRCPParserConstants.NONZEROADDR);
-        assertThat(t.image).withFailMessage("Wrong image for NONZEROADDR").isEqualTo("1234");
+        Assert.assertEquals("Wrong token kind for NONZEROADDR", SRCPParserConstants.NONZEROADDR, t.kind);
+        Assert.assertEquals("Wrong image for NONZEROADDR", "1234", t.image);
     }
 
     // constants.
@@ -45,9 +43,9 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for ON").isEqualTo(SRCPParserConstants.ONOFF);
+        Assert.assertTrue("Wrong token kind for ON", SRCPParserConstants.ONOFF == t.kind);
         t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for ON").isEqualTo(SRCPParserConstants.ONOFF);
+        Assert.assertTrue("Wrong token kind for ON", SRCPParserConstants.ONOFF == t.kind);
     }
 
     // Device Groups
@@ -57,9 +55,9 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for POWER").isEqualTo(SRCPParserConstants.POWER);
+        Assert.assertTrue("Wrong token kind for POWER", SRCPParserConstants.POWER == t.kind);
         t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for ON").isEqualTo(SRCPParserConstants.ONOFF);
+        Assert.assertTrue("Wrong token kind for ON", SRCPParserConstants.ONOFF == t.kind);
     }
 
     @Test
@@ -68,7 +66,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for FB").isEqualTo(SRCPParserConstants.FB);
+        Assert.assertTrue("Wrong token kind for FB", SRCPParserConstants.FB == t.kind);
     }
 
     @Test
@@ -77,7 +75,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for GA").isEqualTo(SRCPParserConstants.GA);
+        Assert.assertTrue("Wrong token kind for GA", SRCPParserConstants.GA == t.kind);
     }
 
     @Test
@@ -86,7 +84,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for GL").isEqualTo(SRCPParserConstants.GL);
+        Assert.assertTrue("Wrong token kind for GL", SRCPParserConstants.GL == t.kind);
     }
 
     @Test
@@ -95,7 +93,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for GM").isEqualTo(SRCPParserConstants.GM);
+        Assert.assertTrue("Wrong token kind for GM", SRCPParserConstants.GM == t.kind);
     }
 
     @Test
@@ -104,7 +102,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for SM").isEqualTo(SRCPParserConstants.SM);
+        Assert.assertTrue("Wrong token kind for SM", SRCPParserConstants.SM == t.kind);
     }
 
     @Test
@@ -113,7 +111,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for LOCK").isEqualTo(SRCPParserConstants.LOCK);
+        Assert.assertTrue("Wrong token kind for LOCK", SRCPParserConstants.LOCK == t.kind);
     }
 
     @Test
@@ -122,7 +120,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for TIME").isEqualTo(SRCPParserConstants.TIME);
+        Assert.assertTrue("Wrong token kind for TIME", SRCPParserConstants.TIME == t.kind);
     }
 
     @Test
@@ -131,7 +129,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for SESSION").isEqualTo(SRCPParserConstants.SESSION);
+        Assert.assertTrue("Wrong token kind for SESSION", SRCPParserConstants.SESSION == t.kind);
     }
 
     @Test
@@ -140,7 +138,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for DESCRIPTION").isEqualTo(SRCPParserConstants.DESCRIPTION);
+        Assert.assertTrue("Wrong token kind for DESCRIPTION", SRCPParserConstants.DESCRIPTION == t.kind);
     }
 
     @Test
@@ -149,7 +147,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for SERVER").isEqualTo(SRCPParserConstants.SERVER);
+        Assert.assertTrue("Wrong token kind for SERVER", SRCPParserConstants.SERVER == t.kind);
     }
 
     // commands
@@ -159,7 +157,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for GET").isEqualTo(SRCPParserConstants.GET);
+        Assert.assertTrue("Wrong token kind for GET", SRCPParserConstants.GET == t.kind);
     }
 
     @Test
@@ -168,7 +166,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for SET").isEqualTo(SRCPParserConstants.SET);
+        Assert.assertTrue("Wrong token kind for SET", SRCPParserConstants.SET == t.kind);
     }
 
     @Test
@@ -177,7 +175,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for CHECK").isEqualTo(SRCPParserConstants.CHECK);
+        Assert.assertTrue("Wrong token kind for CHECK", SRCPParserConstants.CHECK == t.kind);
     }
 
     @Test
@@ -186,7 +184,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for INIT").isEqualTo(SRCPParserConstants.INIT);
+        Assert.assertTrue("Wrong token kind for INIT", SRCPParserConstants.INIT == t.kind);
     }
 
     @Test
@@ -195,7 +193,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for TERM").isEqualTo(SRCPParserConstants.TERM);
+        Assert.assertTrue("Wrong token kind for TERM", SRCPParserConstants.TERM == t.kind);
     }
 
     @Test
@@ -204,7 +202,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for WAIT").isEqualTo(SRCPParserConstants.WAIT);
+        Assert.assertTrue("Wrong token kind for WAIT", SRCPParserConstants.WAIT == t.kind);
     }
 
     @Test
@@ -213,7 +211,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for VERIFY").isEqualTo(SRCPParserConstants.VERIFY);
+        Assert.assertTrue("Wrong token kind for VERIFY", SRCPParserConstants.VERIFY == t.kind);
     }
 
     @Test
@@ -222,7 +220,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for RESET").isEqualTo(SRCPParserConstants.RESET);
+        Assert.assertTrue("Wrong token kind for RESET", SRCPParserConstants.RESET == t.kind);
     }
 
     @Test
@@ -231,7 +229,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for CV").isEqualTo(SRCPParserConstants.CV);
+        Assert.assertTrue("Wrong token kind for CV", SRCPParserConstants.CV == t.kind);
     }
 
     @Test
@@ -240,7 +238,7 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for CVBIT").isEqualTo(SRCPParserConstants.CVBIT);
+        Assert.assertTrue("Wrong token kind for CVBIT", SRCPParserConstants.CVBIT == t.kind);
     }
 
     @Test
@@ -249,25 +247,25 @@ public class SRCPTokenizerTest {
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
         Token t = stm.getNextToken();
-        assertThat(t.kind).withFailMessage("Wrong token kind for REG").isEqualTo(SRCPParserConstants.REG);
+        Assert.assertTrue("Wrong token kind for REG", SRCPParserConstants.REG == t.kind);
     }
 
-    @Test
-    public void testTokenizeFailure() {
+    @Test(expected=TokenMgrError.class)
+    public void testTokenizeFailure() throws TokenMgrError {
         String cmd = "this should fail";
         SimpleCharStream cs = new SimpleCharStream(new StringReader(cmd));
         SRCPParserTokenManager stm = new SRCPParserTokenManager(cs);
-        Throwable caught = catchThrowable(stm::getNextToken);  // called to invoke TokenMgrError
-        assertThat(caught).isNotNull().isInstanceOf(TokenMgrError.class);
+        stm.getNextToken();  // called to invoke TokenMgrError
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

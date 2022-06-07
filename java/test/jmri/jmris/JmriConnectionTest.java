@@ -1,10 +1,9 @@
 package jmri.jmris;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmris.JmriConnection class 
@@ -20,20 +19,20 @@ public class JmriConnectionTest {
                     // null output string drops characters
                     // could be replaced by one that checks for specific outputs
                     @Override
-                    public void write(int b) {
+                    public void write(int b) throws java.io.IOException {
                     }
                 });
         JmriConnection a = new JmriConnection(output);
-        assertThat(a).isNotNull();
+        Assert.assertNotNull(a);
     }
 
-    @BeforeEach
-    public void setUp() {
+    @Before
+    public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
-    public void tearDown() {
+    @After
+    public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
 
     }

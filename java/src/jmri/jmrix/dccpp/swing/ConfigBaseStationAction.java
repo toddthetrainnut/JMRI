@@ -20,54 +20,43 @@ package jmri.jmrix.dccpp.swing;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import jmri.InstanceManager;
+import javax.swing.AbstractAction;
 import jmri.jmrix.dccpp.DCCppInterface;
 import jmri.jmrix.dccpp.DCCppMessage;
+import jmri.jmrix.dccpp.DCCppSensorManager; // Need this?
 import jmri.jmrix.dccpp.DCCppSystemConnectionMemo;
 import jmri.jmrix.dccpp.DCCppTrafficController;
+import jmri.jmrix.dccpp.DCCppTurnoutManager;
 
-public class ConfigBaseStationAction extends DCCppSystemConnectionAction {
-
-    public ConfigBaseStationAction(String name, DCCppSystemConnectionMemo memo) {
-        super(name, memo);
-    }
-
-    public ConfigBaseStationAction(DCCppSystemConnectionMemo memo) {
-        super(Bundle.getMessage("FieldManageBaseStationFrameTitle"), memo);
-    }
-
-    public ConfigBaseStationAction() {
-        this(InstanceManager.getNullableDefault(DCCppSystemConnectionMemo.class));
-    }
+public class ConfigBaseStationAction extends AbstractAction {
 
     /**
      *
      */
     private ConfigBaseStationFrame f = null;
     
+    public ConfigBaseStationAction(String s, String a) {
+        super(s);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (f == null || !f.isVisible()) {
             
-            DCCppSystemConnectionMemo memo = getSystemConnectionMemo();
-            if (memo == null) {
-                log.error("connection memo was null!");
-                return;
-            }            
-            f = new ConfigBaseStationFrame(memo);
-            DCCppTrafficController tc = memo.getDCCppTrafficController();
+            // Get info on Sensors
+            DCCppSystemConnectionMemo systemMemo = jmri.InstanceManager.getDefault(DCCppSystemConnectionMemo.class);
+            DCCppSensorManager smgr = (DCCppSensorManager)systemMemo.getSensorManager();
+            DCCppTurnoutManager tmgr = (DCCppTurnoutManager)systemMemo.getTurnoutManager();
+            // Send query for sensor values
+            DCCppTrafficController tc = systemMemo.getDCCppTrafficController();
+    
+            f = new ConfigBaseStationFrame(smgr, tmgr, tc);
             tc.addDCCppListener(DCCppInterface.CS_INFO, f);
-            
-            // Request definitions for Turnouts, Sensors and Outputs
-            tc.sendDCCppMessage(DCCppMessage.makeSensorListMsg(), f); 
-            tc.sendDCCppMessage(DCCppMessage.makeTurnoutListMsg(), f);
-            tc.sendDCCppMessage(DCCppMessage.makeOutputListMsg(), f); 
+            tc.sendDCCppMessage(DCCppMessage.makeSensorListMsg(), f); // TODO: Put this in Constants?
+            tc.sendDCCppMessage(DCCppMessage.makeTurnoutListMsg(), f); // TODO: Put this in Constants?
+            tc.sendDCCppMessage(DCCppMessage.makeOutputListMsg(), f); // TODO: Put this in Constants?
         }
         f.setExtendedState(Frame.NORMAL);
     }
-    private static final Logger log = LoggerFactory.getLogger(ConfigBaseStationAction.class);
+
 }

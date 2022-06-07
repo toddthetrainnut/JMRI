@@ -1,31 +1,29 @@
 package jmri.jmrix.sprog.sprognano.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
 import jmri.jmrix.sprog.SprogSystemConnectionMemo;
 import jmri.jmrix.sprog.sprognano.ConnectionConfig;
 
 /**
  * ConnectionConfigXmlTest.java
  *
- * Test for the ConnectionConfigXml class
+ * Description: tests for the ConnectionConfigXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
 public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractSerialConnectionConfigXmlTestBase {
 
     // need to override this to retain
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new ConnectionConfigXml();
         cc = new ConnectionConfig();
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
 

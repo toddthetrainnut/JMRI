@@ -1,14 +1,14 @@
 package jmri.jmrix.zimo;
 
 import jmri.util.JUnitUtil;
-import jmri.SpeedStepMode;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class Mx1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
 
@@ -36,20 +36,9 @@ public class Mx1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     @Test
     @Override
     public void testGetSpeedStepMode() {
-        SpeedStepMode expResult = SpeedStepMode.NMRA_DCC_128;
-        SpeedStepMode result = instance.getSpeedStepMode();
+        int expResult = 1;
+        int result = instance.getSpeedStepMode();
         Assert.assertEquals(expResult, result);
-    }
-    
-    /**
-     * Test of getSpeedIncrement method, of class AbstractThrottle.
-     */
-    @Test
-    @Override
-    public void testGetSpeedIncrement() {
-        float expResult = SpeedStepMode.NMRA_DCC_128.increment;
-        float result = instance.getSpeedIncrement();
-        Assert.assertEquals(expResult, result, 0.0);
     }
 
     /**
@@ -370,7 +359,6 @@ public class Mx1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup4 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup4() {
     }
 
@@ -378,12 +366,12 @@ public class Mx1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup5 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup5() {
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -393,15 +381,15 @@ public class Mx1ThrottleTest extends jmri.jmrix.AbstractThrottleTest {
               return true;
            }
            @Override
-           public void sendMx1Message(Mx1Message m, Mx1Listener reply) {
+           public void sendMx1Message(Mx1Message m,Mx1Listener reply) {
            }
         };
         memo = new Mx1SystemConnectionMemo(tc);
-        instance = new Mx1Throttle(memo, new jmri.DccLocoAddress(42,false));
-        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class, new Mx1ThrottleManager(memo));
+        instance = new Mx1Throttle(memo,new jmri.DccLocoAddress(42,false));
+        jmri.InstanceManager.setDefault(jmri.ThrottleManager.class,new Mx1ThrottleManager(memo));
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         JUnitUtil.tearDown();

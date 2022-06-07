@@ -12,7 +12,7 @@ import purejavacomm.UnsupportedCommOperationException;
  * Update the code in jmri.jmrix.loconet.locobuffer so that it operates
  * correctly with the IC-COM and Intellibox II on-board USB port. Note that the
  * jmri.jmrix.loconet.intellibox package is for the first version of Uhlenbrock
- * Intellibox, whereas this package (jmri.jmrix.loconet.uhlenbrock) is for the
+ * Intellibox, whereas this package (jmri.jmrix.loconet.uhlenbrock is for the
  * Intellibox II and the IB-COM.
  * <p>
  * Since this is by definition connected to an Intellibox II or IB-COM, the
@@ -29,17 +29,15 @@ public class UhlenbrockAdapter extends LocoBufferAdapter {
         // define command station options
         options.remove(option2Name);
         options.put(option2Name, new Option(Bundle.getMessage("CommandStationTypeLabel"), commandStationOptions(), false));
-        options.put("InterrogateOnStart", new Option(Bundle.getMessage("InterrogateOnStart"),
-                new String[]{Bundle.getMessage("ButtonYes"), Bundle.getMessage("ButtonNo")} )); // NOI18N
 
         validSpeeds = new String[]{Bundle.getMessage("Baud19200"), Bundle.getMessage("Baud38400"),
                 Bundle.getMessage("Baud57600"), Bundle.getMessage("Baud115200")};
         validSpeedValues = new int[]{19200, 38400, 57600, 115200};
-        configureBaudRate(validSpeeds[3]); // Set the default baud rate (localized)
+        configureBaudRate(Bundle.getMessage("Baud115200")); // Set the default baud rate (localized)
     }
 
     /**
-     * Set up all of the other objects to operate with an IB-II connected to
+     * Set up all of the other objects to operate with a LocoBuffer connected to
      * this port.
      */
     @Override
@@ -47,16 +45,15 @@ public class UhlenbrockAdapter extends LocoBufferAdapter {
 
         setCommandStationType(getOptionState(option2Name));
         setTurnoutHandling(getOptionState(option3Name));
-        setInterrogateOnStart(getOptionState("InterrogateOnStart"));
         // connect to a packetizing traffic controller
-        UhlenbrockPacketizer packets = new UhlenbrockPacketizer(this.getSystemConnectionMemo());
+        UhlenbrockPacketizer packets = new UhlenbrockPacketizer();
         packets.connectPort(this);
 
         // create memo
         this.getSystemConnectionMemo().setLnTrafficController(packets);
         // do the common manager config
         this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);
+                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);
         this.getSystemConnectionMemo().configureManagers();
 
         // start operation
@@ -80,11 +77,6 @@ public class UhlenbrockAdapter extends LocoBufferAdapter {
     }
 
     @Override
-    public int defaultBaudIndex() {
-        return 3;
-    }
-
-    @Override
     public boolean okToSend() {
         return true;
     }
@@ -101,12 +93,15 @@ public class UhlenbrockAdapter extends LocoBufferAdapter {
 
         configureLeadsAndFlowControl(activeSerialPort, SerialPort.FLOWCONTROL_NONE);
 
-        log.info("Uhlenbrock adapter{}{} RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN, activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=", activeSerialPort.getFlowControlMode());
+        log.info("Uhlenbrock adapter"
+                + (activeSerialPort.getFlowControlMode() == SerialPort.FLOWCONTROL_RTSCTS_OUT ? " set hardware flow control, mode=" : " set no flow control, mode=")
+                + activeSerialPort.getFlowControlMode()
+                + " RTSCTS_OUT=" + SerialPort.FLOWCONTROL_RTSCTS_OUT
+                + " RTSCTS_IN=" + SerialPort.FLOWCONTROL_RTSCTS_IN);
     }
 
     /**
      * Provide just one valid command station value.
-     * @return array with single entry, name of COMMAND_STATION_IBX_TYPE_2 .
      */
     public String[] commandStationOptions() {
         String[] retval = {

@@ -7,72 +7,65 @@ import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinPullResistance;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
+import jmri.Turnout;
 import jmri.implementation.AbstractTurnout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Turnout interface to RaspberryPi GPIO pins.
- *
+ * <p>
+ * 
  * @author Paul Bender Copyright (C) 2015 
  */
 public class RaspberryPiTurnout extends AbstractTurnout implements java.io.Serializable {
 
-    // in theory gpio can be static (as in PiSensor) because there will only ever
+    // in theory gpio can be static, because there will only ever
     // be one, but the library handles the details that make it a 
     // singleton.
    private GpioController gpio = null;
    private GpioPinDigitalOutput pin = null;
+   private int address;
 
    public RaspberryPiTurnout(String systemName) {
-        this(systemName, GpioFactory.getInstance());
+        this(systemName,GpioFactory.getInstance());
    }
 
    public RaspberryPiTurnout(String systemName, String userName) {
-        this(systemName, userName, GpioFactory.getInstance());
+        this(systemName,userName,GpioFactory.getInstance());
    }
 
    public RaspberryPiTurnout(String systemName, GpioController _gpio) {
         super(systemName);
-        log.trace("Provisioning turnout '{}'", systemName);
-        init(systemName, _gpio);
+        log.trace("Provisioning turnout '{}'",systemName);
+        init(systemName,_gpio);
    }
 
-   public RaspberryPiTurnout(String systemName, String userName, GpioController _gpio) {
+   public RaspberryPiTurnout(String systemName, String userName,GpioController _gpio) {
         super(systemName, userName);
-        log.trace("Provisioning turnout '{}' with username '{}'", systemName, userName);
-        init(systemName, _gpio);
+        log.trace("Provisioning turnout '{}' with username '{}'",systemName, userName);
+        init(systemName,_gpio);
    }
 
    /**
-    * Common initialization for all constructors.
-    * <p>
-    * Compare {@link RaspberryPiSensor}
+    * Common initialization for all constructors
     */
    private void init(String systemName, GpioController _gpio) {
-       log.debug("Provisioning turnout {}", systemName);
-       if (gpio == null) {
-           gpio = _gpio;
-       }
-       int address = Integer.parseInt(getSystemName().substring(getSystemName().lastIndexOf("T") + 1));
-       String pinName = "GPIO " + address;
+       gpio=_gpio;
+       address=Integer.parseInt(getSystemName().substring(getSystemName().lastIndexOf("T")+1));
+       String pinName = "GPIO "+address;
        Pin p = RaspiPin.getPinByName(pinName);
        if (p != null) {
-           try {
-            pin = gpio.provisionDigitalOutputPin(p, getSystemName());
-           } catch (java.lang.RuntimeException re) {
-               log.error("Provisioning sensor {} failed with: {}", systemName, re.getMessage());
-               throw new IllegalArgumentException(re.getMessage());
-           }
+           pin = gpio.provisionDigitalOutputPin(p, getSystemName());
            if (pin != null) {
-               pin.setShutdownOptions(true, PinState.LOW, PinPullResistance.OFF);
+               pin.setShutdownOptions(true, PinState.LOW,PinPullResistance.OFF);
            } else {
                String msg = Bundle.getMessage("ProvisioningFailed", pinName, getSystemName());
                log.error(msg);
                throw new IllegalArgumentException(msg);
            }
        } else {
-           String msg = Bundle.getMessage("PinNameNotValid", pinName, systemName);
+           String msg = Bundle.getMessage("PinNameNotValid", pinName, getSystemName());
            log.error(msg);
            throw new IllegalArgumentException(msg);
        }
@@ -83,27 +76,24 @@ public class RaspberryPiTurnout extends AbstractTurnout implements java.io.Seria
    public boolean canInvert() {
        return true;
    }
-
+   
    /**
-    * {@inheritDoc}
-    * Sets the GPIO pin.
+    * Handle a request to change state, typically by sending a message to the
+    * layout in some child class. Public version (used by TurnoutOperator)
+    * sends the current commanded state without changing it.
+    * 
+    * @param s new state value
     */
    @Override
-   protected void forwardCommandChangeToLayout(int newState) {
-      if (newState == CLOSED) {
+   protected void forwardCommandChangeToLayout(int s){
+      if(s==CLOSED){
          log.debug("Setting turnout '{}' to CLOSED", getSystemName());
-         if (!getInverted()) {
-             pin.high();
-         } else {
-             pin.low();
-         }
-      } else if (newState == THROWN) {
+         if (!getInverted()) pin.high();
+         else pin.low();
+      } else if(s==THROWN) {
          log.debug("Setting turnout '{}' to THROWN", getSystemName());
-         if (!getInverted()) {
-             pin.low();
-         } else {
-             pin.high();
-         }
+         if (!getInverted()) pin.low();
+         else pin.high();
       }
    }
 
@@ -111,10 +101,9 @@ public class RaspberryPiTurnout extends AbstractTurnout implements java.io.Seria
    public void dispose() {
        try {
            gpio.unprovisionPin(pin);
-           // will remove it from the <GpioPin> pins list in _gpio
-       } catch (com.pi4j.io.gpio.exception.GpioPinNotProvisionedException npe){
+       } catch ( com.pi4j.io.gpio.exception.GpioPinNotProvisionedException npe ){
            log.trace("Pin not provisioned, was this turnout already disposed?");
-       }
+       }	
        super.dispose();
    }
 
@@ -123,5 +112,6 @@ public class RaspberryPiTurnout extends AbstractTurnout implements java.io.Seria
    }
 
     private final static Logger log = LoggerFactory.getLogger(RaspberryPiTurnout.class);
-
 }
+
+

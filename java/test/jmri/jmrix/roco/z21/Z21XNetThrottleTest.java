@@ -5,19 +5,16 @@ import jmri.jmrix.lenz.XNetReply;
 import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.jmrix.lenz.XNetThrottle;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmrix.roco.z21.z21XNetThrottle class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
 
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     @Override
     public void testCtor() {
         // infrastructure objects
@@ -26,15 +23,14 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
     }
 
     // Test the constructor with an address specified.
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     @Override
     public void testCtorWithArg() throws Exception {
         Assert.assertNotNull(instance);
     }
 
-    // run the throttle through the initialization sequence,
-    // without assertions, so post initialization tests can be
+    // run the throttle through the initilization sequence,
+    // without assertions, so post initilization tests can be
     // performed.
     @Override
     protected void initThrottle(XNetThrottle t,int n){
@@ -61,8 +57,7 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
         // state to idle, and then we can test what we really want to.
     }
 
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     @Override
     public void testSendFunctionGroup1() {
         int n = tc.outbound.size();
@@ -90,8 +85,7 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
         // which sets the status back state back to idle..
     }
 
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     @Override
     public void testSendFunctionGroup2() {
         int n = tc.outbound.size();
@@ -120,8 +114,7 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
         // which sets the status back state back to idle..
     }
 
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     @Override
     public void testSendFunctionGroup3() {
         int n = tc.outbound.size();
@@ -150,8 +143,7 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
         // which sets the status back state back to idle..
     }
 
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     @Override
     public void testSendFunctionGroup4() {
         int n = tc.outbound.size();
@@ -180,8 +172,7 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
         // which sets the status back state back to idle..
     }
 
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     @Override
     public void testSendFunctionGroup5(){
         int n = tc.outbound.size();
@@ -210,8 +201,7 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
     }
 
     @Override
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     public void testSendStatusInformationRequest() throws Exception {
         int n = tc.outbound.size();
         Z21XNetThrottle t = (Z21XNetThrottle)instance;
@@ -244,8 +234,7 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
     }
 
     @Override
-    @Test
-    @Timeout(1000)
+    @Test(timeout=1000)
     public void sendEmergencyStop() throws Exception {
         int n = tc.outbound.size();
         Z21XNetThrottle t = (Z21XNetThrottle)instance;
@@ -275,8 +264,9 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
     }
 
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         tc = new XNetInterfaceScaffold(new RocoZ21CommandStation());
@@ -286,12 +276,9 @@ public class Z21XNetThrottleTest extends jmri.jmrix.roco.RocoXNetThrottleTest {
         instance = new Z21XNetThrottle(memo, new jmri.DccLocoAddress(3, false), tc);
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() throws Exception {
         ((Z21XNetThrottle)instance).throttleDispose();
-        tc.terminateThreads();
-        tc = null;
         JUnitUtil.tearDown();
     }
 

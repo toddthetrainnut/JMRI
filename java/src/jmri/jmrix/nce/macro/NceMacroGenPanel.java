@@ -3,12 +3,13 @@ package jmri.jmrix.nce.macro;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-
-import jmri.jmrix.nce.*;
+import jmri.jmrix.nce.NceMessage;
+import jmri.jmrix.nce.NceReply;
+import jmri.jmrix.nce.NceSystemConnectionMemo;
+import jmri.jmrix.nce.NceTrafficController;
 
 /**
  * Pane for user input of NCE macros.
@@ -111,10 +112,9 @@ public class NceMacroGenPanel extends jmri.jmrix.nce.swing.NcePanel implements j
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
+
         // Send Macro
-        NceMessage m = createMacroCmd(input);
+        NceMessage m = createMacroCmd(packetTextField.getText());
         if (m == null) {
             macroReply.setText("error");
             JOptionPane.showMessageDialog(this,
@@ -126,7 +126,7 @@ public class NceMacroGenPanel extends jmri.jmrix.nce.swing.NcePanel implements j
 
         // Unfortunately, the new command doesn't tell us if the macro is empty
         // so we send old command for status
-        NceMessage m2 = createOldMacroCmd(input);
+        NceMessage m2 = createOldMacroCmd(packetTextField.getText());
         tc.sendNceMessage(m2, this);
     }
 
@@ -139,7 +139,7 @@ public class NceMacroGenPanel extends jmri.jmrix.nce.swing.NcePanel implements j
         if (r.getNumDataElements() == NceMessage.REPLY_1) {
 
             int recChar = r.getElement(0);
-            if (recChar == NceMessage.NCE_OKAY) {
+            if (recChar == '!') {
                 macroReply.setText(Bundle.getMessage("okay"));
             }
             if (recChar == '0') {

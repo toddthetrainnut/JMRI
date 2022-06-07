@@ -1,39 +1,31 @@
 package jmri.jmrix.ecos.networkdriver;
 
-import jmri.jmrix.ecos.EcosSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class NetworkDriverAdapterTest {
-
-    private EcosSystemConnectionMemo memo;
 
     @Test
     public void testCTor() {
         NetworkDriverAdapter t = new NetworkDriverAdapter();
-        Assertions.assertNotNull(t, "exists");
+        Assert.assertNotNull("exists",t);
     }
 
-    @Test
-    public void testMemoCTor() {
-        NetworkDriverAdapter tm = new NetworkDriverAdapter();
-        Assertions.assertNotNull(tm, "exists");
-    }
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        memo = new EcosSystemConnectionMemo();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
         JUnitUtil.tearDown();
     }
 

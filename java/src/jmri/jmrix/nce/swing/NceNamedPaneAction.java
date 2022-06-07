@@ -1,12 +1,7 @@
 package jmri.jmrix.nce.swing;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.Icon;
-import jmri.SystemConnectionMemo;
 import jmri.jmrix.nce.NceSystemConnectionMemo;
-import jmri.jmrix.swing.SystemConnectionNamedPaneAction;
 import jmri.util.swing.JmriPanel;
 import jmri.util.swing.WindowInterface;
 import org.slf4j.Logger;
@@ -18,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author Bob Jacobsen Copyright (C) 2010 Copied from LocoNet
  * @author kcameron
  */
-public class NceNamedPaneAction extends SystemConnectionNamedPaneAction<NceSystemConnectionMemo> {
+public class NceNamedPaneAction extends jmri.util.swing.JmriNamedPaneAction {
 
     /**
      * Enhanced constructor for placing the pane in various GUIs.
@@ -29,12 +24,16 @@ public class NceNamedPaneAction extends SystemConnectionNamedPaneAction<NceSyste
      * @param memo system connection memo
      */
     public NceNamedPaneAction(String s, WindowInterface wi, String paneClass, NceSystemConnectionMemo memo) {
-        super(s, wi, paneClass, memo);
+        super(s, wi, paneClass);
+        this.memo = memo;
     }
 
     public NceNamedPaneAction(String s, Icon i, WindowInterface wi, String paneClass, NceSystemConnectionMemo memo) {
-        super(s, i, wi, paneClass, memo);
+        super(s, i, wi, paneClass);
+        this.memo = memo;
     }
+
+    NceSystemConnectionMemo memo;
 
     @Override
     public JmriPanel makePanel() {
@@ -53,10 +52,6 @@ public class NceNamedPaneAction extends SystemConnectionNamedPaneAction<NceSyste
         return p;
     }
 
-    @Override
-    public Set<Class<? extends SystemConnectionMemo>> getSystemConnectionMemoClasses() {
-        return new HashSet<>(Arrays.asList(NceSystemConnectionMemo.class));
-    }
-
     private final static Logger log = LoggerFactory.getLogger(NceNamedPaneAction.class);
+
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import jmri.InstanceManagerAutoDefault;
 import jmri.server.json.JsonConnection;
 
@@ -34,11 +35,11 @@ public class JsonMessageClientManager implements InstanceManagerAutoDefault {
      * @throws IllegalArgumentException if client is already in use for a
      *                                      different connection
      */
-    public void subscribe(@Nonnull String client, @Nonnull JsonConnection connection) {
-        if (clients.containsKey(client) && !connection.equals(clients.get(client))) {
+    public void subscribe(@Nonnull String client, @Nonnull JsonConnection connection) throws IllegalArgumentException {
+        if (this.clients.containsKey(client) && !connection.equals(this.clients.get(client))) {
             throw new IllegalArgumentException("client in use with different connection");
         }
-        clients.putIfAbsent(client, connection);
+        this.clients.putIfAbsent(client, connection);
     }
 
     /**
@@ -46,8 +47,8 @@ public class JsonMessageClientManager implements InstanceManagerAutoDefault {
      *
      * @param client the client canceling the subscription
      */
-    public void unsubscribe(@CheckForNull String client) {
-        clients.remove(client);
+    public void unsubscribe(@Nullable String client) {
+        this.clients.remove(client);
     }
 
     /**
@@ -55,12 +56,16 @@ public class JsonMessageClientManager implements InstanceManagerAutoDefault {
      *
      * @param connection the connection canceling the subscription
      */
-    public void unsubscribe(@CheckForNull JsonConnection connection) {
+    public void unsubscribe(@Nullable JsonConnection connection) {
         List<String> keys = new ArrayList<>();
-        clients.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(connection))
-                .forEachOrdered(entry -> keys.add(entry.getKey()));
-        keys.forEach(this::unsubscribe);
+        this.clients.entrySet().stream()
+                .filter((entry) -> (entry.getValue().equals(connection)))
+                .forEachOrdered((entry) -> {
+                    keys.add(entry.getKey());
+                });
+        keys.forEach((client) -> {
+            this.unsubscribe(client);
+        });
     }
 
     /**
@@ -70,29 +75,29 @@ public class JsonMessageClientManager implements InstanceManagerAutoDefault {
      * @param message the message to send
      */
     public void send(@Nonnull JsonMessage message) {
-        JsonNode node = getJsonMessage(message);
+        JsonNode node = this.getJsonMessage(message);
         if (message.getClient() == null) {
-            new HashMap<>(clients).entrySet().forEach(client -> {
+            new HashMap<>(this.clients).entrySet().forEach((client) -> {
                 try {
                     client.getValue().sendMessage(node, 0);
                 } catch (IOException ex) {
-                    unsubscribe(client.getKey());
+                    this.unsubscribe(client.getKey());
                 }
             });
         } else {
-            JsonConnection connection = clients.get(message.getClient());
+            JsonConnection connection = this.clients.get(message.getClient());
             if (connection != null) {
                 try {
                     connection.sendMessage(node, 0);
                 } catch (IOException ex) {
-                    unsubscribe(message.getClient());
+                    this.unsubscribe(message.getClient());
                 }
             }
         }
     }
 
     private JsonNode getJsonMessage(JsonMessage message) {
-        return message.toJSON(mapper);
+        return message.toJSON(this.mapper);
     }
 
     /**
@@ -103,7 +108,7 @@ public class JsonMessageClientManager implements InstanceManagerAutoDefault {
      */
     @CheckForNull
     public synchronized String getClient(@Nonnull JsonConnection connection) {
-        for (Entry<String, JsonConnection> entry : clients.entrySet()) {
+        for (Entry<String, JsonConnection> entry : this.clients.entrySet()) {
             if (entry.getValue().equals(connection)) {
                 return entry.getKey();
             }
@@ -120,7 +125,7 @@ public class JsonMessageClientManager implements InstanceManagerAutoDefault {
      */
     public synchronized Set<String> getClients(@Nonnull JsonConnection connection) {
         Set<String> set = new HashSet<>();
-        for (Entry<String, JsonConnection> entry : clients.entrySet()) {
+        for (Entry<String, JsonConnection> entry : this.clients.entrySet()) {
             if (entry.getValue().equals(connection)) {
                 set.add(entry.getKey());
             }

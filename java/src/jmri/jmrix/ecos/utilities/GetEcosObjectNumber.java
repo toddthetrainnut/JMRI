@@ -10,10 +10,7 @@ package jmri.jmrix.ecos.utilities;
 public class GetEcosObjectNumber {
 
     /**
-     * @param s Name of this action, e.g. in menus.
-     * @param start start string.
-     * @param finish finish string.
-     * @return object number.
+     * @param s Name of this action, e.g. in menus
      */
     static public int getEcosObjectNumber(String s, String start, String finish) {
         int intStart = 0;

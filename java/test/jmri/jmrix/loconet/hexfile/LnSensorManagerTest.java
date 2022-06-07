@@ -2,18 +2,21 @@ package jmri.jmrix.loconet.hexfile;
 
 import jmri.Sensor;
 import jmri.SensorManager;
+import jmri.jmrix.loconet.LnSensor;
 import jmri.jmrix.loconet.LocoNetInterfaceScaffold;
 import jmri.jmrix.loconet.LocoNetMessage;
-import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests for the jmri.jmrix.loconet.hexfile.LnSensorManagerTurnout class.
  *
- * @author Bob Jacobsen Copyright 2001
+ * @author	Bob Jacobsen Copyright 2001
  */
 public class LnSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
 
@@ -63,7 +66,7 @@ public class LnSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase
         lnis.sendTestMessage(m1);
 
         // see if sensor exists
-        Assert.assertNotNull(l.getBySystemName("LS44"));
+        Assert.assertTrue(null != l.getBySystemName("LS44"));
     }
 
     @Test
@@ -73,31 +76,41 @@ public class LnSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase
 
         Sensor o = t.newSensor("LS21", "my name");
 
-        Assert.assertNotNull(o);
+        if (log.isDebugEnabled()) {
+            log.debug("received sensor value " + o);
+        }
+        Assert.assertTrue(null != (LnSensor) o);
 
-        Assert.assertNotNull(t.getBySystemName("LS21"));
-        Assert.assertNotNull(t.getByUserName("my name"));
+        // make sure loaded into tables
+        if (log.isDebugEnabled()) {
+            log.debug("by system name: " + t.getBySystemName("LS21"));
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("by user name:   " + t.getByUserName("my name"));
+        }
+
+        Assert.assertTrue(null != t.getBySystemName("LS21"));
+        Assert.assertTrue(null != t.getByUserName("my name"));
 
     }
 
-//    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LnSensorManagerTest.class);
+    private final static Logger log = LoggerFactory.getLogger(LnSensorManagerTest.class);
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
-        LocoNetSystemConnectionMemo memo = new LocoNetSystemConnectionMemo();
-        lnis = new LocoNetInterfaceScaffold(memo);
-        memo.setLnTrafficController(lnis);
+        lnis = new LocoNetInterfaceScaffold();
         Assert.assertNotNull("exists", lnis);
 
         // create and register the manager object
-        l = new LnSensorManager(memo, false);
+        l = new LnSensorManager(lnis, "L");
         jmri.InstanceManager.setSensorManager(l);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         l.dispose();
         lnis = null;

@@ -53,10 +53,10 @@ public class DccSignalHeadXml extends jmri.managers.configurexml.AbstractNamedBe
         element.addContent(new Element("packetsendcount").addContent(Integer.toString(p.getDccSignalHeadPacketSendCount())));
 
         for (int i = 0; i < p.getValidStates().length; i++) {
-            String aspect = p.getValidStateKeys()[i];
+            String aspect = p.getValidStateNames()[i];
             //String address = p.getOutputForAppearance(i);
             Element el = new Element("aspect");
-            el.setAttribute("defines", aspect); // non-localized appearance property key
+            el.setAttribute("defines", aspect);
             el.addContent(new Element("number").addContent(Integer.toString(p.getOutputForAppearance(p.getValidStates()[i]))));
             element.addContent(el);
         }
@@ -90,8 +90,7 @@ public class DccSignalHeadXml extends jmri.managers.configurexml.AbstractNamedBe
 
         List<Element> list = shared.getChildren("aspect");
         for (Element e : list) {
-            String aspect = e.getAttribute("defines").getValue(); // migrated to store non-localized key 4.15.6
-            // previous versions store localized appearance name as defines value
+            String aspect = e.getAttribute("defines").getValue();
             int number = -1;
             try {
                 String value = e.getChild("number").getValue();
@@ -103,8 +102,7 @@ public class DccSignalHeadXml extends jmri.managers.configurexml.AbstractNamedBe
             int indexOfAspect = -1;
 
             for (int i = 0; i < h.getValidStates().length; i++) {
-                if (h.getValidStateKeys()[i].equals(aspect) || h.getValidStateNames()[i].equals(aspect)) {
-                    // matching to stateKey is preferred to allow changing locale without errors
+                if (h.getValidStateNames()[i].equals(aspect)) {
                     indexOfAspect = i;
                     break;
                 }
@@ -124,5 +122,4 @@ public class DccSignalHeadXml extends jmri.managers.configurexml.AbstractNamedBe
     }
 
     private final static Logger log = LoggerFactory.getLogger(DccSignalHeadXml.class);
-
 }

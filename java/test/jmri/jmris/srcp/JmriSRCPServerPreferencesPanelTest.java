@@ -1,26 +1,31 @@
 package jmri.jmris.srcp;
 
-import jmri.swing.PreferencesPanelTestBase;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the jmri.jmris.srcp.JmriSRCPServerPreferencesPanel class
  *
  * @author Paul Bender Copyright (C) 2016
  */
-public class JmriSRCPServerPreferencesPanelTest extends PreferencesPanelTestBase<JmriSRCPServerPreferencesPanel> {
+public class JmriSRCPServerPreferencesPanelTest {
 
-    @Override
-    @BeforeEach
-    public void setUp() {
+    @Test public void testCtor() {
+        JmriSRCPServerPreferencesPanel a = new JmriSRCPServerPreferencesPanel();
+        Assert.assertNotNull(a);
+    }
+
+    @Before public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
-        prefsPanel = new JmriSRCPServerPreferencesPanel();
+    }
+
+    @After public void tearDown() throws Exception {
+        JUnitUtil.tearDown();
     }
 
 }

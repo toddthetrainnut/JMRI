@@ -4,16 +4,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.sprog.SprogCSStreamPortController class.
  *
- * @author Paul Bender Copyright (C) 2014-2016
+ * @author	Paul Bender Copyright (C) 2014-2016
  */
 public class SprogCSStreamPortControllerTest extends jmri.jmrix.AbstractStreamPortControllerTestBase {
 
@@ -22,7 +22,8 @@ public class SprogCSStreamPortControllerTest extends jmri.jmrix.AbstractStreamPo
        Assert.assertNotNull("exists", apc);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -39,7 +40,7 @@ public class SprogCSStreamPortControllerTest extends jmri.jmrix.AbstractStreamPo
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         JUnitUtil.tearDown();

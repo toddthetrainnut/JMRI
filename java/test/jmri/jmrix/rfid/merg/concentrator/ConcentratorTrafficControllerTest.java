@@ -1,24 +1,24 @@
 package jmri.jmrix.rfid.merg.concentrator;
 
-import jmri.jmrix.rfid.RfidSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * ConcentratorTrafficControllerTest.java
  *
- * Test for the ConcentratorTrafficController class
+ * Description:	tests for the ConcentratorTrafficController class
  *
- * @author Paul Bender Copyright (C) 2012,2016
+ * @author	Paul Bender Copyright (C) 2012,2016
  */
 public class ConcentratorTrafficControllerTest extends jmri.jmrix.rfid.RfidTrafficControllerTest {
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        tc = new ConcentratorTrafficController(new RfidSystemConnectionMemo(),"A-H"){
+        tc = new ConcentratorTrafficController(new ConcentratorSystemConnectionMemo(),"A-H"){
            @Override
            public void sendInitString(){
            }
@@ -26,12 +26,10 @@ public class ConcentratorTrafficControllerTest extends jmri.jmrix.rfid.RfidTraff
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

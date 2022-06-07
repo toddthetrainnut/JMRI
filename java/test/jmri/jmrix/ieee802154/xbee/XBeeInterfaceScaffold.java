@@ -2,6 +2,9 @@ package jmri.jmrix.ieee802154.xbee;
 
 import com.digi.xbee.api.XBeeDevice;
 import com.digi.xbee.api.RemoteXBeeDevice;
+import com.digi.xbee.api.models.XBee16BitAddress;
+import com.digi.xbee.api.models.XBee64BitAddress;
+import com.digi.xbee.api.models.XBeeProtocol;
 import java.util.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,10 +12,10 @@ import org.slf4j.LoggerFactory;
 /**
  * XBeeInterfaceScaffold.java
  *
- * Test scaffold implementation of XBeeInterface
+ * Description:	Test scaffold implementation of XBeeInterface
  *
- * @author Bob Jacobsen Copyright (C) 2002, 2006
- * @author Paul Bender Copyright (C) 2016
+ * @author	Bob Jacobsen Copyright (C) 2002, 2006
+ * @author	Paul Bender Copyright (C) 2016
  *
  * Use an object of this type as a XBeeTrafficController in tests
  */
@@ -70,7 +73,7 @@ public class XBeeInterfaceScaffold extends XBeeTrafficController {
     @Override
     public void sendXBeeMessage(XBeeMessage m, XBeeListener replyTo) {
         if (log.isDebugEnabled()) {
-            log.debug("sendXBeeMessage [{}]", m);
+            log.debug("sendXBeeMessage [" + m + "]");
         }
         // save a copy
         outbound.addElement(m);
@@ -83,7 +86,7 @@ public class XBeeInterfaceScaffold extends XBeeTrafficController {
     public void sendTestMessage(XBeeReply m) {
         // forward a test message to XBeeListeners
         if (log.isDebugEnabled()) {
-            log.debug("sendTestMessage    [{}]", m);
+            log.debug("sendTestMessage    [" + m + "]");
         }
         notifyReply(m, null);
         return;

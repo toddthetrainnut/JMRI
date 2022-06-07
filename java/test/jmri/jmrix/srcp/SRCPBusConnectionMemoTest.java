@@ -1,55 +1,48 @@
 package jmri.jmrix.srcp;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * SRCPBusConnectionMemoTest.java
- * <p>
- * Test for the jmri.jmrix.srcp.SRCPBusConnectionMemo class
  *
- * @author Bob Jacobsen
+ * Description:	tests for the jmri.jmrix.srcp.SRCPBusConnectionMemo class
+ *
+ * @author	Bob Jacobsen
  */
-public class SRCPBusConnectionMemoTest extends SystemConnectionMemoTestBase<SRCPBusConnectionMemo> {
+public class SRCPBusConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
-    private SRCPSystemConnectionMemo memo;
-    private SRCPTrafficController tc;
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        tc = new SRCPTrafficController() {
+        scm = new SRCPBusConnectionMemo(new SRCPTrafficController() {
             @Override
             public void sendSRCPMessage(SRCPMessage m, SRCPListener reply) {
             }
-
             @Override
-            public void transmitLoop() {
+            public void transmitLoop(){
             }
-
             @Override
-            public void receiveLoop() {
+            public void receiveLoop(){
             }
-        };
-        memo = new SRCPSystemConnectionMemo(tc);
-        scm = memo.getMemo(1);
+        }, "A", 1);
     }
 
     @Override
     @Test
-    public void testProvidesConsistManager() {
-        Assert.assertFalse("Provides ConsistManager", scm.provides(jmri.ConsistManager.class));
+    public void testProvidesConsistManager(){
+       Assert.assertFalse("Provides ConsistManager",scm.provides(jmri.ConsistManager.class));
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        tc.terminateThreads();
-        memo.dispose();
         JUnitUtil.tearDown();
     }
 }

@@ -1,18 +1,17 @@
 package jmri.jmrit.operations.automation.actions;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.automation.AutomationItem;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.TrainManager;
 import jmri.util.JUnitOperationsUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class BuildTrainIfSelectedActionTest extends OperationsTestCase {
 
@@ -71,9 +70,6 @@ public class BuildTrainIfSelectedActionTest extends OperationsTestCase {
         //try again
         action.doAction();
         Assert.assertFalse(automationItem.isActionSuccessful());
-        
-        JUnitOperationsUtil.checkOperationsShutDownTask();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(BuildTrainIfSelectedActionTest.class);

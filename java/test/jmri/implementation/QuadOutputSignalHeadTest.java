@@ -6,13 +6,14 @@ import jmri.SignalHead;
 import jmri.Turnout;
 import jmri.TurnoutManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class QuadOutputSignalHeadTest extends AbstractSignalHeadTestBase {
 
@@ -43,12 +44,13 @@ public class QuadOutputSignalHeadTest extends AbstractSignalHeadTestBase {
         return new QuadOutputSignalHead("Test Head",green,red,yellow,lunar);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();        jmri.util.JUnitUtil.initInternalTurnoutManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

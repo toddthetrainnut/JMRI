@@ -1,10 +1,8 @@
 package jmri.jmrix.powerline.swing.packetgen;
 
 import java.awt.event.ActionEvent;
-import jmri.InstanceManager;
-import jmri.jmrix.powerline.SerialSystemConnectionMemo;
+import javax.swing.AbstractAction;
 import jmri.jmrix.powerline.SerialTrafficController;
-import jmri.jmrix.powerline.swing.PowerlineSystemConnectionAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,20 +13,16 @@ import org.slf4j.LoggerFactory;
  * connection
  * @author kcameron Copyright (C) 2011
  */
-public class SerialPacketGenAction extends PowerlineSystemConnectionAction {
+public class SerialPacketGenAction extends AbstractAction {
 
     public SerialPacketGenAction(String s, SerialTrafficController tc) {
-        super(s, tc.getAdapterMemo());
+        super(s);
         this.tc = tc;
     }
 
     public SerialPacketGenAction(SerialTrafficController tc) {
         this(Bundle.getMessage("SendPacketTitle"), tc);
         this.tc = tc;
-    }
-
-    public SerialPacketGenAction() {
-        this(InstanceManager.getDefault(SerialSystemConnectionMemo.class).getTrafficController());
     }
 
     SerialTrafficController tc = null;

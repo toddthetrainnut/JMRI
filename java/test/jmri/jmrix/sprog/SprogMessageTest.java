@@ -2,14 +2,15 @@ package jmri.jmrix.sprog;
 
 import jmri.ProgrammingMode;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the SprogMessage class.
  *
- * @author Bob Jacobsen Copyright 2012
+ * @author	Bob Jacobsen Copyright 2012
  */
 public class SprogMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
@@ -39,16 +40,16 @@ public class SprogMessageTest extends jmri.jmrix.AbstractMessageTestBase {
         Assert.assertEquals("string compare ", "V 1021 251", msg.toString());
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = msg = new SprogMessage(1);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = msg = null;
+	m = msg = null;
         JUnitUtil.tearDown();
     }
 

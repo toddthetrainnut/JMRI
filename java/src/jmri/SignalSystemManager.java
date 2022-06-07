@@ -1,7 +1,5 @@
 package jmri;
 
-import javax.annotation.CheckForNull;
-
 /**
  * Interface for obtaining information about signal systems.
  * <p>
@@ -25,21 +23,9 @@ import javax.annotation.CheckForNull;
  */
 public interface SignalSystemManager extends Manager<SignalSystem> {
 
-    /**
-     * Get SignalSystem by Name.
-     * @param name to search for.
-     * @return SignalSystem or null if no system found.
-     */
-    @CheckForNull
     public SignalSystem getSystem(String name);
 
-    /** {@inheritDoc} */
-    @Override
-    @CheckForNull
     public SignalSystem getBySystemName(String name);
 
-    /** {@inheritDoc} */
-    @Override
-    @CheckForNull
     public SignalSystem getByUserName(String name);
 }

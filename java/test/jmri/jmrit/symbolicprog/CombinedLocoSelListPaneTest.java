@@ -1,13 +1,14 @@
 package jmri.jmrit.symbolicprog;
 
 import javax.swing.JLabel;
-
 import jmri.Programmer;
 import jmri.jmrit.progsupport.ProgModeSelector;
 import jmri.util.JUnitUtil;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CombinedLocoSelListPaneTest {
 
@@ -68,18 +69,18 @@ public class CombinedLocoSelListPaneTest {
         combinedlocosellistpane.mDecoderList.setSelectedIndex(4);
         Assert.assertEquals("after update", true, combinedlocosellistpane.isDecoderSelected());
         String stringRet = combinedlocosellistpane.selectedDecoderType();
-        Assert.assertEquals("selected item", "SUSI Output Mapping definitions (SUSI Output Mapping definitions)",
+        Assert.assertEquals("selected item", "NMRA standard register definitions (NMRA standard register definitions)",
                 stringRet);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
         JUnitUtil.initConfigureManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

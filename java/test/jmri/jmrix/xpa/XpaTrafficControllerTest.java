@@ -1,14 +1,15 @@
 package jmri.jmrix.xpa;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * XpaTrafficControllerTest.java
  *
- * Test for the jmri.jmrix.xpa.XpaTrafficController class
+ * Description: tests for the jmri.jmrix.xpa.XpaTrafficController class
  *
  * @author Paul Bender
  */
@@ -20,12 +21,12 @@ public class XpaTrafficControllerTest {
         Assert.assertNotNull(t);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

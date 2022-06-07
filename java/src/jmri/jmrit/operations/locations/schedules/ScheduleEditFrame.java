@@ -3,12 +3,21 @@ package jmri.jmrit.operations.locations.schedules;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.text.MessageFormat;
-
-import javax.swing.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsXml;
@@ -20,6 +29,8 @@ import jmri.jmrit.operations.rollingstock.cars.CarTypes;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.swing.JTablePersistenceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame for user edit of a schedule
@@ -52,7 +63,6 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
 
     // radio buttons
     JRadioButton addLocAtTop = new JRadioButton(Bundle.getMessage("Top"));
-    JRadioButton addLocAtMiddle = new JRadioButton(Bundle.getMessage("Middle"));
     JRadioButton addLocAtBottom = new JRadioButton(Bundle.getMessage("Bottom"));
     JRadioButton sequentialRadioButton = new JRadioButton(Bundle.getMessage("Sequential"));
     JRadioButton matchRadioButton = new JRadioButton(Bundle.getMessage("Match"));
@@ -148,11 +158,9 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
         addItem(p3, typeBox, 0, 1);
         addItem(p3, addTypeButton, 1, 1);
         addItem(p3, addLocAtTop, 2, 1);
-        addItem(p3, addLocAtMiddle, 3, 1);
-        addItem(p3, addLocAtBottom, 4, 1);
+        addItem(p3, addLocAtBottom, 3, 1);
         ButtonGroup group = new ButtonGroup();
         group.add(addLocAtTop);
-        group.add(addLocAtMiddle);
         group.add(addLocAtBottom);
         addLocAtBottom.setSelected(true);
 
@@ -194,7 +202,7 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
         toolMenu.add(new ScheduleCopyAction(schedule));
         toolMenu.add(new ScheduleOptionsAction(this));
         toolMenu.add(new ScheduleResetHitsAction(schedule));
-        toolMenu.add(new SchedulesByLoadAction());
+        toolMenu.add(new SchedulesByLoadAction(Bundle.getMessage("MenuItemShowSchedulesByLoad")));
         setJMenuBar(menuBar);
         addHelpMenu("package.jmri.jmrit.operations.Operations_Schedules", true); // NOI18N
 
@@ -277,16 +285,6 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
         // add item to this schedule
         if (addLocAtTop.isSelected()) {
             _schedule.addItem((String) typeBox.getSelectedItem(), 0);
-        } else if (addLocAtMiddle.isSelected()) {
-            if (scheduleTable.getSelectedRow() >= 0) {
-                int row = scheduleTable.getSelectedRow();
-                log.debug("Selected row: {}", row);
-                _schedule.addItem((String) typeBox.getSelectedItem(), row);
-                // we need to reselect the table since the content has changed
-                scheduleTable.getSelectionModel().setSelectionInterval(row, row);
-            } else {
-                _schedule.addItem((String) typeBox.getSelectedItem(), _schedule.getSize() / 2);
-            }
         } else {
             _schedule.addItem((String) typeBox.getSelectedItem());
         }
@@ -343,7 +341,7 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
     private void loadTypeComboBox() {
         typeBox.removeAllItems();
         for (String typeName : InstanceManager.getDefault(CarTypes.class).getNames()) {
-            if (_track.isTypeNameAccepted(typeName)) {
+            if (_track.acceptsTypeName(typeName)) {
                 typeBox.addItem(typeName);
             }
         }
@@ -354,7 +352,7 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
      * @return true if name is less than 26 characters
      */
     private boolean checkName(String s) {
-        if (scheduleNameTextField.getText().trim().isEmpty()) {
+        if (scheduleNameTextField.getText().trim().equals("")) {
             return false;
         }
         if (scheduleNameTextField.getText().length() > MAX_NAME_LENGTH) {
@@ -370,7 +368,7 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
     }
 
     private void reportScheduleExists(String s) {
-        log.info("Can not {}, schedule already exists", s);
+        log.info("Can not " + s + ", schedule already exists");
         JOptionPane.showMessageDialog(this, Bundle.getMessage("ReportExists"),
                 MessageFormat.format(Bundle.getMessage("CanNotSchedule"), new Object[]{s}),
                 JOptionPane.ERROR_MESSAGE);
@@ -380,7 +378,6 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
         typeBox.setEnabled(enabled);
         addTypeButton.setEnabled(enabled);
         addLocAtTop.setEnabled(enabled);
-        addLocAtMiddle.setEnabled(enabled);
         addLocAtBottom.setEnabled(enabled);
         saveScheduleButton.setEnabled(enabled);
         deleteScheduleButton.setEnabled(enabled);
@@ -394,10 +391,10 @@ public class ScheduleEditFrame extends OperationsFrame implements java.beans.Pro
         InstanceManager.getDefault(CarTypes.class).removePropertyChangeListener(this);
         _location.removePropertyChangeListener(this);
         _track.removePropertyChangeListener(this);
+        scheduleModel.dispose();
         InstanceManager.getOptionalDefault(JTablePersistenceManager.class).ifPresent(tpm -> {
             tpm.stopPersisting(scheduleTable);
         });
-        scheduleModel.dispose();
         super.dispose();
     }
 

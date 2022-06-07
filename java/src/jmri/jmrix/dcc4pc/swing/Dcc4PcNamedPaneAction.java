@@ -16,10 +16,6 @@ public class Dcc4PcNamedPaneAction extends jmri.util.swing.JmriNamedPaneAction {
 
     /**
      * Enhanced constructor for placing the pane in various GUIs
-     * @param s action string name.
-     * @param wi window interface.
-     * @param paneClass pane class string.
-     * @param memo system connection.
      */
     public Dcc4PcNamedPaneAction(String s, WindowInterface wi, String paneClass, Dcc4PcSystemConnectionMemo memo) {
         super(s, wi, paneClass);

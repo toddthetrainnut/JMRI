@@ -1,19 +1,17 @@
 package jmri.jmrit.symbolicprog;
 
-import java.awt.event.FocusEvent;
 import static java.nio.charset.Charset.defaultCharset;
 
 import java.util.HashMap;
 import java.util.List;
-
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-
 import jmri.progdebugger.ProgDebugger;
 import jmri.util.CvUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +79,7 @@ public class SplitTextVariableValueTest extends AbstractVariableValueTestBase {
 
     @Override
     void setReadOnlyValue(VariableValue var, String val) {
-        ((SplitVariableValue) var).setLongValue(Integer.parseInt(val));
+        ((SplitVariableValue) var).setValue(Integer.parseInt(val));
     }
 
     @Override
@@ -99,37 +97,32 @@ public class SplitTextVariableValueTest extends AbstractVariableValueTestBase {
     @Override
     @Test
     public void testVariableValueCreate() {
-    } // mask is ignored by splitAddress tests
+    }// mask is ignored by splitAddre
 
     @Override
     @Test
     public void testVariableFromCV() {
-    } // low CV is upper part of address
-
-    @Override
-    @Test
-    public void testVariableValueTwinMask() {
-    } // mask is ignored
+    }     // low CV is upper part of address
 
     @Override
     @Test
     public void testVariableValueRead() {
-    } // due to multi-cv nature of splitAddress tests
+    } // due to multi-cv nature of SplitAddr
 
     @Override
     @Test
     public void testVariableValueWrite() {
-    } // due to multi-cv nature of splitAddress tests
+    } // due to multi-cv nature of SplitAddr
 
     @Override
     @Test
     public void testVariableCvWrite() {
-    } // due to multi-cv nature of splitAddress tests
+    }    // due to multi-cv nature of SplitAddr
 
     @Override
     @Test
     public void testWriteSynch2() {
-    } // programmer synch is different
+    }        // programmer synch is different
 
     // at some point, these should pass, but have to think hard about
     // how to define the split/shift/mask operations for long CVs
@@ -284,7 +277,7 @@ public class SplitTextVariableValueTest extends AbstractVariableValueTestBase {
         int pFactor = 1;
         int pOffset = 0;
         String uppermask = "";
-        String match = "[ a-zA-Z0-9]*";
+        String match = "[a-zA-Z0-9]*";
         String termByteStr = "0";
         String padByteStr = "0";
         String charSet = defaultCharset().name();
@@ -319,7 +312,7 @@ public class SplitTextVariableValueTest extends AbstractVariableValueTestBase {
         resultStr = loadString(testStr, var, name);  // load a value, get the result
         checkResults(beforeStr, testStr, resultStr, cv, match, termByteStr, padByteStr, charSet);
 
-        testStr = "Test Invalid.";
+        testStr = "Test Invalid";
         beforeStr = ((JTextField) var.getCommonRep()).getText();  // get the current contents
         resultStr = loadString(testStr, var, name);  // load a value, get the result
         checkResults(beforeStr, testStr, resultStr, cv, match, termByteStr, padByteStr, charSet);
@@ -428,18 +421,15 @@ public class SplitTextVariableValueTest extends AbstractVariableValueTestBase {
      * @return The result after loading.
      */
     String loadString(String testStr, SplitTextVariableValue var, String name) {
-
-        FocusEvent focusEvent = new FocusEvent(var.getCommonRep(), 0, true);
-
-        var.focusGained(focusEvent);
         ((JTextField) var.getCommonRep()).setText(testStr);  // load a value
-        var.focusLost(focusEvent);
+        var.exitField();
+        var.actionPerformed(new java.awt.event.ActionEvent(var, 0, name));
         return ((JTextField) var.getCommonRep()).getText();  // get the result
     }
 
     /**
      * Common method to check the results of loading a value.
-     * <br>
+     * <br><br>
      * Performs a suite of checks on the resultant text value and associated CV
      * values.
      *
@@ -458,7 +448,6 @@ public class SplitTextVariableValueTest extends AbstractVariableValueTestBase {
      */
     public void checkResults(String beforeStr, String testStr, String resultStr, CvValue[] cv,
             String match, String termByteStr, String padByteStr, String charSet) {
-        log.debug("checkResults with beforeStr='{}', testStr='{}', resultStr='{}'", beforeStr, testStr, resultStr);
 
         // check if match parameter applies and modify expectations accordingly
         if (match != null && !match.equals("") && !testStr.matches(match)) {
@@ -500,14 +489,12 @@ public class SplitTextVariableValueTest extends AbstractVariableValueTestBase {
     }
 
     // from here down is testing infrastructure
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         super.setUp();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         super.tearDown();
     }

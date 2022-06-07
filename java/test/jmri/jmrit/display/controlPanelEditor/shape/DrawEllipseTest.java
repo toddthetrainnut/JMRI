@@ -1,14 +1,14 @@
 package jmri.jmrit.display.controlPanelEditor.shape;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrit.display.EditorScaffold;
 import jmri.jmrit.display.controlPanelEditor.ControlPanelEditor;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -42,7 +42,8 @@ public class DrawEllipseTest {
         JUnitUtil.dispose(frame);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -50,12 +51,10 @@ public class DrawEllipseTest {
         editor = new EditorScaffold();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         editor = null;
         jmri.util.JUnitUtil.resetWindows(false, false);  // don't log here.  should be from this class.
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

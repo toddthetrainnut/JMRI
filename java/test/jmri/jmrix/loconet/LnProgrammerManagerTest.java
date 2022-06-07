@@ -1,13 +1,14 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class LnProgrammerManagerTest {
 
@@ -16,17 +17,18 @@ public class LnProgrammerManagerTest {
         LnTrafficController lnis = new LocoNetInterfaceScaffold();
         SlotManager slotmanager = new SlotManager(lnis);
         LocoNetSystemConnectionMemo memo = new LocoNetSystemConnectionMemo(lnis, slotmanager);
-        LnProgrammerManager t = new LnProgrammerManager(memo);
+        LnProgrammerManager t = new LnProgrammerManager(slotmanager, memo);
         Assert.assertNotNull("exists", t);
         memo.dispose();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

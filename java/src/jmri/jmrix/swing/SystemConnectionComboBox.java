@@ -8,7 +8,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import jmri.InstanceManager;
-import jmri.SystemConnectionMemo;
+import jmri.jmrix.SystemConnectionMemo;
 
 /**
  * JComboBox that provides a list of SystemConnectionMemos by user name.

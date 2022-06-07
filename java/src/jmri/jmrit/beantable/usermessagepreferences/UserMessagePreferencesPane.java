@@ -6,6 +6,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
@@ -42,6 +43,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = PreferencesPanel.class)
 public class UserMessagePreferencesPane extends JmriPanel implements PreferencesPanel {
 
+    protected static final ResourceBundle rb = ResourceBundle.getBundle("apps.AppsConfigBundle");
     UserPreferencesManager p;
 
     public UserMessagePreferencesPane() {
@@ -274,7 +276,7 @@ public class UserMessagePreferencesPane extends JmriPanel implements Preferences
 
     @Override
     public String getPreferencesItemText() {
-        return Bundle.getMessage("MenuMessages"); // NOI18N
+        return rb.getString("MenuMessages"); // NOI18N
     }
 
     @Override

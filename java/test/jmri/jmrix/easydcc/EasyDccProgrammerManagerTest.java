@@ -1,13 +1,14 @@
 package jmri.jmrix.easydcc;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class EasyDccProgrammerManagerTest {
 
@@ -24,14 +25,15 @@ public class EasyDccProgrammerManagerTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tc = new EasyDccTrafficControlScaffold(null);
         memo = new EasyDccSystemConnectionMemo(tc);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         tc.terminateThreads();
         JUnitUtil.tearDown();

@@ -1,14 +1,15 @@
 package jmri.jmrix.dccpp.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * DCCppTurnoutManagerXmlTest.java
  *
- * Test for the DCCppTurnoutManagerXml class
+ * Description: tests for the DCCppTurnoutManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class DCCppTurnoutManagerXmlTest {
       Assert.assertNotNull("DCCppTurnoutManagerXml constructor",new DCCppTurnoutManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

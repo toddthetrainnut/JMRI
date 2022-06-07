@@ -1,10 +1,8 @@
 package jmri.jmrit.dualdecoder;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -12,21 +10,22 @@ import org.junit.jupiter.api.*;
  */
 public class DualDecoderSelectFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new DualDecoderSelectFrame();
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new DualDecoderSelectFrame();
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(DualDecoderSelectFrameTest.class);
+
 }

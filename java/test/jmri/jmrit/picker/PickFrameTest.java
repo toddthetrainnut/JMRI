@@ -1,12 +1,9 @@
 package jmri.jmrit.picker;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.*;
 import jmri.util.swing.JemmyUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 import org.netbeans.jemmy.operators.*;
 
 /**
@@ -29,14 +26,13 @@ public class PickFrameTest extends JmriJFrameTestBase {
 
         // Add an invalid name
         JTextFieldOperator jto = new JTextFieldOperator(jfo, 0);
-        jto.typeText("AAA");
+        jto.enterText("AAA");
         Thread add1 = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("WarningTitle"), Bundle.getMessage("ButtonOK"));  // NOI18N
         new JButtonOperator(jfo, "Add to Table").doClick();  // NOI18N
         JUnitUtil.waitFor(()->{return !(add1.isAlive());}, "add1 finished");  // NOI18N
 
         // Add a valid name
-        jto.clearText();
-        jto.typeText("IS123");
+        jto.enterText("IS123");
         new JButtonOperator(jfo, "Add to Table").doClick();  // NOI18N
 
         // Switch to the signal mast table
@@ -61,21 +57,19 @@ public class PickFrameTest extends JmriJFrameTestBase {
         JUnitUtil.dispose(f);
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new PickFrame("Pick Frame Test");
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new PickFrame("Pick Frame Test");
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         super.tearDown();
     }
 }

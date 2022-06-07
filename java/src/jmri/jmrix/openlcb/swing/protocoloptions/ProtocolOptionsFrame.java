@@ -7,6 +7,8 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +25,12 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
+import apps.ConfigBundle;
+import apps.gui3.tabbedpreferences.TabbedPreferences;
+import jmri.InstanceManager;
+import jmri.jmrix.ConnectionConfigManager;
 import jmri.jmrix.can.CanSystemConnectionMemo;
+import jmri.profile.ProfileManager;
 import jmri.util.FileUtil;
 import jmri.util.JmriJFrame;
 import static jmri.jmrix.openlcb.OlcbConfigurationManager.*;
@@ -43,9 +50,9 @@ public class ProtocolOptionsFrame extends JmriJFrame {
         this.scm = scm;
     }
 
-    private final Map<String, JPanel> protocolPanels = new HashMap<>();
+    private Map<String, JPanel> protocolPanels = new HashMap<>();
     private JTabbedPane protocolTabs;
-    private final List<Runnable> saveCallbacks = new ArrayList<>();
+    private List<Runnable> saveCallbacks = new ArrayList<>();
     boolean anyChanged = false;
 
     private JPanel getProtocolTab(String protocolKey) {
@@ -102,7 +109,12 @@ public class ProtocolOptionsFrame extends JmriJFrame {
             scm.setProtocolOption(protocolKey, optionKey, newV);
             anyChanged = true;
         });
-        valueField.addActionListener(actionEvent -> log.warn("Entry changed: {} {} = {}", protocolKey, optionKey, valueField.getText()));
+        valueField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                log.warn("Entry changed: " + protocolKey + " " + optionKey + " = " + valueField.getText());
+            }
+        });
     }
 
     private void addOptionLabel(String protocolKey, String optionKey, JPanel tab) {
@@ -224,16 +236,26 @@ public class ProtocolOptionsFrame extends JmriJFrame {
         contentPane.add(bottomPanel);
 
         JButton saveButton = new JButton(
-                Bundle.getMessage("ButtonSave"),
+                ConfigBundle.getMessage("ButtonSave"),
                 new ImageIcon(FileUtil.findURL("program:resources/icons/misc/gui3/SaveIcon.png",
                         FileUtil.Location.INSTALLED)));
         bottomPanel.add(saveButton);
-        saveButton.addActionListener(actionEvent -> saveButtonClicked());
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                saveButtonClicked();
+            }
+        });
 
         JButton cancelButton = new JButton(Bundle.getMessage("ButtonCancel"));
         bottomPanel.add(cancelButton);
-        cancelButton.addActionListener(actionEvent -> ProtocolOptionsFrame.this.dispatchEvent(new WindowEvent(ProtocolOptionsFrame
-                .this, WindowEvent.WINDOW_CLOSING)));
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                ProtocolOptionsFrame.this.dispatchEvent(new WindowEvent(ProtocolOptionsFrame
+                        .this, WindowEvent.WINDOW_CLOSING));
+            }
+        });
 
         pack();
     }
@@ -242,8 +264,13 @@ public class ProtocolOptionsFrame extends JmriJFrame {
         for (Runnable r : saveCallbacks) {
             r.run();
         }
-        this.setVisible(false);
-        this.dispose();
+        if (anyChanged) {
+            // Save current profile's connection config xml.
+            InstanceManager.getDefault(ConnectionConfigManager.class).savePreferences(
+                    ProfileManager.getDefault().getActiveProfile());
+            // This will pop up a restart message for the user.
+            InstanceManager.getDefault(TabbedPreferences.class).savePressed(true);
+        }
     }
 
     private final static Logger log = LoggerFactory.getLogger(ProtocolOptionsFrame.class);

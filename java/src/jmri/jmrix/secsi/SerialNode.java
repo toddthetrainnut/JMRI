@@ -72,7 +72,6 @@ public class SerialNode extends AbstractNode {
      * Assumes a node address of 0, and a node type of 0 (IO24) If this
      * constructor is used, actual node address must be set using
      * setNodeAddress, and actual node type using 'setNodeType'
-     * @param _tc system connection traffic controller.
      */
     public SerialNode(SerialTrafficController _tc) {
         this(0, DAUGHTER, _tc);
@@ -146,7 +145,6 @@ public class SerialNode extends AbstractNode {
     /**
      * Public method to return node type.
      * Current types are: DAUGHTER, CABDRIVER
-     * @return node type.
      */
     public int getNodeType() {
         return (nodeType);
@@ -154,7 +152,6 @@ public class SerialNode extends AbstractNode {
 
     /**
      * Set node type.
-     * @param type node type, e.g. DAUGHTER or CABDRIVER
      */
     public void setNodeType(int type) {
         nodeType = type;
@@ -235,8 +232,6 @@ public class SerialNode extends AbstractNode {
 
     boolean warned = false;
 
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value = "SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification = "only logging 1st warning string passed")
     void warn(String s) {
         if (warned) {
             return;

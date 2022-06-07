@@ -1,6 +1,10 @@
 package jmri.managers;
 
+import java.util.HashMap;
+import java.util.Set;
 import jmri.CabSignal;
+import jmri.CabSignalListListener;
+import jmri.CabSignalManager;
 import jmri.LocoAddress;
 import jmri.implementation.DefaultCabSignal;
 
@@ -23,7 +27,7 @@ import jmri.implementation.DefaultCabSignal;
 public class DefaultCabSignalManager extends AbstractCabSignalManager {
 
     /**
-     * {@inheritDoc}
+     * { @inheritDoc }
      */
     @Override
     protected CabSignal createCabSignal(LocoAddress address){

@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -12,18 +14,19 @@ import org.junit.jupiter.api.*;
  */
 public class AngularRouteTest {
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
 
     }
 
+    @SuppressWarnings("null")
     @Test
     public void testGetConstructor() {
         try {

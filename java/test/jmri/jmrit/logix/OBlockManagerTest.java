@@ -3,11 +3,10 @@ package jmri.jmrit.logix;
 import jmri.Block;
 import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the OBlockManager class.
@@ -22,15 +21,15 @@ public class OBlockManagerTest {
     @Test
     public void testProvide() {
         // original create with systemname
-        OBlock b1 = l.provide("OB101");
+        OBlock b1 = l.provideOBlock("OB101");
         Assert.assertNotNull(b1);
-        assertThat(b1.getSystemName()).withFailMessage("system name").isEqualTo("OB101");
+        Assert.assertEquals("system name", "OB101", b1.getSystemName());
     }
 
     @Test
     public void testProvideWorksTwice() {
-        Block b1 = l.provide("OB102");
-        Block b2 = l.provide("OB102");
+        Block b1 = l.provideOBlock("OB102");
+        Block b2 = l.provideOBlock("OB102");
         Assert.assertNotNull(b1);
         Assert.assertNotNull(b2);
         Assert.assertEquals(b1, b2);
@@ -40,12 +39,12 @@ public class OBlockManagerTest {
     public void testProvideFailure() {
         boolean correct = false;
         try {
-            l.provide("");
+            l.provideOBlock("");
             Assert.fail("didn't throw");
         } catch (IllegalArgumentException ex) {
             correct = true;
         }
-        assertThat(correct).withFailMessage("Exception thrown properly").isTrue();
+        Assert.assertTrue("Exception thrown properly", correct);     
     }
     
     @Test
@@ -63,18 +62,19 @@ public class OBlockManagerTest {
         OBlock bEast = _OBlockMgr.createNewOBlock("OB2", "East");
         OBlock bNorth = _OBlockMgr.createNewOBlock("OB3", "North");
         OBlock bSouth = _OBlockMgr.createNewOBlock("OB4", "South");
-        assertThat(_OBlockMgr.getOBlock("West")).withFailMessage("OBlock").isEqualTo(bWest);
-        assertThat(_OBlockMgr.getOBlock("OB2")).withFailMessage("OBlock").isEqualTo(bEast);
-        assertThat(_OBlockMgr.getOBlock("North")).withFailMessage("OBlock").isEqualTo(bNorth);
-        assertThat(_OBlockMgr.getOBlock("OB4")).withFailMessage("OBlock").isEqualTo(bSouth);
+        Assert.assertEquals("OBlock", bWest, _OBlockMgr.getOBlock("West"));
+        Assert.assertEquals("OBlock", bEast, _OBlockMgr.getOBlock("OB2"));
+        Assert.assertEquals("OBlock", bNorth, _OBlockMgr.getOBlock("North"));
+        Assert.assertEquals("OBlock", bSouth, _OBlockMgr.getOBlock("OB4"));
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();        l = new OBlockManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

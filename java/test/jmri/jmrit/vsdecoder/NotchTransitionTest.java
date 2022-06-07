@@ -1,9 +1,10 @@
 package jmri.jmrit.vsdecoder;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the NotchTransition class
@@ -33,20 +34,16 @@ public class NotchTransitionTest {
         Assert.assertTrue("set looped", uut.isLooped());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         uut = new NotchTransition(null, filename, "sysname", "uname"); // BOUND_MODE
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         uut = null;
-
-        // this created an audio manager, clean that up
-        jmri.InstanceManager.getDefault(jmri.AudioManager.class).cleanup();
-
-        jmri.util.JUnitAppender.suppressErrorMessage("Unhandled audio format type 0");
+        jmri.util.JUnitAppender.suppressWarnMessage("Initialised Null audio system - no sounds will be available.");
         JUnitUtil.tearDown();
     }
 }

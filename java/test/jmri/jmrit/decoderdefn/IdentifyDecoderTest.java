@@ -5,13 +5,15 @@ import jmri.managers.DefaultProgrammerManager;
 import jmri.progdebugger.ProgDebugger;
 import jmri.util.JUnitUtil;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * IdentifyDecoderTest.java.
  * <p>
- * Test for the jmrit.roster.IdentifyDecoder class
+ * Description: tests for the jmrit.roster.IdentifyDecoder class
  *
  * @author Bob Jacobsen
  */
@@ -293,7 +295,6 @@ public class IdentifyDecoderTest {
 
     /**
      * Test Hornby decoder with CV159 not available, hence productID is -1.
-     * Test with 5 fails on CV8 to trigger PAGEMODE and not abort.
      */
     @Test
     public void testIdentifyHornby4() { // CV159 not available hence productID is -1
@@ -323,25 +324,25 @@ public class IdentifyDecoderTest {
         Assert.assertEquals("running after 1 ", true, i.isRunning());
         Assert.assertEquals("Test isOptionalCv() after 1", i.isOptionalCv(), false);
 
-        // simulate 5 failures on CV8 to trigger swap to PAGEMODE, start 7
+        // simulate 2 retries on CV8, start 7
         i.programmingOpReply(21, 2);
         i.programmingOpReply(31, 2);
-        i.programmingOpReply(41, 2);
-        i.programmingOpReply(51, 2);
-        i.programmingOpReply(61, 2);
         i.programmingOpReply(48, 0);
         Assert.assertEquals("step 2 reads CV ", 7, cvRead);
         Assert.assertEquals("running after 2 ", true, i.isRunning());
         Assert.assertEquals("Test isOptionalCv() after 2", i.isOptionalCv(), false);
-        Assert.assertEquals("Programming mode after 2", ProgrammingMode.PAGEMODE, p.getMode());
+        Assert.assertEquals("Programming mode after 2", ProgrammingMode.DIRECTMODE, p.getMode());
 
         Assert.assertEquals("found mfg ID ", 48, i.mfgID);
         Assert.assertEquals("found model ID ", -1, i.modelID);
         Assert.assertEquals("found product ID ", -1, i.productID);
 
-        // simulate 2 failures on CV7, start 159
+        // simulate 7 retries on CV7, start 159
         i.programmingOpReply(22, 2);
         i.programmingOpReply(32, 2);
+        i.programmingOpReply(42, 2);
+        i.programmingOpReply(52, 2);
+        i.programmingOpReply(62, 2);
         i.programmingOpReply(88, 0);
         Assert.assertEquals("step 3 reads CV ", 159, cvRead);
         Assert.assertEquals("running after 3 ", true, i.isRunning());
@@ -363,236 +364,16 @@ public class IdentifyDecoderTest {
         Assert.assertEquals("found mfg ID ", 48, i.mfgID);
         Assert.assertEquals("found model ID ", 88, i.modelID);
         Assert.assertEquals("found product ID ", -1, i.productID);
-
-        jmri.util.JUnitAppender.assertWarnMessage("error 2 readng CV 8, trying Paged mode");
+        
+        jmri.util.JUnitAppender.assertWarnMessage("error 2 readng CV 7, trying Paged mode");
         jmri.util.JUnitAppender.assertWarnMessage("Restoring Direct mode");
         jmri.util.JUnitAppender.assertWarnMessage("CV 159 is optional. Will assume not present...");
     }
 
     /**
-     * Test Hornby decoder with only 2 failures on CV8 but 3 on CV7.
-     * Should fail as shouldn't switch to PAGEMODE.
-     */
-    @Test
-    public void testIdentifyHornby5() { // CV159 not available hence productID is -1
-        // create our test object
-        IdentifyDecoder i = new IdentifyDecoder(p) {
-            @Override
-            public void done(int mfgID, int modelID, int productID) {
-            }
-
-            @Override
-            public void message(String m) {
-            }
-
-            @Override
-            public void error() {
-            }
-        };
-
-        Assert.assertEquals("found mfg ID ", -1, i.mfgID);
-        Assert.assertEquals("found model ID ", -1, i.modelID);
-        Assert.assertEquals("found product ID ", -1, i.productID);
-        Assert.assertEquals("Test isOptionalCv() before start", i.isOptionalCv(), false);
-        Assert.assertEquals("Programming mode before start", ProgrammingMode.DIRECTMODE, p.getMode());
-
-        i.start();
-        Assert.assertEquals("step 1 reads CV ", 8, cvRead);
-        Assert.assertEquals("running after 1 ", true, i.isRunning());
-        Assert.assertEquals("Test isOptionalCv() after 1", i.isOptionalCv(), false);
-
-        // simulate 2 failures on CV8, start 7
-        i.programmingOpReply(21, 2);
-        i.programmingOpReply(31, 2);
-        i.programmingOpReply(48, 0);
-        Assert.assertEquals("step 2 reads CV ", 7, cvRead);
-        Assert.assertEquals("running after 2 ", true, i.isRunning());
-        Assert.assertEquals("Test isOptionalCv() after 2", i.isOptionalCv(), false);
-        Assert.assertEquals("Programming mode after 2", ProgrammingMode.DIRECTMODE, p.getMode());
-
-        Assert.assertEquals("found mfg ID ", 48, i.mfgID);
-        Assert.assertEquals("found model ID ", -1, i.modelID);
-        Assert.assertEquals("found product ID ", -1, i.productID);
-
-        // simulate 3 failures on CV7, to create fail since not switched to PAGEMODE
-        i.programmingOpReply(22, 2);
-        i.programmingOpReply(32, 2);
-        i.programmingOpReply(42, 2);
-        Assert.assertEquals("step 2 reads CV ", 7, cvRead);
-        Assert.assertEquals("running after 2 ", false, i.isRunning());
-        Assert.assertEquals("Programming mode after 3", ProgrammingMode.DIRECTMODE, p.getMode());
-
-        Assert.assertEquals("found mfg ID ", 48, i.mfgID);
-        Assert.assertEquals("found model ID ", -1, i.modelID);
-        Assert.assertEquals("found product ID ", -1, i.productID);
-
-        jmri.util.JUnitAppender.assertWarnMessage("Stopping due to error: "
-                            + p.decodeErrorCode(2));
-    }
-    
-    /**
-     * Test TCS decoder with 4-digit productID.
-     * Should pass
-     */
-    @Test
-    public void testIdentifyTCSV5() {
-        // create our test object
-        IdentifyDecoder i = new IdentifyDecoder(p) {
-            @Override
-            public void done(int mfgID, int modelID, int productID) {
-            }
-
-            @Override
-            public void message(String m) {
-            }
-
-            @Override
-            public void error() {
-            }
-        };
-
-        i.start();
-        Assert.assertEquals("step 1 reads CV ", 8, cvRead);
-        Assert.assertEquals("running after 1 ", true, i.isRunning());
-
-        // simulate CV read complete on CV8, start 7
-        i.programmingOpReply(153, 0);
-        Assert.assertEquals("step 2 reads CV ", 7, cvRead);
-        Assert.assertEquals("running after 2 ", true, i.isRunning());
-
-        // simulate CV read complete on CV7, start 249
-        i.programmingOpReply(5, 0);
-        Assert.assertEquals("step 3 reads CV ", 249, cvRead);
-        Assert.assertEquals("running after 3 ", true, i.isRunning());
-
-        // simulate CV read complete on CV249, start 248
-        i.programmingOpReply(176, 0);
-        Assert.assertEquals("step 4 reads CV ", 248, cvRead);
-        Assert.assertEquals("running after 4 ", true, i.isRunning());
-        
-        // simulate CV read complete on CV248, start 111
-        i.programmingOpReply(1, 0);
-        Assert.assertEquals("step 5 reads CV 111", 111, cvRead);
-        Assert.assertEquals("running after 5 ", true, i.isRunning());
-        
-        // simulate CV read complete on CV111, start 110
-        i.programmingOpReply(1, 0);
-        Assert.assertEquals("step 6 reads CV ", 110, cvRead);
-        Assert.assertEquals("running after 6 ", true, i.isRunning());
-        
-        // simulate CV read complete on CV110, start end
-        i.programmingOpReply(2, 0);
-
-        Assert.assertEquals("found mfg ID ", 153, i.mfgID);
-        Assert.assertEquals("found model ID ", 5, i.modelID);
-        Assert.assertEquals("found product ID ", 33620400, i.productID);
-    }
-    
-    /**
-     * Test TCS decoder with single byte, CV249 productID. Sound decoders pre V5
-     * Should pass
-     */
-    @Test
-    public void testIdentifyTCSV4() {
-        // create our test object
-        IdentifyDecoder i = new IdentifyDecoder(p) {
-            @Override
-            public void done(int mfgID, int modelID, int productID) {
-            }
-
-            @Override
-            public void message(String m) {
-            }
-
-            @Override
-            public void error() {
-            }
-        };
-
-        i.start();
-        Assert.assertEquals("step 1 reads CV ", 8, cvRead);
-        Assert.assertEquals("running after 1 ", true, i.isRunning());
-
-        // simulate CV read complete on CV8, start 7
-        i.programmingOpReply(153, 0);
-        Assert.assertEquals("step 2 reads CV ", 7, cvRead);
-        Assert.assertEquals("running after 2 ", true, i.isRunning());
-
-        // simulate CV read complete on CV7, start 249
-        i.programmingOpReply(4, 0);
-        Assert.assertEquals("step 3 reads CV ", 249, cvRead);
-        Assert.assertEquals("running after 3 ", true, i.isRunning());
-
-        // simulate CV read complete on CV249, start 248
-        i.programmingOpReply(176, 0);
-        Assert.assertEquals("step 4 reads CV ", 248, cvRead);
-        Assert.assertEquals("running after 4 ", true, i.isRunning());
-        
-        // simulate CV read complete on CV248, start 111
-        i.programmingOpReply(1, 0);
-        Assert.assertEquals("step 5 reads CV 111", 111, cvRead);
-        Assert.assertEquals("running after 5 ", true, i.isRunning());
-        
-        // simulate CV read complete on CV111, start 110
-        i.programmingOpReply(1, 0);
-        Assert.assertEquals("step 6 reads CV ", 110, cvRead);
-        Assert.assertEquals("running after 6 ", true, i.isRunning());
-        
-        // simulate CV read complete on CV110, start end
-        i.programmingOpReply(2, 0);
-
-        Assert.assertEquals("found mfg ID ", 153, i.mfgID);
-        Assert.assertEquals("found model ID ", 4, i.modelID);
-        Assert.assertEquals("found product ID ", 176, i.productID);
-    }
-    
-    /**
-     * Test TCS decoder with single byte, CV249 productID. Non-sound decoders only).
-     * Should pass
-     */
-    @Test
-    public void testIdentifyTCSMobile() {
-        // create our test object
-        IdentifyDecoder i = new IdentifyDecoder(p) {
-            @Override
-            public void done(int mfgID, int modelID, int productID) {
-            }
-
-            @Override
-            public void message(String m) {
-            }
-
-            @Override
-            public void error() {
-            }
-        };
-
-        i.start();
-        Assert.assertEquals("step 1 reads CV ", 8, cvRead);
-        Assert.assertEquals("running after 1 ", true, i.isRunning());
-
-        // simulate CV read complete on CV8, start 7
-        i.programmingOpReply(153, 0);
-        Assert.assertEquals("step 2 reads CV ", 7, cvRead);
-        Assert.assertEquals("running after 2 ", true, i.isRunning());
-
-        // simulate CV read complete on CV7, start 249
-        i.programmingOpReply(4, 0);
-        Assert.assertEquals("step 3 reads CV ", 249, cvRead);
-        Assert.assertEquals("running after 3 ", true, i.isRunning());
-
-        // simulate CV read complete on CV249, end
-        i.programmingOpReply(80, 0);
-
-        Assert.assertEquals("found mfg ID ", 153, i.mfgID);
-        Assert.assertEquals("found model ID ", 4, i.modelID);
-        Assert.assertEquals("found product ID ", 80, i.productID);
-    }
-
-    /**
      * Initialize the system.
      */
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         p = new ProgDebugger() {
@@ -610,7 +391,7 @@ public class IdentifyDecoderTest {
     /**
      * Tear down the system.
      */
-    @AfterEach
+    @After
     public void tearDown() {
         p = null;
         JUnitUtil.tearDown();

@@ -2,16 +2,14 @@ package jmri.jmrit.operations.rollingstock.engines;
 
 import java.util.Hashtable;
 import java.util.Set;
-
-import org.jdom2.Element;
-import org.openide.util.lookup.ServiceProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceInitializer;
 import jmri.InstanceManager;
 import jmri.implementation.AbstractInstanceInitializer;
 import jmri.jmrit.operations.rollingstock.RollingStockAttribute;
+import org.jdom2.Element;
+import org.openide.util.lookup.ServiceProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents the various engine models a railroad can have. Each model has a
@@ -68,6 +66,19 @@ public class EngineModels extends RollingStockAttribute {
     protected Hashtable<String, Boolean> _engineBunitHashTable = new Hashtable<>();
 
     public EngineModels() {
+    }
+
+    /**
+     * Get the default instance of this class.
+     *
+     * @return the default instance of this class
+     * @deprecated since 4.9.2; use
+     *             {@link jmri.InstanceManager#getDefault(java.lang.Class)}
+     *             instead
+     */
+    @Deprecated
+    public static synchronized EngineModels instance() {
+        return InstanceManager.getDefault(EngineModels.class);
     }
 
     @Override
@@ -160,7 +171,16 @@ public class EngineModels extends RollingStockAttribute {
                 models.length != lengths.length ||
                 models.length != types.length ||
                 models.length != weights.length) {
-            log.error("Defaults do not have the right number of items, models={} hps={} lengths={} types={}", models.length, hps.length, lengths.length, types.length); // NOI18N
+            log.error("Defaults do not have the right number of items, " +
+                    "models=" +
+                    models.length +
+                    " hps=" +
+                    hps.length +
+                    " lengths=" +
+                    lengths.length // NOI18N
+                    +
+                    " types=" +
+                    types.length); // NOI18N
             return;
         }
 
@@ -181,7 +201,7 @@ public class EngineModels extends RollingStockAttribute {
      *
      */
     public void store(Element root) {
-        store(root, Xml.MODELS, Xml.MODEL);
+        store(root, Xml.MODELS, Xml.MODEL, Xml.ENGINE_MODELS);
     }
 
     public void load(Element root) {
@@ -200,7 +220,7 @@ public class EngineModels extends RollingStockAttribute {
     public static class Initializer extends AbstractInstanceInitializer {
 
         @Override
-        public <T> Object getDefault(Class<T> type) {
+        public <T> Object getDefault(Class<T> type) throws IllegalArgumentException {
             if (type.equals(EngineModels.class)) {
                 EngineModels instance = new EngineModels();
                 instance.loadDefaults();

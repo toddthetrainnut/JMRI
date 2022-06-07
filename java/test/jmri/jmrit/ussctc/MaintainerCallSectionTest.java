@@ -2,24 +2,21 @@ package jmri.jmrit.ussctc;
 
 import jmri.util.JUnitUtil;
 import jmri.*;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for MaintainerCallSection class in the jmri.jmrit.ussctc package.
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
-@SuppressWarnings("unchecked")
 public class MaintainerCallSectionTest {
 
     @Test
     public void testConstruction() {
-        Assert.assertNotNull(new MaintainerCallSection("Sec1 MC input", "Sec 1 MC output", station));
+        new MaintainerCallSection("Sec1 MC input", "Sec 1 MC output", station);
     }
-
-    @Test
+ 
+    @Test 
     public void testCodeSendStartReturns() throws JmriException {
         mcLayoutTurnout.setCommandedState(Turnout.THROWN);
         panelSensor.setKnownState(Sensor.INACTIVE);
@@ -29,27 +26,27 @@ public class MaintainerCallSectionTest {
 
         panelSensor.setKnownState(Sensor.ACTIVE);
         Assert.assertEquals(CodeGroupOneBit.Single1, t.codeSendStart());
-
+                
         panelSensor.setKnownState(Sensor.INACTIVE);
         Assert.assertEquals(CodeGroupOneBit.Single0, t.codeSendStart());
     }
-
-    @Test
+    
+    @Test 
     public void testCodeValueDelivered1() throws JmriException {
         mcLayoutTurnout.setCommandedState(Turnout.CLOSED);
         panelSensor.setKnownState(Sensor.INACTIVE);
         MaintainerCallSection t = new MaintainerCallSection("Sec1 MC input", "Sec 1 MC output", station);
-
+        
         t.codeValueDelivered(CodeGroupOneBit.Single1);
         Assert.assertEquals(Turnout.THROWN, mcLayoutTurnout.getCommandedState());
     }
 
-    @Test
+    @Test 
     public void testCodeValueDelivered0() throws JmriException {
         mcLayoutTurnout.setCommandedState(Turnout.THROWN);
         panelSensor.setKnownState(Sensor.INACTIVE);
         MaintainerCallSection t = new MaintainerCallSection("Sec1 MC input", "Sec 1 MC output", station);
-
+        
         t.codeValueDelivered(CodeGroupOneBit.Single0);
         Assert.assertEquals(Turnout.CLOSED, mcLayoutTurnout.getCommandedState());
     }
@@ -57,11 +54,12 @@ public class MaintainerCallSectionTest {
     CodeLine codeline;
     Station station;
     boolean requestIndicationStart;
-
+    
     Turnout mcLayoutTurnout;
     Sensor panelSensor;
-
-    @BeforeEach
+    
+    // The minimal setup for log4J
+    @org.junit.Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -69,24 +67,24 @@ public class MaintainerCallSectionTest {
         JUnitUtil.initInternalTurnoutManager();
         JUnitUtil.initInternalLightManager();
         JUnitUtil.initInternalSensorManager();
-        JUnitUtil.initMemoryManager();
-
+        JUnitUtil.initMemoryManager();  
+        JUnitUtil.initShutDownManager();
+        
         mcLayoutTurnout = InstanceManager.getDefault(TurnoutManager.class).provideTurnout("IT1"); mcLayoutTurnout.setUserName("Sec 1 MC output");
 
         panelSensor = InstanceManager.getDefault(SensorManager.class).provideSensor("IS2"); panelSensor.setUserName("Sec1 MC input");
 
-        codeline = new CodeLine("Code Indication Start", "Code Send Start", "IT101", "IT102", "IT103", "IT104");
-
+        codeline = new CodeLine("Code Sequencer Start", "IT101", "IT102", "IT103", "IT104");
+        
         requestIndicationStart = false;
         station = new Station("test", codeline, new CodeButton("IS221", "IS222")) {
-            @Override
             public void requestIndicationStart() {
                 requestIndicationStart = true;
             }
         };
     }
 
-    @AfterEach
+    @org.junit.After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

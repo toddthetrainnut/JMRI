@@ -4,17 +4,20 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import jmri.jmrix.can.CanSystemConnectionMemo;
+import jmri.jmrix.can.cbus.node.CbusNode;
 import jmri.jmrix.can.cbus.node.CbusNodeFromFcuTableDataModel;
-import jmri.jmrix.can.cbus.swing.CbusCommonSwing;
 import jmri.util.swing.XTableColumnModel;
-import jmri.util.table.JTableWithColumnToolTips;
 
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
@@ -48,24 +51,55 @@ public class CbusNodeFcuTablePane extends JPanel {
 
     public void init() {  
         
-        nodeTable = new JTableWithColumnToolTips(nodeModel,CbusNodeFromFcuTableDataModel.FCUTABLETIPS);
+        nodeTable = new JTable(nodeModel) {
+            // Override JTable Header to implement table header tool tips.
+            @Override
+            protected JTableHeader createDefaultTableHeader() {
+                return new JTableHeader(columnModel) {
+                    @Override
+                    public String getToolTipText(MouseEvent e) {
+                        try {
+                            java.awt.Point p = e.getPoint();
+                            int index = columnModel.getColumnIndexAtX(p.x);
+                            int realIndex = columnModel.getColumn(index).getModelIndex();
+                            return CbusNodeFromFcuTableDataModel.columnToolTips[realIndex];    
+                        } catch (RuntimeException e1) {
+                            //catch null pointer exception if mouse is over an empty line
+                        }
+                        return null;
+                    }
+                };
+            }
+        };
 
         // Use XTableColumnModel so we can control which columns are visible
         XTableColumnModel tcm = new XTableColumnModel();
         nodeTable.setColumnModel(tcm);
+        nodeTable.createDefaultColumnsFromModel();
         
-        sorter = new TableRowSorter<>(nodeModel);
+       // nodeTable.setAutoCreateRowSorter(true);
+        
+        sorter = new TableRowSorter<CbusNodeFromFcuTableDataModel>(nodeModel);
         nodeTable.setRowSorter(sorter);
         
-        // configure items for GUI
-        CbusCommonSwing.configureTable(nodeTable);
+        // prevent the TableColumnModel from being recreated and loosing custom cell renderers
+        nodeTable.setAutoCreateColumnsFromModel(false); 
         
-        tcm.getColumn(CbusNodeFromFcuTableDataModel.FCU_NODE_NUMBER_COLUMN).setCellRenderer(getRenderer());
-        tcm.getColumn(CbusNodeFromFcuTableDataModel.FCU_NODE_TYPE_NAME_COLUMN).setCellRenderer(getRenderer());
-        tcm.getColumn(CbusNodeFromFcuTableDataModel.FCU_NODE_USER_NAME_COLUMN).setCellRenderer(getRenderer());
-        tcm.getColumn(CbusNodeFromFcuTableDataModel.FCU_NODE_EVENTS_COLUMN).setCellRenderer(getRenderer());
+        // configure items for GUI
+        nodeModel.configureTable(nodeTable);
+        
+        nodeTable.setRowSelectionAllowed(true);
+        nodeTable.setColumnSelectionAllowed(false);
+        nodeTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        
+        tcm.getColumn(CbusNodeFromFcuTableDataModel.NODE_NUMBER_COLUMN).setCellRenderer(getRenderer());
+        tcm.getColumn(CbusNodeFromFcuTableDataModel.NODE_TYPE_NAME_COLUMN).setCellRenderer(getRenderer());
+        tcm.getColumn(CbusNodeFromFcuTableDataModel.NODE_USER_NAME_COLUMN).setCellRenderer(getRenderer());
+        tcm.getColumn(CbusNodeFromFcuTableDataModel.NODE_EVENTS_COLUMN).setCellRenderer(getRenderer());
         tcm.getColumn(CbusNodeFromFcuTableDataModel.NODE_NV_TOTAL_COLUMN).setCellRenderer(getRenderer());
-        tcm.getColumn(CbusNodeFromFcuTableDataModel.FCU_NODE_TOTAL_BYTES_COLUMN).setCellRenderer(getRenderer());
+        tcm.getColumn(CbusNodeFromFcuTableDataModel.NODE_TOTAL_BYTES_COLUMN).setCellRenderer(getRenderer());
+        
+        nodeTable.setRowHeight(22);
         
         setLayout(new BorderLayout());
         JScrollPane eventScroll = new JScrollPane(nodeTable);
@@ -89,19 +123,36 @@ public class CbusNodeFcuTablePane extends JPanel {
                 int row, int col) {
                 
                 f.setHorizontalAlignment(JTextField.CENTER);
+                f.setBorder( table.getBorder() );
                 
-                String string;
+                String string="";
                 if(arg1 != null){
                     string = arg1.toString();
+                    try {
+                        if (Integer.parseInt(string)<0){
+                            string="";
+                        }
+                    } catch (NumberFormatException ex) {
+                    }
+
                     f.setText(string);
-                    CbusCommonSwing.hideNumbersLessThan(0, string, f);
+                    // log.debug(" string :{}:",string );
                     
                 } else {
                     f.setText("");
                 }
 
-                CbusCommonSwing.setCellBackground(isSelected, f, table,row);
-                CbusCommonSwing.setCellFocus(hasFocus, f, table);
+                if (isSelected) {
+                    f.setBackground( table.getSelectionBackground() );
+                    
+                } else {
+                    if ( row % 2 == 0 ) {
+                        f.setBackground( table.getBackground() );
+                    }
+                    else {
+                        f.setBackground( WHITE_GREEN );
+                    }
+                }
                 
                 return f;
             }

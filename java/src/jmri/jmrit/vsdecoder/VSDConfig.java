@@ -1,14 +1,13 @@
 package jmri.jmrit.vsdecoder;
 
-import jmri.DccLocoAddress;
-import jmri.LocoAddress;
-import jmri.jmrit.roster.RosterEntry;
-import jmri.util.PhysicalLocation;
-
 /**
+ * class VSDConfig
+ *
  * Data capsule ("Model"?) for passing configuration between the GUI and the
  * VSDecoder itself.
- *
+ */
+
+/*
  * <hr>
  * This file is part of JMRI.
  * <p>
@@ -22,11 +21,17 @@ import jmri.util.PhysicalLocation;
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
  * for more details.
  *
- * @author Mark Underwood Copyright (C) 2011
+ * @author   Mark Underwood Copyright (C) 2011
+ * 
  */
+import jmri.DccLocoAddress;
+import jmri.LocoAddress;
+import jmri.jmrit.roster.RosterEntry;
+import jmri.util.PhysicalLocation;
+
 public class VSDConfig {
 
-    public float DEFAULT_VOLUME = 0.8f;
+    private float DEFAULT_VOLUME = 0.8f;
 
     private String my_id;
     private String vsd_path;
@@ -48,35 +53,35 @@ public class VSDConfig {
     }
 
     public String getId() {
-        return my_id;
+        return (my_id);
     }
 
     public String getVSDPath() {
-        return vsd_path;
+        return (vsd_path);
     }
 
     public String getProfileName() {
-        return profile_name;
+        return (profile_name);
     }
 
     public LocoAddress getLocoAddress() {
-        return address;
+        return (address);
     }
 
     public DccLocoAddress getDccAddress() {
-        return new DccLocoAddress(address.getNumber(), address.getProtocol());
+        return (new DccLocoAddress(address.getNumber(), address.getProtocol()));
     }
 
     public float getVolume() {
-        return volume;
+        return (volume);
     }
 
     public PhysicalLocation getPhysicalLocation() {
-        return location;
+        return (location);
     }
 
     public RosterEntry getRosterEntry() {
-        return roster;
+        return (roster);
     }
 
     public void setId(String id) {

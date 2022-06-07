@@ -1,54 +1,39 @@
 package jmri.jmrix.ecos;
 
-import jmri.*;
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Tests for EcosSystemConnectionMemo.
+ * Tests for the Bundle class
  *
  * @author Paul Bender Copyright (C) 2016
  */
-public class EcosSystemConnectionMemoTest extends SystemConnectionMemoTestBase<EcosSystemConnectionMemo> {
+public class EcosSystemConnectionMemoTest  extends jmri.jmrix.SystemConnectionMemoTestBase {
+
+    private EcosSystemConnectionMemo memo = null;
 
     @Override
     @Test
-    public void testProvidesConsistManager() {
-        Assertions.assertTrue( scm.provides(ConsistManager.class), "Provides ConsistManager");
+    public void testProvidesConsistManager(){
+       Assert.assertTrue("Provides ConsistManager",scm.provides(jmri.ConsistManager.class));
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDefaultUserMessagePreferences();
-        scm = new EcosSystemConnectionMemo(new EcosInterfaceScaffold());
-        scm.configureManagers();
-        scm.getPreferenceManager().setPreferencesLoaded();
-        InstanceManager.getDefault(ShutDownManager.class).deregister(scm.getPreferenceManager().ecosPreferencesShutDownTask);
-        
-        scm.getLocoAddressManager().terminateThreads();
-        JUnitUtil.waitFor(() -> { return !scm.getLocoAddressManager().threadsRunning(); });
-        InstanceManager.store(scm, EcosSystemConnectionMemo.class);
-        InstanceManager.getDefault(ShutDownManager.class).deregister(scm.getLocoAddressManager().ecosLocoShutDownTask);
+        jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
+        scm = memo = new jmri.jmrix.ecos.EcosSystemConnectionMemo();
+        memo.setEcosTrafficController(new EcosInterfaceScaffold());
+        memo.configureManagers();
+        memo.getPreferenceManager().setPreferencesLoaded();
+        jmri.InstanceManager.store(memo, jmri.jmrix.ecos.EcosSystemConnectionMemo.class);
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        EcosLocoAddressManager em = scm.getLocoAddressManager();
-        if ( em != null ) {
-            InstanceManager.getDefault(ShutDownManager.class).deregister(em.ecosLocoShutDownTask);
-            em.terminateThreads();
-            JUnitUtil.waitFor(() -> { return !em.threadsRunning(); });
-        }
-        
-        scm.getTrafficController().terminateThreads();
-        scm.dispose();
         JUnitUtil.tearDown();
     }
 

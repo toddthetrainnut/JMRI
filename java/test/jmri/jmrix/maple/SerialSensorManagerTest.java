@@ -2,14 +2,15 @@ package jmri.jmrix.maple;
 
 import jmri.Sensor;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the Maple SerialSensorManager class.
  *
- * @author Bob Jacobsen Copyright 2003, 2008
+ * @author	Bob Jacobsen Copyright 2003, 2008
  */
 public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
 
@@ -45,8 +46,9 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
         Assert.assertTrue("right name s1000", s1000.getSystemName().equals("KS1000"));
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // replace SerialSensorManager to make sure nodes start
@@ -61,12 +63,10 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
 //        SerialNode n2 = new SerialNode(2,0);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         memo.dispose();
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

@@ -1,9 +1,11 @@
 package jmri.jmrix.sprog.pi.pisprognano;
 
+import jmri.jmrix.sprog.SprogSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for PiSprogNanoSerialDriverAdapter.
@@ -21,12 +23,13 @@ public class PiSprogNanoSerialDriverAdapterTest {
        a.getSystemConnectionMemo().getSprogTrafficController().dispose();
   }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -4,8 +4,10 @@ import jmri.util.JUnitUtil;
 
 import java.beans.PropertyVetoException;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -53,25 +55,20 @@ public class RpsReporterManagerTest extends jmri.managers.AbstractReporterMgrTes
         Assert.assertNotNull(s);
         Assert.assertFalse(s.isEmpty());
     }
-    
-    @Override
-    protected String getASystemNameWithNoPrefix() {
-        return getNameToTest1();
-    }
 
     @Test
     public void testGetSystemPrefix() {
         Assert.assertEquals("R", l.getSystemPrefix());
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         l = new RpsReporterManager(new RpsSystemConnectionMemo());
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         l.dispose();
         JUnitUtil.tearDown();

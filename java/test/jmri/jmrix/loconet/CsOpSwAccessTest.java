@@ -1,16 +1,16 @@
 package jmri.jmrix.loconet;
 
 import jmri.ProgListenerScaffold;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import jmri.util.JUnitUtil;
-
 import org.junit.Assert;
+import jmri.jmrix.loconet.SlotManager;
 
+import java.util.List;
 import jmri.ProgrammerException;
-
-import org.mockito.Mockito;
+import jmri.ProgrammingMode;
 
 /**
  * Tests for LocoNet CsOpSwAccess class.
@@ -1465,23 +1465,20 @@ public class CsOpSwAccessTest {
     private LocoNetSystemConnectionMemo memo;
     private ProgListenerScaffold pl;
 
-    @BeforeEach
+    @Before
     public void setUp() {
+        // The minimal setup for log4J
         jmri.util.JUnitUtil.setUp();
         lnis = new LocoNetInterfaceScaffold();
         sm = new SlotManager(lnis);
-        memo = Mockito.mock(LocoNetSystemConnectionMemo.class);
-        Mockito.when(memo.getLnTrafficController()).thenReturn(lnis);
-        Mockito.when(memo.getSlotManager()).thenReturn(sm);
+        memo = new LocoNetSystemConnectionMemo(lnis, sm);
         pl = new ProgListenerScaffold();
         sm.setSystemConnectionMemo(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo= null;
-        sm.dispose();
-        sm = null;
+        memo.dispose();
         lnis = null;
         JUnitUtil.tearDown();
     }

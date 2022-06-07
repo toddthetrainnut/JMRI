@@ -1,11 +1,11 @@
 package jmri.jmrit.display;
 
+import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -14,19 +14,20 @@ import org.junit.jupiter.api.Test;
 public class PanelMenuTest {
 
     @Test
-    public void testCtor() {
-        assertThat(new PanelMenu()).isNotNull();
+    public void testInstance() {
+        PanelMenu t = InstanceManager.getDefault(PanelMenu.class);
+        Assert.assertNotNull("exists", t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
+        jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

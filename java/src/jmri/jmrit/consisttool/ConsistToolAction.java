@@ -14,32 +14,30 @@ public class ConsistToolAction extends JmriAbstractAction {
 
     public ConsistToolAction(String s, WindowInterface wi) {
         super(s, wi);
-        setConsistManagerState();
+        // disable ourself if there is no consist manager available
+        if (jmri.InstanceManager.getNullableDefault(jmri.ConsistManager.class) == null) {
+            setEnabled(false);
+        }
     }
 
     public ConsistToolAction(String s, Icon i, WindowInterface wi) {
         super(s, i, wi);
-        setConsistManagerState();
+        // disable ourself if there is no consist manager available
+        if (jmri.InstanceManager.getNullableDefault(jmri.ConsistManager.class) == null) {
+            setEnabled(false);
+        }
     }
 
     public ConsistToolAction(String s) {
         super(s);
-        setConsistManagerState();
+
+        // disable ourself if there is no consist manager available
+        if (jmri.InstanceManager.getNullableDefault(jmri.ConsistManager.class) == null) {
+            setEnabled(false);
+        }
+
     }
 
-    private void setConsistManagerState () {
-        // disable ourself if there is no consist manager available
-        jmri.ConsistManager consistManager = jmri.InstanceManager.getNullableDefault(jmri.ConsistManager.class);
-        if (consistManager == null) {
-            setEnabled(false);
-        } else if (consistManager.canBeDisabled()) {
-            consistManager.registerEnableListener((value) -> {
-                setEnabled(value);
-            });
-            setEnabled(consistManager.isEnabled());
-        }
-    }
-    
     public ConsistToolAction() {
         this(Bundle.getMessage("MenuItemConsistTool"));
     }

@@ -7,7 +7,7 @@ import jmri.jmrix.cmri.CMRISystemConnectionMemo;
 import jmri.jmrix.cmri.serial.nodeconfigmanager.NodeConfigManagerAction;
 
 /**
- * Definition of objects to handle configuring a layout connection via a C/MRI
+ * Definition of objects to handle configuring a layout connection via an C/MRI
  * SerialDriverAdapter object.
  *
  * @author Bob Jacobsen Copyright (C) 2001, 2003
@@ -20,7 +20,6 @@ public class ConnectionConfig extends jmri.jmrix.AbstractSerialConnectionConfig 
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p serial port adapter.
      */
     public ConnectionConfig(jmri.jmrix.SerialPortAdapter p) {
         super(p);
@@ -39,7 +38,7 @@ public class ConnectionConfig extends jmri.jmrix.AbstractSerialConnectionConfig 
         return NAME;
     }
 
-    private JButton b;
+    JButton b;
 
     /**
      * {@inheritDoc}

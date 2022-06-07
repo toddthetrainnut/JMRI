@@ -1,8 +1,7 @@
 package jmri.jmris.srcp;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-
 import jmri.PowerManager;
 import jmri.jmris.AbstractPowerServer;
 import org.slf4j.Logger;
@@ -15,10 +14,9 @@ import org.slf4j.LoggerFactory;
  */
 public class JmriSRCPPowerServer extends AbstractPowerServer {
 
-    private OutputStream output;
+    private DataOutputStream output;
 
-    public JmriSRCPPowerServer(OutputStream outStream) {
-        super();
+    public JmriSRCPPowerServer(DataOutputStream outStream) {
         output = outStream;
         mgrOK();
     }
@@ -30,18 +28,18 @@ public class JmriSRCPPowerServer extends AbstractPowerServer {
     @Override
     public void sendStatus(int Status) throws IOException {
         if (Status == PowerManager.ON) {
-            output.write("100 INFO 0 POWER ON\n\r".getBytes());
+            TimeStampedOutput.writeTimestamp(output, "100 INFO 0 POWER ON\n\r");
         } else if (Status == PowerManager.OFF) {
-            output.write("100 INFO 0 POWER OFF\n\r".getBytes());
+            TimeStampedOutput.writeTimestamp(output, "100 INFO 0 POWER OFF\n\r");
         } else {
             // power unknown
-            output.write("411 ERROR unknown value\n\r".getBytes());
+            TimeStampedOutput.writeTimestamp(output, "411 ERROR unknown value\n\r");
         }
     }
 
     @Override
     public void sendErrorStatus() throws IOException {
-        output.write("499 ERROR unspecified error\n\r".getBytes());
+        TimeStampedOutput.writeTimestamp(output, "499 ERROR unspecified error\n\r");
     }
 
     @Override
@@ -66,10 +64,14 @@ public class JmriSRCPPowerServer extends AbstractPowerServer {
             if (p.getPower() == PowerManager.ON || p.getPower() == PowerManager.OFF) {
                 sendStatus(p.getPower());
             }
+        } catch (jmri.JmriException ex) {
+            try {
+                sendErrorStatus();
+            } catch (IOException ie) {
+            }
         } catch (IOException ie2) {
-            // silently ignore
         }
     }
-    private static final Logger log = LoggerFactory.getLogger(JmriSRCPPowerServer.class);
+    private final static Logger log = LoggerFactory.getLogger(JmriSRCPPowerServer.class);
 
 }

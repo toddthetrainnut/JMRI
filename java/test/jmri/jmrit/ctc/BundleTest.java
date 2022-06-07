@@ -1,9 +1,7 @@
 package jmri.jmrit.ctc;
 
 import java.util.Locale;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the Bundle Class
@@ -18,7 +16,12 @@ public class BundleTest {
 
     @Test
     public void testBadKeyMessage() {
-        Assert.assertThrows(java.util.MissingResourceException.class, () -> Bundle.getMessage("FFFFFTTTTTTT"));  // NOI18N
+        try {
+            Bundle.getMessage("FFFFFTTTTTTT");  // NOI18N
+        } catch (java.util.MissingResourceException e) {
+            return;
+        } // OK
+        Assert.fail("No exception thrown");
     }
 
     @Test
@@ -29,7 +32,12 @@ public class BundleTest {
 
     @Test
     public void testBadKeyMessageArg() {
-        Assert.assertThrows(java.util.MissingResourceException.class, () -> Bundle.getMessage("FFFFFTTTTTTT", new Object[]{}));  // NOI18N
+        try {
+            Bundle.getMessage("FFFFFTTTTTTT", new Object[]{});  // NOI18N
+        } catch (java.util.MissingResourceException e) {
+            return;
+        } // OK
+        Assert.fail("No exception thrown");  // NOI18N
     }
 
     @Test public void testLocaleMessage() {
@@ -42,12 +50,12 @@ public class BundleTest {
         Assert.assertEquals("ID-Nummer 1", Bundle.getMessage(Locale.GERMANY, "IDnumber", 1));  // NOI18N
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

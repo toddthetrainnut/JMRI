@@ -1,9 +1,10 @@
 package jmri.jmrix.ncemonitor;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import jmri.jmrix.nce.NceSystemConnectionMemo;
 import jmri.jmrix.nce.NceTrafficController;
@@ -11,7 +12,7 @@ import jmri.jmrix.nce.NceTrafficController;
 /**
  * Test simple functioning of NcePacketMonitorPanel
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class NcePacketMonitorPanelTest extends jmri.util.swing.JmriPanelTest {
 
@@ -40,8 +41,7 @@ public class NcePacketMonitorPanelTest extends jmri.util.swing.JmriPanelTest {
         Assert.assertEquals("Title","NCE: DCC Packet Analyzer",panel.getTitle());
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -53,9 +53,6 @@ public class NcePacketMonitorPanelTest extends jmri.util.swing.JmriPanelTest {
         helpTarget="package.jmri.jmrix.nce.analyzer.NcePacketMonitorFrame";
     }
 
-    @AfterEach
-    @Override
-    public void tearDown() {        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
-    }
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

@@ -1,20 +1,20 @@
 package jmri.jmrix.srcp;
 
 import java.io.StringReader;
-
 import jmri.jmrix.srcp.parser.ParseException;
 import jmri.jmrix.srcp.parser.SRCPClientParser;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * SRCPReplyTest.java
  *
- * Test for the jmri.jmrix.srcp.SRCPReply class
+ * Description:	tests for the jmri.jmrix.srcp.SRCPReply class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  * @author  Paul Bender Copyright (C) 2017
  */
 public class SRCPReplyTest extends jmri.jmrix.AbstractMessageTestBase {
@@ -83,16 +83,16 @@ public class SRCPReplyTest extends jmri.jmrix.AbstractMessageTestBase {
         jmri.util.JUnitAppender.assertErrorMessage("Unable to get number from reply: \"12345678910 100 OK REASON GOES HERE\"");
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = msg = new SRCPReply();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = msg = null;
+	m = msg = null;
         JUnitUtil.tearDown();
     }
 }

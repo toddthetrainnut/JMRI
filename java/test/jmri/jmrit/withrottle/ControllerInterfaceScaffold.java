@@ -12,7 +12,6 @@ public class ControllerInterfaceScaffold implements ControllerInterface {
     private String lastAlert = null;
     private String lastInfo = null;
 
-    @Override
     public void sendPacketToDevice(String message){
        lastPacket = message;
     }
@@ -21,7 +20,6 @@ public class ControllerInterfaceScaffold implements ControllerInterface {
        return lastPacket;
     }
 
-    @Override
     public void sendAlertMessage(String message){
        lastAlert = message;
     }
@@ -30,7 +28,6 @@ public class ControllerInterfaceScaffold implements ControllerInterface {
        return lastAlert;
     }
 
-    @Override
     public void sendInfoMessage(String message){
        lastInfo = message;
     }

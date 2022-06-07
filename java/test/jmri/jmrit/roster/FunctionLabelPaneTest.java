@@ -1,17 +1,17 @@
 package jmri.jmrit.roster;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmrit.roster.FunctionLabelPane class.
  *
- * @author Bob Jacobsen Copyright (C) 2008
+ * @author	Bob Jacobsen Copyright (C) 2008
  */
 public class FunctionLabelPaneTest {
 
@@ -66,11 +66,12 @@ public class FunctionLabelPaneTest {
 
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
+        // log4J
+        jmri.util.JUnitUtil.setUp();
+
+        jmri.util.JUnitUtil.resetProfileManager();
 
         // create Element
         eOld = new org.jdom2.Element("locomotive")
@@ -115,7 +116,7 @@ public class FunctionLabelPaneTest {
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

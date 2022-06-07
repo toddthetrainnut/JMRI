@@ -1,14 +1,9 @@
 package jmri.jmrix.acela;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
 import javax.annotation.Nonnull;
-
-import jmri.*;
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
-import jmri.jmrix.DefaultSystemConnectionMemo;
-import jmri.util.NamedBeanComparator;
-
+import jmri.InstanceManager;
+import jmri.jmrix.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (C) 2010
  */
-public class AcelaSystemConnectionMemo extends DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class AcelaSystemConnectionMemo extends SystemConnectionMemo {
 
     public AcelaSystemConnectionMemo() {
         this("A", AcelaConnectionTypeList.CTI); // default to A
@@ -30,11 +25,12 @@ public class AcelaSystemConnectionMemo extends DefaultSystemConnectionMemo imple
     public AcelaSystemConnectionMemo(@Nonnull String prefix, @Nonnull String userName) {
         super(prefix, userName);
 
-        InstanceManager.store(this, AcelaSystemConnectionMemo.class);
+        register(); // registers general type
+        InstanceManager.store(this, AcelaSystemConnectionMemo.class); // also register as specific type
 
         // create and register the AcelaComponentFactory for the GUI
-        InstanceManager.store(cf = new jmri.jmrix.acela.swing.AcelaComponentFactory(this),
-                jmri.jmrix.swing.ComponentFactory.class);
+        InstanceManager.store(cf = new jmri.jmrix.acela.swing.AcelaComponentFactory(this), 
+         jmri.jmrix.swing.ComponentFactory.class);
         log.debug("Created AcelaSystemConnectionMemo");
     }
 
@@ -42,7 +38,8 @@ public class AcelaSystemConnectionMemo extends DefaultSystemConnectionMemo imple
         super("A", AcelaConnectionTypeList.CTI); // default to A
         this.tc = tc;
 
-        InstanceManager.store(this, AcelaSystemConnectionMemo.class);
+        register(); // registers general type
+        InstanceManager.store(this, AcelaSystemConnectionMemo.class); // also register as specific type
 
         // create and register the AcelaComponentFactory for the GUI
         InstanceManager.store(cf = new jmri.jmrix.acela.swing.AcelaComponentFactory(this),
@@ -54,7 +51,6 @@ public class AcelaSystemConnectionMemo extends DefaultSystemConnectionMemo imple
 
     /**
      * Provides access to the TrafficController for this particular connection.
-     * @return traffic controller, provided if null.
      */
     public AcelaTrafficController getTrafficController() {
         if (tc == null) {
@@ -88,39 +84,80 @@ public class AcelaSystemConnectionMemo extends DefaultSystemConnectionMemo imple
 
         InstanceManager.setTurnoutManager(getTurnoutManager());
         getTrafficController().setTurnoutManager(getTurnoutManager());
-
-        register(); // registers general type
     }
+
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        } else if (type.equals(jmri.SensorManager.class)) {
+            return true;
+        } else if (type.equals(jmri.TurnoutManager.class)) {
+            return true;
+        } else if (type.equals(jmri.LightManager.class)) {
+            return true;
+        } else {
+            return false; // nothing, by default
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.SensorManager.class)) {
+            return (T) getSensorManager();
+        }
+        if (T.equals(jmri.TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        if (T.equals(jmri.LightManager.class)) {
+            return (T) getLightManager();
+        }
+        return null; // nothing by default
+    }
+
+    protected AcelaTurnoutManager turnoutManager;
 
     public AcelaTurnoutManager getTurnoutManager() {
         if (getDisabled()) {
             return null;
         }
-        return (AcelaTurnoutManager) classObjectMap.computeIfAbsent(TurnoutManager.class, (Class<?> c) -> new AcelaTurnoutManager(this));
+        if (turnoutManager == null) {
+            turnoutManager = new AcelaTurnoutManager(this);
+        }
+        return turnoutManager;
     }
+
+    protected AcelaSensorManager sensorManager;
 
     public AcelaSensorManager getSensorManager() {
         if (getDisabled()) {
             return null;
         }
-        return (AcelaSensorManager) classObjectMap.computeIfAbsent(SensorManager.class,(Class<?> c) -> new AcelaSensorManager(this));
+        if (sensorManager == null) {
+            sensorManager = new AcelaSensorManager(this);
+        }
+        return sensorManager;
     }
+
+    protected AcelaLightManager lightManager;
 
     public AcelaLightManager getLightManager() {
         if (getDisabled()) {
             return null;
         }
-        return (AcelaLightManager) classObjectMap.computeIfAbsent(LightManager.class,(Class<?> c) -> new AcelaLightManager(this));
+        if (lightManager == null) {
+            lightManager = new AcelaLightManager(this);
+        }
+        return lightManager;
     }
 
     @Override
     protected ResourceBundle getActionModelResourceBundle() {
         return ResourceBundle.getBundle("jmri.jmrix.acela.AcelaActionListBundle");
-    }
-
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
     }
 
     @Override

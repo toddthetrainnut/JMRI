@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -22,7 +21,7 @@ import javax.swing.table.TableRowSorter;
 import jmri.InstanceManager;
 import jmri.SignalMast;
 import jmri.SignalMastLogic;
-import jmri.jmrit.display.EditorManager;
+import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.layoutEditor.LayoutBlockManager;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 import jmri.swing.RowSorterUtil;
@@ -155,8 +154,8 @@ public class SignallingSourcePanel extends jmri.util.swing.JmriPanel implements 
             }
         }
 
-        Set<LayoutEditor> layout = InstanceManager.getDefault(EditorManager.class).getAll(LayoutEditor.class);
-        if (!layout.isEmpty()) {
+        List<LayoutEditor> layout = InstanceManager.getDefault(PanelMenu.class).getLayoutEditorPanelList();
+        if (layout.size() > 0) {
             signalMastLogicFrame = new JmriJFrame(Bundle.getMessage("DiscoverMastsTitle"), false, false);  // NOI18N
             signalMastLogicFrame.setPreferredSize(null);
             JPanel panel1 = new JPanel();
@@ -167,9 +166,9 @@ public class SignallingSourcePanel extends jmri.util.swing.JmriPanel implements 
             signalMastLogicFrame.pack();
             signalMastLogicFrame.setVisible(true);
 
-            for (LayoutEditor editor : layout) {
+            for (int i = 0; i < layout.size(); i++) {
                 try {
-                    InstanceManager.getDefault(jmri.SignalMastLogicManager.class).discoverSignallingDest(sourceMast, editor);
+                    InstanceManager.getDefault(jmri.SignalMastLogicManager.class).discoverSignallingDest(sourceMast, layout.get(i));
                 } catch (jmri.JmriException ex) {
                     signalMastLogicFrame.setVisible(false);
                     JOptionPane.showMessageDialog(null, ex.toString());
@@ -292,7 +291,7 @@ public class SignallingSourcePanel extends jmri.util.swing.JmriPanel implements 
                 case DEL_COLUMN: // not actually used due to the configureTable, setColumnToHoldButton, configureButton
                     return new JTextField(22).getPreferredSize().width;
                 default:
-                    log.warn("Unexpected column in getPreferredWidth: {}", col);  // NOI18N
+                    log.warn("Unexpected column in getPreferredWidth: " + col);  // NOI18N
                     return new JTextField(8).getPreferredSize().width;
             }
         }

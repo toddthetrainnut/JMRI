@@ -63,11 +63,8 @@ public interface LocoNetInterface {
      */
     void removeLocoNetListener(int mask, LocoNetListener listener);
 
-    /**
-     * Check whether an implementation is operational.  Returns true if
-     * operational.
-     * 
-     * @return true if implementation is operational.
+    /*
+     * Check whether an implementation is operational. True indicates OK.
      */
     public boolean status();
 

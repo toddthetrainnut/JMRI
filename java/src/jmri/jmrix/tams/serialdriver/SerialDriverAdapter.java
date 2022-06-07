@@ -23,7 +23,7 @@ import purejavacomm.UnsupportedCommOperationException;
  * <p>
  * Based on work by Bob Jacobsen
  *
- * @author Kevin Dickerson Copyright (C) 2012
+ * @author	Kevin Dickerson Copyright (C) 2012
  */
 public class SerialDriverAdapter extends TamsPortController {
 
@@ -49,7 +49,12 @@ public class SerialDriverAdapter extends TamsPortController {
             // try to set it for communication via SerialDriver
             try {
                 // find the baud rate value, configure comm options
-                int baud = currentBaudNumber(mBaudRate);
+                int baud = validSpeedValues[0];  // default, but also defaulted in the initial value of selectedSpeed
+                for (int i = 0; i < validSpeeds.length; i++) {
+                    if (validSpeeds[i].equals(mBaudRate)) {
+                        baud = validSpeedValues[i];
+                    }
+                }
                 activeSerialPort.setSerialPortParams(baud, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             } catch (UnsupportedCommOperationException e) {
                 log.error("Cannot set serial parameters on port {}: {}", portName, e.getMessage());
@@ -77,7 +82,14 @@ public class SerialDriverAdapter extends TamsPortController {
             purgeStream(serialStream);
 
             if (log.isInfoEnabled()) {
-                log.info("{} port opened at {} baud, sees  DTR: {} RTS: {} DSR: {} CTS: {}  CD: {}", portName, activeSerialPort.getBaudRate(), activeSerialPort.isDTR(), activeSerialPort.isRTS(), activeSerialPort.isDSR(), activeSerialPort.isCTS(), activeSerialPort.isCD());
+                log.info(portName + " port opened at "
+                        + activeSerialPort.getBaudRate() + " baud, sees "
+                        + " DTR: " + activeSerialPort.isDTR()
+                        + " RTS: " + activeSerialPort.isRTS()
+                        + " DSR: " + activeSerialPort.isDSR()
+                        + " CTS: " + activeSerialPort.isCTS()
+                        + "  CD: " + activeSerialPort.isCD()
+                );
             }
 
             // report status
@@ -160,11 +172,6 @@ public class SerialDriverAdapter extends TamsPortController {
             Bundle.getMessage("Baud2400"), Bundle.getMessage("Baud9600"),
             Bundle.getMessage("Baud19200")};
     private final int[] validSpeedValues = new int[]{57600, 2400, 9600, 19200};
-
-    @Override
-    public int defaultBaudIndex() {
-        return 0;
-    }
 
     // private control members
     private boolean opened = false;

@@ -1,13 +1,11 @@
 package jmri.jmrix.dcc4pc;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class Dcc4PcMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
@@ -161,16 +159,16 @@ public class Dcc4PcMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(Dcc4PcMessage.SERIAL,m.getElement(0));
     } 
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = new Dcc4PcMessage(5);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = null;
+	m = null;
         JUnitUtil.tearDown();
     }
 

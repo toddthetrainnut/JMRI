@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
@@ -18,14 +20,14 @@ import jmri.util.swing.JemmyUtil;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SetPhysicalLocationActionTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
         Location l = new Location("Test id", "Test Name");
-        SetPhysicalLocationAction t = new SetPhysicalLocationAction(l);
+        SetPhysicalLocationAction t = new SetPhysicalLocationAction("Test",l);
         Assert.assertNotNull("exists",t);
     }
     
@@ -35,14 +37,13 @@ public class SetPhysicalLocationActionTest extends OperationsTestCase {
         JUnitOperationsUtil.initOperationsData();
         Location ni = InstanceManager.getDefault(LocationManager.class).getLocationByName("North Industries");
         Assert.assertNotNull("exists", ni);
-        SetPhysicalLocationAction spla = new SetPhysicalLocationAction(ni);
+        SetPhysicalLocationAction spla = new SetPhysicalLocationAction("Test", ni);
         Assert.assertNotNull("exists", spla);
-        spla.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+        spla.actionPerformed(new ActionEvent("Test Action", 0, null));
         // confirm window exists
         JmriJFrame plf = JmriJFrame.getFrame(Bundle.getMessage("MenuSetPhysicalLocation"));
         Assert.assertNotNull("exists", plf);
         JUnitUtil.dispose(plf);
-
     }
     
     @Test
@@ -51,9 +52,9 @@ public class SetPhysicalLocationActionTest extends OperationsTestCase {
         JUnitOperationsUtil.initOperationsData();
         Location ni = InstanceManager.getDefault(LocationManager.class).getLocationByName("North Industries");
         Assert.assertNotNull("exists", ni);
-        SetPhysicalLocationAction spla = new SetPhysicalLocationAction(ni);
+        SetPhysicalLocationAction spla = new SetPhysicalLocationAction("Test", ni);
         Assert.assertNotNull("exists", spla);
-        spla.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+        spla.actionPerformed(new ActionEvent("Test Action", 0, null));
         // confirm window exists
         JmriJFrame plf = JmriJFrame.getFrame(Bundle.getMessage("MenuSetPhysicalLocation"));
         Assert.assertNotNull("exists", plf);
@@ -61,21 +62,19 @@ public class SetPhysicalLocationActionTest extends OperationsTestCase {
         SetPhysicalLocationFrame splf = (SetPhysicalLocationFrame)plf;
         
         // test save button
-        JemmyUtil.enterClickAndLeaveThreadSafe(splf.saveButton);
+        JemmyUtil.enterClickAndLeave(splf.saveButton);
         
-        // should cause a dialog window to appear
-        JemmyUtil.pressDialogButton(splf, Bundle.getMessage("UpdateDefaults"), Bundle.getMessage("ButtonNo"));
-        
-        // wait for dialog window to disappear
-        JemmyUtil.waitFor(splf);
+        // should cause a popup window to appear
+        JemmyUtil.pressDialogButton(Bundle.getMessage("UpdateDefaults"), Bundle.getMessage("ButtonNo"));
         
         // test close button
         JemmyUtil.enterClickAndLeave(splf.closeButton);
         
-        plf = JmriJFrame.getFrame(Bundle.getMessage("MenuSetPhysicalLocation"));
-        Assert.assertNull("does not exist", plf);
+        JUnitUtil.dispose(plf);
+        
+        log.debug("test done");
     }
 
-     //private final static Logger log = LoggerFactory.getLogger(SetPhysicalLocationActionTest.class);
+     private final static Logger log = LoggerFactory.getLogger(SetPhysicalLocationActionTest.class);
 
 }

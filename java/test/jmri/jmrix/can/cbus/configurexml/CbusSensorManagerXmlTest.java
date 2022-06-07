@@ -1,14 +1,15 @@
 package jmri.jmrix.can.cbus.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * CbusSensorManagerXmlTest.java
  *
- * Test for the CbusSensorManagerXml class
+ * Description: tests for the CbusSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class CbusSensorManagerXmlTest {
       Assert.assertNotNull("CbusSensorManagerXml constructor",new CbusSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

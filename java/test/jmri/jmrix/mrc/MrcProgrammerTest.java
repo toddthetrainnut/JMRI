@@ -2,13 +2,11 @@ package jmri.jmrix.mrc;
 
 import jmri.ProgrammingMode;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MrcProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
 
@@ -27,9 +25,11 @@ public class MrcProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     }
 
     @Override
-    @Test
+    @Test(expected=java.lang.IllegalArgumentException.class)
     public void testSetGetMode() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> programmer.setMode(ProgrammingMode.REGISTERMODE));
+        programmer.setMode(ProgrammingMode.REGISTERMODE);
+        Assert.assertEquals("Check mode matches set", ProgrammingMode.REGISTERMODE,
+                programmer.getMode());        
     }
 
     @Override
@@ -38,19 +38,20 @@ public class MrcProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         Assert.assertFalse("can write address", programmer.getCanWrite("1234"));
     }    
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         MrcSystemConnectionMemo memo = new MrcSystemConnectionMemo();
         MrcInterfaceScaffold tc = new MrcInterfaceScaffold();
         memo.setMrcTrafficController(tc);
         jmri.InstanceManager.store(memo, MrcSystemConnectionMemo.class);
-        programmer = new MrcProgrammer(memo);
+        programmer = new MrcProgrammer(tc);
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         programmer = null;
         JUnitUtil.tearDown();

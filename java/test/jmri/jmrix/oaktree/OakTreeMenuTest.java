@@ -1,17 +1,20 @@
 package jmri.jmrix.oaktree;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+import jmri.jmrix.oaktree.SerialTrafficControlScaffold;
+import jmri.jmrix.oaktree.OakTreeSystemConnectionMemo;
+import jmri.jmrix.oaktree.SerialTrafficController;
 
 /**
  * Test simple functioning of OakTreeMenu
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class OakTreeMenuTest {
 
@@ -25,7 +28,7 @@ public class OakTreeMenuTest {
         Assert.assertNotNull("exists", action);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = new OakTreeSystemConnectionMemo();
@@ -34,8 +37,6 @@ public class OakTreeMenuTest {
         m.setTrafficController(tc); // important for successful getTrafficController()
     }
 
-    @AfterEach
-    public void tearDown() {        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
-    }
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

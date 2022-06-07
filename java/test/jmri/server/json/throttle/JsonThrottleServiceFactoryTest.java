@@ -1,28 +1,31 @@
 package jmri.server.json.throttle;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import jmri.server.json.JSON;
-import jmri.server.json.JsonServiceFactoryTestBase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * @author Randall Wood Copyright 2020
+ *
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class JsonThrottleServiceFactoryTest extends JsonServiceFactoryTestBase<JsonThrottleHttpService, JsonThrottleSocketService> {
+public class JsonThrottleServiceFactoryTest {
 
-    @Override
     @Test
-    public void testGetTypesV5() {
-        assertThat(factory.getTypes(JSON.V5)).containsExactly(JsonThrottle.THROTTLE);
+    public void testCTor() {
+        JsonThrottleServiceFactory t = new JsonThrottleServiceFactory();
+        Assert.assertNotNull("exists",t);
     }
 
-    @Override
-    @BeforeEach
-    public void setUp() throws Exception {
-        super.setUp();
-        factory = new JsonThrottleServiceFactory();
+    // The minimal setup for log4J
+    @Before
+    public void setUp() {
+        jmri.util.JUnitUtil.setUp();
     }
+
+    @After
+    public void tearDown() {
+        jmri.util.JUnitUtil.tearDown();
+    }
+
 }

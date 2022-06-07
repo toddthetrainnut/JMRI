@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.DccLocoAddress;
 import jmri.LocoAddress;
 import jmri.jmrix.AbstractThrottle;
-import jmri.SystemConnectionMemo;
+import jmri.jmrix.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,9 +16,7 @@ import org.slf4j.LoggerFactory;
 public class DebugThrottle extends AbstractThrottle {
 
     /**
-     * Constructor.
-     * @param address loco address.
-     * @param memo system connection.
+     * Constructor
      */
     public DebugThrottle(DccLocoAddress address, SystemConnectionMemo memo) {
         super(memo);
@@ -27,14 +25,24 @@ public class DebugThrottle extends AbstractThrottle {
 
         // cache settings. It would be better to read the
         // actual state, but I don't know how to do this
-        synchronized(this) {
-            this.speedSetting = 0;
-        }
-        // Functions default to false
+        this.speedSetting = 0;
+        this.f0 = false;
+        this.f1 = false;
+        this.f2 = false;
+        this.f3 = false;
+        this.f4 = false;
+        this.f5 = false;
+        this.f6 = false;
+        this.f7 = false;
+        this.f8 = false;
+        this.f9 = false;
+        this.f10 = false;
+        this.f11 = false;
+        this.f12 = false;
         this.isForward = true;
 
         this.address = address;
-        setSpeedStepMode(jmri.SpeedStepMode.NMRA_DCC_128);
+        setSpeedStepMode(jmri.DccThrottle.SpeedStepMode128);
     }
 
     DccLocoAddress address;
@@ -57,11 +65,11 @@ public class DebugThrottle extends AbstractThrottle {
         log.debug("sendFunctionGroup1 called for address {}, dir={},F0={},F1={},F2={},F3={},F4={}",
                 this.address,
                 (this.isForward ? "FWD":"REV"),
-                (getFunction(0) ? "On":"Off"),
-                (getFunction(1) ? "On":"Off"),
-                (getFunction(2) ? "On":"Off"),
-                (getFunction(3) ? "On":"Off"),
-                (getFunction(4) ? "On":"Off"));
+                (this.f0 ? "On":"Off"),
+                (this.f1 ? "On":"Off"),
+                (this.f2 ? "On":"Off"),
+                (this.f3 ? "On":"Off"),
+                (this.f4 ? "On":"Off"));
     }
 
     /**
@@ -81,7 +89,7 @@ public class DebugThrottle extends AbstractThrottle {
     }
 
     /**
-     * Set the speed and direction
+     * Set the speed {@literal &} direction
      * <p>
      * This intentionally skips the emergency stop value of 1.
      *
@@ -89,14 +97,16 @@ public class DebugThrottle extends AbstractThrottle {
      */
     @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY") // OK to compare floating point, notify on any change
     @Override
-    public synchronized void setSpeedSetting(float speed) {
+    public void setSpeedSetting(float speed) {
         log.debug("setSpeedSetting: float speed: {} for address {}", speed, this.address);
         float oldSpeed = this.speedSetting;
         if (speed > 1.0) {
-            log.warn("Speed was set too high: {}", speed);
+            log.warn("Speed was set too high: " + speed);
         }
         this.speedSetting = speed;
-        firePropertyChange(SPEEDSETTING, oldSpeed, this.speedSetting);
+        if (oldSpeed != this.speedSetting) {
+            notifyPropertyChangeListener("SpeedSetting", oldSpeed, this.speedSetting);
+        }
         record(speed);
     }
 
@@ -106,11 +116,13 @@ public class DebugThrottle extends AbstractThrottle {
         boolean old = this.isForward;
         this.isForward = forward;
         sendFunctionGroup1();  // send the command
-        firePropertyChange(ISFORWARD, old, this.isForward);
+        if (old != this.isForward) {
+            notifyPropertyChangeListener("IsForward", old, this.isForward);
+        }
     }
 
     @Override
-    public void throttleDispose() {
+    protected void throttleDispose() {
         log.debug("throttleDispose() called for address {}", this.address);
         finishRecord();
     }

@@ -8,10 +8,10 @@ import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.util.Locale;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -21,18 +21,19 @@ public class JsonMenuItemTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
 
     }
 
+    @SuppressWarnings("null")
     @Test
     public void testContstructor() {
         try {

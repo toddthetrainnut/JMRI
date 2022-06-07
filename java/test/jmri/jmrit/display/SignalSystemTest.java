@@ -1,7 +1,6 @@
 package jmri.jmrit.display;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.ConfigureManager;
 import jmri.InstanceManager;
 import jmri.NamedBeanHandleManager;
@@ -9,10 +8,11 @@ import jmri.Sensor;
 import jmri.SignalMast;
 import jmri.Turnout;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test signal system via a specific layout file
@@ -29,10 +29,10 @@ public class SignalSystemTest {
     @Test
     public void testLoadSimplePanelOBlocksDB1969() throws jmri.JmriException {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-
+        
         // load file
         InstanceManager.getDefault(ConfigureManager.class)
-                .load(new java.io.File("java/test/jmri/jmrit/display/valid/SimplePanel_OBlocks-DB1969.xml"));
+                .load(new java.io.File("java/test/jmri/jmrit/display/verify/SimplePanel_OBlocks-DB1969.xml"));
 
         InstanceManager.getDefault(jmri.LogixManager.class).activateAllLogixs();
         InstanceManager.getDefault(jmri.jmrit.display.layoutEditor.LayoutBlockManager.class).initializeLayoutBlockPaths();
@@ -92,10 +92,6 @@ public class SignalSystemTest {
         checkAspect("IF$vsm:DB-HV-1969:exit_distant($0008)", "Hp1+Vr0");
         checkAspect("IF$vsm:DB-HV-1969:shunting_dwarf($0012)", "Sh0");
 
-        EditorFrameOperator efo = new EditorFrameOperator("DB1969 Control Panel Editor");
-        efo.closeFrameWithConfirmations();
-        EditorFrameOperator.clearEditorFrameOperatorThreads();
-
     }
 
     @Test
@@ -106,7 +102,7 @@ public class SignalSystemTest {
         InstanceManager.getDefault(jmri.jmrit.display.layoutEditor.LayoutBlockManager.class).setStabilisedSensor("IS_ROUTING_DONE");
 
         InstanceManager.getDefault(ConfigureManager.class)
-                .load(new java.io.File("java/test/jmri/jmrit/display/valid/AA1UPtest.xml"));
+                .load(new java.io.File("java/test/jmri/jmrit/display/verify/AA1UPtest.xml"));
 
         InstanceManager.getDefault(jmri.LogixManager.class).activateAllLogixs();
         InstanceManager.getDefault(jmri.jmrit.display.layoutEditor.LayoutBlockManager.class).initializeLayoutBlockPaths();
@@ -158,10 +154,6 @@ public class SignalSystemTest {
         for (int i=0; i < numErrorMessages; i++) {
             jmri.util.JUnitAppender.assertErrorMessageStartsWith("No facing block found for source mast IF$vsm:BNSF-1996:SL-");
         }
-
-        EditorFrameOperator efo = new EditorFrameOperator("AA1UPtest Layout");
-        efo.closeFrameWithConfirmations();
-        EditorFrameOperator.clearEditorFrameOperatorThreads();
     }
 
     void checkAspect(String mastName, String aspect) {
@@ -177,7 +169,7 @@ public class SignalSystemTest {
         }
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -189,11 +181,9 @@ public class SignalSystemTest {
         JUnitUtil.initMemoryManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
-
+    
 }

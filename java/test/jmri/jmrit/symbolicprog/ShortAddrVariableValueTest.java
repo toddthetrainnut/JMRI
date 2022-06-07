@@ -1,12 +1,14 @@
 package jmri.jmrit.symbolicprog;
 
 import java.util.HashMap;
-
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -40,13 +42,14 @@ public class ShortAddrVariableValueTest {
         Assert.assertTrue(cv1.getValue() == 25);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.initDebugProgrammerManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

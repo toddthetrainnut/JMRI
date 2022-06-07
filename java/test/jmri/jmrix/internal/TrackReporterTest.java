@@ -1,9 +1,7 @@
 package jmri.jmrix.internal;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for TrackReporter class.
@@ -56,7 +54,7 @@ public class TrackReporterTest extends jmri.implementation.AbstractRailComReport
    }
 
    @Override
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
         r = new TrackReporter("TrackR1","hello world");
@@ -64,9 +62,9 @@ public class TrackReporterTest extends jmri.implementation.AbstractRailComReport
    }
 
    @Override
-   @AfterEach
+   @After
    public void tearDown(){
-       r = null;
+	   r = null;
        JUnitUtil.tearDown();
    }
 

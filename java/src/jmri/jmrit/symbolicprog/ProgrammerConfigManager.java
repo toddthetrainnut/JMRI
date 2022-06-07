@@ -3,7 +3,6 @@ package jmri.jmrit.symbolicprog;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.annotation.Nonnull;
 import jmri.implementation.FileLocationsPreferences;
 import jmri.jmrit.symbolicprog.tabbedframe.PaneProgFrame;
 import jmri.profile.Profile;
@@ -60,7 +59,6 @@ public class ProgrammerConfigManager extends AbstractPreferencesManager {
     }
 
     @Override
-    @Nonnull
     public Set<Class<? extends PreferencesManager>> getRequires() {
         Set<Class<? extends PreferencesManager>> requires = super.getRequires();
         requires.add(FileLocationsPreferences.class);
@@ -68,7 +66,6 @@ public class ProgrammerConfigManager extends AbstractPreferencesManager {
     }
 
     @Override
-    @Nonnull
     public Set<Class<?>> getProvides() {
         Set<Class<?>> provides = super.getProvides();
         provides.stream().forEach((provide) -> {

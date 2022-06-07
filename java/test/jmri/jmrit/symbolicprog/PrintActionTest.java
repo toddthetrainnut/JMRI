@@ -1,15 +1,13 @@
 package jmri.jmrit.symbolicprog;
 
 import java.awt.GraphicsEnvironment;
-import java.awt.event.WindowEvent;
-
 import jmri.jmrit.roster.RosterEntry;
 import jmri.jmrit.symbolicprog.tabbedframe.PaneProgFrame;
-import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -30,24 +28,24 @@ public class PrintActionTest {
                 return null;
             }
         };
-        PrintAction t = new PrintAction("Test Action", pFrame, true);
-        Assert.assertNotNull("exists", t);
-        pFrame.dispatchEvent(new WindowEvent(pFrame, WindowEvent.WINDOW_CLOSING));
+        PrintAction t = new PrintAction("Test Action",pFrame,true);
+        Assert.assertNotNull("exists",t);
+        jmri.util.JUnitUtil.dispose(pFrame);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDebugProgrammerManager();
+        jmri.util.JUnitUtil.setUp();
+        jmri.util.JUnitUtil.resetProfileManager();
+        jmri.util.JUnitUtil.initDebugProgrammerManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(PrintActionTest.class.getName());
+
 }

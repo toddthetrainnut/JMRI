@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.jupiter.api.AfterAll;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -19,21 +20,21 @@ public class WebServerConfigurationTest {
     public WebServerConfigurationTest() {
     }
 
-    @BeforeAll
+    @BeforeClass
     public static void setUpClass() {
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDownClass() {
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
 

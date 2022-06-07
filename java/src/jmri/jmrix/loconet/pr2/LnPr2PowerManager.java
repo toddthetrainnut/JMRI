@@ -10,6 +10,7 @@ import jmri.jmrix.loconet.LnPr2ThrottleManager;
 import jmri.jmrix.loconet.LnTrafficController;
 import jmri.jmrix.loconet.LocoNetMessage;
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
+import jmri.jmrix.loconet.SlotManager;
 
 /**
  * PowerManager implementation for controlling layout power via PR2.
@@ -27,13 +28,14 @@ public class LnPr2PowerManager extends LnPowerManager {
     public LnPr2PowerManager(LocoNetSystemConnectionMemo memo) {
         super(memo);
         this.tc = memo.getLnTrafficController();
+        this.memo = memo;
     }
 
     LnTrafficController tc;
+    LocoNetSystemConnectionMemo memo;
 
     @Override
     public void setPower(int v) throws JmriException {
-        int old = power;
         power = UNKNOWN;
 
         // Instead of GPON/GPOFF, PR2 uses ops-mode writes to CV 128 for control
@@ -47,10 +49,15 @@ public class LnPr2PowerManager extends LnPowerManager {
                 // set bit 1 in CV 128
                 pm.writeCV("128", 1, null);
                 power = ON;
-                firePowerPropertyChange(old, power);
+                firePropertyChange("Power", null, null); // NOI18N
                 // start making sure that the power is refreshed
                 if (timer == null) {
-                    timer = new javax.swing.Timer(2 * 1000, e -> refresh());
+                    timer = new javax.swing.Timer(2 * 1000, new java.awt.event.ActionListener() {
+                        @Override
+                        public void actionPerformed(java.awt.event.ActionEvent e) {
+                            refresh();
+                        }
+                    });
                     timer.setInitialDelay(2 * 1000);
                     timer.setRepeats(true);     // in case we run by
                 }
@@ -73,7 +80,7 @@ public class LnPr2PowerManager extends LnPowerManager {
             }
         }
         // notify of change
-        firePowerPropertyChange(old, power);
+        firePropertyChange("Power", null, null); // NOI18N
     }
 
     void refresh() {
@@ -94,9 +101,9 @@ public class LnPr2PowerManager extends LnPowerManager {
     // to listen for status changes from LocoNet
     @Override
     public void message(LocoNetMessage m) {
-        int old = power;
         if (m.getOpCode() == LnConstants.OPC_GPON) {
             power = ON;
+            firePropertyChange("Power", null, null); // NOI18N
         } else if (m.getOpCode() == LnConstants.OPC_GPOFF) {
             power = OFF;
             if (timer != null) {
@@ -105,7 +112,8 @@ public class LnPr2PowerManager extends LnPowerManager {
                 // A NPE was seen, before protected added, with the DCS52.
                 timer.stop();
             }
-        } else if (m.getOpCode() == LnConstants.OPC_WR_SL_DATA) {
+            firePropertyChange("Power", null, null); // NOI18N
+        } else if (m.getOpCode() == 0xEF) {
             // if this is a service mode write, drop out of power on mode
             if ((m.getElement(1) == 0x0E)
                     && (m.getElement(2) == 0x7C)
@@ -116,6 +124,7 @@ public class LnPr2PowerManager extends LnPowerManager {
                     if (timer != null) {
                         timer.stop();
                     }
+                    firePropertyChange("Power", null, null); // NOI18N
                 }
             }
         } else if ( // check for status showing going off
@@ -132,10 +141,10 @@ public class LnPr2PowerManager extends LnPowerManager {
                     if (timer != null) {
                         timer.stop();
                     }
+                    firePropertyChange("Power", null, null); // NOI18N
                 }
             }
         }
-        firePowerPropertyChange(old, power);
     }
     
     /**

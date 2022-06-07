@@ -1,8 +1,8 @@
 package jmri.jmrix.dccpp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the DCCppSerialPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class DCCppSerialPortControllerTest extends jmri.jmrix.AbstractSerialPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        DCCppInterfaceScaffold tc = new DCCppInterfaceScaffold(new DCCppCommandStation());
@@ -39,7 +39,8 @@ public class DCCppSerialPortControllerTest extends jmri.jmrix.AbstractSerialPort
              */
             @Override
             public String[] validBaudRates(){
-                return new String[]{"9600"};
+               String[] retval = {"9600"};
+               return retval;
             }
 
             /**
@@ -55,10 +56,9 @@ public class DCCppSerialPortControllerTest extends jmri.jmrix.AbstractSerialPort
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+       JUnitUtil.tearDown();
     }
 
 }

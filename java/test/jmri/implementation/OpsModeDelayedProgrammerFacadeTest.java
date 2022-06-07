@@ -6,20 +6,21 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import jmri.ProgListener;
 import jmri.Programmer;
 import jmri.progdebugger.ProgDebugger;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Test the OpsModeDelayedProgrammerFacade class.
  *
- * @author Bob Jacobsen Copyright 2014
+ * @author	Bob Jacobsen Copyright 2014
  *
  */
 public class OpsModeDelayedProgrammerFacadeTest {
@@ -152,12 +153,13 @@ public class OpsModeDelayedProgrammerFacadeTest {
         facProgReplied = false;
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
     }

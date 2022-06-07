@@ -1,16 +1,14 @@
 package jmri.jmrix.configurexml;
 
-import org.junit.Assert;
-import org.junit.Assume;
+import org.junit.*;
 import org.jdom2.Element;
-
 import jmri.jmrix.ConnectionConfig;
 import jmri.jmrix.AbstractNetworkPortController;
 
 /**
  * Base tests for NetworkConnectionConfigXml objects.
  *
- * @author Paul Bender Copyright (C) 2018
+ * @author Paul Bender Copyright (C) 2018	
  */
 abstract public class AbstractNetworkConnectionConfigXmlTestBase extends AbstractConnectionConfigXmlTestBase {
 

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.Box;
@@ -37,7 +38,7 @@ public class SpeedProfileTable extends jmri.util.JmriJFrame {
     JLabel description;
     String rosterId;
     RosterSpeedProfile speedProfile;
-    Map<Integer, Boolean> anomalies;
+    HashMap<Integer, Boolean> anomalies;
     boolean hasAnomaly;
     // divided by layout scale, gives a rough conversion for throttle setting to track speed
     static float SCALE = jmri.jmrit.logix.SpeedUtil.SCALE_FACTOR;
@@ -92,7 +93,7 @@ public class SpeedProfileTable extends jmri.util.JmriJFrame {
         JLabel label = new JLabel(Bundle.getMessage("units"));
         label.setFont(font);
         javax.swing.ButtonGroup bp = new javax.swing.ButtonGroup();
-        JRadioButton mm = new JRadioButton(Bundle.getMessage("mmps"));
+        JRadioButton mm = new JRadioButton(Bundle.getMessage("mm"));
         mm.setFont(font);
         mm.addActionListener((ActionEvent e) -> {
             update(model, SignalSpeedMap.PERCENT_NORMAL);
@@ -329,7 +330,7 @@ public class SpeedProfileTable extends jmri.util.JmriJFrame {
                 case STEP_COL:
                     return Math.round((float)(entry.getKey()*126)/1000);
                 case THROTTLE_COL:
-                    return threeDigit.format((float)(entry.getKey())/1000);
+                    return (float)(entry.getKey())/1000;
                 case FORWARD_SPEED_COL:
                     float speed = entry.getValue().getForwardSpeed();
                     switch(interp) {
@@ -376,10 +377,10 @@ public class SpeedProfileTable extends jmri.util.JmriJFrame {
             try {
             switch (col) {
                 case FORWARD_SPEED_COL:
-                    entry.getValue().setForwardSpeed(Float.parseFloat(((String)value).replace(',', '.')));
+                    entry.getValue().setForwardSpeed(Float.parseFloat((String)value));
                     return;
                 case REVERSE_SPEED_COL:
-                    entry.getValue().setReverseSpeed(Float.parseFloat(((String)value).replace(',', '.')));
+                    entry.getValue().setReverseSpeed(Float.parseFloat((String)value));
                     return;
                 default:
                     // fall out

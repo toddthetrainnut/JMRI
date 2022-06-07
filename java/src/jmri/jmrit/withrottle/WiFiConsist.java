@@ -19,19 +19,13 @@ public class WiFiConsist extends NmraConsist {
     public void add(DccLocoAddress loco, boolean dirNorm) {
         restore(loco, dirNorm);
         sendConsistCommand(loco, dirNorm, this);
-        //set the value in the roster entry for CV19
-        setRosterEntryCVValue(loco);
     }
 
     @Override
     public void remove(DccLocoAddress loco) {
-        //reset the value in the roster entry for CV19
-        resetRosterEntryCVValue(loco);
-        // then remove the address from all the internal lists.
         consistDir.remove(loco);
         consistList.remove(loco);
         consistPosition.remove(loco);
-        consistRoster.remove(loco);
         sendConsistCommand(loco, true, null);
     }
 
@@ -54,7 +48,7 @@ public class WiFiConsist extends NmraConsist {
                 dirNorm);
         if (packet != null) {
             if (log.isDebugEnabled()) {
-                log.debug("Sending packet: {}", java.util.Arrays.toString(packet));
+                log.debug(java.util.Arrays.toString(packet));
             }
             jmri.InstanceManager.getDefault(jmri.CommandStation.class).sendPacket(packet, 1);
         }

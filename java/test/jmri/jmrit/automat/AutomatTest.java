@@ -2,13 +2,15 @@ package jmri.jmrit.automat;
 
 import jmri.util.JUnitUtil;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for classes in the jmri.jmrit.automat package
  *
- * @author Bob Jacobsen Copyright 2008
+ * @author	Bob Jacobsen Copyright 2008
  */
 public class AutomatTest {
 
@@ -94,12 +96,12 @@ public class AutomatTest {
         Assert.assertTrue("handleDone after 2nd run", handleDone);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

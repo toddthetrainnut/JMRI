@@ -1,12 +1,13 @@
 package jmri.jmrit.symbolicprog;
 
 import java.awt.event.ActionEvent;
-import java.io.*;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,10 +56,12 @@ public class Pr1ExportAction extends AbstractAction {
         if (retVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             if (log.isDebugEnabled()) {
-                log.debug("start to export to PR1 file {}", file);
+                log.debug("start to export to PR1 file " + file);
             }
 
-            try ( PrintStream str = new PrintStream(new FileOutputStream(file)); ) {
+            try {
+
+                PrintStream str = new PrintStream(new FileOutputStream(file));
 
                 str.println("[DecoderData]");
                 for (int i = 1; i <= 256; i++) {
@@ -70,8 +73,8 @@ public class Pr1ExportAction extends AbstractAction {
                 }
                 str.flush();
                 str.close();
-            } catch (FileNotFoundException ex) {
-                log.error("Error writing file", ex);
+            } catch (IOException ex) {
+                log.error("Error writing file: " + ex);
             }
         }
     }

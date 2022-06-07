@@ -1,11 +1,9 @@
 package jmri.jmrit.operations.trains;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Swing action to create and register a TrainTableFrame object.
@@ -15,8 +13,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public class TrainsTableAction extends AbstractAction {
 
+    public TrainsTableAction(String s) {
+        super(s);
+    }
+
     public TrainsTableAction() {
-        super(Bundle.getMessage("MenuTrains")); // NOI18N
+        this(Bundle.getMessage("MenuTrains")); // NOI18N
     }
 
     static TrainsTableFrame trainsTableFrame = null;

@@ -1,10 +1,8 @@
 package jmri.util.managers;
 
 import javax.annotation.Nonnull;
-import javax.annotation.CheckForNull;
-import jmri.InstanceManager;
+import javax.annotation.Nullable;
 import jmri.Turnout;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.jmrix.internal.InternalTurnoutManager;
 
 /**
@@ -17,18 +15,17 @@ import jmri.jmrix.internal.InternalTurnoutManager;
 public class TurnoutManagerThrowExceptionScaffold extends InternalTurnoutManager {
 
     public TurnoutManagerThrowExceptionScaffold() {
-        super(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
+        super("I");
     }
     
     /** {@inheritDoc} */
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    protected Turnout createNewTurnout(String systemName, String userName) {
         throw new IllegalArgumentException("Illegal argument");
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
     public Turnout provideTurnout(@Nonnull String name) {
         throw new IllegalArgumentException("Illegal argument");
     }
@@ -47,14 +44,13 @@ public class TurnoutManagerThrowExceptionScaffold extends InternalTurnoutManager
     
     /** {@inheritDoc} */
     @Override
-    public Turnout getByUserName(@Nonnull String key) {
+    public Turnout getByUserName(String key) {
         throw new IllegalArgumentException("Illegal argument");
     }
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull
-    public Turnout newTurnout(@Nonnull String systemName, @CheckForNull String userName) {
+    public Turnout newTurnout(@Nonnull String systemName, @Nullable String userName) {
         throw new IllegalArgumentException("Illegal argument");
     }
     

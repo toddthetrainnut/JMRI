@@ -1,16 +1,16 @@
 package apps.gui3.paned;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class PanelProFrameTest {
 
@@ -22,7 +22,8 @@ public class PanelProFrameTest {
         t.dispose();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -31,19 +32,19 @@ public class PanelProFrameTest {
         jmri.jmrix.loconet.LocoNetSystemConnectionMemo memo = new jmri.jmrix.loconet.LocoNetSystemConnectionMemo();
         jmri.jmrix.loconet.LocoNetInterfaceScaffold lnis = new jmri.jmrix.loconet.LocoNetInterfaceScaffold(memo);
         memo.setLnTrafficController(lnis);
-        memo.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100, false, false, false, false);
+        memo.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100, false, false, false);
         memo.configureManagers();
         jmri.InstanceManager.store(memo, jmri.jmrix.loconet.LocoNetSystemConnectionMemo.class);
 
         jmri.jmrix.loconet.LocoNetSystemConnectionMemo memo2 = new jmri.jmrix.loconet.LocoNetSystemConnectionMemo();
         jmri.jmrix.loconet.LocoNetInterfaceScaffold lnis2 = new jmri.jmrix.loconet.LocoNetInterfaceScaffold(memo2);
         memo2.setLnTrafficController(lnis2);
-        memo2.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100, false, false, false, false);
+        memo2.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100, false, false, false);
         memo2.configureManagers();
         jmri.InstanceManager.store(memo2, jmri.jmrix.loconet.LocoNetSystemConnectionMemo.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

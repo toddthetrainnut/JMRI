@@ -1,21 +1,18 @@
 package jmri.jmrit.ussctc;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for TrafficRelay class in the jmri.jmrit.ussctc package
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class TrafficRelayTest {
 
     @Test
     public void testLocked() {
         SignalHeadSection s = new SignalHeadSection() {
-            @Override
             public String getName() {
                 return "";
             }
@@ -24,13 +21,12 @@ public class TrafficRelayTest {
 
         TrafficRelay lock = new TrafficRelay(s, SignalHeadSection.CODE_LEFT);
 
-        Assert.assertTrue(!lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(!lock.isLockClear());
     }
 
     @Test
     public void testUnlocked() {
         SignalHeadSection s = new SignalHeadSection() {
-            @Override
             public String getName() {
                 return "";
             }
@@ -39,10 +35,11 @@ public class TrafficRelayTest {
 
         TrafficRelay lock = new TrafficRelay(s, SignalHeadSection.CODE_LEFT);
 
-        Assert.assertTrue(lock.isLockClear(Lock.turnoutLockLogger));
+        Assert.assertTrue(lock.isLockClear());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -50,7 +47,7 @@ public class TrafficRelayTest {
         JUnitUtil.initMemoryManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

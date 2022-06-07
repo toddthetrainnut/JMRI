@@ -43,16 +43,15 @@ public class OlcbAddress {
         return hCode;
     }
     
-    String aString;
+    String aString = null;
     int[] aFrame = null;
     boolean match = false;
 
     static final int NODEFACTOR = 100000;
 
     /** 
-     * Construct from OlcbEvent.
+     * Construct from OlcbEvent
      *
-     * @param e the event ID.
      */
     public OlcbAddress(EventID e) {
         byte[] contents = e.getContents();
@@ -74,11 +73,12 @@ public class OlcbAddress {
         // This is done manually, rather than via regular expressions, for performance reasons.
         if (aString.contains(";")) {
             // multi-part address; leave match false and aFrame null
+            return;
         } else if (aString.contains(".")) {
             // dotted form, 7 dots
             String[] terms = s.split("\\.");
             if (terms.length != 8) {
-                log.error("unexpected number of terms: {}", terms.length);
+                log.error("unexpected number of terms: " + terms.length);
             }
             int[] tFrame = new int[terms.length];
             try {
@@ -132,8 +132,8 @@ public class OlcbAddress {
     @Override
     public int hashCode() {
         int ret = 0;
-        for (int value : this.aFrame) {
-            ret += value;
+        for (int i = 0; i < this.aFrame.length; i++) {
+            ret += this.aFrame[i];
         }
         return ret;
     }
@@ -162,12 +162,9 @@ public class OlcbAddress {
 
     /**
      * Confirm that the address string (provided earlier) is fully
-     * valid.
-     * <p>
-     * This is an expensive call. It's complete-compliance done
+     * valid.  This is an expensive call. It's complete-compliance done
      * using a regular expression. It can reject some 
      * forms that the code will normally handle OK.
-     * @return true if valid, else false.
      */
     public boolean check() {
         return getMatcher().reset(aString).matches();
@@ -187,7 +184,10 @@ public class OlcbAddress {
         if (!r.isExtended()) {
             return false;
         }
-        return (r.getHeader() & 0x1FFFF000) == 0x195B4000;
+        if ((r.getHeader() & 0x1FFFF000) != 0x195B4000) {
+            return false;
+        }
+        return true;
     }
 
     boolean match(CanMessage r) {
@@ -204,7 +204,10 @@ public class OlcbAddress {
         if (!r.isExtended()) {
             return false;
         }
-        return (r.getHeader() & 0x1FFFF000) == 0x195B4000;
+        if ((r.getHeader() & 0x1FFFF000) != 0x195B4000) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -212,8 +215,6 @@ public class OlcbAddress {
      *
      * @return null if entire string can't be parsed.
      */
-     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
-        justification = "Documented API, no resources to improve")
     public OlcbAddress[] split() {
         // reject strings ending in ";"
         if (aString.endsWith(";")) {
@@ -257,22 +258,20 @@ public class OlcbAddress {
 
     public String toCanonicalString() {
         String retval = "x";
-        for (int value : aFrame) {
-            retval = jmri.util.StringUtil.appendTwoHexFromInt(value, retval);
+        for (int i = 0; i < aFrame.length; i++) {
+            retval = jmri.util.StringUtil.appendTwoHexFromInt(aFrame[i], retval);
         }
         return retval;
     }
 
     /**
-     * Provide as dotted pairs.
-     * @return dotted pair form off string.
+     * Provide as dotted pairs
      */
     public String toDottedString() {
         String retval = "";
-        for (int value : aFrame) {
-            if (!retval.isEmpty())
-                retval += ".";
-            retval = jmri.util.StringUtil.appendTwoHexFromInt(value, retval);
+        for (int i = 0; i < aFrame.length; i++) {
+            if (! retval.isEmpty()) retval += ".";
+            retval = jmri.util.StringUtil.appendTwoHexFromInt(aFrame[i], retval);
         }
         return retval;
     }
@@ -281,40 +280,6 @@ public class OlcbAddress {
         byte[] b = new byte[8];
         for (int i = 0; i < 8; ++i) b[i] = (byte)aFrame[i];
         return new EventID(b);
-    }
-    
-    /**
-     * Validates Strings for OpenLCB format.
-     * @param name   the system name to validate.
-     * @param locale the locale for a localized exception.
-     * @param prefix system prefix, eg. MT for OpenLcb turnout.
-     * @return the unchanged value of the name parameter.
-     * @throws jmri.NamedBean.BadSystemNameException if provided name is an invalid format.
-     */
-    @Nonnull
-    public static String validateSystemNameFormat(@Nonnull String name, @Nonnull java.util.Locale locale, @Nonnull String prefix) throws jmri.NamedBean.BadSystemNameException {
-        //System.err.printf("*** OlcbAddress.validateSystemNameFormat(%s,[locale],%s)\n",name,prefix);
-        //StackTraceElement traceback[] = Thread.currentThread().getStackTrace();
-        //for (int i=1; i < 6 && i < traceback.length; i++) {
-        //    StackTraceElement tb = traceback[i];
-        //    System.err.printf("*** %s.%s (%s at %d)\n",
-        //              tb.getClassName(),tb.getMethodName(),
-        //              tb.getFileName(),tb.getLineNumber());
-        //}
-        String oAddr = name.substring(prefix.length());
-        OlcbAddress a = new OlcbAddress(oAddr);
-        OlcbAddress[] v = a.split();
-        if (v == null) {
-            throw new jmri.NamedBean.BadSystemNameException(locale,"InvalidSystemNameCustom","Did not find usable system name: " + name + " to a valid Olcb sensor address");
-        }
-        switch (v.length) {
-            case 1:
-            case 2:
-                break;
-            default:
-                throw new jmri.NamedBean.BadSystemNameException(locale,"InvalidSystemNameCustom","Wrong number of events in address: " + name);
-        }
-        return name;
     }
 
     private final static Logger log = LoggerFactory.getLogger(OlcbAddress.class);

@@ -46,6 +46,7 @@ public class SerialTrafficControlScaffold extends SerialTrafficController {
             log.debug("sendTestMessage    [{}]", m);
         }
         notifyMessage(m, l);
+        return;
     }
 
     /**

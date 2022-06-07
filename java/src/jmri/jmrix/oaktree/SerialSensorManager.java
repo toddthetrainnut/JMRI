@@ -1,7 +1,5 @@
 package jmri.jmrix.oaktree;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
 import jmri.Sensor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +18,17 @@ import org.slf4j.LoggerFactory;
 public class SerialSensorManager extends jmri.managers.AbstractSensorManager
         implements SerialListener {
 
+    OakTreeSystemConnectionMemo _memo = null;
+    protected String prefix = "O";
+
     public SerialSensorManager() {
         this(jmri.InstanceManager.getDefault(OakTreeSystemConnectionMemo.class));
     }
 
     public SerialSensorManager(OakTreeSystemConnectionMemo memo) {
-        super(memo);
+        super();
+        _memo = memo;
+        prefix = getSystemPrefix();
     }
 
     /**
@@ -40,50 +43,47 @@ public class SerialSensorManager extends jmri.managers.AbstractSensorManager
     static final int SENSORSPERNODE = 1000;
 
     /**
-     * {@inheritDoc}
+     * Return the Oak Tree system prefix
      */
     @Override
-    @Nonnull
-    public OakTreeSystemConnectionMemo getMemo() {
-        return (OakTreeSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return _memo.getSystemPrefix();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * System name is normalized to ensure uniqueness.
-     * @throws IllegalArgumentException when SystemName can't be converted
+     * Create a new sensor if all checks are passed System name is normalized to
+     * ensure uniqueness.
      */
     @Override
-    @Nonnull
-    protected Sensor createNewSensor(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Sensor createNewSensor(String systemName, String userName) {
         Sensor s;
         // validate the system name, and normalize it
-        String sName = SerialAddress.normalizeSystemName(systemName, getSystemPrefix());
-        if (sName.isEmpty()) {
+        String sName = SerialAddress.normalizeSystemName(systemName, prefix);
+        if (sName.equals("")) {
             // system name is not valid
-            throw new IllegalArgumentException("Invalid Oaktree Sensor system name - " +  // NOI18N
-                    systemName);
+            log.error("Invalid Sensor system name - {}", systemName);
+            return null;
         }
         // does this Sensor already exist
         s = getBySystemName(sName);
         if (s != null) {
-            throw new IllegalArgumentException("Oaktree Sensor with this name already exists - " +  // NOI18N
-                    systemName);
+            log.error("Sensor with this name already exists - {}", systemName);
+            return null;
         }
         // check under alternate name
-        String altName = SerialAddress.convertSystemNameToAlternate(sName, getSystemPrefix());
+        String altName = SerialAddress.convertSystemNameToAlternate(sName, prefix);
         s = getBySystemName(altName);
         if (s != null) {
-            throw new IllegalArgumentException("Grapevine Sensor with name  " +  // NOI18N
-                    systemName + " already exists as " + altName);
+            log.error("Sensor with name '{}' already exists as '{}'", systemName, altName);
+            return null;
         }
         // check bit number
-        int bit = SerialAddress.getBitFromSystemName(sName, getSystemPrefix());
+        int bit = SerialAddress.getBitFromSystemName(sName, prefix);
         if ((bit <= 0) || (bit >= SENSORSPERNODE)) {
-            throw new IllegalArgumentException("Sensor bit number " +  // NOI18N
-                    Integer.toString(bit) + " is outside the supported range 1-" +
+            log.error("Sensor bit number {} is outside the supported range, 1-{}",
+                    Integer.toString(bit),
                     Integer.toString(SENSORSPERNODE - 1));
+            return null;
         }
         // Sensor system name is valid and Sensor doesn't exist, make a new one
         if (userName == null) {
@@ -93,7 +93,7 @@ public class SerialSensorManager extends jmri.managers.AbstractSensorManager
         }
 
         // ensure that a corresponding Serial Node exists
-        SerialNode node = SerialAddress.getNodeFromSystemName(sName, getMemo().getTrafficController());
+        SerialNode node = SerialAddress.getNodeFromSystemName(sName, _memo.getTrafficController());
         if (node == null) {
             log.warn("Sensor {} refers to an undefined Serial Node.", sName);
             return s;
@@ -104,20 +104,12 @@ public class SerialSensorManager extends jmri.managers.AbstractSensorManager
     }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format returns 'true' if system
+     * name has a valid format, else returns 'false'
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String systemName, @Nonnull Locale locale) {
-        return SerialAddress.validateSystemNameFormat(systemName, getSystemNamePrefix(), locale);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
-        return (SerialAddress.validSystemNameFormat(systemName, typeLetter(), getSystemPrefix()));
+    public NameValidity validSystemNameFormat(String systemName) {
+        return (SerialAddress.validSystemNameFormat(systemName, 'S', prefix));
     }
 
     /**
@@ -134,7 +126,7 @@ public class SerialSensorManager extends jmri.managers.AbstractSensorManager
     @Override
     public void reply(SerialReply r) {
         // determine which node
-        SerialNode node = (SerialNode) getMemo().getTrafficController().getNodeFromAddress(r.getAddr());
+        SerialNode node = (SerialNode) _memo.getTrafficController().getNodeFromAddress(r.getAddr());
         if (node != null) {
             node.markChanges(r);
         }
@@ -142,21 +134,28 @@ public class SerialSensorManager extends jmri.managers.AbstractSensorManager
 
     /**
      * Method to register any orphan Sensors when a new Serial Node is created.
-     * @param node node to register.
      */
+    @SuppressWarnings("deprecation") // needs careful unwinding for Set operations
     public void registerSensorsForNode(SerialNode node) {
+        // get list containing all Sensors
+        java.util.Iterator<String> iter
+                = getSystemNameList().iterator();
         // Iterate through the sensors
-        SerialNode tNode;
-        for (Sensor s : getNamedBeanSet()) {
-            String sName = s.getSystemName();
-            log.debug("system name is {}", sName);
-            if (sName.startsWith(getSystemNamePrefix())) { // multichar prefix
-                // This is a Sensor
-                tNode = SerialAddress.getNodeFromSystemName(sName, getMemo().getTrafficController());
-                if (tNode == node) {
-                    // This sensor is for this new Serial Node - register it
-                    node.registerSensor(s,
-                            (SerialAddress.getBitFromSystemName(sName, getSystemPrefix()) - 1));
+        SerialNode tNode = null;
+        while (iter.hasNext()) {
+            String sName = iter.next();
+            if (sName == null) {
+                log.error("System name null during register Sensor");
+            } else {
+                log.debug("system name is {}", sName);
+                if ((sName.startsWith(getSystemPrefix())) && (sName.charAt(getSystemPrefix().length()) == 'S')) { // multichar prefix
+                    // This is a Sensor
+                    tNode = SerialAddress.getNodeFromSystemName(sName, _memo.getTrafficController());
+                    if (tNode == node) {
+                        // This sensor is for this new Serial Node - register it
+                        node.registerSensor(getBySystemName(sName),
+                                (SerialAddress.getBitFromSystemName(sName, getSystemPrefix()) - 1));
+                    }
                 }
             }
         }
@@ -170,8 +169,17 @@ public class SerialSensorManager extends jmri.managers.AbstractSensorManager
         return Bundle.getMessage("AddInputEntryToolTip");
     }
 
+    /**
+     * Static function returning the SerialSensorManager instance to use.
+     * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
+     */
+    @Deprecated
+    static public SerialSensorManager instance() {
+        return null;
+    }
+
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return true;
     }
 

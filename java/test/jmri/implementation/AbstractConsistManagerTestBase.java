@@ -1,18 +1,18 @@
 package jmri.implementation;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import jmri.ConsistListener;
 import jmri.DccLocoAddress;
 import jmri.LocoAddress;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 abstract public class AbstractConsistManagerTestBase {
 
@@ -20,9 +20,9 @@ abstract public class AbstractConsistManagerTestBase {
     
     // implementing classes should set cm to a valid value in setUp and 
     // cleanup in tearDown.
-    @BeforeEach
+    @Before
     abstract public void setUp();
-    @AfterEach
+    @After
     abstract public void tearDown();
 
 
@@ -130,22 +130,22 @@ abstract public class AbstractConsistManagerTestBase {
        ((AbstractConsistManager)cm).requestUpdateFromLayout();
     }
 
-    @Test
-    public void testGetConsistLocoAddress() {
+    @Test(expected=java.lang.IllegalArgumentException.class)
+    public void testGetConsistLocoAddress(){
         // getConsist with a LocoAddress object typically throws an error
-        // (There are no current impemenations for non-DCC systems)
-        LocoAddress addr = new LocoAddress() {
-            @Override
-            public int getNumber() {
+	// (There are no current impemenations for non-DCC systems)
+        LocoAddress addr = new LocoAddress(){
+	    @Override
+	    public int getNumber(){
                 return 42;
-            }
+	    }
 
-            @Override
-            public Protocol getProtocol() {
+	    @Override
+            public Protocol getProtocol(){
                 return jmri.LocoAddress.Protocol.M4;
-            }
-        };
-        Assert.assertThrows(IllegalArgumentException.class, () -> cm.getConsist(addr));
+	    }
+	};
+        cm.getConsist(addr);
     }
 
     // private final static Logger log = LoggerFactory.getLogger(AbstractConsistManagerTestBase.class);

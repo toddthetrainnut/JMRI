@@ -2,7 +2,7 @@ package jmri.jmrix.loconet.locoio;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import jmri.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeSupport;
 import jmri.jmrix.loconet.LnConstants;
 import jmri.jmrix.loconet.LnTrafficController;
 import jmri.jmrix.loconet.LocoNetListener;
@@ -15,13 +15,19 @@ import org.slf4j.LoggerFactory;
  * 
  * @author John Plocher, January 28, 2007
  */
-public class LocoIOData extends PropertyChangeSupport
-        implements LocoNetListener, PropertyChangeListener {
+public class LocoIOData
+        implements LocoNetListener, java.beans.PropertyChangeListener {
 
     private int sv0;
     private int unitAddress;
     private int unitSubAddress;
     private LnTrafficController tc;
+
+    /*
+     * This data model is shared between several views; each
+     * needs to know when the data changes out from under it.
+     */
+    private PropertyChangeSupport dataListeners = new PropertyChangeSupport(this);
 
     /**
      * Define the number of rows in the table, which is also the number of
@@ -56,9 +62,6 @@ public class LocoIOData extends PropertyChangeSupport
 
     /**
      * Create a new instance of LocoIOData.
-     * @param unitAddr unit address.
-     * @param unitSubAddr unit SubAddress.
-     * @param tc system connection traffic controller.
      */
     public LocoIOData(int unitAddr, int unitSubAddr, LnTrafficController tc) {
         timeoutcounter = 0;
@@ -87,6 +90,14 @@ public class LocoIOData extends PropertyChangeSupport
         }
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        dataListeners.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        dataListeners.removePropertyChangeListener(pcl);
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         log.info("LocoIOData: {} := {} from {}", // NOI18N
@@ -105,8 +116,6 @@ public class LocoIOData extends PropertyChangeSupport
      * The subAddress is in the range of 0x01 .. 0x7E
      * <br>
      * (0x7F is reserved)
-     * @param unit unit address.
-     * @param unitSub unit subAddress.
      */
     public synchronized void setUnitAddress(int unit, int unitSub) {
         setUnitAddress(unit);
@@ -114,12 +123,12 @@ public class LocoIOData extends PropertyChangeSupport
     }
 
     public synchronized void setUnitAddress(int unit) {
-        firePropertyChange("UnitAddress", unitAddress, 0x0100 | (unit & 0x07F)); // NOI18N
+        dataListeners.firePropertyChange("UnitAddress", Integer.valueOf(unitAddress), Integer.valueOf(0x0100 | (unit & 0x07F))); // NOI18N
         unitAddress = 0x0100 | (unit & 0x07F);  // protect against high bits set
     }
 
     public synchronized void setUnitSubAddress(int unitSub) {
-        firePropertyChange("UnitSubAddress", unitSubAddress, unitSub & 0x07F); // NOI18N
+        dataListeners.firePropertyChange("UnitSubAddress", Integer.valueOf(unitSubAddress), Integer.valueOf(unitSub & 0x07F)); // NOI18N
         unitSubAddress = unitSub & 0x07F;
     }
 
@@ -132,7 +141,7 @@ public class LocoIOData extends PropertyChangeSupport
     }
 
     /**
-     * No LocoIO Board level configuration.
+     * TODO: LocoIO Board level configuration.
      * <pre>
      * Bit 0: 0 = default, 1 = Port Refresh
      * Bit 1: 0 = Fixed code PBs, 1 = Alternated code PBs
@@ -140,22 +149,16 @@ public class LocoIOData extends PropertyChangeSupport
      * Bit 3: 0 = default, 1 = Ports 5-12 are Servo Ports
      * Bit 4-7: Blink Rate
      *
-     * Add/support the additional config options for HDL boards -
-     * Work has moved to xml decoder definition Public_Domain_HDL_LocoIO, is included there since 4.21.2
+     * If possibe add/support the additional config options for HDL boards
      * </pre>
-     * @param portRefresh port refresh value, bit 0.
-     * @param altCodePBs alternated code PBs, bit 1.
-     * @param isServo servo port, bit 3.
-     * @param blinkRate blink rate, bits 4-7.
      */
     public void setUnitConfig(int portRefresh, int altCodePBs, int isServo, int blinkRate) {
         int newsv0 = ((portRefresh & 0x01)) |   // bit 0
                 ((altCodePBs & 0x01) << 0x01) | // bit 1
                 // bit 2 is left at zero
-                // later LocoServo boards store 2 pos/4 pos type in bits 2-3, see Public_Domain_HDL_LocoIO
                 ((isServo & 0x01) << 0x03) |    // bit 3
                 ((blinkRate & 0x0F) << 0x04);   // bits 4-7
-        firePropertyChange("UnitConfig", sv0, newsv0); // NOI18N
+        dataListeners.firePropertyChange("UnitConfig", Integer.valueOf(sv0), Integer.valueOf(newsv0)); // NOI18N
         sv0 = newsv0;
     }
 
@@ -165,7 +168,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setLBVersion(String version) {
         locoBufferVersion = version;
-        firePropertyChange("LBVersionChange", "", locoBufferVersion); // NOI18N
+        dataListeners.firePropertyChange("LBVersionChange", "", locoBufferVersion); // NOI18N
     }
 
     public String getLBVersion() {
@@ -174,7 +177,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setLIOVersion(String version) {
         locoIOVersion = version;
-        firePropertyChange("LIOVersionChange", "", locoIOVersion); // NOI18N
+        dataListeners.firePropertyChange("LIOVersionChange", "", locoIOVersion); // NOI18N
     }
 
     public String getLIOVersion() {
@@ -183,7 +186,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setStatus(String msg) {
         status = msg;
-        firePropertyChange("StatusChange", "", status); // NOI18N
+        dataListeners.firePropertyChange("StatusChange", "", status); // NOI18N
     }
 
     public String getStatus() {
@@ -192,7 +195,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setSV(int channel, int value) {
         sv[channel] = value & 0xFF;
-        firePropertyChange("PortChange", -1, channel); // NOI18N
+        dataListeners.firePropertyChange("PortChange", Integer.valueOf(-1), Integer.valueOf(channel)); // NOI18N
     }
 
     public int getSV(int channel) {
@@ -205,7 +208,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setV1(int channel, int value) {
         v1[channel] = value & 0xFF;
-        firePropertyChange("PortChange", -1, channel); // NOI18N
+        dataListeners.firePropertyChange("PortChange", Integer.valueOf(-1), Integer.valueOf(channel)); // NOI18N
     }
 
     public int getV1(int channel) {
@@ -218,7 +221,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setV2(int channel, int value) {
         v2[channel] = value & 0xFF;
-        firePropertyChange("PortChange", -1, channel); // NOI18N
+        dataListeners.firePropertyChange("PortChange", Integer.valueOf(-1), Integer.valueOf(channel)); // NOI18N
     }
 
     public int getV2(int channel) {
@@ -230,11 +233,10 @@ public class LocoIOData extends PropertyChangeSupport
      *
      * @param channel integer value of the addresses in use for this row
      *                (0 = invalid)
-     * @param value channel value.
      */
     public void setAddr(int channel, int value) {
         addr[channel] = value & 0x7FF;
-        firePropertyChange("PortChange", -1, channel); // NOI18N
+        dataListeners.firePropertyChange("PortChange", Integer.valueOf(-1), Integer.valueOf(channel)); // NOI18N
     }
 
     public int getAddr(int channel) {
@@ -243,7 +245,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setMode(int channel, String m) {
         mode[channel] = m;
-        firePropertyChange("PortChange", -1, channel); // NOI18N
+        dataListeners.firePropertyChange("PortChange", Integer.valueOf(-1), Integer.valueOf(channel)); // NOI18N
     }
 
     public String getMode(int channel) {
@@ -264,7 +266,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     public void setLIM(int channel, LocoIOMode m) {
         lim[channel] = m;
-        firePropertyChange("PortChange", -1, channel); // NOI18N
+        dataListeners.firePropertyChange("PortChange", Integer.valueOf(-1), Integer.valueOf(channel)); // NOI18N
     }
 
     public LocoIOMode getLIM(int channel) {
@@ -421,17 +423,22 @@ public class LocoIOData extends PropertyChangeSupport
                             // type = 0 for cv, 1 for value1, 2 for value2
                             // We can't update the mode until we have all three values
                             // Sequence (from state machine below) is V2, V1, Mode
-                            log.debug("... updating port {} SV{}({}) = 0x{}", channel, type, type == 1 ? "value1" // NOI18N
-                                    : type == 2 ? "value2" // NOI18N
-                                    : type == 0 ? "mode" // NOI18N
-                                    : "unknown", Integer.toHexString(data));
+                            log.debug("... updating port " + channel // NOI18N
+                                    + " SV" + type // NOI18N
+                                    + "(" // NOI18N
+                                    + (type == 1 ? "value1" // NOI18N
+                                            : type == 2 ? "value2" // NOI18N
+                                                    : type == 0 ? "mode" // NOI18N
+                                                            : "unknown") // NOI18N
+                                    + ") = 0x" // NOI18N
+                                    + Integer.toHexString(data));
                             if (type == 2) {            // v2
                                 setV2(channel, data);
                                 setMode(channel, "<none>"); // NOI18N
                             } else if (type == 1) {     // v1
                                 setV1(channel, data);
                                 setMode(channel, "<none>"); // NOI18N
-                            } else if (type == 0) {     // cv
+                            } else if (type == 0) {       // cv
                                 setSV(channel, data);
                                 // Now that we have all the pieces, recalculate mode
                                 LocoIOMode lim = validmodes.getLocoIOModeFor(getSV(channel), getV1(channel), getV2(channel));
@@ -443,15 +450,16 @@ public class LocoIOData extends PropertyChangeSupport
                                     setMode(channel, lim.getFullMode());
                                     setAddr(channel, validmodes.valuesToAddress(lim.getOpCode(), getSV(channel), getV1(channel), getV2(channel)));
                                 }
-                                log.debug("... decoded address (cv={} v1={} v2={}) is {}(0x{})",
-                                        Integer.toHexString(getSV(channel)), Integer.toHexString(getV1(channel)),
-                                        Integer.toHexString(getV2(channel)), getAddr(channel),
-                                        Integer.toHexString(getAddr(channel))); // NOI18N
+                                log.debug("... decoded address (" // NOI18N
+                                        + "cv=" + Integer.toHexString(getSV(channel)) + " " // NOI18N
+                                        + "v1=" + Integer.toHexString(getV1(channel)) + " " // NOI18N
+                                        + "v2=" + Integer.toHexString(getV2(channel)) + ") " // NOI18N
+                                        + "is " + getAddr(channel) + "(0x" + Integer.toHexString(getAddr(channel)) + ")"); // NOI18N
                             } else {
                                 log.warn("OPC_PEER_XFR: Type ({}) is not {0,1,2} for channel {}", type, channel); // NOI18N
                             }
-                        // } else {
-                            // log.error("last CV recorded is invalid: {}", lastOpCv);
+                        } else {
+                            // log.error("last CV recorded is invalid: "+lastOpCv);
                         }
                     }  // end of read processing
 
@@ -644,7 +652,7 @@ public class LocoIOData extends PropertyChangeSupport
      * Timer Management Protect against communication failures, addressing
      * mixups and the like.
      */
-    private static final int TIMEOUT = 2000;    // ms
+    static private int TIMEOUT = 2000;    // ms
     protected javax.swing.Timer timer = null;
     private int timeoutcounter;
 
@@ -686,8 +694,7 @@ public class LocoIOData extends PropertyChangeSupport
     }
 
     /**
-     * Internal routine to handle timer starts and restarts.    
-     * @param delay Milliseconds to wait
+     * Internal routine to handle timer starts {@literal &} restarts.
      */
     protected void restartTimer(int delay) {
         if (timer == null) {
@@ -706,9 +713,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     /**
      * Read an SV from a given LocoIO device.
-     * @param locoIOAddress primary board address
-     * @param locoIOSubAddress subaddress within board
-     * @param cv CV number to access
+     *
      */
     void sendReadCommand(int locoIOAddress, int locoIOSubAddress, int cv) {
         // remember current op is read
@@ -722,10 +727,7 @@ public class LocoIOData extends PropertyChangeSupport
 
     /**
      * Write an SV to a given LocoIO device.
-     * @param locoIOAddress primary board address
-     * @param locoIOSubAddress subaddress within board
-     * @param cv CV number to access
-     * @param data value to be written
+     *
      */
     void sendWriteCommand(int locoIOAddress, int locoIOSubAddress, int cv, int data) {
         // remember current op is write

@@ -2,20 +2,21 @@ package jmri.jmrit.entryexit;
 
 import java.awt.GraphicsEnvironment;
 import java.util.HashMap;
-
 import jmri.InstanceManager;
-import jmri.MemoryManager;
+import jmri.Sensor;
 import jmri.SensorManager;
+import jmri.Turnout;
 import jmri.TurnoutManager;
 import jmri.jmrit.display.layoutEditor.LayoutBlockManager;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
+import jmri.jmrit.entryexit.EntryExitPairs;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-import org.junit.jupiter.api.BeforeAll;
-import org.netbeans.jemmy.operators.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.jemmy.EventTool;
 
 /**
  *
@@ -88,35 +89,7 @@ public class DestinationPointsTest {
         Assert.assertEquals("test state active", 2, state);  // NOI18N
     }
 
-    @Test
-    public void testNoCurrentRoute() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        DestinationPoints dp = tools.getDestinationPoint(sm.getSensor("NX-AE"),  // NOI18N
-                sm.getSensor("NX-AW-Side"), panels.get("Alpha"), eep);  // NOI18N
-        Assert.assertNotNull("test state", dp);
-
-        // Setup memory variable
-        InstanceManager.getDefault(MemoryManager.class).provideMemory("testMemory");
-        eep.setMemoryOption("IMtestMemory");
-
-        Thread routeError = createModalDialogOperatorThread(Bundle.getMessage("RouteNotClear"), Bundle.getMessage("ButtonNo"), "routeError");  // NOI18N
-        dp.handleNoCurrentRoute(false, "Allocation Error");
-        JUnitUtil.waitFor(()->{return !(routeError.isAlive());}, "routeError finished");
-    }
-
-    Thread createModalDialogOperatorThread(String dialogTitle, String buttonText, String threadName) {
-        Thread t = new Thread(() -> {
-            // constructor for jdo will wait until the dialog is visible
-            JDialogOperator jdo = new JDialogOperator(dialogTitle);
-            JButtonOperator jbo = new JButtonOperator(jdo, buttonText);
-            jbo.pushNoBlock();
-        });
-        t.setName(dialogTitle + " Close Dialog Thread: " + threadName);  // NOI18N
-        t.start();
-        return t;
-    }
-
-    @BeforeAll
+    @BeforeClass
     public static void setUp() throws Exception {
         JUnitUtil.setUp();
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
@@ -130,21 +103,16 @@ public class DestinationPointsTest {
         tm = InstanceManager.getDefault(TurnoutManager.class);
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDown() {
-        JUnitUtil.clearRouteThreads();
-        JUnitUtil.clearTurnoutThreads();
-        JUnitUtil.removeMatchingThreads("Routing stabilising timer");
         panels.forEach((name, panel) -> JUnitUtil.dispose(panel));
+        JUnitUtil.tearDown();
         tm = null;
         sm = null;
         lbm = null;
         eep = null;
         panels = null;
         tools = null;
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
-        JUnitUtil.tearDown();
     }
 
 //     private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DestinationPointsTest.class);

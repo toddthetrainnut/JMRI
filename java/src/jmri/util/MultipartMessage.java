@@ -127,7 +127,8 @@ public class MultipartMessage {
 
         try (FileInputStream inStream = new FileInputStream(uploadFile)) {
             byte[] buffer = new byte[4096];
-            int bytesRead;
+            @SuppressWarnings("UnusedAssignment")
+            int bytesRead = -1;
             while ((bytesRead = inStream.read(buffer)) != -1) {
                 outStream.write(buffer, 0, bytesRead);
             }

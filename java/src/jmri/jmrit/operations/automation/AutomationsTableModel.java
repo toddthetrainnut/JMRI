@@ -8,7 +8,6 @@ import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -16,15 +15,13 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsXml;
 import jmri.jmrit.operations.setup.Control;
 import jmri.util.table.ButtonEditor;
 import jmri.util.table.ButtonRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Table model allowing the edit and status of an automation used by operations.
@@ -236,11 +233,14 @@ public class AutomationsTableModel extends javax.swing.table.AbstractTableModel 
 
     private void runAutomation(int row) {
         Automation automation = _sysList.get(row);
-        SwingUtilities.invokeLater(() -> {
-            if (automation.isActionRunning())
-                automation.stop();
-            else
-                automation.resume();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (automation.isActionRunning())
+                    automation.stop();
+                else
+                    automation.resume();
+            }
         });
     }
 
@@ -261,9 +261,12 @@ public class AutomationsTableModel extends javax.swing.table.AbstractTableModel 
         }
 
         // use invokeLater so new window appears on top
-        SwingUtilities.invokeLater(() -> {
-            AutomationTableFrame frame = new AutomationTableFrame(automation);
-            automationEditFrames.put(automation.getId(), frame);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                AutomationTableFrame frame = new AutomationTableFrame(automation);
+                automationEditFrames.put(automation.getId(), frame);
+            }
         });
     }
 

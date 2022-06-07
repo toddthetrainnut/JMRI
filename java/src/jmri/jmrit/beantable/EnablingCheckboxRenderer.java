@@ -11,7 +11,6 @@ import javax.swing.table.TableCellRenderer;
  * Beyond the normal behavior of providing a checkbox to show the value, this
  * disables the JCheckBox if the cell is not editable. This makes the visual
  * behavior more in line with user expectations.
- * The checkbox cell background is set to match selected status.
  *
  * @author Bob Jacobsen
  */
@@ -19,12 +18,13 @@ public class EnablingCheckboxRenderer extends JCheckBox implements TableCellRend
 
     public EnablingCheckboxRenderer() {
         super();
-        super.setHorizontalAlignment(0);
+        setHorizontalAlignment(0);
     }
 
     /**
-     * Override this method from the parent class.
-     * {@inheritDoc}
+     * Override this method from the parent class. Only paint the background if
+     * the row isn't selected Paint every other row a color very similiar to the
+     * base color, just a little darker
      *
      * @param table      the JTable component
      * @param value      the cell content's object
@@ -37,9 +37,8 @@ public class EnablingCheckboxRenderer extends JCheckBox implements TableCellRend
      */
     @Override
     public Component getTableCellRendererComponent(JTable table, java.lang.Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        setSelected(value != null && ((Boolean) value));
+        setSelected(value != null && ((Boolean) value).booleanValue());
         setEnabled(table.isCellEditable(row, column));
-        setBackground(isSelected ? table.getSelectionBackground() : table.getBackground() );
         return this;
     }
 }

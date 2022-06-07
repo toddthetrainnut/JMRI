@@ -168,7 +168,8 @@ public class RosterMenu extends JMenu {
                 previewAction.setEnabled(true);
                 break;
             default:
-                log.error("RosterMenu constructed without a valid menuType parameter: {}", pMenuType);
+                log.error("RosterMenu constructed without a valid menuType parameter: "
+                        + pMenuType);
         }
     }
 

@@ -1,19 +1,17 @@
 package jmri.jmrit.powerpanel;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the Jmrit PowerPanel
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class PowerPaneTest extends jmri.util.swing.JmriPanelTest {
 
     // setup a default PowerManager interface
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -22,8 +20,7 @@ public class PowerPaneTest extends jmri.util.swing.JmriPanelTest {
         helpTarget="package.jmri.jmrit.powerpanel.PowerPanelFrame";
         title=Bundle.getMessage("TitlePowerPanel");
     }
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

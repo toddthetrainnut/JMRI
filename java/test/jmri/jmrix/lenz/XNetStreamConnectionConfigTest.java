@@ -1,24 +1,23 @@
 package jmri.jmrix.lenz;
 
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class XNetStreamConnectionConfigTest extends jmri.jmrix.AbstractConnectionConfigTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         cc = new XNetStreamConnectionConfig(new XNetStreamPortController());
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        cc = null;
+	cc = null;
         jmri.util.JUnitUtil.tearDown();
     }
 

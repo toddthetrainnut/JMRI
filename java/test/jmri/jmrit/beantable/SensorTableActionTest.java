@@ -1,23 +1,13 @@
 package jmri.jmrit.beantable;
 
-import jmri.util.gui.GuiLafPreferencesManager;
+import apps.gui.GuiLafPreferencesManager;
 import java.awt.GraphicsEnvironment;
-
-import javax.annotation.Nonnull;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
-
 import jmri.InstanceManager;
 import jmri.Sensor;
-import jmri.SensorManager;
-import jmri.jmrix.internal.InternalSensorManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-import jmri.util.swing.JemmyUtil;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.util.NameComponentChooser;
 import org.slf4j.Logger;
@@ -28,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Paul Bender Copyright (C) 2017
  */
-public class SensorTableActionTest extends AbstractTableActionBase<Sensor> {
+public class SensorTableActionTest extends AbstractTableActionBase {
 
     @Test
     public void testCTor() {
@@ -73,7 +63,7 @@ public class SensorTableActionTest extends AbstractTableActionBase<Sensor> {
             is1.setKnownState(Sensor.ACTIVE);
             is2.setKnownState(Sensor.INACTIVE);
         } catch (jmri.JmriException reason) {
-            log.warn("Exception flipping sensor is1: {}", reason);
+            log.warn("Exception flipping sensor is1: " + reason);
         }
 
         // set graphic state column display preference to false, read by createModel()
@@ -138,7 +128,7 @@ public class SensorTableActionTest extends AbstractTableActionBase<Sensor> {
 
         // find the "Add... " button and press it.
         JFrameOperator jfo = new JFrameOperator(f);
-        JemmyUtil.pressButton(jfo,Bundle.getMessage("ButtonAdd"));
+        jmri.util.swing.JemmyUtil.pressButton(jfo,Bundle.getMessage("ButtonAdd"));
         new org.netbeans.jemmy.QueueTool().waitEmpty();
         JFrame f1 = JFrameOperator.waitJFrame(getAddFrameName(), true, true);
         //Enter 1 in the text field labeled "Hardware address:"
@@ -147,8 +137,8 @@ public class SensorTableActionTest extends AbstractTableActionBase<Sensor> {
 
         // set to "1"
         new JTextFieldOperator(hwAddressField).typeText("1");
-        //and press create
-        JemmyUtil.pressButton(new JFrameOperator(f1),Bundle.getMessage("ButtonCreate"));
+        //and press create 
+        jmri.util.swing.JemmyUtil.pressButton(new JFrameOperator(f1),Bundle.getMessage("ButtonCreate"));
         new org.netbeans.jemmy.QueueTool().waitEmpty();
 
         JTableOperator tbl = new JTableOperator(jfo, 0);
@@ -156,7 +146,7 @@ public class SensorTableActionTest extends AbstractTableActionBase<Sensor> {
         tbl.clickOnCell(0,jmri.jmrit.beantable.sensor.SensorTableDataModel.EDITCOL);
 
         JFrame f2 = JFrameOperator.waitJFrame(getEditFrameName(), true, true);
-        JemmyUtil.pressButton(new JFrameOperator(f2),Bundle.getMessage("ButtonCancel"));
+        jmri.util.swing.JemmyUtil.pressButton(new JFrameOperator(f2),Bundle.getMessage("ButtonCancel"));
         JUnitUtil.dispose(f2);
         JUnitUtil.dispose(f1);
         JUnitUtil.dispose(f);
@@ -167,68 +157,23 @@ public class SensorTableActionTest extends AbstractTableActionBase<Sensor> {
         return "Edit Sensor IS1";
     }
 
-    @Test
-    public void testAddFailureCreate() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
-        InstanceManager.setDefault(SensorManager.class, new CreateNewSensorAlwaysException());
-
-        a = new SensorTableAction();
-        Assume.assumeTrue(a.includeAddButton());
-
-        a.actionPerformed(null);
-        JFrame f = JFrameOperator.waitJFrame(getTableFrameName(), true, true);
-        // find the "Add... " button and press it.
-        JemmyUtil.pressButton(new JFrameOperator(f), Bundle.getMessage("ButtonAdd"));
-
-        JFrame f1 = JFrameOperator.waitJFrame(getAddFrameName(), true, true);
-        JTextField hwAddressField = JTextFieldOperator.findJTextField(f1, new NameComponentChooser("hwAddressTextField"));
-        Assert.assertNotNull("hwAddressTextField", hwAddressField);
-        // set to "1"
-        new JTextFieldOperator(hwAddressField).setText("1");
-        Thread add1 = JemmyUtil.createModalDialogOperatorThread(
-            Bundle.getMessage("ErrorBeanCreateFailed","Sensor" , "IS1"), Bundle.getMessage("ButtonOK"));  // NOI18N
-
-        //and press create
-        JemmyUtil.pressButton(new JFrameOperator(f1), Bundle.getMessage("ButtonCreate"));
-        JUnitUtil.waitFor(()->{return !(add1.isAlive());}, "dialog finished");  // NOI18N
-
-        JemmyUtil.pressButton(new JFrameOperator(f1), Bundle.getMessage("ButtonClose")); // not sure why this is close in this frame.
-        JUnitUtil.dispose(f1);
-        JUnitUtil.dispose(f);
-    }
-
-    private class CreateNewSensorAlwaysException extends InternalSensorManager {
-
-        public CreateNewSensorAlwaysException() {
-            super(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        @Nonnull
-        protected Sensor createNewSensor(@Nonnull String systemName, String userName) throws IllegalArgumentException {
-            throw new IllegalArgumentException("createNewSensor Exception Text");
-        }
-
-    }
-
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initInternalSensorManager();
-        helpTarget = "package.jmri.jmrit.beantable.SensorTable";
+        jmri.util.JUnitUtil.resetProfileManager();
+        jmri.util.JUnitUtil.initInternalSensorManager();
+        helpTarget = "package.jmri.jmrit.beantable.SensorTable"; 
         a = new SensorTableAction();
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         a.dispose();
         a = null;
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

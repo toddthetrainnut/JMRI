@@ -5,12 +5,11 @@ package jmri.jmrix.lenz;
  *
  * @author Paul Bender Copyright (C) 2010
  */
-public abstract class AbstractXNetSerialConnectionConfig extends jmri.jmrix.AbstractSerialConnectionConfig {
+abstract public class AbstractXNetSerialConnectionConfig extends jmri.jmrix.AbstractSerialConnectionConfig {
 
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p serial port adapter.
      */
     public AbstractXNetSerialConnectionConfig(jmri.jmrix.SerialPortAdapter p) {
         super(p);

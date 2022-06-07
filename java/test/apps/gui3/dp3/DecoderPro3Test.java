@@ -1,29 +1,25 @@
 package apps.gui3.dp3;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
-
 import apps.AppsBase;
+import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import jmri.util.JmriJFrame;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * Tests for the DecoderPro3 application.
+ * Description: Tests for the DecoderPro3 application.
  *
  * @author Paul Bender Copyright (C) 2016
  */
-@DisabledIfSystemProperty(named ="java.awt.headless", matches ="true")
 public class DecoderPro3Test {
 
     @Test
-    @Disabled("Fails consistently on Jenkins and travis GUI tests")
     public void testCtor() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         String[] args = {"DecoderProConfig3.xml"};
         AppsBase a = new DecoderPro3(args) {
             // force the application to not actually start.
@@ -53,42 +49,28 @@ public class DecoderPro3Test {
                 JUnitUtil.initDebugThrottleManager();
             }
 
+            @Override
+            protected void installShutDownManager() {
+                JUnitUtil.initShutDownManager();
+            }
         };
-        assertThat(a).isNotNull();
-
-        jmri.util.JUnitUtil.waitFor(() -> {
-            return JmriJFrame.getFrame("DecoderPro Wizard") != null;
-        }, "wait for frame to appear");
-
-        // remove a frame opened by DecoderPro3
-        JUnitUtil.disposeFrame("DecoderPro Wizard", false, false);
+        Assert.assertNotNull(a);
         // shutdown the application
-        // the following line terminates the Junit testing early
-//        AppsBase.handleQuit();
-
+        AppsBase.handleQuit();
+        // remove a frame opened by DecoderPro3
+        JUnitUtil.disposeFrame("Decoder Pro Wizard", false, false);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetApplication();
         JUnitUtil.resetProfileManager();
-        // 12/07/2020 tried to improve initialization of test without any luck DAB
-//        JUnitUtil.resetInstanceManager();
-//        JUnitUtil.resetProfileManager();
-//        JUnitUtil.initRosterConfigManager();
-//        JUnitUtil.initInternalTurnoutManager();
-//        JUnitUtil.initInternalLightManager();
-//        JUnitUtil.initInternalSensorManager();
-//        JUnitUtil.initDebugThrottleManager();
-//        JUnitUtil.clearShutDownManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        // eventually want to test ShutDownTasks?
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.resetApplication();
         JUnitUtil.tearDown();
     }

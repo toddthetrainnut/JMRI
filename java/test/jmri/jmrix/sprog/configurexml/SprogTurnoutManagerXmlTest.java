@@ -1,14 +1,15 @@
 package jmri.jmrix.sprog.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * SprogTurnoutManagerXmlTest.java
  *
- * Test for the SprogTurnoutManagerXml class
+ * Description: tests for the SprogTurnoutManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class SprogTurnoutManagerXmlTest {
       Assert.assertNotNull("SprogTurnoutManagerXml constructor",new SprogTurnoutManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

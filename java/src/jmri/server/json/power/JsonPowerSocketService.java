@@ -1,6 +1,5 @@
 package jmri.server.json.power;
 
-import static jmri.server.json.JSON.GET;
 import static jmri.server.json.JSON.NAME;
 import static jmri.server.json.power.JsonPowerServiceFactory.POWER;
 
@@ -8,12 +7,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Locale;
 import jmri.InstanceManager;
 import jmri.JmriException;
 import jmri.PowerManager;
 import jmri.server.json.JsonConnection;
 import jmri.server.json.JsonException;
-import jmri.server.json.JsonRequest;
 import jmri.server.json.JsonSocketService;
 
 /**
@@ -33,21 +32,23 @@ public class JsonPowerSocketService extends JsonSocketService<JsonPowerHttpServi
     }
 
     @Override
-    public void onMessage(String type, JsonNode data, JsonRequest request) throws IOException, JmriException, JsonException {
-        addListeners();
-        connection.sendMessage(service.doPost(type, data.path(NAME).asText(), data, request), request.id);
+    public void onMessage(String type, JsonNode data, String method, Locale locale, int id) throws IOException, JmriException, JsonException {
+        this.addListeners();
+        this.connection.sendMessage(this.service.doPost(type, data.path(NAME).asText(), data, locale, id), id);
     }
 
     @Override
-    public void onList(String type, JsonNode data, JsonRequest request) throws JsonException, IOException {
-        addListeners();
-        connection.sendMessage(service.doGetList(type, data, request), request.id);
+    public void onList(String type, JsonNode data, Locale locale, int id) throws JsonException, IOException {
+        this.addListeners();
+        this.connection.sendMessage(this.service.doGetList(type, data, locale, id), id);
     }
 
     private void addListeners() {
-        if (!listening) {
-            InstanceManager.getList(PowerManager.class).forEach(manager -> manager.addPropertyChangeListener(this));
-            listening = true;
+        if (!this.listening) {
+            InstanceManager.getList(PowerManager.class).forEach((manager) -> {
+                manager.addPropertyChangeListener(this);
+            });
+            this.listening = true;
         }
     }
 
@@ -55,10 +56,9 @@ public class JsonPowerSocketService extends JsonSocketService<JsonPowerHttpServi
     public void propertyChange(PropertyChangeEvent evt) {
         try {
             try {
-                String name = ((PowerManager) evt.getSource()).getUserName();
-                connection.sendMessage(service.doGet(POWER, name, connection.getObjectMapper().createObjectNode(), new JsonRequest(connection.getLocale(), connection.getVersion(), GET, 0)), 0);
+                this.connection.sendMessage(this.service.doGet(POWER, ((PowerManager) evt.getSource()).getUserName(), this.connection.getObjectMapper().createObjectNode(), this.connection.getLocale(), 0), 0);
             } catch (JsonException ex) {
-                connection.sendMessage(ex.getJsonMessage(), 0);
+                this.connection.sendMessage(ex.getJsonMessage(), 0);
             }
         } catch (IOException ex) {
             // do nothing - we can only silently fail at this point
@@ -67,7 +67,9 @@ public class JsonPowerSocketService extends JsonSocketService<JsonPowerHttpServi
 
     @Override
     public void onClose() {
-        InstanceManager.getList(PowerManager.class).forEach(manager -> manager.removePropertyChangeListener(JsonPowerSocketService.this));
+        InstanceManager.getList(PowerManager.class).forEach((manager) -> {
+            manager.removePropertyChangeListener(JsonPowerSocketService.this);
+        });
     }
 
 }

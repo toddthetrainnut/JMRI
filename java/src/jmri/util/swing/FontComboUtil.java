@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -45,17 +44,19 @@ public class FontComboUtil {
     public static final int CHARACTER = 3;
     public static final int SYMBOL = 4;
 
-    private static final List<String> all = new ArrayList<>();
-    private static final List<String> monospaced = new ArrayList<>();
-    private static final List<String> proportional = new ArrayList<>();
-    private static final List<String> character = new ArrayList<>();
-    private static final List<String> symbol = new ArrayList<>();
+    private static List<String> all = null;
+    private static List<String> monospaced = null;
+    private static List<String> proportional = null;
+    private static List<String> character = null;
+    private static List<String> symbol = null;
 
     private static volatile boolean prepared = false;
     private static volatile boolean preparing = false;
 
     public static List<String> getFonts(int which) {
-        prepareFontLists();
+        if (!prepared && !preparing) { // prepareFontLists is synchronized; don't do it if you don't have to
+            prepareFontLists();
+        }
 
         switch (which) {
             case MONOSPACED:
@@ -79,35 +80,40 @@ public class FontComboUtil {
      * @return true if a symbol font; false if not
      */
     public static boolean isSymbolFont(String font) {
-        prepareFontLists();
+        if (!prepared && !preparing) { // prepareFontLists is synchronized; don't do it if you don't have to
+            prepareFontLists();
+        }
         return symbol.contains(font);
     }
 
     /**
      * Method to initialise the font lists on first access
      */
-    public static void prepareFontLists() {
+    public static synchronized void prepareFontLists() {
         if (prepared || preparing) {
             // Normally we shouldn't get here except when the initialisation
             // thread has taken a bit longer than normal.
             log.debug("Subsequent call - no need to prepare");
             return;
         }
-        initFonts();
-    }
-        
-    private static synchronized void initFonts() {
         preparing = true;
 
         log.debug("Prepare font lists...");
 
         // Initialise the font lists
-        initAllFonts();
+        monospaced = new ArrayList<>();
+        proportional = new ArrayList<>();
+        character = new ArrayList<>();
+        symbol = new ArrayList<>();
+        all = new ArrayList<>();
 
         // Create a font render context to use for the comparison
         Canvas c = new Canvas();
         // Loop through all available font families
-        all.forEach(s -> {
+        for (String s : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
+
+            // Add to the 'all' fonts list
+            all.add(s);
 
             // Retrieve a plain version of the current font family
             Font f = new Font(s, Font.PLAIN, 12);
@@ -134,18 +140,12 @@ public class FontComboUtil {
                 // It's a symbol font - add to the symbol font list
                 symbol.add(s);
             }
-        });
+        }
 
         log.debug("...font lists built");
         prepared = true;
     }
 
-    private static synchronized void initAllFonts() {
-        if (all.isEmpty()) {
-            all.addAll(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
-        }
-    }
-    
     /**
      * Return a JComboBox containing all available font families. The list is
      * displayed using a preview of the font at the standard size.
@@ -154,7 +154,6 @@ public class FontComboUtil {
      * @return List of all available font families as a {@link JComboBox}
      */
     public static JComboBox<String> getFontCombo() {
-        initAllFonts();
         return getFontCombo(ALL);
     }
 
@@ -169,7 +168,6 @@ public class FontComboUtil {
      * @return List of specified font families as a {@link JComboBox}
      */
     public static JComboBox<String> getFontCombo(boolean previewOnly) {
-        initAllFonts();
         return getFontCombo(ALL, previewOnly);
     }
 
@@ -254,7 +252,6 @@ public class FontComboUtil {
      * @return List of specified font families as a {@link JComboBox}
      */
     public static JComboBox<String> getFontCombo(int which, final int size, final boolean previewOnly) {
-        prepareFontLists();
         // Create a JComboBox containing the specified list of font families
         List<String> fonts = getFonts(which);
         JComboBox<String> fontList = new JComboBox<>(fonts.toArray(new String[fonts.size()]));
@@ -336,11 +333,9 @@ public class FontComboUtil {
      */
     public static boolean isReady() {
         if (!prepared && !preparing) { // prepareFontLists is synchronized; don't do it if you don't have to
-            jmri.util.ThreadingUtil.newThread(
-                () -> {
-                    prepareFontLists();
-                }, 
-                "FontComboUtil Prepare").start();
+            new Thread(() -> {
+                prepareFontLists();
+            }, "FontComboUtil Prepare").start();
         }
         return prepared;
     }

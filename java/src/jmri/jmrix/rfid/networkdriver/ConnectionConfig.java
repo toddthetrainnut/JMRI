@@ -19,7 +19,6 @@ public class ConnectionConfig extends jmri.jmrix.AbstractNetworkConnectionConfig
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p network port adapter.
      */
     public ConnectionConfig(jmri.jmrix.NetworkPortAdapter p) {
         super(p);
@@ -95,11 +94,6 @@ public class ConnectionConfig extends jmri.jmrix.AbstractNetworkConnectionConfig
      @Override
     public String name() {
         return NAME;
-    }
-
-    @Override
-    public boolean isPortAdvanced() {
-        return false;
     }
 
     /**

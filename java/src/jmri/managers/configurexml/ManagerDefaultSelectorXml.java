@@ -71,6 +71,14 @@ public class ManagerDefaultSelectorXml extends AbstractXmlAdapter {
         return true;
     }
 
-    //private final static Logger log = LoggerFactory.getLogger(ManagerDefaultSelectorXml.class);
+    /**
+     * Doesn't need to do anything, shouldn't get invoked
+     *
+     * @param element Top level Element to unpack.
+     * @param o       PanelEditor as an Object
+     */
+    @Override
+    public void load(Element element, Object o) {
+    }
 
 }

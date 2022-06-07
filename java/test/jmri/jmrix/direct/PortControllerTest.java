@@ -1,8 +1,8 @@
 package jmri.jmrix.direct;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the PortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class PortControllerTest extends jmri.jmrix.AbstractSerialPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        apc = new PortController(){
@@ -37,7 +37,8 @@ public class PortControllerTest extends jmri.jmrix.AbstractSerialPortControllerT
              */
             @Override
             public String[] validBaudRates(){
-                return new String[]{"9600"};
+               String[] retval = {"9600"};
+               return retval;
             }
 
             /**
@@ -53,7 +54,7 @@ public class PortControllerTest extends jmri.jmrix.AbstractSerialPortControllerT
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

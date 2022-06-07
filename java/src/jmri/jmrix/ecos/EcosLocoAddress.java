@@ -2,9 +2,8 @@ package jmri.jmrix.ecos;
 
 import java.util.HashMap;
 import java.util.List;
+import jmri.DccThrottle;
 import jmri.LocoAddress;
-import jmri.SpeedStepMode;
-import jmri.beans.Bean;
 import jmri.jmrit.roster.Roster;
 import jmri.jmrit.roster.RosterEntry;
 
@@ -13,7 +12,7 @@ import jmri.jmrit.roster.RosterEntry;
  *
  * @author Kevin Dickerson
  */
-public class EcosLocoAddress extends Bean implements jmri.LocoAddress {
+public class EcosLocoAddress implements jmri.LocoAddress {
 
     private String _ecosObject = null;
     private int _dccAddress = 0;
@@ -21,7 +20,7 @@ public class EcosLocoAddress extends Bean implements jmri.LocoAddress {
     private String _rosterId = null;
     private String _ecosProtocolString = null;
     private LocoAddress.Protocol _protocol = LocoAddress.Protocol.DCC;
-    private SpeedStepMode _speedSteps = SpeedStepMode.NMRA_DCC_128;
+    private int _speedSteps = DccThrottle.SpeedStepMode128;
     boolean direction;
     int currentSpeed;
     private boolean doNotAddToRoster = false;
@@ -175,7 +174,7 @@ public class EcosLocoAddress extends Bean implements jmri.LocoAddress {
     }
 
     //@TODO Need to udate this to return the new Protocol option from LocoAddress
-    public SpeedStepMode getSpeedStepMode() {
+    public int getSpeedStepMode() {
         return _speedSteps;
     }
 
@@ -194,13 +193,13 @@ public class EcosLocoAddress extends Bean implements jmri.LocoAddress {
             _protocol = LocoAddress.Protocol.SELECTRIX;
         }
         if (protocol.endsWith("128")) {
-            _speedSteps = SpeedStepMode.NMRA_DCC_128;
+            _speedSteps = DccThrottle.SpeedStepMode128;
         } else if (protocol.endsWith("28")) {
-            _speedSteps = SpeedStepMode.NMRA_DCC_28;
+            _speedSteps = DccThrottle.SpeedStepMode28;
         } else if (protocol.endsWith("27")) {
-            _speedSteps = SpeedStepMode.NMRA_DCC_27;
+            _speedSteps = DccThrottle.SpeedStepMode27;
         } else if (protocol.endsWith("14")) {
-            _speedSteps = SpeedStepMode.NMRA_DCC_14;
+            _speedSteps = DccThrottle.SpeedStepMode14;
         }
     }
 
@@ -211,7 +210,7 @@ public class EcosLocoAddress extends Bean implements jmri.LocoAddress {
 
     /*
      The Temporary Entry Field is used to determine if JMRI has had to create the entry on an ad-hoc basis
-     for the throttle.  If this is set to True, the throttle can evaluate this field to determine if the
+     for the throttle.  If this is set to True, the throttle can evaluate this field to determine if the 
      loco should be removed from the Ecos Database when closing the application.
      */
     boolean _tempEntry = false;
@@ -254,8 +253,32 @@ public class EcosLocoAddress extends Bean implements jmri.LocoAddress {
         return newDirection;
     }
 
+    // implementing classes will typically have a function/listener to get
+    // updates from the layout, which will then call
+    //public void firePropertyChange(String propertyName, Object oldValue, Object newValue);
+    // _once_ if anything has changed state
+    // since we can't do a "super(this)" in the ctor to inherit from PropertyChangeSupport, we'll
+    // reflect to it
+    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
+
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    public synchronized int getNumPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners().length;
+    }
+
+    protected void firePropertyChange(String p, Object old, Object n) {
+        pcs.firePropertyChange(p, old, n);
+    }
+
     public void dispose() {
-        // nothing to do
+        pcs = null;
     }
 
 }

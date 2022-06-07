@@ -3,12 +3,10 @@ package jmri.jmrit.withrottle;
 
 import java.beans.PropertyChangeListener;
 import java.util.TimeZone;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.Timebase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fast Clock interface for Wi-Fi throttles.
@@ -21,25 +19,42 @@ import jmri.Timebase;
 public class FastClockController extends AbstractController {
 
     private final Timebase fastClock;
-    private final PropertyChangeListener timeAndRateListener;
+    //  To correct for local time
+    private final int timeZoneOffset;
+    private final PropertyChangeListener minuteListener;
+    private final PropertyChangeListener rateListener;
     
+    //  Number of real minutes between re-sync of time
+    private static final short UPDATE_MINUTES = 5;
+    //  Essentially, rate times minutes desired between re-sync
+    private static short updateMinsSetpoint;
+    private short updateMinuteCount = 0;
+
     public FastClockController() {
-               
+        
         fastClock = InstanceManager.getDefault(jmri.Timebase.class);
-        timeAndRateListener = new PropertyChangeListener() {
+        timeZoneOffset = TimeZone.getDefault().getOffset(System.currentTimeMillis());
+        minuteListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(java.beans.PropertyChangeEvent e) {
-                //skip minutes updates on this listener, handled in minuteListener
-                log.trace("timeAndRateListener propertyChange for '{}' from '{}' to '{}'",e.getPropertyName(),e.getOldValue(),e.getNewValue());                
-                if (!e.getPropertyName().equals("minutes")) {
-                    sendFastTimeAndRate();
-                }
+                sendFastTime();
+            }
+        };
+        rateListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(java.beans.PropertyChangeEvent e) {
+                setReSyncSetpoint();
+                sendFastRate();
             }
         };
         
         isValid = true;
         
-        fastClock.addPropertyChangeListener(timeAndRateListener);
+        updateMinsSetpoint = (short)(fastClock.userGetRate() * UPDATE_MINUTES);
+        setReSyncSetpoint();
+        // request callback to update time
+        fastClock.addMinuteChangeListener(minuteListener);
+        fastClock.addPropertyChangeListener(rateListener);
     }
     
     @Override
@@ -60,23 +75,38 @@ public class FastClockController extends AbstractController {
     @Override
     void deregister() {
         // cancel callback to update time
-        fastClock.removePropertyChangeListener(timeAndRateListener);
+        fastClock.removeMinuteChangeListener(minuteListener);
+        fastClock.removePropertyChangeListener(rateListener);
     }
     
     
     /**
      * Fast clock should not have a time zone.
      * <p>
-     * Add the offset to give straight UTC value,
-     *  based on the fastclock's datetime
-     * @return Time, as UTC in seconds
+     * Remove the offset to give straight UTC value.
+     * @return Time with offset removed
      */
     private long getAdjustedTime() {
-        long fastClockTime = fastClock.getTime().getTime(); //fastclock time as milliseconds
-        int timeZoneOffset = TimeZone.getDefault().getOffset(fastClockTime); //timezone offset in milliseconds
-        return ((fastClockTime + timeZoneOffset) / 1000); //returned adjusted time in seconds
+        return ((fastClock.getTime().getTime() + timeZoneOffset) / 1000);
     }
-       
+    
+    /**
+     * Send just time.
+     * <p>
+     * Use to synchronize time on Wi-Fi devices to nearest second. Send no rate.
+     */
+    public void sendFastTime() {
+        updateMinuteCount++;
+        if (updateMinuteCount >= updateMinsSetpoint) {
+            if (listeners != null) {
+                for (ControllerInterface listener : listeners) {
+                    listener.sendPacketToDevice("PFT" + getAdjustedTime());
+                }
+            }
+            updateMinuteCount = 0;
+        }
+    }
+    
     /**
      * Send Time and Rate.
      * <p>
@@ -84,13 +114,13 @@ public class FastClockController extends AbstractController {
      * Fast Clock to keep its own time. A rate == 0 will tell the device to 
      * stop the clock.
      */
-    public void sendFastTimeAndRate() {
+    public void sendFastRate() {
         //  Send the time and run rate whether running or not
         if (listeners != null) {
             for (ControllerInterface listener : listeners) {
                 listener.sendPacketToDevice("PFT" + getAdjustedTime() + "<;>" + fastClock.userGetRate());
             }
-            if (!fastClock.getRun()) {
+            if (fastClock.getRun() == false) {
                 //  Not running, send rate of 0
                 //  This will stop a running clock without changing stored rate
                 for (ControllerInterface listener : listeners) {
@@ -99,6 +129,10 @@ public class FastClockController extends AbstractController {
             }
         }
     }
+    
+    private void setReSyncSetpoint() {
+        updateMinsSetpoint = (short)(fastClock.userGetRate() * UPDATE_MINUTES);
+    }
 
-    private final static Logger log = LoggerFactory.getLogger(FastClockController.class);
+    // private final static Logger log = LoggerFactory.getLogger(FastClockController.class);
 }

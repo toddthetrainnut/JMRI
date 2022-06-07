@@ -1,16 +1,12 @@
 package jmri.jmrit.roster;
 
 import jmri.InstanceManager;
-import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.*;
 
 /**
  * Tests for the jmrit.roster.RosterEntryPane class.
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2002
+ * @author	Bob Jacobsen Copyright (C) 2001, 2002
  */
 public class RosterEntryPaneTest {
 
@@ -20,11 +16,10 @@ public class RosterEntryPaneTest {
     RosterEntry rOld = null;
     RosterEntry rNew = null;
 
-    @BeforeEach
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
+        jmri.util.JUnitUtil.setUp();
+        jmri.util.JUnitUtil.resetProfileManager();
         // create Element
         eOld = new org.jdom2.Element("locomotive")
                 .setAttribute("id", "id info")
@@ -67,9 +62,9 @@ public class RosterEntryPaneTest {
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
     @Test
@@ -200,13 +195,6 @@ public class RosterEntryPaneTest {
         p.update(rNew);
 
         Assert.assertTrue(p.checkDuplicate());
-    }
-
-    @DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
-    @Test
-    public void testAccessibleContent() {
-        RosterEntryPane p = new RosterEntryPane(rOld);
-        jmri.util.AccessibilityChecks.check(p);
     }
 
 }

@@ -3,16 +3,17 @@ package jmri.jmrix.roco.z21.simulator;
 import jmri.jmrix.lenz.XNetMessage;
 import jmri.jmrix.lenz.XNetReply;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Z21XNetSimulatorAdapterTest.java
- * Test for the jmri.jmrix.roco.z21.simulator.z21XNetSimulatorAdapter
+ * Description:	tests for the jmri.jmrix.roco.z21.simulator.z21XNetSimulatorAdapter
  * class
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class Z21XNetSimulatorAdapterTest {
 
@@ -96,12 +97,13 @@ public class Z21XNetSimulatorAdapterTest {
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,13 +1,12 @@
 package jmri.jmris.srcp;
 
 import java.io.File;
-
 import jmri.InstanceManager;
 import jmri.util.FileUtil;
 
 public class JmriSRCPServerManager {
 
-    private static JmriSRCPServerManager instance = null;
+    static private JmriSRCPServerManager instance = null;
     private JmriSRCPServerPreferences preferences;
     private JmriSRCPServer server;
 
@@ -22,7 +21,7 @@ public class JmriSRCPServerManager {
         }
     }
 
-    public static synchronized JmriSRCPServerManager getInstance() {
+    synchronized public static JmriSRCPServerManager getInstance() {
         if (instance == null) {
             instance = new JmriSRCPServerManager();
         }

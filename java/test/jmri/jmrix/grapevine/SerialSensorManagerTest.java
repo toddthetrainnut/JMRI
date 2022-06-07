@@ -4,13 +4,15 @@ import jmri.util.JUnitUtil;
 
 import java.beans.PropertyVetoException;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the SerialSensorManager class.
  *
- * @author Bob Jacobsen Copyright 2003, 2007, 2008
+ * @author	Bob Jacobsen Copyright 2003, 2007, 2008
  * @author Paul Bender Copyright (C) 2016
  */
 public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
@@ -23,11 +25,6 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
     @Override
     public String getSystemName(int i) {
         return "GS" + i;
-    }
-    
-    @Override
-    protected String getASystemNameWithNoPrefix() {
-        return "1008";
     }
 
     @Test
@@ -83,7 +80,7 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
     }
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new GrapevineSystemConnectionMemo();
@@ -99,12 +96,11 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
         l = new SerialSensorManager(memo);
     }
 
-    @AfterEach
+    // The minimal setup for log4J
+    @After
     public void tearDown() {
         l.dispose();
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
     @Override

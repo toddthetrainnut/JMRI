@@ -1,23 +1,21 @@
 package jmri.jmrix.ieee802154.swing.nodeconfig;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.AbstractMRListener;
 import jmri.jmrix.AbstractMRMessage;
 import jmri.jmrix.AbstractMRReply;
 import jmri.jmrix.ieee802154.IEEE802154Node;
 import jmri.jmrix.ieee802154.IEEE802154TrafficController;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class AddNodeFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -56,10 +54,9 @@ public class AddNodeFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 

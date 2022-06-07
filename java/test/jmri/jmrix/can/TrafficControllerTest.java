@@ -4,16 +4,17 @@ import jmri.jmrix.AbstractMRListener;
 import jmri.jmrix.AbstractMRMessage;
 import jmri.jmrix.AbstractMRReply;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for TrafficController.
  * @author Paul Bender Copyright (C) 2016
  */
 public class TrafficControllerTest extends AbstractCanTrafficControllerTest {
-
+   
     @Test
     public void testGetCanid(){
         Assert.assertEquals("default canid value",120,((TrafficController)tc).getCanid());
@@ -24,11 +25,11 @@ public class TrafficControllerTest extends AbstractCanTrafficControllerTest {
         ((TrafficController)tc).setCanId(240);
         Assert.assertEquals("canid value after set",240,((TrafficController)tc).getCanid());
     }
-
+ 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
-        JUnitUtil.setUp(); 
+        jmri.util.JUnitUtil.setUp(); 
         JUnitUtil.resetInstanceManager();
         tc = new TrafficController(){
            @Override
@@ -60,19 +61,18 @@ public class TrafficControllerTest extends AbstractCanTrafficControllerTest {
            @Override
            public void sendCanMessage(CanMessage m, CanListener l) {}
            @Override
-           public synchronized void addCanListener(CanListener l) {}
+           public void addCanListener(CanListener l) {}
            @Override
-           public synchronized void removeCanListener(CanListener l) {}
+           public void removeCanListener(CanListener l) {}
 
         };
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        tc.terminateThreads();
-        tc = null;
-        JUnitUtil.tearDown();
+       tc = null;
+        JUnitUtil.tearDown(); 
     }
 
 }

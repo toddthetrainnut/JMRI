@@ -1,8 +1,8 @@
 package jmri.jmrix.powerline.cp290;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Tests for SpecificTrafficController class.
@@ -15,7 +15,7 @@ public class SpecificTrafficControllerTest extends jmri.jmrix.powerline.SerialTr
    private SpecificSystemConnectionMemo memo = null;
 
    @Override
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
@@ -25,11 +25,9 @@ public class SpecificTrafficControllerTest extends jmri.jmrix.powerline.SerialTr
    }
 
    @Override
-   @AfterEach
+   @After
    public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
         memo = null;
    }
 

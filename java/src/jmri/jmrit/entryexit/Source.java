@@ -1,8 +1,5 @@
 package jmri.jmrit.entryexit;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +9,7 @@ import jmri.SignalMast;
 import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 
-public class Source implements PropertyChangeListener {
+public class Source {
 
     JMenuItem clear = null;
     JMenuItem cancel = null;
@@ -60,40 +57,6 @@ public class Source implements PropertyChangeListener {
         pd = point;
     }
 
-    /**
-     * Property change support for table in AddEntryExitPairPanel.
-     * Catch when paths go active.
-     * @since 4.17.4 
-     */
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
-    /**
-     * Add property change listener.
-     * @since 4.17.4
-     * @param listener the pcl to add.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
-    }
-    
-    /**
-     * Remove property change listener.
-     * @since 4.17.4
-     * @param listener the pcl to remove.
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
-    }
-    
-    /**
-     * @since 4.17.4
-     */
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        pcs.firePropertyChange("active", evt.getOldValue(), evt.getNewValue());
-    }
-    
-
     void cancelClearInterlockFromSource(int cancelClear) {
         for (DestinationPoints dp : pointToDest.values()) {
             if (dp.isActive()) {
@@ -123,12 +86,7 @@ public class Source implements PropertyChangeListener {
         }
     }
 
-    /**
-     * @since 4.17.4
-     * Making the source object available for scripting in Jython.
-     * @return the point details.
-     */
-    public PointDetails getPoint() {
+    PointDetails getPoint() {
         return pd;
     }
 
@@ -147,12 +105,6 @@ public class Source implements PropertyChangeListener {
         return sourceSignal;
     }
 
-    /**
-     * @since 4.17.4
-     * Add Property Change Listener.
-     * @param dest the points details to add.
-     * @param id the points details id.
-     */
     public void addDestination(PointDetails dest, String id) {
         if (pointToDest.containsKey(dest)) {
             return;
@@ -161,18 +113,11 @@ public class Source implements PropertyChangeListener {
         DestinationPoints dstPoint = new DestinationPoints(dest, id, this);
         dest.setDestination(dstPoint, this);
         pointToDest.put(dest, dstPoint);
-        dstPoint.addPropertyChangeListener(this);
     }
 
-    /**
-     * @since 4.17.4
-     * Remove Property Change Listener.
-     * @param dest the point details location to remove.
-     */
     public void removeDestination(PointDetails dest) {
         pointToDest.get(dest).dispose();
         pointToDest.remove(dest);
-        dest.removePropertyChangeListener(this);
         if (pointToDest.size() == 0) {
             getPoint().removeSource(this);
         }
@@ -311,4 +256,5 @@ public class Source implements PropertyChangeListener {
         return null;
     }
 
+    // private final static Logger log = LoggerFactory.getLogger(Source.class);
 }

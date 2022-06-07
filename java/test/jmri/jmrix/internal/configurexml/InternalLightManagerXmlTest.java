@@ -1,14 +1,15 @@
 package jmri.jmrix.internal.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * InternalLightManagerXmlTest.java
  *
- * Test for the InternalLightManagerXml class
+ * Description: tests for the InternalLightManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class InternalLightManagerXmlTest {
       Assert.assertNotNull("InternalLightManagerXml constructor",new InternalLightManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,30 +1,32 @@
 package jmri.jmrit.logix;
 
-import jmri.swing.PreferencesPanelTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * @author Paul Bender Copyright (C) 2017
+ *
+ * @author Paul Bender Copyright (C) 2017	
  */
-public class WarrantPreferencesPanelTest extends PreferencesPanelTestBase<WarrantPreferencesPanel> {
+public class WarrantPreferencesPanelTest {
 
-    @Override
-    @BeforeEach
+    @Test
+    public void testCTor() {
+        WarrantPreferencesPanel t = new WarrantPreferencesPanel();
+        Assert.assertNotNull("exists",t);
+    }
+
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
-        prefsPanel = new WarrantPreferencesPanel();
     }
 
-    @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        prefsPanel = null;
         JUnitUtil.tearDown();
     }
 

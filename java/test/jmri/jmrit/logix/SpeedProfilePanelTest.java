@@ -1,20 +1,17 @@
 package jmri.jmrit.logix;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrit.roster.RosterEntry;
 import jmri.jmrit.roster.RosterSpeedProfile;
-import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SpeedProfilePanelTest {
 
@@ -23,19 +20,18 @@ public class SpeedProfilePanelTest {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         RosterSpeedProfile rsp = new RosterSpeedProfile(new RosterEntry());
         SpeedProfilePanel t = new SpeedProfilePanel(rsp, true, null);
-        assertThat(t).withFailMessage("exists").isNotNull();
+        Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(SpeedProfilePanelTest.class);

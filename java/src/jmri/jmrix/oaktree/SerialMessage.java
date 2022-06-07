@@ -11,6 +11,14 @@ package jmri.jmrix.oaktree;
 public class SerialMessage extends jmri.jmrix.AbstractMRMessage {
     // is this logically an abstract class?
 
+    /**
+     * Suppress the default ctor, as the response length must always be
+     * specified.
+     */
+    @SuppressWarnings("unused")
+    private SerialMessage() {
+    }
+
     public SerialMessage(int l) {
         super(5);  // all OakTree messages are five bytes
         setResponseLength(l);
@@ -27,8 +35,6 @@ public class SerialMessage extends jmri.jmrix.AbstractMRMessage {
     /**
      * Interpret the String as the exact sequence to send,
      * byte-for-byte.
-     * @param m message string.
-     * @param l response length.
      */
     public SerialMessage(String m, int l) {
         super(m);
@@ -40,7 +46,6 @@ public class SerialMessage extends jmri.jmrix.AbstractMRMessage {
      * Interpret the byte array as a sequence of characters to send.
      *
      * @param a Array of bytes to send
-     * @param l response length.
      */
     public SerialMessage(byte[] a, int l) {
         super(String.valueOf(a));
@@ -84,8 +89,8 @@ public class SerialMessage extends jmri.jmrix.AbstractMRMessage {
 
     // static methods to return a formatted message
     static public SerialMessage getPoll(int addr) {
-        // eventually this will have to include logic for reading
-        // various bytes on the card, but our supported
+        // eventually this will have to include logic for reading 
+        // various bytes on the card, but our supported 
         // cards don't require that yet
         SerialMessage m = new SerialMessage(5);
         m.setElement(0, addr);

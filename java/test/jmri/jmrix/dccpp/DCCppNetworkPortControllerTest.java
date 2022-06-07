@@ -1,8 +1,8 @@
 package jmri.jmrix.dccpp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the DCCppNetworkPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class DCCppNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        DCCppInterfaceScaffold tc = new DCCppInterfaceScaffold(new DCCppCommandStation());
@@ -34,10 +34,9 @@ public class DCCppNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPo
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
+       JUnitUtil.tearDown();
     }
 
 }

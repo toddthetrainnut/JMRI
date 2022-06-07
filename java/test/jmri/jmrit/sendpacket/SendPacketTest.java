@@ -1,14 +1,12 @@
 package jmri.jmrit.sendpacket;
 
 import java.awt.GraphicsEnvironment;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for classes in the jmri.jmrit.sendpacket package
  *
- * @author Bob Jacobsen Copyright 2003
+ * @author	Bob Jacobsen Copyright 2003
  */
 public class SendPacketTest {
 
@@ -43,12 +41,12 @@ public class SendPacketTest {
         Assert.assertEquals("7th byte", 0xB1, m[7] & 0xFF);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

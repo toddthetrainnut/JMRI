@@ -86,7 +86,7 @@ public class LayoutBlockThroughPathsTableModel extends javax.swing.table.Abstrac
     }
 
     protected boolean matchPropertyName(java.beans.PropertyChangeEvent e) {
-        return (e.getPropertyName().contains("path"));
+        return (e.getPropertyName().indexOf("path") >= 0);
     }
 
     /**
@@ -117,6 +117,7 @@ public class LayoutBlockThroughPathsTableModel extends javax.swing.table.Abstrac
 
     @Override
     public void setValueAt(Object value, int row, int col) {
+        return;
     }
 
     public int getPreferredWidth(int column) {
@@ -136,11 +137,11 @@ public class LayoutBlockThroughPathsTableModel extends javax.swing.table.Abstrac
     public void dispose() {
     }
 
-    public jmri.Manager<LayoutBlock> getManager() {
+    public jmri.Manager getManager() {
         return jmri.InstanceManager.getDefault(LayoutBlockManager.class);
     }
 
     private LayoutBlock lBlock = null;
 
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LayoutBlockThroughPathsTableModel.class);
+    private final static Logger log = LoggerFactory.getLogger(LayoutBlockThroughPathsTableModel.class);
 }

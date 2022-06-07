@@ -18,17 +18,17 @@ public class JsonSensorServiceFactory implements JsonServiceFactory<JsonSensorHt
 
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{SENSOR, SENSORS};
     }
 
     @Override
-    public JsonSensorSocketService getSocketService(JsonConnection connection, String version) {
+    public JsonSensorSocketService getSocketService(JsonConnection connection) {
         return new JsonSensorSocketService(connection);
     }
 
     @Override
-    public JsonSensorHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonSensorHttpService getHttpService(ObjectMapper mapper) {
         return new JsonSensorHttpService(mapper);
     }
 

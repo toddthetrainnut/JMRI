@@ -1,5 +1,6 @@
 package jmri.jmrix.jmriclient.swing;
 
+import java.util.ResourceBundle;
 import javax.swing.JMenu;
 
 /**

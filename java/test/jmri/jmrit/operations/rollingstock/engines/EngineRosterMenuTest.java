@@ -1,18 +1,15 @@
 package jmri.jmrit.operations.rollingstock.engines;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.Assume;
-
 import jmri.jmrit.operations.OperationsTestCase;
-import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class EngineRosterMenuTest extends OperationsTestCase {
 
@@ -23,7 +20,6 @@ public class EngineRosterMenuTest extends OperationsTestCase {
         EngineRosterMenu t = new EngineRosterMenu("test menu",1,etf);
         Assert.assertNotNull("exists",t);
         JUnitUtil.dispose(etf);
-        JUnitOperationsUtil.checkOperationsShutDownTask();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(EngineRosterMenuTest.class);

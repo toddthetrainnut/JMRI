@@ -1,8 +1,7 @@
 package jmri.jmrix.lenz.ztc640;
 
 import jmri.jmrix.lenz.XNetPortControllerScaffold;
-
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 import org.junit.Assert;
 
 
@@ -15,7 +14,8 @@ import org.junit.Assert;
  */
 public class ZTC640XNetPacketizerTest extends jmri.jmrix.lenz.XNetPacketizerTest {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();

@@ -1,8 +1,10 @@
 package jmri;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import java.util.List;
+import jmri.ProgListener;
+import jmri.ProgrammingMode;
+import jmri.util.JUnitUtil;
+import org.junit.*;
 
 /**
  * Base JUnit tests for the Operations Mode Programmers derived from
@@ -24,17 +26,17 @@ abstract public class AddressedProgrammerTestBase extends ProgrammerTestBase {
     }
 
     @Test
-    @Override
     public void testGetCanRead() {
         Assume.assumeTrue(programmer instanceof AddressedProgrammer);
         Assert.assertFalse("can read", programmer.getCanRead());
     }
     
-    @Test
-    @Override
+    @Test(expected=java.lang.IllegalArgumentException.class)
     public void testSetGetMode() {
         Assume.assumeTrue(programmer instanceof AddressedProgrammer);
-        Assert.assertThrows(IllegalArgumentException.class, () -> programmer.setMode(ProgrammingMode.REGISTERMODE));
+        programmer.setMode(ProgrammingMode.REGISTERMODE);
+        Assert.assertEquals("Check mode matches set", ProgrammingMode.REGISTERMODE,
+                programmer.getMode());        
     }
 
     @Test
@@ -57,7 +59,7 @@ abstract public class AddressedProgrammerTestBase extends ProgrammerTestBase {
 
     
     // must set the value of programmer in setUp.
-    @BeforeEach
+    @Before
     @Override
     abstract public void setUp();
 

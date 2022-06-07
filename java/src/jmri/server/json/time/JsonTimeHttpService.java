@@ -13,17 +13,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import java.util.Locale;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import jmri.InstanceManager;
 import jmri.Timebase;
 import jmri.TimebaseRateException;
 import jmri.server.json.JsonException;
 import jmri.server.json.JsonHttpService;
-import jmri.server.json.JsonRequest;
 
 /**
+ *
  * @author Randall Wood
  */
 public class JsonTimeHttpService extends JsonHttpService {
@@ -33,14 +33,13 @@ public class JsonTimeHttpService extends JsonHttpService {
     }
 
     @Override
-    // using @CheckForNull to override @Nonnull in super class
-    public JsonNode doGet(String type, @CheckForNull String name, JsonNode data, JsonRequest request)
-            throws JsonException {
+    // using @Nullable to override @Nonnull in super class
+    public JsonNode doGet(String type, @Nullable String name, JsonNode data, Locale locale, int id) throws JsonException {
         Timebase timebase = InstanceManager.getDefault(Timebase.class);
-        return doGet(timebase, timebase.getTime(), request.id);
+        return doGet(type, timebase, timebase.getTime(), locale, id);
     }
 
-    public JsonNode doGet(@Nonnull Timebase timebase, @Nonnull Date date, int id) {
+    public JsonNode doGet(String type, Timebase timebase, Date date, Locale locale, int id) throws JsonException {
         ObjectNode data = this.mapper.createObjectNode();
         data.put(TIME, new StdDateFormat().format(date));
         data.put(RATE, timebase.getRate());
@@ -49,9 +48,8 @@ public class JsonTimeHttpService extends JsonHttpService {
     }
 
     @Override
-    // using @CheckForNull to override @Nonnull in super class
-    public JsonNode doPost(String type, @CheckForNull String name, JsonNode data, JsonRequest request)
-            throws JsonException {
+    // using @Nullable to override @Nonnull in super class
+    public JsonNode doPost(String type, @Nullable String name, JsonNode data, Locale locale, int id) throws JsonException {
         Timebase timebase = InstanceManager.getDefault(Timebase.class);
         try {
             if (data.path(TIME).isTextual()) {
@@ -60,37 +58,36 @@ public class JsonTimeHttpService extends JsonHttpService {
             if (data.path(RATE).isDouble() || data.path(RATE).isInt()) {
                 timebase.userSetRate(data.path(RATE).asDouble());
             }
-            int state = data.path(STATE).asInt(0);
-            // passing the state UNKNOWN (0) will not trigger change
-            if (state == ON || state == OFF) {
+            int state = data.findPath(STATE).asInt(0);
+            if (state == ON || state == OFF) { // passing the state UNKNOWN (0) will not trigger change
                 timebase.setRun(state == ON);
             }
         } catch (ParseException ex) {
-            throw new JsonException(400, Bundle.getMessage(request.locale, "ErrorTimeFormat"), request.id);
+            throw new JsonException(400, Bundle.getMessage(locale, "ErrorTimeFormat"), id);
         } catch (TimebaseRateException e) {
-            throw new JsonException(400, Bundle.getMessage(request.locale, "ErrorRateFactor"), request.id);
+            throw new JsonException(400, Bundle.getMessage(locale, "ErrorRateFactor"), id);
         }
-        return this.doGet(type, name, data, request);
+        return this.doGet(type, name, data, locale, id);
     }
 
     @Override
-    public JsonNode doGetList(String type, JsonNode data, JsonRequest request) throws JsonException {
+    public JsonNode doGetList(String type, JsonNode data, Locale locale, int id) throws JsonException {
         ArrayNode array = this.mapper.createArrayNode();
-        array.add(this.doGet(type, null, data, request));
-        return message(array, request.id);
+        array.add(this.doGet(type, null, data, locale, id));
+        return message(array, id);
     }
 
     @Override
-    public JsonNode doSchema(String type, boolean server, JsonRequest request) throws JsonException {
-        if (TIME.equals(type)) {
-            return doSchema(type,
-                    server,
-                    "jmri/server/json/time/time-server.json",
-                    "jmri/server/json/time/time-client.json",
-                    request.id);
-        } else {
-            throw new JsonException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    Bundle.getMessage(request.locale, JsonException.ERROR_UNKNOWN_TYPE, type), request.id);
+    public JsonNode doSchema(String type, boolean server, Locale locale, int id) throws JsonException {
+        switch (type) {
+            case TIME:
+                return doSchema(type,
+                        server,
+                        "jmri/server/json/time/time-server.json",
+                        "jmri/server/json/time/time-client.json",
+                        id);
+            default:
+                throw new JsonException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Bundle.getMessage(locale, "ErrorUnknownType", type), id);
         }
     }
 }

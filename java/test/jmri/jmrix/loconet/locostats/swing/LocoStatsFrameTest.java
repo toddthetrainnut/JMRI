@@ -5,14 +5,12 @@ import javax.swing.JFrame;
 import jmri.jmrix.loconet.LnConstants;
 import jmri.jmrix.loconet.LocoNetMessage;
 import jmri.util.JmriJFrame;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the LocoStatsFrame class
  *
- * @author Bob Jacobsen Copyright (C) 2006, 2008, 2010
+ * @author	Bob Jacobsen Copyright (C) 2006, 2008, 2010
  */
 public class LocoStatsFrameTest {
 
@@ -92,12 +90,12 @@ public class LocoStatsFrameTest {
         f.dispose();
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

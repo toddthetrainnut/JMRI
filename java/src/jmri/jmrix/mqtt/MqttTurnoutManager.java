@@ -1,98 +1,72 @@
 package jmri.jmrix.mqtt;
 
 import javax.annotation.Nonnull;
+
 import jmri.JmriException;
 import jmri.Turnout;
 
 /**
  * Implement turnout manager for MQTT systems
  * <p>
- * System names are "MTnnn", where M is the user configurable system prefix, nnn
- * is the turnout number without padding.
+ * System names are "MTnnn", where M is the user configurable system prefix,
+ * nnn is the turnout number without padding.
  *
  * @author Lionel Jeanson Copyright (c) 2017
  */
 public class MqttTurnoutManager extends jmri.managers.AbstractTurnoutManager {
+    @Nonnull private final MqttAdapter mqttAdapter;
 
-    public MqttTurnoutManager(@Nonnull MqttSystemConnectionMemo memo) {
-        super(memo);
+    public MqttTurnoutManager(@Nonnull MqttAdapter ma, @Nonnull String p) {
+        super();
+        mqttAdapter = ma;
+        systemPrefix = p;        
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Nonnull private final String systemPrefix; // for systemName
     @Override
-    @Nonnull
-    public MqttSystemConnectionMemo getMemo() {
-        return (MqttSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return systemPrefix;
     }
 
-    public void setSendTopicPrefix(@Nonnull String sendTopicPrefix) {
-        this.sendTopicPrefix = sendTopicPrefix;
+    public void setTopicPrefix(@Nonnull String topicPrefix) {
+        this.topicPrefix = topicPrefix;
     }
-    public void setRcvTopicPrefix(@Nonnull String rcvTopicPrefix) {
-        this.rcvTopicPrefix = rcvTopicPrefix;
-    }
-
-    @Nonnull
-    public String sendTopicPrefix = "track/turnout/"; // for constructing topic; public for script access
-    @Nonnull
-    public String rcvTopicPrefix = "track/turnout/"; // for constructing topic; public for script access
+    @Nonnull public String topicPrefix = "track/turnout/"; // for constructing topic; public for script access
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Accepts any string as the "topicSuffix"
+     *
+     * Accepts any string.
      */
     @Override
     public String createSystemName(@Nonnull String topicSuffix, @Nonnull String prefix) throws JmriException {
         return prefix + typeLetter() + topicSuffix;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Turnout createNewTurnout(@Nonnull String systemName, String userName) {
         MqttTurnout t;
-        String suffix = systemName.substring(getSystemNamePrefix().length());
+        String suffix = systemName.substring(systemPrefix.length() + 1);
+        String topic = topicPrefix+suffix;
 
-        String sendTopic = java.text.MessageFormat.format(
-                            sendTopicPrefix.contains("{0}") ? sendTopicPrefix : sendTopicPrefix+"{0}",
-                            suffix);
-        String rcvTopic = java.text.MessageFormat.format(
-                            rcvTopicPrefix.contains("{0}") ? rcvTopicPrefix : rcvTopicPrefix+"{0}",
-                            suffix);
-
-        t = new MqttTurnout(getMemo().getMqttAdapter(), systemName, sendTopic, rcvTopic);
+        t = new MqttTurnout(mqttAdapter, systemName, topic);
         t.setUserName(userName);
 
-        if (parser != null) {
-            t.setParser(parser);
-        }
+        if (parser != null) t.setParser(parser);
 
         return t;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getEntryToolTip() {
-        return "A string which will be inserted into \"" + sendTopicPrefix + "\" for transmission";
-    }
-
     /** {@inheritDoc} */
     @Override
-    public boolean allowMultipleAdditions(String systemName) {
-        return true;
+    public String getEntryToolTip() {
+        return "A string which will be appended to \""+mqttAdapter.baseTopic+topicPrefix+"\"";
     }
 
     public void setParser(MqttContentParser<Turnout> parser) {
         this.parser = parser;
     }
     MqttContentParser<Turnout> parser = null;
-
+    
     // private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MqttTurnoutManager.class);
 }

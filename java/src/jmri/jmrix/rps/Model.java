@@ -10,7 +10,7 @@ import java.util.List;
  * The layout geometry is expressed as a set of (perhaps overlapping) Regions.
  *
  * @since 2.1.7
- * @author Bob Jacobsen Copyright (C) 2008
+ * @author	Bob Jacobsen Copyright (C) 2008
  */
 public class Model {
 
@@ -28,16 +28,14 @@ public class Model {
     ArrayList<Region> regions = new ArrayList<Region>();
 
     /**
-     * Include a region in the model.
-     * @param r region to add.
+     * Include a region in the model
      */
     public void addRegion(Region r) {
         regions.add(r);
     }
 
     /**
-     * Include a region in the model.
-     * @param r region to remove.
+     * Include a region in the model
      */
     public void removeRegion(Region r) {
         regions.remove(r);
@@ -47,7 +45,6 @@ public class Model {
      * Get the list of active regions.
      * <p>
      * This list should be immutable, hence copied, but for now it's not.
-     * @return list of regions.
      */
     public List<Region> getRegions() {
         return regions;

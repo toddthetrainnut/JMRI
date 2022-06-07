@@ -1,561 +1,351 @@
 package jmri.jmrit.operations.rollingstock.cars.tools;
 
+import java.awt.GraphicsEnvironment;
 import java.text.MessageFormat;
 import java.util.List;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
-import jmri.jmrit.operations.rollingstock.cars.CarLoad;
-import jmri.jmrit.operations.rollingstock.cars.KernelManager;
+import jmri.jmrit.operations.rollingstock.cars.CarManager;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
-import jmri.util.ThreadingUtil;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  * Tests for the Operations CarAttributeEditFrame class
  *
  * @author Dan Boudreau Copyright (C) 2009
  */
-@DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
 public class CarAttributeEditFrameTest extends OperationsTestCase {
 
     @Test
     public void testCarAttributeEditFrameColor() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         JUnitOperationsUtil.initOperationsData();
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.COLOR);
-            f.toggleShowQuanity();
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        // confirm that the default number of colors is correct
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        Assert.assertEquals(12, comboBox.getItemCount());
-        
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-        addTextBox.setText("Pink");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        Assert.assertEquals("new color", "Pink", comboBox.getItemAt(6));
+        f.initComponents(CarAttributeEditFrame.COLOR);
+        f.toggleShowQuanity();
+        f.addTextBox.setText("Pink");
+        JemmyUtil.enterClickAndLeave(f.addButton);
+        // new color should appear at start of list
+        Assert.assertEquals("new color", "Pink", f.comboBox.getItemAt(0));
 
         // test replace
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
-        addTextBox.setText("Pinker");
+        f.comboBox.setSelectedItem("Pink");
+        f.addTextBox.setText("Pinker");
         // push replace button
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
         // need to also push the "Yes" button in the dialog window
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");  // NOI18N
-        JemmyUtil.waitFor(f); // wait for frame to become active
+        JemmyUtil.pressDialogButton(f, Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
         // did the replace work?
-        Assert.assertEquals("replaced Pink with Pinker", "Pinker", comboBox.getItemAt(6));
+        Assert.assertEquals("replaced Pink with Pinker", "Pinker", f.comboBox.getItemAt(0));
 
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
+        JemmyUtil.enterClickAndLeave(f.deleteButton);
         // black is the first default color
-        Assert.assertEquals("old color", "Black", comboBox.getItemAt(0));
+        Assert.assertEquals("old color", "Black", f.comboBox.getItemAt(0));
 
-        jfo.requestClose();
-        jfo.waitClosed();
-
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrameKernel() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         // remove all kernels
-        KernelManager km = InstanceManager.getDefault(KernelManager.class);
-        List<String> kList = km.getNameList();
+        CarManager cm = InstanceManager.getDefault(CarManager.class);
+        List<String> kList = cm.getKernelNameList();
         for (int i = 0; i < kList.size(); i++) {
-            km.deleteKernel(kList.get(i));
+            cm.deleteKernel(kList.get(i));
         }
         // create TwoCars kernel
-        InstanceManager.getDefault(KernelManager.class).newKernel("TwoCars");
+        cm.newKernel("TwoCars");
 
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.KERNEL);
-            f.toggleShowQuanity();
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
+        f.initComponents(CarAttributeEditFrame.KERNEL);
+        f.toggleShowQuanity();
         // confirm that space and TwoCar kernel exists
-        Assert.assertEquals("space 1", "", comboBox.getItemAt(0));
-        Assert.assertEquals("previous kernel 1", "TwoCars", comboBox.getItemAt(1));
+        Assert.assertEquals("space 1", "", f.comboBox.getItemAt(0));
+        Assert.assertEquals("previous kernel 1", "TwoCars", f.comboBox.getItemAt(1));
 
-        addTextBox.setText("TestKernel");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
+        f.addTextBox.setText("TestKernel");
+        JemmyUtil.enterClickAndLeave(f.addButton);
         // new kernel should appear at start of list after blank
-        Assert.assertEquals("new kernel", "TestKernel", comboBox.getItemAt(1));
+        Assert.assertEquals("new kernel", "TestKernel", f.comboBox.getItemAt(1));
 
         // test replace
-        comboBox.setSelectedItem("TestKernel");
-        addTextBox.setText("TestKernel2");
+        f.comboBox.setSelectedItem("TestKernel");
+        f.addTextBox.setText("TestKernel2");
         // push replace button
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
         // need to also push the "Yes" button in the dialog window
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
-        
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");  // NOI18N
-        JemmyUtil.waitFor(f); // wait for frame to become active
+        JemmyUtil.pressDialogButton(f, Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
         // did the replace work?
-        Assert.assertEquals("replaced TestKernel with TestKernel2", "TestKernel2", comboBox.getItemAt(1));
+        Assert.assertEquals("replaced TestKernel with TestKernel2", "TestKernel2", f.comboBox.getItemAt(1));
 
         // now try and delete
-        comboBox.setSelectedItem("TestKernel2");
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
-        jfo.getQueueTool().waitEmpty();
+        f.comboBox.setSelectedItem("TestKernel2");
+        JemmyUtil.enterClickAndLeave(f.deleteButton);
         // blank is the first default kernel
-        Assert.assertEquals("space 2", "", comboBox.getItemAt(0));
-        Assert.assertEquals("previous kernel 2", "TwoCars", comboBox.getItemAt(1));
+        Assert.assertEquals("space 2", "", f.comboBox.getItemAt(0));
+        Assert.assertEquals("previous kernel 2", "TwoCars", f.comboBox.getItemAt(1));
 
-        jfo.requestClose();
-        jfo.waitClosed();
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrameLength() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.LENGTH);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
+        f.initComponents(CarAttributeEditFrame.LENGTH);
         // confirm that the right number of default lengths were loaded
-        Assert.assertEquals(12, comboBox.getItemCount());
+        Assert.assertEquals(12, f.comboBox.getItemCount());
         // now add a new length
-        addTextBox.setText("12");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
+        f.addTextBox.setText("12");
+        JemmyUtil.enterClickAndLeave(f.addButton);
         // new length should appear at start of list
-        Assert.assertEquals("new length name", "12", comboBox.getItemAt(0));
+        Assert.assertEquals("new length name", "12", f.comboBox.getItemAt(0));
 
         // test replace
-        comboBox.setSelectedItem("12");
-        addTextBox.setText("13");
+        f.comboBox.setSelectedItem("12");
+        f.addTextBox.setText("13");
         // push replace button
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
         // need to also push the "Yes" button in the dialog window
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        JemmyUtil.waitFor(f); // wait for frame to become active
+        JemmyUtil.pressDialogButton(f, Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
         // did the replace work?
-        Assert.assertEquals("replaced 12 with 13", "13", comboBox.getItemAt(0));
+        Assert.assertEquals("replaced 12 with 13", "13", f.comboBox.getItemAt(0));
 
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
-        Assert.assertEquals("1st number after delete", "32", comboBox.getItemAt(0));
+        JemmyUtil.enterClickAndLeave(f.deleteButton);
+        Assert.assertEquals("1st number after delete", "32", f.comboBox.getItemAt(0));
 
-        jfo.requestClose();
-        jfo.waitClosed();
-
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrameLengthInches() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.LENGTH);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-        jfo.getQueueTool().waitEmpty();
-
+        f.initComponents(CarAttributeEditFrame.LENGTH);
         // confirm that the right number of default lengths were loaded
-        Assert.assertEquals(12, comboBox.getItemCount());
+        Assert.assertEquals(12, f.comboBox.getItemCount());
         // now add a new length in inches
-        addTextBox.setText("10" + "\"");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        jfo.getQueueTool().waitEmpty();
-        Assert.assertEquals("new length name", "72", comboBox.getItemAt(12));
+        f.addTextBox.setText("10" + "\"");
+        JemmyUtil.enterClickAndLeave(f.addButton);
+        // new length should appear at start of list
+        Assert.assertEquals("new length name", "72", f.comboBox.getItemAt(0));
 
         // test replace
-        addTextBox.setText("73");
+        f.comboBox.setSelectedItem("72");
+        f.addTextBox.setText("73");
         // push replace button
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
         // need to also push the "Yes" button in the dialog window
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
+        JemmyUtil.pressDialogButton(f, Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
         // did the replace work?
-        Assert.assertEquals("replaced 72 with 73", "73", comboBox.getItemAt(12));
+        Assert.assertEquals("replaced 72 with 73", "73", f.comboBox.getItemAt(0));
 
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
-        jfo.getQueueTool().waitEmpty();
-        Assert.assertEquals("1st number after delete", "32", comboBox.getItemAt(0));
+        JemmyUtil.enterClickAndLeave(f.deleteButton);
+        Assert.assertEquals("1st number after delete", "32", f.comboBox.getItemAt(0));
 
         // now try error condition
-        addTextBox.setText("A" + "\"");
+        f.addTextBox.setText("A" + "\"");
         // should cause error dialog to appear
-        Thread t2 = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("ErrorRsLength"), Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
+        JemmyUtil.enterClickAndLeave(f.addButton);
 
-        JUnitUtil.waitFor(()->{return !(t2.isAlive());}, "dialog2 finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        jfo.requestClose();
-        jfo.waitClosed();
+        JemmyUtil.pressDialogButton(Bundle.getMessage("ErrorCarLength"), Bundle.getMessage("ButtonOK"));
+
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrameLengthCm() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.LENGTH);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
+        f.initComponents(CarAttributeEditFrame.LENGTH);
         // confirm that the right number of default lengths were loaded
-        Assert.assertEquals(12, comboBox.getItemCount());
+        Assert.assertEquals(12, f.comboBox.getItemCount());
         // now add a new length in centimeters
-        addTextBox.setText("10" + "cm");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        jfo.getQueueTool().waitEmpty();
+        f.addTextBox.setText("10" + "cm");
+        JemmyUtil.enterClickAndLeave(f.addButton);
         // new length should appear at start of list
-        Assert.assertEquals("new length name", "8", comboBox.getItemAt(0));
+        Assert.assertEquals("new length name", "8", f.comboBox.getItemAt(0));
 
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
-        jfo.getQueueTool().waitEmpty();
-        Assert.assertEquals("1st number after delete", "32", comboBox.getItemAt(0));
+        JemmyUtil.enterClickAndLeave(f.deleteButton);
+        Assert.assertEquals("1st number after delete", "32", f.comboBox.getItemAt(0));
 
         // now try error condition
-        addTextBox.setText("A" + "cm");
+        f.addTextBox.setText("A" + "cm");
         // should cause error dialog to appear
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("ErrorRsLength"), Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        jfo.requestClose();
-        jfo.waitClosed();
+        JemmyUtil.enterClickAndLeave(f.addButton);
+
+        JemmyUtil.pressDialogButton(Bundle.getMessage("ErrorCarLength"), Bundle.getMessage("ButtonOK"));
+
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrameLengthErrors() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.LENGTH);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
+        f.initComponents(CarAttributeEditFrame.LENGTH);
         // confirm that the right number of default lengths were loaded
-        Assert.assertEquals(12, comboBox.getItemCount());
+        Assert.assertEquals(12, f.comboBox.getItemCount());
         // now add a bogus length
-        addTextBox.setText("A");
-        Thread t = JemmyUtil.createModalDialogOperatorThread(
-                MessageFormat.format(Bundle.getMessage("canNotAdd"), new Object[] { Bundle.getMessage("Length") }),
-                Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
+        f.addTextBox.setText("A");
+        JemmyUtil.enterClickAndLeave(f.addButton);
 
         jmri.util.JUnitAppender.assertErrorMessage("length (A) is not an integer");
-        Assert.assertEquals("1st number before bogus add", "32", comboBox.getItemAt(0));
+        Assert.assertEquals("1st number before bogus add", "32", f.comboBox.getItemAt(0));
 
-        // check for the value "A"
-        for (int i = 0; i < comboBox.getItemCount(); i++) {
-            Assert.assertNotEquals("check for A", "A", comboBox.getItemAt(i));
+        // check for the value "A" 
+        for (int i = 0; i < f.comboBox.getItemCount(); i++) {
+            Assert.assertNotEquals("check for A", "A", f.comboBox.getItemAt(i));
         }
 
         // now add a negative length
-        addTextBox.setText("-1");
-        Thread t2 = JemmyUtil.createModalDialogOperatorThread(
-                MessageFormat.format(Bundle.getMessage("canNotAdd"), new Object[] { Bundle.getMessage("Length") }),
-                Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
+        f.addTextBox.setText("-1");
+        JemmyUtil.enterClickAndLeave(f.addButton);
 
-        JUnitUtil.waitFor(()->{return !(t2.isAlive());}, "dialog2 finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
         jmri.util.JUnitAppender.assertErrorMessage("length (-1) has to be a positive number");
-        Assert.assertEquals("1st number before bogus add", "32", comboBox.getItemAt(0));
+        Assert.assertEquals("1st number before bogus add", "32", f.comboBox.getItemAt(0));
 
-        // check for the value "-1"
-        for (int i = 0; i < comboBox.getItemCount(); i++) {
-            Assert.assertNotEquals("check for -1", "-1", comboBox.getItemAt(i));
+        // check for the value "-1" 
+        for (int i = 0; i < f.comboBox.getItemCount(); i++) {
+            Assert.assertNotEquals("check for -1", "-1", f.comboBox.getItemAt(i));
         }
 
         // now add a length that is too long
-        addTextBox.setText("10000");
+        f.addTextBox.setText("10000");
 
         // should cause error dialog to appear
-        Thread t3 = JemmyUtil.createModalDialogOperatorThread(
-                MessageFormat.format(Bundle.getMessage("canNotAdd"), new Object[] { Bundle.getMessage("Length") }),
-                Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
+        JemmyUtil.enterClickAndLeave(f.addButton);
 
-        JUnitUtil.waitFor(()->{return !(t3.isAlive());}, "dialog3 finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        Assert.assertEquals("1st number before bogus add", "32", comboBox.getItemAt(0));
+        JemmyUtil.pressDialogButton(MessageFormat.format(Bundle
+                .getMessage("canNotAdd"), new Object[]{Bundle.getMessage("Length")}), Bundle.getMessage("ButtonOK"));
 
-        jfo.requestClose();
-        jfo.waitClosed();
+        Assert.assertEquals("1st number before bogus add", "32", f.comboBox.getItemAt(0));
+
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrameType() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.TYPE);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
-        // confirm that the right number of default types were loaded
-        Assert.assertEquals(33, comboBox.getItemCount());
-        Assert.assertEquals("1st type", "Baggage", comboBox.getItemAt(0));
+        f.initComponents(CarAttributeEditFrame.TYPE);
+        // confirm that the right number of default lengths were loaded
+        Assert.assertEquals(33, f.comboBox.getItemCount());
+        Assert.assertEquals("1st type", "Baggage", f.comboBox.getItemAt(0));
 
         // now add a new type
-        addTextBox.setText("ABC-TEST_TEST_TEST");
+        f.addTextBox.setText("ABC-TEST_TEST_TEST");
         // the following should cause two dialog windows to appear
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("ModifyLocations"), Bundle.getMessage("ButtonNo"));
-        Thread t2 = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("ModifyTrains"), Bundle.getMessage("ButtonNo"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        JUnitUtil.waitFor(()->{return !(t2.isAlive());}, "dialog2 finished");
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        
+        Thread add = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                JemmyUtil.enterClickAndLeave(f.addButton);
+            }
+        });
+        add.setName("Add type attribute"); // NOI18N
+        add.start();
+
+        // dboudreau periodically fails on AppVeyor 3/27/2019
+        // try without the wait
+//        jmri.util.JUnitUtil.waitFor(() -> {
+//            return add.getState().equals(Thread.State.WAITING);
+//        }, "wait for prompt");
+
+        JemmyUtil.pressDialogButton(Bundle.getMessage("ModifyLocations"), Bundle.getMessage("ButtonNo"));
+        JemmyUtil.pressDialogButton(Bundle.getMessage("ModifyTrains"), Bundle.getMessage("ButtonNo"));
+
+        try {
+            add.join();
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+
         // new type should appear at start of list
-        Assert.assertEquals("new type name", "ABC-TEST_TEST_TEST", comboBox.getItemAt(0));
+        Assert.assertEquals("new type name", "ABC-TEST_TEST_TEST", f.comboBox.getItemAt(0));
 
         // test replace
-        comboBox.setSelectedItem("ABC-TEST_TEST_TEST");
-        addTextBox.setText("ABCDEF-TEST");
+        f.comboBox.setSelectedItem("ABC-TEST_TEST_TEST");
+        f.addTextBox.setText("ABCDEF-TEST");
         // push replace button
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
         // need to also push the "Yes" button in the dialog window
-        Thread t3 = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
-        
-        JUnitUtil.waitFor(()->{return !(t3.isAlive());}, "dialog3 finished");
-        JemmyUtil.waitFor(f); // wait for frame to become active
+        JemmyUtil.pressDialogButton(f, Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
         // did the replace work?
-        Assert.assertEquals("replaced ABC-TEST", "ABCDEF-TEST", comboBox.getItemAt(0));
+        Assert.assertEquals("replaced ABC-TEST", "ABCDEF-TEST", f.comboBox.getItemAt(0));
 
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
-        Assert.assertEquals("1st type after delete", "Baggage", comboBox.getItemAt(0));
+        JemmyUtil.enterClickAndLeave(f.deleteButton);
+        Assert.assertEquals("1st type after delete", "Baggage", f.comboBox.getItemAt(0));
 
         // enter a type name that is too long
-        addTextBox.setText("ABCDEFGHIJKLM-TEST");
-        Thread t4 = JemmyUtil.createModalDialogOperatorThread(
-            MessageFormat.format(Bundle.getMessage("canNotAdd"), new Object[] { Bundle.getMessage("Type") }),
-            Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
+        f.addTextBox.setText("ABCDEFGHIJKLM-TEST");
+        JemmyUtil.enterClickAndLeave(f.addButton);
 
-        JUnitUtil.waitFor(()->{return !(t4.isAlive());}, "dialog4 finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        jfo.requestClose();
-        jfo.waitClosed();
-    }
+        JemmyUtil.pressDialogButton(
+                MessageFormat.format(Bundle.getMessage("canNotAdd"), new Object[]{Bundle.getMessage("Type")}),
+                Bundle.getMessage("ButtonOK"));
 
-    @Test
-    public void testCarAttributeEditFrameTypeError() {
-
-        CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.TYPE);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
-        Assert.assertEquals(33, comboBox.getItemCount());
-
-        // can't enter a type name with only spaces
-        addTextBox.setText("  ");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-
-        jfo.getQueueTool().waitEmpty();
-
-        Assert.assertEquals(33, comboBox.getItemCount());
-
-        // now try to add a new type name with the reserved characters
-        Thread t = JemmyUtil.createModalDialogOperatorThread(
-            MessageFormat.format(Bundle.getMessage("canNotAdd"), new Object[] { Bundle.getMessage("Type") }),
-            Bundle.getMessage("ButtonOK"));
-        addTextBox.setText("Test & Test");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-
-        // again try a new type name with the reserved characters
-        addTextBox.setText("TEST" + CarLoad.SPLIT_CHAR + "TEST");
-        // the following should cause dialog window to appear
-        Thread t2 = JemmyUtil.createModalDialogOperatorThread(
-            MessageFormat.format(Bundle.getMessage("canNotAdd"), new Object[] { Bundle.getMessage("Type") }),
-            Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        JUnitUtil.waitFor(()->{return !(t2.isAlive());}, "dialog2 finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        Assert.assertEquals(33, comboBox.getItemCount());
-        jfo.requestClose();
-        jfo.waitClosed();
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrameRoad() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.ROAD);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
+        f.initComponents(CarAttributeEditFrame.ROAD);
         // confirm that the right number of default lengths were loaded
-        Assert.assertEquals(133, comboBox.getItemCount());
-        Assert.assertEquals("1st road", "AA", comboBox.getItemAt(0));
+        Assert.assertEquals(133, f.comboBox.getItemCount());
+        Assert.assertEquals("1st road", "AA", f.comboBox.getItemAt(0));
         // now add a new road
-        addTextBox.setText("ABC-TEST");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        jfo.getQueueTool().waitEmpty();
+        f.addTextBox.setText("ABC-TEST");
+        JemmyUtil.enterClickAndLeave(f.addButton);
         // new road should appear at start of list
-        Assert.assertEquals("new road name", "ABC-TEST", comboBox.getItemAt(1));
+        Assert.assertEquals("new road name", "ABC-TEST", f.comboBox.getItemAt(0));
 
         // test replace
-        addTextBox.setText("ABCDEF-TEST");
+        f.comboBox.setSelectedItem("ABC-TEST");
+        f.addTextBox.setText("ABCDEF-TEST");
         // push replace button
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
         // need to also push the "Yes" button in the dialog window
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
+        JemmyUtil.pressDialogButton(f, Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
         // did the replace work?
-        Assert.assertEquals("replaced ABC-TEST", "ABCDEF-TEST", comboBox.getItemAt(1));
+        Assert.assertEquals("replaced ABC-TEST", "ABCDEF-TEST", f.comboBox.getItemAt(0));
 
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
-        jfo.getQueueTool().waitEmpty();
-        Assert.assertEquals("1st road after delete", "AA", comboBox.getItemAt(0));
+        JemmyUtil.enterClickAndLeave(f.deleteButton);
+        Assert.assertEquals("1st road after delete", "AA", f.comboBox.getItemAt(0));
 
         // enter a road name that is too long
-        addTextBox.setText("ABCDEFGHIJKLM-TEST");
+        f.addTextBox.setText("ABCDEFGHIJKLM-TEST");
         // should cause error dialog to appear
-        Thread t2 = JemmyUtil.createModalDialogOperatorThread(
-            MessageFormat.format(Bundle.getMessage("canNotReplace"), new Object[] { Bundle.getMessage("Road") })
-            , Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
 
-        JUnitUtil.waitFor(()->{return !(t2.isAlive());}, "dialog2 finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        
+        JemmyUtil.pressDialogButton(
+                MessageFormat.format(Bundle.getMessage("canNotReplace"), new Object[]{Bundle.getMessage("Road")}),
+                Bundle.getMessage("ButtonOK"));
+
         // enter a road name that has a reserved character
-        addTextBox.setText("A.B");
+        f.addTextBox.setText("A.B");
         // should cause error dialog to appear
-        Thread t3 = JemmyUtil.createModalDialogOperatorThread(
-            MessageFormat.format(Bundle.getMessage("canNotReplace"), new Object[] { Bundle.getMessage("Road") })
-            , Bundle.getMessage("ButtonOK"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
+        JemmyUtil.enterClickAndLeave(f.replaceButton);
 
-        JUnitUtil.waitFor(()->{return !(t3.isAlive());}, "dialog3 finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        jfo.requestClose();
-        jfo.waitClosed();
-    }
+        JemmyUtil.pressDialogButton(
+                MessageFormat.format(Bundle.getMessage("canNotReplace"), new Object[]{Bundle.getMessage("Road")}),
+                Bundle.getMessage("ButtonOK"));
 
-    @Test
-    public void testCarAttributeEditFrameOwner() {
-
-        JUnitOperationsUtil.initOperationsData();
-        CarAttributeEditFrame f = new CarAttributeEditFrame();
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.OWNER);
-            f.toggleShowQuanity();
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        JComboBoxOperator comboBox = new JComboBoxOperator(jfo, 0);
-        JTextFieldOperator addTextBox = new JTextFieldOperator(jfo, 0);
-
-        // check default owner names
-        Assert.assertEquals("expected owner names", 2, comboBox.getItemCount());
-        addTextBox.setText("John");
-        new JButtonOperator(jfo,Bundle.getMessage("Add")).push();
-        Assert.assertEquals("new owner", "John", comboBox.getItemAt(2));
-
-        // test replace
-        addTextBox.setText("Bob");
-        // push replace button
-        // need to also push the "Yes" button in the dialog window
-        Thread t = JemmyUtil.createModalDialogOperatorThread(Bundle.getMessage("replaceAll"), Bundle.getMessage("ButtonYes"));
-        new JButtonOperator(jfo,Bundle.getMessage("Replace")).push();
-
-        JUnitUtil.waitFor(()->{return !(t.isAlive());}, "dialog finished");
-        jfo.getQueueTool().waitEmpty();
-        JemmyUtil.waitFor(f); // wait for frame to become active
-        // did the replace work?
-        Assert.assertEquals("replaced John with Bob", "Bob", comboBox.getItemAt(1));
-
-        new JButtonOperator(jfo,Bundle.getMessage("ButtonDelete")).push();
-        jfo.getQueueTool().waitEmpty();
-        Assert.assertEquals("default owner 1", "AT", comboBox.getItemAt(0));
-        Assert.assertEquals("default owner 2", "DAB", comboBox.getItemAt(1));
-
-        jfo.requestClose();
-        jfo.waitClosed();
+        JUnitUtil.dispose(f);
     }
 
     @Test
     public void testCarAttributeEditFrame2() {
-
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarAttributeEditFrame f = new CarAttributeEditFrame();
         f.initComponents(CarAttributeEditFrame.OWNER);
-        ThreadingUtil.runOnGUI(() -> {
-            f.initComponents(CarAttributeEditFrame.OWNER);
-        });
-        JFrameOperator jfo = new JFrameOperator(f.getTitle());  // NOI18N
-        Assert.assertNotNull(jfo);
-
-        jfo.requestClose();
-        jfo.waitClosed();
+        JUnitUtil.dispose(f);
     }
 }

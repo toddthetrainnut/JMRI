@@ -12,10 +12,10 @@ import org.slf4j.LoggerFactory;
  * should be the only object that is sending messages for this turnout; more
  * than one Turnout object pointing to a single device is not allowed.
  *
- * Extend jmri.AbstractTurnout for SRCP layouts
+ * Description:	extend jmri.AbstractTurnout for SRCP layouts
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2008
- * @author Paul Bender Copyright (C) 2014
+ * @author	Bob Jacobsen Copyright (C) 2001, 2008
+ * @author	Paul Bender Copyright (C) 2014
  */
 public class SRCPTurnout extends AbstractTurnout {
 
@@ -34,7 +34,7 @@ public class SRCPTurnout extends AbstractTurnout {
         // set the traffic controller
         tc = memo.getTrafficController();
 
-        // send message requesting initialization
+        // send message requesting initilization
         String text = "INIT " + _bus + " GA " + _number + " N\n";
 
         // create and send the message itself
@@ -47,40 +47,37 @@ public class SRCPTurnout extends AbstractTurnout {
         return _number;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    // Handle a request to change state by sending a formatted DCC packet
     @Override
-    protected void forwardCommandChangeToLayout(int newState) {
+    protected void forwardCommandChangeToLayout(int s) {
         // sort out states
-        if ((newState & Turnout.CLOSED) != 0) {
+        if ((s & Turnout.CLOSED) != 0) {
             // first look for the double case, which we can't handle
-            if ((newState & Turnout.THROWN) != 0) {
+            if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN {}", newState);
+                log.error("Cannot command both CLOSED and THROWN " + s);
                 return;
             } else {
                 // send a CLOSED command
-                sendMessage(!getInverted());
+                sendMessage(true ^ getInverted());
             }
         } else {
             // send a THROWN command
-            sendMessage(getInverted());
+            sendMessage(false ^ getInverted());
         }
     }
 
     @Override
     protected void turnoutPushbuttonLockout(boolean _pushButtonLockout) {
-        log.debug("Send command to {} Pushbutton {}T{}",
-                (_pushButtonLockout ? "Lock" : "Unlock"),
-                tc.getSystemConnectionMemo().getSystemPrefix(),
-                _number);
+        if (log.isDebugEnabled()) {
+            log.debug("Send command to " + (_pushButtonLockout ? "Lock" : "Unlock") + " Pushbutton ET" + _number);
+        }
     }
 
     // data members
-    private int _number; // turnout number
-    private int _bus;    // bus number
-    private SRCPTrafficController tc = null; // traffic controller
+    int _number;   // turnout number
+    int _bus;   // bus number
+    SRCPTrafficController tc = null;   // traffic controller 
 
     protected void sendMessage(boolean closed) {
         // get the message text

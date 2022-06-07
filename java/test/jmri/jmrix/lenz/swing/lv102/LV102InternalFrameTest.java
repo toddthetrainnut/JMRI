@@ -1,19 +1,19 @@
 package jmri.jmrix.lenz.swing.lv102;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * LV102InternalFrameTest.java
  *
- * Test for the jmri.jmrix.lenz.swing.lv102.LV102InternalFrame class
+ * Description:	tests for the jmri.jmrix.lenz.swing.lv102.LV102InternalFrame class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class LV102InternalFrameTest {
 
@@ -59,13 +59,14 @@ public class LV102InternalFrameTest {
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -3,18 +3,17 @@ package jmri;
 import static jmri.Conditional.*;
 import static jmri.ConditionalVariable.*;
 
-import jmri.util.JUnitUtil;
 import jmri.implementation.VirtualSignalHead;
+import jmri.jmrit.logix.OBlock;
 import jmri.jmrit.logix.OBlockManager;
+import jmri.jmrit.logix.Warrant;
 import jmri.jmrit.logix.WarrantManager;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the Path class
  *
- * @author Bob Jacobsen Copyright (C) 2016
+ * @author	Bob Jacobsen Copyright (C) 2016
  */
 public class ConditionalVariableTest {
 
@@ -27,15 +26,15 @@ public class ConditionalVariableTest {
         String otherDeviceName = "4";
 
         // Start with testing the exception handling in the constructor
-        JUnitUtil.resetInstanceManager();
-        JUnitUtil.initInternalTurnoutManagerThrowException();
-        JUnitUtil.initLightManagerThrowException();
-        JUnitUtil.initMemoryManagerThrowException();
-        JUnitUtil.initInternalSensorManagerThrowException();
-        JUnitUtil.initSignalHeadManagerThrowException();
-        JUnitUtil.initSignalMastManagerThrowException();
-        JUnitUtil.initWarrantManagerThrowException();
-        JUnitUtil.initOBlockManagerThrowException();
+        jmri.util.JUnitUtil.resetInstanceManager();
+        jmri.util.JUnitUtil.initInternalTurnoutManagerThrowException();
+        jmri.util.JUnitUtil.initLightManagerThrowException();
+        jmri.util.JUnitUtil.initMemoryManagerThrowException();
+        jmri.util.JUnitUtil.initInternalSensorManagerThrowException();
+        jmri.util.JUnitUtil.initSignalHeadManagerThrowException();
+        jmri.util.JUnitUtil.initSignalMastManagerThrowException();
+        jmri.util.JUnitUtil.initWarrantManagerThrowException();
+        jmri.util.JUnitUtil.initOBlockManagerThrowException();
 
         ConditionalVariable cv = new ConditionalVariable(false, Conditional.Operator.AND, Conditional.Type.SENSOR_ACTIVE, deviceName, false);
         Assert.assertTrue("getNamedBean() returns null", cv.getNamedBean() == null);
@@ -76,13 +75,13 @@ public class ConditionalVariableTest {
         jmri.util.JUnitAppender.assertWarnMessage("could not provide \"OB3\" in constructor");
 
 
-        JUnitUtil.resetInstanceManager();
-        JUnitUtil.initInternalTurnoutManager();
-        JUnitUtil.initInternalLightManager();
-        JUnitUtil.initInternalSensorManager();
-        JUnitUtil.initDebugThrottleManager();
-        JUnitUtil.initLogixManager();
-        JUnitUtil.initIdTagManager();
+        jmri.util.JUnitUtil.resetInstanceManager();
+        jmri.util.JUnitUtil.initInternalTurnoutManager();
+        jmri.util.JUnitUtil.initInternalLightManager();
+        jmri.util.JUnitUtil.initInternalSensorManager();
+        jmri.util.JUnitUtil.initDebugThrottleManager();
+        jmri.util.JUnitUtil.initLogixManager();
+        jmri.util.JUnitUtil.initIdTagManager();
 
         bean = InstanceManager.getDefault(SensorManager.class).provideSensor(deviceName);
         otherBean = InstanceManager.getDefault(SensorManager.class).provideSensor(otherDeviceName);
@@ -942,25 +941,23 @@ public class ConditionalVariableTest {
 
     // from here down is testing infrastructure
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetInstanceManager();
-        JUnitUtil.initInternalTurnoutManager();
-        JUnitUtil.initInternalLightManager();
-        JUnitUtil.initInternalSensorManager();
-        JUnitUtil.initInternalSignalHeadManager();
-        JUnitUtil.initDebugThrottleManager();
-        JUnitUtil.initLogixManager();
-        JUnitUtil.initIdTagManager();
+        jmri.util.JUnitUtil.setUp();
+        jmri.util.JUnitUtil.resetInstanceManager();
+        jmri.util.JUnitUtil.initInternalTurnoutManager();
+        jmri.util.JUnitUtil.initInternalLightManager();
+        jmri.util.JUnitUtil.initInternalSensorManager();
+        jmri.util.JUnitUtil.initDebugThrottleManager();
+        jmri.util.JUnitUtil.initLogixManager();
+        jmri.util.JUnitUtil.initIdTagManager();
         jmri.InstanceManager.store(new jmri.NamedBeanHandleManager(), jmri.NamedBeanHandleManager.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
 

@@ -3,14 +3,12 @@ package jmri.jmrix.ieee802154.swing.nodeconfig;
 import java.awt.GraphicsEnvironment;
 import jmri.jmrix.ieee802154.IEEE802154TrafficController;
 import jmri.util.JUnitUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of NodeConfigFrame
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class NodeConfigFrameTest extends jmri.util.JmriJFrameTestBase {
 
@@ -24,7 +22,7 @@ public class NodeConfigFrameTest extends jmri.util.JmriJFrameTestBase {
         Assert.assertEquals("title","Configure IEEE802154 Nodes",frame.getTitle());
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -45,11 +43,10 @@ public class NodeConfigFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 }

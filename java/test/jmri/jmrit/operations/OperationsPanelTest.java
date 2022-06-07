@@ -1,7 +1,7 @@
 package jmri.jmrit.operations;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  *

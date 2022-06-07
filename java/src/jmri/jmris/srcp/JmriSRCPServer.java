@@ -5,8 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-
+import java.util.ResourceBundle;
 import jmri.jmris.JmriServer;
 import jmri.jmris.srcp.parser.ParseException;
 import jmri.jmris.srcp.parser.SRCPParser;
@@ -25,12 +24,14 @@ import org.slf4j.LoggerFactory;
  */
 public class JmriSRCPServer extends JmriServer {
 
+    static ResourceBundle rb = ResourceBundle.getBundle("jmri.jmris.srcp.JmriSRCPServerBundle");
+
     // Create a new server using the default port
     public JmriSRCPServer() {
-        this(4303);  // 4303 is assigned to SRCP by IANA.
+        super(4303);  // 4303 is assigned to SRCP by IANA.
     }
 
-    public JmriSRCPServer(int port){
+    public JmriSRCPServer(int port) {
         super(port);
     }
 
@@ -46,19 +47,18 @@ public class JmriSRCPServer extends JmriServer {
     public void handleClient(DataInputStream inStream, DataOutputStream outStream) throws IOException {
         // Listen for commands from the client until the connection closes
         SRCPParser parser = null;
-        TimeStampedOutput outputStream = new TimeStampedOutput(outStream);
 
         // interface components
         JmriSRCPServiceHandler sh = new JmriSRCPServiceHandler(12345); // need real client port.
-        sh.setPowerServer(new JmriSRCPPowerServer(outputStream));
-        sh.setTurnoutServer(new JmriSRCPTurnoutServer(inStream, outputStream));
-        sh.setSensorServer(new JmriSRCPSensorServer(inStream, outputStream));
-        sh.setProgrammerServer(new JmriSRCPProgrammerServer(outputStream));
-        sh.setTimeServer(new JmriSRCPTimeServer(outputStream));
-        sh.setThrottleServer(new JmriSRCPThrottleServer(inStream,outputStream));
+        sh.setPowerServer(new JmriSRCPPowerServer(outStream));
+        sh.setTurnoutServer(new JmriSRCPTurnoutServer(inStream, outStream));
+        sh.setSensorServer(new JmriSRCPSensorServer(inStream, outStream));
+        sh.setProgrammerServer(new JmriSRCPProgrammerServer(outStream));
+        sh.setTimeServer(new JmriSRCPTimeServer(outStream));
+        sh.setThrottleServer(new JmriSRCPThrottleServer(inStream,outStream));
 
         // Start by sending a welcome message
-        outputStream.write( "SRCP 0.8.3\n\r".getBytes());
+        TimeStampedOutput.writeTimestamp(outStream, "SRCP 0.8.3\n\r");
 
         while (true) {
             // Read the command from the client
@@ -76,7 +76,7 @@ public class JmriSRCPServer extends JmriServer {
                     // generate the response.  If this happens, we
                     // need to send the message out.
                     if (v.getOutputString() != null) {
-                        outStream.write((v.getOutputString() + "\n\r").getBytes());
+                        TimeStampedOutput.writeTimestamp(outStream, v.getOutputString() + "\n\r");
                     }
                 } catch (ParseException pe) {
                     log.debug("Parse Exception", pe);
@@ -90,7 +90,7 @@ public class JmriSRCPServer extends JmriServer {
                         inStream.close();
                         return;
                     }
-                    outStream.write("425 ERROR not supported\n\r".getBytes());
+                    TimeStampedOutput.writeTimestamp(outStream, "425 ERROR not supported\n\r");
                     // recover by consuming tokens in the token stream
                     // until we reach the end of the line.
                     while (t.kind != jmri.jmris.srcp.parser.SRCPParserConstants.EOL) {
@@ -110,7 +110,7 @@ public class JmriSRCPServer extends JmriServer {
                     // generate the response.  If this happens, we
                     // need to send the message out.
                     if (v.getOutputString() != null) {
-                        outStream.write((v.getOutputString() + "\n\r").getBytes());
+                        TimeStampedOutput.writeTimestamp(outStream, v.getOutputString() + "\n\r");
                     }
                 } catch (ParseException pe) {
                     log.debug("Parse Exception", pe);
@@ -122,12 +122,14 @@ public class JmriSRCPServer extends JmriServer {
                         //if(v.getOutputString()!=null)
                         //   TimeStampedOutput.writeTimestamp(outStream,v.getOutputString()+"\n\r");
                         // and we can close the connection.
-                        log.debug("Closing connection due to close of input stream");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Closing connection due to close of input stream");
+                        }
                         outStream.close();
                         inStream.close();
                         return;
                     }
-                    outStream.write(("425 ERROR not supported\n\r").getBytes());
+                    TimeStampedOutput.writeTimestamp(outStream, "425 ERROR not supported\n\r");
                     // recover by consuming tokens in the token stream
                     // until we reach the end of the line.
                     while (t.kind != jmri.jmris.srcp.parser.SRCPParserConstants.EOL) {
@@ -135,15 +137,17 @@ public class JmriSRCPServer extends JmriServer {
                     }
                 } catch (TokenMgrError tme) {
                     log.debug("Token Manager Exception", tme);
-                    outStream.write("410 ERROR unknown command\n\r".getBytes());
+                    TimeStampedOutput.writeTimestamp(outStream, "410 ERROR unknown command\n\r");
                 }
             } else if (!sh.isCommandMode()) {
-                BufferedReader d  = new BufferedReader(new InputStreamReader(inStream,
-                        StandardCharsets.UTF_8));
+                BufferedReader d = new BufferedReader(new InputStreamReader(inStream,
+                        java.nio.charset.Charset.forName("UTF-8")));
                 try {
                     String cmd = d.readLine();
                     if (cmd != null) {
-                        log.debug("Received from client: {}",cmd);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Received from client: " + cmd);
+                        }
                         // input commands are ignored in INFOMODE.
                     } else {
                         // close the input stream.
@@ -154,7 +158,7 @@ public class JmriSRCPServer extends JmriServer {
                     // we don't care if there is an error on input.
                 }
             } else {
-                outStream.write("500 ERROR out of resources\n\r".getBytes());
+                TimeStampedOutput.writeTimestamp(outStream, "500 ERROR out of resources\n\r");
                 outStream.close();
                 inStream.close();
                 return;
@@ -162,5 +166,5 @@ public class JmriSRCPServer extends JmriServer {
         }
     }
 
-    private static final Logger log = LoggerFactory.getLogger(JmriSRCPServer.class);
+    private final static Logger log = LoggerFactory.getLogger(JmriSRCPServer.class);
 }

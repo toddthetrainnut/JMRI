@@ -1,6 +1,6 @@
 package jmri.jmrix.tmcc;
 
-import jmri.SystemConnectionMemo;
+import jmri.jmrix.SystemConnectionMemo;
 
 /**
  * Abstract base for classes representing a TMCC communications port.

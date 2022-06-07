@@ -1,14 +1,15 @@
 package jmri.jmrit.audio.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * DefaultAudioManagerXmlTest.java
  *
- * Test for the DefaultAudioManagerXml class
+ * Description: tests for the DefaultAudioManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class DefaultAudioManagerXmlTest {
       Assert.assertNotNull("DefaultAudioManagerXml constructor",new DefaultAudioManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

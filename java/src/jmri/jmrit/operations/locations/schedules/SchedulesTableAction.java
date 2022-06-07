@@ -2,7 +2,6 @@ package jmri.jmrit.operations.locations.schedules;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -13,8 +12,8 @@ import javax.swing.AbstractAction;
  */
 public class SchedulesTableAction extends AbstractAction {
 
-    public SchedulesTableAction() {
-        super(Bundle.getMessage("Schedules"));
+    public SchedulesTableAction(String s) {
+        super(s);
     }
 
     SchedulesTableFrame f = null;

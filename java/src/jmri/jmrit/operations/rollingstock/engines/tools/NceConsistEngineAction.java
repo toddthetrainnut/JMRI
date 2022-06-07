@@ -1,10 +1,9 @@
 package jmri.jmrit.operations.rollingstock.engines.tools;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.List;
-
 import javax.swing.AbstractAction;
-
 import jmri.InstanceManager;
 import jmri.jmrix.nce.NceSystemConnectionMemo;
 import jmri.jmrix.nce.NceTrafficController;
@@ -18,8 +17,8 @@ public class NceConsistEngineAction extends AbstractAction {
 
     NceTrafficController tc;
 
-    public NceConsistEngineAction() {
-        super(Bundle.getMessage("MenuItemNceSync"));
+    public NceConsistEngineAction(String actionName, Component frame) {
+        super(actionName);
         // only enable if connected to an NCE system
         setEnabled(false);
         // disable if NCE USB selected
@@ -27,7 +26,8 @@ public class NceConsistEngineAction extends AbstractAction {
         List<NceSystemConnectionMemo> memos = InstanceManager.getList(NceSystemConnectionMemo.class);
 
         // find NceConnection that is serial
-        for (NceSystemConnectionMemo memo : memos) {
+        for (int i = 0; i < memos.size(); i++) {
+            NceSystemConnectionMemo memo = memos.get(i);
             if (memo.getNceUsbSystem() == NceTrafficController.USB_SYSTEM_NONE) {
                 tc = memo.getNceTrafficController();
                 if (!memo.getDisabled()) {
@@ -35,6 +35,7 @@ public class NceConsistEngineAction extends AbstractAction {
                 }
             }
         }
+
     }
 
     @Override

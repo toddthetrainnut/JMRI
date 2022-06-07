@@ -2,6 +2,7 @@ package jmri.jmrix.can.adapters.loopback;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.util.Arrays;
 
 import jmri.jmrix.AbstractSerialPortController;
 import jmri.jmrix.can.CanSystemConnectionMemo;
@@ -76,9 +77,14 @@ public class Port extends AbstractSerialPortController {
 
     @Override
     public java.util.Vector<String> getPortNames() {
-        java.util.Vector<String> v = new java.util.Vector<>();
+        java.util.Vector<String> v = new java.util.Vector<String>();
         v.addElement(Bundle.getMessage("none"));
         return v;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
     }
 
     @Override

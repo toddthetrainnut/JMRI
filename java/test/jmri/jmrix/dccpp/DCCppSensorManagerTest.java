@@ -3,15 +3,18 @@ package jmri.jmrix.dccpp;
 import jmri.Sensor;
 import jmri.SensorManager;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests for the jmri.jmrix.dccpp.DCCppSensorManager class.
  *
- * @author Paul Bender Copyright (c) 2003,2016
- * @author Mark Underwood Copyright (c) 2015
+ * @author	Paul Bender Copyright (c) 2003,2016
+ * @author	Mark Underwood Copyright (c) 2015
  */
 public class DCCppSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
 
@@ -19,7 +22,7 @@ public class DCCppSensorManagerTest extends jmri.managers.AbstractSensorMgrTestB
 
     @Override
     public String getSystemName(int i) {
-        return "DS" + i;
+        return "DCCPPS" + i;
     }
 
     @Test
@@ -30,18 +33,18 @@ public class DCCppSensorManagerTest extends jmri.managers.AbstractSensorMgrTestB
     @Test
     public void testByAddress() {
         // sample sensor object
-        Sensor t = l.newSensor("DS22", "test");
+        Sensor t = l.newSensor("DCCPPS22", "test");
 
         // test get
         Assert.assertTrue(t == l.getByUserName("test"));
-        Assert.assertTrue(t == l.getBySystemName("DS22"));
+        Assert.assertTrue(t == l.getBySystemName("DCCPPS22"));
     }
 
     @Test
     @Override
     public void testMisses() {
         // sample turnout object
-        Sensor s = l.newSensor("DS22", "test");
+        Sensor s = l.newSensor("DCCPPS22", "test");
         Assert.assertNotNull("exists", s);
 
         // try to get nonexistant turnouts
@@ -52,7 +55,7 @@ public class DCCppSensorManagerTest extends jmri.managers.AbstractSensorMgrTestB
     @Test
     public void testDCCppMessages() {
         // sample turnout object
-        Sensor s = l.newSensor("DS22", "test");
+        Sensor s = l.newSensor("DCCPPS22", "test");
         Assert.assertNotNull("exists", s);
 
         // send messages for feedbak encoder 22
@@ -61,7 +64,7 @@ public class DCCppSensorManagerTest extends jmri.managers.AbstractSensorMgrTestB
         xnis.sendTestMessage(m1);
 
         // see if sensor exists
-        Assert.assertNotNull(l.getBySystemName("DS22"));
+        Assert.assertTrue(null != l.getBySystemName("DCCPPS22"));
 
     }
 
@@ -70,33 +73,42 @@ public class DCCppSensorManagerTest extends jmri.managers.AbstractSensorMgrTestB
         // ask for a Sensor, and check type
         SensorManager t = jmri.InstanceManager.sensorManagerInstance();
 
-        Sensor o = t.newSensor("DS21", "my name");
+        Sensor o = t.newSensor("DCCPPS21", "my name");
 
-        Assert.assertNotNull(o);
+        if (log.isDebugEnabled()) {
+            log.debug("received sensor value " + o);
+        }
+        Assert.assertTrue(null != (DCCppSensor) o);
 
         // make sure loaded into tables
-        Assert.assertNotNull(t.getBySystemName("DS21"));
-        Assert.assertNotNull(t.getByUserName("my name"));
+        if (log.isDebugEnabled()) {
+            log.debug("by system name: " + t.getBySystemName("DCCPPS21"));
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("by user name:   " + t.getByUserName("my name"));
+        }
+
+        Assert.assertTrue(null != t.getBySystemName("DCCPPS21"));
+        Assert.assertTrue(null != t.getByUserName("my name"));
 
     }
 
-//    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DCCppSensorManagerTest.class);
+    private final static Logger log = LoggerFactory.getLogger(DCCppSensorManagerTest.class);
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
         // prepare an interface
         xnis = new DCCppInterfaceScaffold(new DCCppCommandStation());
-        DCCppSystemConnectionMemo memo = new DCCppSystemConnectionMemo(xnis);
-        xnis.setSystemConnectionMemo(memo);
         Assert.assertNotNull("exists", xnis);
-        l = new DCCppSensorManager(xnis.getSystemConnectionMemo());
+        l = new DCCppSensorManager(xnis, "DCCPP");
         jmri.InstanceManager.setSensorManager(l);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         l.dispose();
         l = null;

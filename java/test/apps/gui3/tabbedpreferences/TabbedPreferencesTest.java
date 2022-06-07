@@ -1,16 +1,17 @@
 package apps.gui3.tabbedpreferences;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class TabbedPreferencesTest extends jmri.util.swing.JmriPanelTest {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -23,11 +24,9 @@ public class TabbedPreferencesTest extends jmri.util.swing.JmriPanelTest {
         title = Bundle.getMessage("TitlePreferences");
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

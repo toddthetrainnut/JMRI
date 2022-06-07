@@ -1,18 +1,17 @@
 package jmri.jmrit.audio.swing;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class AudioSourceFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -21,11 +20,11 @@ public class AudioSourceFrameTest extends jmri.util.JmriJFrameTestBase {
            // the second parameter should be an
            // jmri.jmrit.beantable.AudioTableAction.AudioSourceTableDataModel
            // object
-           frame = new AudioSourceFrame("Source Frame Test", null);
-        }
+           frame = new AudioSourceFrame("Source Frame Test",null);
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();

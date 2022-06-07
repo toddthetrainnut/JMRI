@@ -71,7 +71,7 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
         this.position = pos;
         changePosition(pos);
         if (log.isDebugEnabled()) {
-            log.debug("Set position of Listener {} to {}", this.getSystemName(), pos);
+            log.debug("Set position of Listener " + this.getSystemName() + " to " + pos);
         }
     }
 
@@ -100,7 +100,7 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
         this.velocity = vel;
         this.setState(vel.length() != 0 ? STATE_MOVING : STATE_POSITIONED);
         if (log.isDebugEnabled()) {
-            log.debug("Set velocity of Listener {} to {}", this.getSystemName(), vel);
+            log.debug("Set velocity of Listener " + this.getSystemName() + " to " + vel);
         }
     }
 
@@ -157,7 +157,7 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
         this.orientationAt = at;
         this.orientationUp = up;
         if (log.isDebugEnabled()) {
-            log.debug("Set orientation of Listener {} to (at) {} (up) {}", this.getSystemName(), at, up);
+            log.debug("Set orientation of Listener " + this.getSystemName() + " to (at) " + at + " (up) " + up);
         }
     }
 
@@ -201,7 +201,7 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
     public void setGain(float gain) {
         this.gain = gain;
         if (log.isDebugEnabled()) {
-            log.debug("Set gain of Listener {} to {}", this.getSystemName(), gain);
+            log.debug("Set gain of Listener " + this.getSystemName() + " to " + gain);
         }
     }
 
@@ -214,7 +214,7 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
     public void setMetersPerUnit(float metersPerUnit) {
         this.metersPerUnit = metersPerUnit;
         if (log.isDebugEnabled()) {
-            log.debug("Set Meters per unit of Listener {} to {}", this.getSystemName(), metersPerUnit);
+            log.debug("Set Meters per unit of Listener " + this.getSystemName() + " to " + metersPerUnit);
         }
     }
 
@@ -226,6 +226,13 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
     @Override
     public void stateChanged(int oldState) {
         // Move along... nothing to see here...
+    }
+
+    @Override
+    public String toString() {
+        return "Pos: " + this.getPosition().toString()
+                + ", gain=" + this.getGain()
+                + ", meters/unit=" + this.getMetersPerUnit();
     }
 
     private static final Logger log = LoggerFactory.getLogger(AbstractAudioListener.class);
@@ -251,7 +258,7 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
             this.setName("movelis-" + super.getName());
             this.audioListener = audioListener;
             if (log.isDebugEnabled()) {
-                log.debug("Created AudioListenerMoveThread for AudioListener {}", audioListener.getSystemName());
+                log.debug("Created AudioListenerMoveThread for AudioListener " + audioListener.getSystemName());
             }
         }
 
@@ -279,7 +286,7 @@ public abstract class AbstractAudioListener extends AbstractAudio implements Aud
 //            audioListener.resetCurrentPosition();
             // Finish up
             if (log.isDebugEnabled()) {
-                log.debug("Clean up thread {}", this.getName());
+                log.debug("Clean up thread " + this.getName());
             }
             cleanup();
         }

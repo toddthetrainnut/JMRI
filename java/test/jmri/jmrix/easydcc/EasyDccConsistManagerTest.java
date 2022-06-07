@@ -5,10 +5,11 @@
  */
 package jmri.jmrix.easydcc;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-
+import org.junit.Before;
+import org.junit.Test;
 import jmri.util.JUnitUtil;
 
 public class EasyDccConsistManagerTest extends jmri.implementation.AbstractConsistManagerTestBase{
@@ -110,7 +111,8 @@ public class EasyDccConsistManagerTest extends jmri.implementation.AbstractConsi
        Assert.assertTrue("CS Consist Needs Seperate Address",cm.csConsistNeedsSeperateAddress());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -120,7 +122,7 @@ public class EasyDccConsistManagerTest extends jmri.implementation.AbstractConsi
         cm = new EasyDccConsistManager(memo);
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         cm = null;

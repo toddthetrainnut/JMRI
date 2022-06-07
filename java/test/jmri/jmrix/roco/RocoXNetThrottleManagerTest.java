@@ -1,35 +1,30 @@
 package jmri.jmrix.roco;
 
+import jmri.jmrix.lenz.XNetInterfaceScaffold;
 import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.jmrix.lenz.XNetThrottleManagerTest;
-import jmri.jmrix.lenz.XNetTrafficController;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
+import org.junit.After;
+import org.junit.Before;
 
 
 /**
  * Tests for the jmri.jmrix.roco.RocoXNetThrottleManager class
  *
- * @author Paul Bender Copyright (C) 2015,2016
+ * @author	Paul Bender Copyright (C) 2015,2016
  */
 public class RocoXNetThrottleManagerTest extends XNetThrottleManagerTest {
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        XNetTrafficController tc = Mockito.mock(XNetTrafficController.class);
-        RocoCommandStation cs = Mockito.mock(RocoCommandStation.class);
-        Mockito.when(tc.getCommandStation()).thenReturn(cs);
-        XNetSystemConnectionMemo memo = Mockito.mock(XNetSystemConnectionMemo.class);
-        Mockito.when(memo.getXNetTrafficController()).thenReturn(tc);
-        Mockito.when(memo.getUserName()).thenReturn("Roco");
-        tm = new RocoXNetThrottleManager(memo);
+        XNetInterfaceScaffold tc = new XNetInterfaceScaffold(new RocoCommandStation());
+        tm = new RocoXNetThrottleManager(new XNetSystemConnectionMemo(tc));
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         tm = null;

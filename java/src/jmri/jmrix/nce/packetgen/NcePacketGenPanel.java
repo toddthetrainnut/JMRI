@@ -112,12 +112,10 @@ public class NcePacketGenPanel extends jmri.jmrix.nce.swing.NcePanel implements 
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
         if (checkBoxBinCmd.isSelected()) {
             // Binary selected, convert ASCII to hex
 
-            NceMessage m = createPacket(input);
+            NceMessage m = createPacket(packetTextField.getText());
             if (m == null) {
                 JOptionPane.showMessageDialog(NcePacketGenPanel.this,
                         "Enter hexadecimal numbers only", "NCE Binary Command",
@@ -135,9 +133,9 @@ public class NcePacketGenPanel extends jmri.jmrix.nce.swing.NcePanel implements 
         } else {
             // ASCII Mode selected
 
-            NceMessage m = new NceMessage(input.length());
-            for (int i = 0; i < input.length(); i++) {
-                m.setElement(i, input.charAt(i));
+            NceMessage m = new NceMessage(packetTextField.getText().length());
+            for (int i = 0; i < packetTextField.getText().length(); i++) {
+                m.setElement(i, packetTextField.getText().charAt(i));
             }
 
             tc.sendNceMessage(m, this);

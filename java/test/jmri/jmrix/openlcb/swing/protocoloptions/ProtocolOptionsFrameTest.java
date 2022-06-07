@@ -1,12 +1,14 @@
 package jmri.jmrix.openlcb.swing.protocoloptions;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 import java.awt.GraphicsEnvironment;
 
 import jmri.util.JUnitUtil;
 import jmri.jmrix.openlcb.OlcbSystemConnectionMemo;
 
+import static org.junit.Assert.*;
 
 /**
  * @author Balazs Racz, (C) 2018.
@@ -15,7 +17,7 @@ public class ProtocolOptionsFrameTest extends jmri.util.JmriJFrameTestBase {
 
     OlcbSystemConnectionMemo scm;
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -25,11 +27,10 @@ public class ProtocolOptionsFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         scm.dispose();
-        scm = null;
         super.tearDown();
     }
 }

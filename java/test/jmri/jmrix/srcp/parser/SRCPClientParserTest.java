@@ -1,11 +1,11 @@
 package jmri.jmrix.srcp.parser;
 
 import java.io.StringReader;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -908,12 +908,13 @@ public class SRCPClientParserTest {
         Assert.assertFalse(exceptionOccured);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

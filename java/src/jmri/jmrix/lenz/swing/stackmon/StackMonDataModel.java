@@ -30,14 +30,10 @@ public class StackMonDataModel extends javax.swing.table.AbstractTableModel {
     java.util.ArrayList<Integer> _addressList;       // Store the addresses
     java.util.Hashtable<Integer, String> _typeList;  // Store the entry type
 
-    protected XNetTrafficController tc;
+    protected XNetTrafficController tc = null;
 
     /**
-     * Constructor for a new instance.
-     * 
-     * @param row (unused)
-     * @param column (unused)
-     * @param memo Provides access to rest of XNet system connection objects
+     * Constructor for a new instance
      */
     StackMonDataModel(int row, int column, jmri.jmrix.lenz.XNetSystemConnectionMemo memo) {
         tc = memo.getXNetTrafficController();
@@ -94,7 +90,11 @@ public class StackMonDataModel extends javax.swing.table.AbstractTableModel {
     @Override
     public boolean isCellEditable(int row, int col) {
         log.debug("isCellEditable called for row: row: {} column: {}", row, col);
-        return col == DELCOLUMN;
+        if (col == DELCOLUMN) {
+            return (true);
+        } else {
+            return (false);
+        }
     }
 
     @Override
@@ -120,30 +120,30 @@ public class StackMonDataModel extends javax.swing.table.AbstractTableModel {
     @Override
     public void setValueAt(Object value, int row, int col) {
         log.debug("setValueAt called for row: {} column: {}", row, col);
-        if (col == DELCOLUMN) {
-            log.debug("Delete Called for row {}", row);
-            fireTableRowsDeleted(row, row);
-            // delete address from table
-            XNetMessage msg = XNetMessage.getDeleteAddressOnStackMsg(_addressList.get(row));
-            tc.sendXNetMessage(msg, _stackFrame);
-            _typeList.remove(_addressList.get(row));
-            _addressList.remove(row);
-            fireTableDataChanged();
-        } else {
-            log.error("Unknown Operation");
+        switch (col) {
+            case DELCOLUMN:
+                log.debug("Delete Called for row " + row);
+                fireTableRowsDeleted(row, row);
+                // delete address from table
+                XNetMessage msg = XNetMessage.getDeleteAddressOnStackMsg((_addressList.get(row)).intValue());
+                tc.sendXNetMessage(msg, _stackFrame);
+                _typeList.remove(_addressList.get(row));
+                _addressList.remove(row);
+                fireTableDataChanged();
+                break;
+            default:
+                log.error("Unknown Operation");
         }
     }
 
     /**
      * Update the internal data structures for a specified address.
-     * @param address which address to update.
-     * @param type address type.
      */
     public void updateData(Integer address, String type) {
         if (_addressList == null) {
             // initilize the address list
-            _addressList = new java.util.ArrayList<>();
-            _typeList = new java.util.Hashtable<>();
+            _addressList = new java.util.ArrayList<Integer>();
+            _typeList = new java.util.Hashtable<Integer, String>();
         }
         if (!_addressList.contains(address)) {
             _addressList.add(address);
@@ -158,11 +158,11 @@ public class StackMonDataModel extends javax.swing.table.AbstractTableModel {
      * Update the internal data structures for a specified address.
      */
     public void clearData() {
-        _addressList = new java.util.ArrayList<>();
-        _typeList = new java.util.Hashtable<>();
+        _addressList = new java.util.ArrayList<Integer>();
+        _typeList = new java.util.Hashtable<Integer, String>();
         fireTableDataChanged();
     }
 
-    private static final Logger log = LoggerFactory.getLogger(StackMonDataModel.class);
+    private final static Logger log = LoggerFactory.getLogger(StackMonDataModel.class);
 
 }

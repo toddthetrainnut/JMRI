@@ -20,15 +20,15 @@ import jmri.SignalMastManager;
 import jmri.TurnoutManager;
 import jmri.RouteManager;
 import jmri.Sensor;
+import jmri.Signal;
 import jmri.SignalHead;
 import jmri.SignalMast;
 import jmri.Turnout;
+import jmri.jmrit.entryexit.EntryExitPairs;
 import jmri.jmrit.logix.OBlockManager;
 import jmri.jmrit.logix.Warrant;
 import jmri.jmrit.logix.WarrantManager;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 /**
  * Test the DefaultConditionalAction implementation class
  *
@@ -706,14 +706,14 @@ public class DefaultConditionalActionTest {
                 "On Change To True, Set Light Transition Time, \"3\". to 5. to 4.".equals(ix1.description(true)));
         
         ix1.setType(Conditional.Action.ALLOCATE_WARRANT_ROUTE);
-        ix1.setActionData(Warrant.RETRY_FWD);
+        ix1.setActionData(Warrant.RETRY);
         Assert.assertTrue("description() returns correct value",
                 "When Triggered True, Allocate Warrant Route, \"3\".".equals(ix1.description(false)));
         Assert.assertTrue("description() returns correct value",
                 "On Change To True, Allocate Warrant Route, \"3\".".equals(ix1.description(true)));
         
         ix1.setType(Conditional.Action.DEALLOCATE_WARRANT_ROUTE);
-        ix1.setActionData(Warrant.RETRY_FWD);
+        ix1.setActionData(Warrant.RETRY);
         Assert.assertTrue("description() returns correct value",
                 "When Triggered True, Deallocate Warrant, \"3\".".equals(ix1.description(false)));
         Assert.assertTrue("description() returns correct value",
@@ -918,7 +918,8 @@ public class DefaultConditionalActionTest {
 
     // from here down is testing infrastructure
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetInstanceManager();
@@ -933,7 +934,7 @@ public class DefaultConditionalActionTest {
         jmri.util.JUnitUtil.initIdTagManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
     }

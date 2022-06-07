@@ -1,27 +1,26 @@
 package jmri.jmrit.mailreport;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ReportFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new ReportFrame();
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new ReportFrame();
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();

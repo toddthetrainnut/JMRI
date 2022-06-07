@@ -57,9 +57,6 @@ public class SerialTurnout extends AbstractTurnout {
      * Create a Turnout object, with both system and user names.
      * <p>
      * 'systemName' was previously validated in SerialTurnoutManager
-     * @param systemName system name
-     * @param userName user name
-     * @param memo system connection
      */
     public SerialTurnout(@Nonnull String systemName, String userName, CMRISystemConnectionMemo memo) {
         super(systemName, userName);
@@ -89,7 +86,7 @@ public class SerialTurnout extends AbstractTurnout {
             // first look for the double case, which we can't handle
             if ((newState & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN: {}", newState);
+                log.error("Cannot command both CLOSED and THROWN: " + newState);
                 return;
             } else {
                 // send a CLOSED command
@@ -111,7 +108,9 @@ public class SerialTurnout extends AbstractTurnout {
 
      @Override
     protected void turnoutPushbuttonLockout(boolean _pushButtonLockout) {
-         log.debug("Send command to {} Pushbutton", (_pushButtonLockout ? "Lock" : "Unlock"));
+        if (log.isDebugEnabled()) {
+            log.debug("Send command to " + (_pushButtonLockout ? "Lock" : "Unlock") + " Pushbutton ");
+        }
     }
 
     // data members
@@ -126,7 +125,6 @@ public class SerialTurnout extends AbstractTurnout {
      * Control the actual layout hardware. The request is for a particular
      * functional setting, e.g. CLOSED or THROWN. The "inverted" status of the
      * output leads is handled here.
-     * @param closed True sets the turnout CLOSED
      */
     protected void sendMessage(boolean closed) {
         // if a Pulse Timer is running, ignore the call
@@ -139,7 +137,7 @@ public class SerialTurnout extends AbstractTurnout {
                     return;
                 }
             }
-            if (getNumberControlBits() == 1) {
+            if (getNumberOutputBits() == 1) {
                 // check for pulsed control
                 if (getControlType() == 0) {
                     // steady state control, get current status of the output bit
@@ -218,7 +216,7 @@ public class SerialTurnout extends AbstractTurnout {
                         mPulseClosedTimer.start();
                     }
                 }
-            } else if (getNumberControlBits() == 2) {
+            } else if (getNumberOutputBits() == 2) {
                 // two output bits
                 if (getControlType() == 0) {
                     // Steady state control e.g. stall motor turnout control
@@ -270,8 +268,8 @@ public class SerialTurnout extends AbstractTurnout {
     }
 
     /**
-     * {@inheritDoc}
-     *
+     * {@inheritDoc} 
+     * 
      * Sorts by node number and then by bit
      */
     @CheckReturnValue

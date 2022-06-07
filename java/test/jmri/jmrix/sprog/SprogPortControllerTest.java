@@ -1,8 +1,8 @@
 package jmri.jmrix.sprog;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the SprogPortController class.
@@ -14,7 +14,7 @@ public class SprogPortControllerTest extends jmri.jmrix.AbstractSerialPortContro
     private SprogTrafficControlScaffold stcs;
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        SprogSystemConnectionMemo memo = new SprogSystemConnectionMemo();
@@ -41,7 +41,8 @@ public class SprogPortControllerTest extends jmri.jmrix.AbstractSerialPortContro
              */
             @Override
             public String[] validBaudRates(){
-                return new String[]{"9600"};
+               String[] retval = {"9600"};
+               return retval;
             }
 
             /**
@@ -57,7 +58,7 @@ public class SprogPortControllerTest extends jmri.jmrix.AbstractSerialPortContro
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        stcs.dispose();
        JUnitUtil.tearDown();

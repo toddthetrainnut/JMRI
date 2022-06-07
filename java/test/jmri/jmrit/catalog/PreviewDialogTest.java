@@ -7,19 +7,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.swing.JFileChooser;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import jmri.InstanceManager;
 import jmri.util.FileUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.io.TempDir;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,55 +23,41 @@ import org.slf4j.LoggerFactory;
 /**
  *
  * @author pete cressman
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class PreviewDialogTest {
 
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+
     @Test
-    public void testCTor(@TempDir File folder) {
+    public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         JmriJFrame jf = new JmriJFrame("PreviewDialog test frame");
-        // the second parameter is a key for the bundle
-        PreviewDialog t = new PreviewDialog(jf,"catalogs", folder, new String[0]);
-        Assert.assertNotNull("exists", t);
+        // the second paramter is a key for the bundle
+        PreviewDialog t = new PreviewDialog(jf,"catalogs",folder.getRoot(),new String[0]);
+        Assert.assertNotNull("exists",t);
         t.dispose();
-        jf.dispose();
     }
-
 
     @Test
     public void testPreviewDialog()  throws FileNotFoundException, IOException {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         long time = System.currentTimeMillis();
-        log.debug("Start testPreviewDialog: time = {}ms", time);
+        log.debug("Start testPreviewDialog: time = {}ms",time);
         jmri.util.ThreadingUtil.runOnGUIEventually(() -> {
             InstanceManager.getDefault(DirectorySearcher.class).searchFS();
         });
         JFileChooser chooser = JFileChooserOperator.waitJFileChooser();
         Assert.assertNotNull(" JFileChooser not found", chooser);
-
-        File dir = FileUtil.getFile(FileUtil.getAbsoluteFilename("program:resources/icons"));
-        Assert.assertTrue(dir.getPath()+" Test directory does not exist", dir.exists());
+        File file = FileUtil.getFile(FileUtil.getAbsoluteFilename("program:resources/icons"));
+        Assert.assertTrue(file.getPath()+" File does not exist", file.exists());
         new QueueTool().waitEmpty();
         jmri.util.ThreadingUtil.runOnGUIEventually(() -> {
-            chooser.setCurrentDirectory(dir);
+            chooser.setCurrentDirectory(file);
         });
         new QueueTool().waitEmpty();
-
-        File file = FileUtil.getFile(FileUtil.getAbsoluteFilename("program:resources/icons/misc"));
-        Assert.assertTrue(file.getPath()+" Test file does not exist", file.exists());
-        new QueueTool().waitEmpty();
-        jmri.util.ThreadingUtil.runOnGUIEventually(() -> {
-            chooser.setSelectedFile(file);
-        });
-        new QueueTool().waitEmpty();
-
-        // instead of locating the activate button, which can change, via
-        //   JUnitUtil.pressButton(chooser, "Choose");
-        // we directly fire the dialog
-        jmri.util.ThreadingUtil.runOnGUIEventually(() -> {
-            chooser.approveSelection();
-        });
+        JUnitUtil.pressButton(chooser, "Open");
         new QueueTool().waitEmpty();
         log.debug("Mid testPreviewDialog: elapsed time = {}ms",(System.currentTimeMillis()-time));
 
@@ -103,15 +85,15 @@ public class PreviewDialogTest {
         log.debug("End testPreviewDialog: elapsed time = {}ms",(System.currentTimeMillis()-time));
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.resetWindows(false,false);
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 
     private final static Logger log = LoggerFactory.getLogger(PreviewDialogTest.class.getName());

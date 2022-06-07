@@ -2,7 +2,7 @@ package jmri.jmrix.lenz.li100;
 
 import jmri.jmrix.lenz.XNetPortControllerScaffold;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * <p>
@@ -13,7 +13,8 @@ import org.junit.jupiter.api.*;
  */
 public class LI100XNetPacketizerTest extends jmri.jmrix.lenz.XNetPacketizerTest {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();

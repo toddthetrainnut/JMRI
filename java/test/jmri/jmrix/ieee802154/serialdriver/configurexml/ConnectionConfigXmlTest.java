@@ -2,30 +2,27 @@ package jmri.jmrix.ieee802154.serialdriver.configurexml;
 
 import jmri.util.JUnitUtil;
 import jmri.util.junit.annotations.*;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
 import jmri.jmrix.ieee802154.serialdriver.ConnectionConfig;
 
 /**
  * ConnectionConfigXmlTest.java
  *
- * Test for the ConnectionConfigXml class
+ * Description: tests for the ConnectionConfigXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
 public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractSerialConnectionConfigXmlTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new ConnectionConfigXml();
         cc = new ConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
         xmlAdapter = null;
@@ -34,15 +31,14 @@ public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractSer
 
     @Test
     @Override
-    @Disabled("requires a traffic controller to pass")
+    @Ignore("requires a traffic controller to pass")
     @ToDo("parent class test fails, needs further setup or re-implmentation")
     public void storeTest(){
     }
 
-    @Test
-    @Timeout(5000)
+    @Test(timeout=5000)
     @Override
-    @Disabled("requires a traffic controller to pass")
+    @Ignore("requires a traffic controller to pass")
     @ToDo("parent class test fails, needs further setup or re-implmentation")
     public void loadTest() throws jmri.configurexml.JmriConfigureXmlException {
     }

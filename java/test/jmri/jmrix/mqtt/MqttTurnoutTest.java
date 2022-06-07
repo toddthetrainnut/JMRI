@@ -6,8 +6,10 @@ import jmri.Turnout;
 import jmri.implementation.AbstractTurnoutTestBase;
 import jmri.util.*;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for MqttTurnout class.
@@ -21,7 +23,7 @@ public class MqttTurnoutTest extends AbstractTurnoutTestBase {
     String saveTopic;
     byte[] savePayload;
     
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
@@ -37,7 +39,7 @@ public class MqttTurnoutTest extends AbstractTurnoutTestBase {
                 }
             };
 
-        t = new MqttTurnout(a, "MT2", "track/turnout/2", "track/turnout/2/foo");
+        t = new MqttTurnout(a, "MT2", "track/turnout/2");
         JUnitAppender.assertWarnMessage("Trying to subscribe before connect/configure is done");
     }
 
@@ -84,7 +86,6 @@ public class MqttTurnoutTest extends AbstractTurnoutTestBase {
                 }
             }
         };
-
         ((MqttTurnout)t).setParser(parser);
         
         t.setCommandedState(Turnout.THROWN);
@@ -96,39 +97,10 @@ public class MqttTurnoutTest extends AbstractTurnoutTestBase {
         
         Assert.assertEquals("topic", "track/turnout/2", saveTopic);
         Assert.assertEquals("topic", "BAR", new String(savePayload));
+        
     }
-
-    @Test
-    public void testParserModes() {
-
-        t.setFeedbackMode(Turnout.DIRECT);
-
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "CLOSED");
-        Assert.assertEquals("state", Turnout.CLOSED, t.getKnownState());
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "THROWN");
-        Assert.assertEquals("state", Turnout.THROWN, t.getKnownState());
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "UNKNOWN");
-        Assert.assertEquals("state", Turnout.UNKNOWN, t.getKnownState());
-
-        t.setFeedbackMode(Turnout.MONITORING);
-
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "CLOSED");
-        Assert.assertEquals("state", Turnout.CLOSED, t.getKnownState());
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "THROWN");
-        Assert.assertEquals("state", Turnout.THROWN, t.getKnownState());
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "UNKNOWN");
-        Assert.assertEquals("state", Turnout.UNKNOWN, t.getKnownState());
-
-        t.setFeedbackMode(Turnout.ONESENSOR);
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "CLOSED");
-        Assert.assertEquals("state", Turnout.UNKNOWN, t.getKnownState());
-
-        t.setFeedbackMode(Turnout.TWOSENSOR);
-        ((MqttTurnout)t).notifyMqttMessage("track/turnout/2", "CLOSED");
-        Assert.assertEquals("state", Turnout.UNKNOWN, t.getKnownState());
-
-    }
-
+    
+    
     @Override
     public void checkThrownMsgSent() {
         Assert.assertEquals("topic", "track/turnout/2", saveTopic);

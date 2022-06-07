@@ -310,14 +310,12 @@ abstract public class AbstractBoardProgPanel extends jmri.jmrix.loconet.swing.Ln
      * Provides a mechanism to read several OpSw values in a sequence. The
      * sequence is defined by the {@link #nextState(int)} method.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="SLF4J_SIGN_ONLY_FORMAT",
-        justification="I18N of log message")
     public void readAll() {
         // check the address
         try {
             setAddress(256);
         } catch (Exception e) {
-            log.debug("{}", Bundle.getMessage("ERROR_READALL_INVALID_ADDRESS"));
+            log.debug(Bundle.getMessage("ERROR_READALL_INVALID_ADDRESS"));
             readAllButton.setSelected(false);
             writeAllButton.setSelected(false);
             status.setText(" ");
@@ -416,8 +414,6 @@ abstract public class AbstractBoardProgPanel extends jmri.jmrix.loconet.swing.Ln
      * @param maxValid highest Board ID number allowed for the given device type
      * @throws jmri.JmriException when the board address is invalid
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="SLF4J_SIGN_ONLY_FORMAT",
-                                                        justification="I18N of log message")
     void setAddress(int maxValid) throws jmri.JmriException {
         try {
             address = (Integer.parseInt(addrField.getText()) - 1);
@@ -427,7 +423,7 @@ abstract public class AbstractBoardProgPanel extends jmri.jmrix.loconet.swing.Ln
             status.setText(Bundle.getMessage("STATUS_INPUT_BAD"));
             JOptionPane.showMessageDialog(this, Bundle.getMessage("STATUS_INVALID_ADDRESS"),
                     Bundle.getMessage("STATUS_TYPE_ERROR"), JOptionPane.ERROR_MESSAGE);
-            log.error("{}", Bundle.getMessage("ERROR_PARSING_ADDRESS"), e);
+            log.error(Bundle.getMessage("ERROR_PARSING_ADDRESS") + " " + e);
             throw e;
         }
         // parsed OK, check range
@@ -469,14 +465,12 @@ abstract public class AbstractBoardProgPanel extends jmri.jmrix.loconet.swing.Ln
      * Provide a mechanism to write several OpSw values in a sequence. The
      * sequence is defined by the {@link #nextState(int)} method.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="SLF4J_SIGN_ONLY_FORMAT",
-                                                        justification="I18N of log message")
     public void writeAll() {
         // check the address
         try {
             setAddress(256);
         } catch (Exception e) {
-            log.debug("{}", Bundle.getMessage("ERROR_WRITEALL_ABORTED"), e);
+            log.debug(Bundle.getMessage("ERROR_WRITEALL_ABORTED") + " " + e);
             readAllButton.setSelected(false);
             writeAllButton.setSelected(false);
             status.setText(" "); // NOI18N
@@ -509,15 +503,13 @@ abstract public class AbstractBoardProgPanel extends jmri.jmrix.loconet.swing.Ln
      * @see jmri.jmrix.loconet.AbstractBoardProgPanel#writeAll()
      * @param opswIndex  OpSw number
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="SLF4J_SIGN_ONLY_FORMAT",
-                                                        justification="I18N of log message")
     public void writeOne(int opswIndex) {
         // check the address
         try {
             setAddress(256);
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
-                log.debug("{}", Bundle.getMessage("ERROR_WRITEONE_ABORTED"), e);
+                log.debug(Bundle.getMessage("ERROR_WRITEONE_ABORTED") + " " + e);
             }
             readAllButton.setSelected(false);
             writeAllButton.setSelected(false);
@@ -544,19 +536,17 @@ abstract public class AbstractBoardProgPanel extends jmri.jmrix.loconet.swing.Ln
      *
      *@param m  incoming LocoNet message
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="SLF4J_SIGN_ONLY_FORMAT",
-                                                        justification="I18N of log message")
     @Override
     public void message(LocoNetMessage m) {
         if (log.isDebugEnabled()) {
-            log.debug("{} {}", Bundle.getMessage("DEBUG_PARSING_LOCONET_MESSAGE"), m);
+            log.debug(Bundle.getMessage("DEBUG_PARSING_LOCONET_MESSAGE") + " " + m);
         }
         // are we reading? If not, ignore
         if (state == 0) {
             return;
         }
         // check for right type, unit
-        if ((m.getOpCode() != LnConstants.OPC_LONG_ACK)
+        if (m.getOpCode() != 0xb4
                 || ((m.getElement(1) != 0x00) && (m.getElement(1) != 0x50))) {
             return;
         }

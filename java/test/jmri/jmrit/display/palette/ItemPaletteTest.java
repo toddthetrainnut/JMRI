@@ -1,46 +1,42 @@
 package jmri.jmrit.display.palette;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrit.display.controlPanelEditor.ControlPanelEditor;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class ItemPaletteTest {
 
-    // allows creation in lambda expressions
+    // allows creation in lamba expressions
     private ItemPalette ip = null;
 
     @Test
     public void testShow() {
-        Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
-        ControlPanelEditor editor = new ControlPanelEditor("EdItemPalette");
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         jmri.util.ThreadingUtil.runOnGUI(() -> {
-            ip = ItemPalette.getDefault("Test ItemPalette", editor);
-            assert ip != null;
+            ip = ItemPalette.getDefault("Test ItemPalette",  new ControlPanelEditor("EdItemPalette"));
             ip.pack();
             ip.setVisible(true);
         });
         JUnitUtil.dispose(ip);
-        JUnitUtil.dispose(editor);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ip = null;
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

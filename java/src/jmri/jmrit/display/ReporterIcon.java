@@ -1,5 +1,6 @@
 package jmri.jmrit.display;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPopupMenu;
 import jmri.InstanceManager;
@@ -68,7 +69,7 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
                     provideReporter(pName);
                 setReporter(reporter);
             } catch (IllegalArgumentException e) {
-                log.error("Reporter '{}' not available, icon won't see changes", pName);
+                log.error("Reporter '" + pName + "' not available, icon won't see changes");
             }
         } else {
             log.error("No ReporterManager for this protocol, icon won't see changes");
@@ -94,7 +95,9 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
         if (log.isDebugEnabled()) {
-            log.debug("property change: {} is now {}", e.getPropertyName(), e.getNewValue());
+            log.debug("property change: "
+                    + e.getPropertyName()
+                    + " is now " + e.getNewValue());
         }
         displayState();
     }
@@ -131,13 +134,19 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
             setText(Bundle.getMessage("NoReport"));
         }
         updateSize();
+        return;
     }
 
     @Override
     protected void edit() {
         makeIconEditorFrame(this, "Reporter", true, null);
         _iconEditor.setPickList(jmri.jmrit.picker.PickListModel.reporterPickModelInstance());
-        ActionListener addIconAction = a -> editReporter();
+        ActionListener addIconAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                editReporter();
+            }
+        };
         _iconEditor.complete(addIconAction, false, true, true);
         _iconEditor.setSelection(reporter);
 

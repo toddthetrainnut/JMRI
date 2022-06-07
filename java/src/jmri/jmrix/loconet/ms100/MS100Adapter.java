@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Vector;
 import jmri.jmrix.loconet.LnPacketizer;
@@ -19,7 +20,7 @@ import purejavacomm.SerialPort;
 import purejavacomm.UnsupportedCommOperationException;
 
 /**
- * Provide access to LocoNet via a MS100 attached to a serial com port.
+ * Provide access to LocoNet via a MS100 attached to a serial comm port.
  * Normally controlled by the jmri.jmrix.loconet.ms100.ConnectionConfig class.
  * <p>
  * By default, this attempts to use 16600 baud. If that fails, it falls back to
@@ -99,7 +100,7 @@ public class MS100Adapter extends LnPortController {
                 log.debug("Serial timeout was observed as: {} {}",
                         activeSerialPort.getReceiveTimeout(), activeSerialPort.isReceiveTimeoutEnabled());
             } catch (UnsupportedCommOperationException et) {
-                log.info("failed to set serial timeout", et);
+                log.info("failed to set serial timeout: " + et);
             }
 
             // get and save stream
@@ -139,7 +140,7 @@ public class MS100Adapter extends LnPortController {
         this.getSystemConnectionMemo().setLnTrafficController(packets);
         // do the common manager config
         this.getSystemConnectionMemo().configureCommandStation(commandStationType,
-                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable, mInterrogateAtStart);
+                mTurnoutNoRetry, mTurnoutExtraSpace, mTranspondingAvailable);
         this.getSystemConnectionMemo().configureManagers();
 
         // start operation
@@ -188,11 +189,6 @@ public class MS100Adapter extends LnPortController {
         return new int[]{16600};
     }
 
-    @Override
-    public int defaultBaudIndex() {
-        return 0;
-    }
-
     /**
      * Set the second port option. Only to be used after construction, but
      * before the openPort call
@@ -200,7 +196,7 @@ public class MS100Adapter extends LnPortController {
     @Override
     public void configureOption2(String value) {
         super.configureOption2(value);
-        log.debug("configureOption2: {}", value);
+        log.debug("configureOption2: " + value);
         setCommandStationType(value);
     }
 

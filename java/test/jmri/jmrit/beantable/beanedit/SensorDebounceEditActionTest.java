@@ -3,12 +3,14 @@ package jmri.jmrit.beantable.beanedit;
 import jmri.*;
 import jmri.util.JUnitUtil;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SensorDebounceEditActionTest {
 
@@ -51,26 +53,24 @@ public class SensorDebounceEditActionTest {
         SensorDebounceEditAction t = new SensorDebounceEditAction();
 
         Assert.assertEquals("package.jmri.jmrit.beantable.SensorAddEdit", t.helpTarget());
+        Assert.assertEquals("Sensor", t.getBeanType());
         
         t.initPanels();
         
         Sensor is1 = InstanceManager.sensorManagerInstance().newSensor("IS1", "user1");
         Assert.assertEquals(is1, t.getByUserName("user1"));
         
-        // to ensure t.bean.getBeanType() equals removed method t.getBeanType()
-        t.setBean(is1);
-        Assert.assertEquals("Sensor", t.bean.getBeanType());
-        
     }
     
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
         JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

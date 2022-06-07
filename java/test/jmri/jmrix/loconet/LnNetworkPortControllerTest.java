@@ -1,8 +1,8 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the LnNetworkPortController class.
@@ -12,9 +12,9 @@ import org.junit.jupiter.api.*;
 public class LnNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     private LocoNetSystemConnectionMemo memo;
-
+ 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        memo = new LocoNetSystemConnectionMemo();
@@ -26,10 +26,10 @@ public class LnNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPortC
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        memo.dispose();
-        JUnitUtil.tearDown();
+       memo.dispose();
+       JUnitUtil.tearDown();
     }
 
 }

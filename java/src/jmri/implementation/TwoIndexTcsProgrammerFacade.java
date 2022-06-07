@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
  * @see jmri.implementation.ProgrammerFacadeSelector
  *
  * @author Bob Jacobsen Copyright (C) 2013, 2016
- * @author Andrew Crosland Copyright (C) 2021
  */
 public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implements ProgListener {
 
@@ -62,9 +61,6 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
     int valueSI;   //  value to write to SI or -1
     int valueMSB;  //  value to write to MSB or -1
     int valueLSB;  //  value to write to LSB or -1
-    int _startVal; // Current CV value hint
-    int _startMSB;
-    int _startLSB;
 
     private void parseCV(String cv) throws IllegalArgumentException {
         valuePI = -1;
@@ -105,20 +101,12 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
 
     @Override
     synchronized public void readCV(String CV, jmri.ProgListener p) throws jmri.ProgrammerException {
-       readCV(CV, p, 0);
-    }
-
-    @Override
-    synchronized public void readCV(String CV, jmri.ProgListener p, int startVal) throws jmri.ProgrammerException {
         useProgrammer(p);
         parseCV(CV);
-        _startVal = startVal;
-        _startMSB = startVal / 256;
-        _startLSB = startVal % 256;
         upperByte = 0;
         if (valuePI == -1) {
             state = ProgState.PROGRAMMING;
-            prog.readCV(_cv, this, startVal);
+            prog.readCV(_cv, this);
         } else {
             // write index first; 2nd operation depends on type
             if (valueSI == -1) {
@@ -130,28 +118,6 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
         }
     }
 
-    @Override
-    synchronized public void confirmCV(String CV, int startVal, jmri.ProgListener p) throws jmri.ProgrammerException {
-        useProgrammer(p);
-        parseCV(CV);
-        _startVal = startVal;
-        _startMSB = startVal/256;
-        _startLSB = startVal%256;
-        upperByte = 0;
-        if (valuePI == -1) {
-            state = ProgState.PROGRAMMING;
-            prog.confirmCV(_cv, startVal, this);
-        } else {
-            // write index first; 2nd operation depends on type
-            if (valueSI == -1) {
-                state = ProgState.DOMSBFORREAD;
-            } else {
-                state = ProgState.DOSIFORREAD;
-            }
-            prog.writeCV(indexPI, valuePI + readOffset, this);
-        }
-    }
-    
     private jmri.ProgListener _usingProgrammer = null;
 
     // internal method to remember who's using the programmer
@@ -159,7 +125,7 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
         // test for only one!
         if (_usingProgrammer != null && _usingProgrammer != p) {
             if (log.isInfoEnabled()) {
-                log.info("programmer already in use by {}", _usingProgrammer);
+                log.info("programmer already in use by " + _usingProgrammer);
             }
             throw new jmri.ProgrammerException("programmer in use");
         } else {
@@ -192,7 +158,7 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
     @Override
     synchronized public void programmingOpReply(int value, int status) {
         if (log.isDebugEnabled()) {
-            log.debug("notifyProgListenerEnd value {} status {}", value, status);
+            log.debug("notifyProgListenerEnd value " + value + " status " + status);
         }
 
         if (_usingProgrammer == null) {
@@ -248,7 +214,7 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
             case DOREADFIRST:
                 try {
                     state = ProgState.FINISHREAD;
-                    prog.readCV(valMSB, this, _startMSB);
+                    prog.readCV(valMSB, this);
                 } catch (jmri.ProgrammerException e) {
                     log.error("Exception doing read first", e);
                 }
@@ -258,10 +224,10 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
                     state = ProgState.PROGRAMMING;
                     if (valuePI != -1 && valueSI == -1) {
                         upperByte = 0;
-                        prog.readCV(indexSI, this, _startVal);
+                        prog.readCV(indexSI, this);
                     } else {
                         upperByte = value;
-                        prog.readCV(valLSB, this, _startLSB);
+                        prog.readCV(valLSB, this);
                     }
                 } catch (jmri.ProgrammerException e) {
                     log.error("Exception doing final read", e);
@@ -351,7 +317,7 @@ public class TwoIndexTcsProgrammerFacade extends AbstractProgrammerFacade implem
                 break;
 
             default:
-                log.error("Unexpected state on reply: {}", state);
+                log.error("Unexpected state on reply: " + state);
                 // clean up as much as possible
                 _usingProgrammer = null;
                 state = ProgState.NOTPROGRAMMING;

@@ -1,13 +1,14 @@
 package apps.gui3.dp3;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class DecoderPro3ActionTest {
 
@@ -17,18 +18,19 @@ public class DecoderPro3ActionTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testMakePanel(){
         DecoderPro3Action t = new DecoderPro3Action("test",true);
-        Assert.assertThrows(IllegalArgumentException.class, () -> t.makePanel());
+        t.makePanel();  
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

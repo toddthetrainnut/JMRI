@@ -39,7 +39,7 @@ public class IsTrainEnRouteAction extends Action {
                         finishAction(false);
                         break;
                     }
-                    if (train.getCurrentRouteLocation() == routeLocation) {
+                    if (train.getCurrentLocation() == routeLocation) {
                         finishAction(true);
                         break;
                     }

@@ -9,8 +9,7 @@ else
 fi
 
 # first, scan for whether there's an issue (omitting known fragment files)
-# THree files are excluded since they have excess html (empty <ul></ul> pairs) due to the XSLT transformation.
-find ${WHERE}  -name \*html -exec grep -q DOCTYPE {} \; -exec echo Filename: {} \; -exec tidy -e -access 0 {} \; 2>&1 | awk -f scripts/tidy.awk | egrep -v "local/index.html|webindex.shtml|webtoc.shtml"
+find ${WHERE} -name \*html ! -path 'help/en/releasenotes/*' ! -name Sidebar.shtml -exec echo Filename: {} \;  ! -exec tidy -eq -access 0 {} \; 2>&1 | grep -v '<table> lacks "summary" attribute' | grep -v '<img> lacks "alt" attribute' | awk -f scripts/tidy.awk | grep Warning 1>&2
 
 # swap return code from grep
 if [ $? -eq 0 ]; then
@@ -20,3 +19,4 @@ if [ $? -eq 1 ]; then
     exit 0
 fi
 # leave other error codes as-is
+

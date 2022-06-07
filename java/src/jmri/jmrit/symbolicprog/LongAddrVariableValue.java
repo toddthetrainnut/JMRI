@@ -15,9 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extends VariableValue to represent an NMRA long address.
+ * Extends VariableValue to represent a NMRA long address
  *
  * @author Bob Jacobsen Copyright (C) 2001, 2002, 2016
+ *
  */
 public class LongAddrVariableValue extends VariableValue
         implements ActionListener, FocusListener {
@@ -25,15 +26,12 @@ public class LongAddrVariableValue extends VariableValue
     public LongAddrVariableValue(@Nonnull String name, @Nonnull String comment, @Nonnull String cvName,
             boolean readOnly, boolean infoOnly, boolean writeOnly, boolean opsOnly,
             @Nonnull String cvNum, @Nonnull String mask, int minVal, int maxVal,
-            @Nonnull HashMap<String, CvValue> v, @Nonnull JLabel status,
+            @Nonnull HashMap<String, CvValue> v, @Nonnull JLabel status, 
             @Nonnull String stdname, @Nonnull CvValue mHighCV) {
         super(name, comment, cvName, readOnly, infoOnly, writeOnly, opsOnly, cvNum, mask, v, status, stdname);
         _maxVal = maxVal;
         _minVal = minVal;
-
         _value = new JTextField("0", 5);
-        _value.getAccessibleContext().setAccessibleName(label());
-
         _defaultColor = _value.getBackground();
         _value.setBackground(COLOR_UNKNOWN);
         // connect to the JTextField value, cv
@@ -47,7 +45,6 @@ public class LongAddrVariableValue extends VariableValue
         highCV = mHighCV;
         highCV.addPropertyChangeListener(this);
         highCV.setState(CvValue.FROMFILE);
-        // simplifyMask(); // not required as mask is ignored
     }
 
     CvValue highCV;
@@ -120,7 +117,7 @@ public class LongAddrVariableValue extends VariableValue
         cv17.setValue(newCv17);
         cv18.setValue(newCv18);
         if (log.isDebugEnabled()) {
-            log.debug("new value {} gives CV17={} CV18={}", newVal, newCv17, newCv18);
+            log.debug("new value " + newVal + " gives CV17=" + newCv17 + " CV18=" + newCv18);
         }
     }
 
@@ -134,7 +131,7 @@ public class LongAddrVariableValue extends VariableValue
         }
         int newVal = Integer.parseInt(_value.getText());
         updatedTextField();
-        prop.firePropertyChange("Value", null, newVal);
+        prop.firePropertyChange("Value", null, Integer.valueOf(newVal));
     }
 
     /**
@@ -142,13 +139,17 @@ public class LongAddrVariableValue extends VariableValue
      */
     @Override
     public void focusGained(FocusEvent e) {
-        log.debug("focusGained");
+        if (log.isDebugEnabled()) {
+            log.debug("focusGained");
+        }
         enterField();
     }
 
     @Override
     public void focusLost(FocusEvent e) {
-        log.debug("focusLost");
+        if (log.isDebugEnabled()) {
+            log.debug("focusLost");
+        }
         exitField();
     }
 
@@ -192,7 +193,9 @@ public class LongAddrVariableValue extends VariableValue
         } catch (java.lang.NumberFormatException ex) {
             oldVal = -999;
         }
-        log.debug("setValue with new value {} old value {}", value, oldVal);
+        if (log.isDebugEnabled()) {
+            log.debug("setValue with new value " + value + " old value " + oldVal);
+        }
         _value.setText("" + value);
         if (oldVal != value || getState() == VariableValue.UNKNOWN) {
             actionPerformed(null);
@@ -215,9 +218,7 @@ public class LongAddrVariableValue extends VariableValue
 
     @Override
     public Component getNewRep(String format) {
-        var retval = updateRepresentation(new VarTextField(_value.getDocument(), _value.getText(), 5, this));
-        retval.getAccessibleContext().setAccessibleName(label());
-        return retval;
+        return updateRepresentation(new VarTextField(_value.getDocument(), _value.getText(), 5, this));
     }
     private int _progState = 0;
     private static final int IDLE = 0;
@@ -280,30 +281,38 @@ public class LongAddrVariableValue extends VariableValue
 
     @Override
     public void readAll() {
-        log.debug("longAddr read() invoked");
+        if (log.isDebugEnabled()) {
+            log.debug("longAddr read() invoked");
+        }
         setToRead(false);
         setBusy(true);  // will be reset when value changes
         if (_progState != IDLE) {
-            log.warn("Programming state {}, not IDLE, in read()", _progState);
+            log.warn("Programming state " + _progState + ", not IDLE, in read()");
         }
         _progState = READING_FIRST;
-        log.debug("invoke CV read");
+        if (log.isDebugEnabled()) {
+            log.debug("invoke CV read");
+        }
         (_cvMap.get(getCvNum())).read(_status);
     }
 
     @Override
     public void writeAll() {
-        log.debug("write() invoked");
+        if (log.isDebugEnabled()) {
+            log.debug("write() invoked");
+        }
         if (getReadOnly()) {
             log.error("unexpected write operation when readOnly is set");
         }
         setToWrite(false);
         setBusy(true);  // will be reset when value changes
         if (_progState != IDLE) {
-            log.warn("Programming state {}, not IDLE, in write()", _progState);
+            log.warn("Programming state " + _progState + ", not IDLE, in write()");
         }
         _progState = WRITING_FIRST;
-        log.debug("invoke CV write");
+        if (log.isDebugEnabled()) {
+            log.debug("invoke CV write");
+        }
         (_cvMap.get(getCvNum())).write(_status);
     }
 
@@ -311,22 +320,29 @@ public class LongAddrVariableValue extends VariableValue
     @Override
     public void propertyChange(@Nonnull java.beans.PropertyChangeEvent e) {
         if (log.isDebugEnabled()) {
-            log.debug("property changed event - name: {}", e.getPropertyName());
+            log.debug("property changed event - name: "
+                    + e.getPropertyName());
         }
         // notification from CV; check for Value being changed
         if (e.getPropertyName().equals("Busy") && ((Boolean) e.getNewValue()).equals(Boolean.FALSE)) {
             // busy transitions drive the state
             switch (_progState) {
                 case IDLE:  // no, just a CV update
-                    log.error("Busy goes false with state IDLE");
+                    if (log.isDebugEnabled()) {
+                        log.error("Busy goes false with state IDLE");
+                    }
                     return;
                 case READING_FIRST:   // read first CV, now read second
-                    log.debug("Busy goes false with state READING_FIRST");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Busy goes false with state READING_FIRST");
+                    }
                     _progState = READING_SECOND;
                     highCV.read(_status);
                     return;
                 case READING_SECOND:  // finally done, set not busy
-                    log.debug("Busy goes false with state READING_SECOND");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Busy goes false with state READING_SECOND");
+                    }
                     _progState = IDLE;
                     (_cvMap.get(getCvNum())).setState(READ);
                     highCV.setState(READ);
@@ -334,25 +350,29 @@ public class LongAddrVariableValue extends VariableValue
                     setBusy(false);
                     return;
                 case WRITING_FIRST:  // no, just a CV update
-                    log.debug("Busy goes false with state WRITING_FIRST");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Busy goes false with state WRITING_FIRST");
+                    }
                     _progState = WRITING_SECOND;
                     highCV.write(_status);
                     return;
                 case WRITING_SECOND:  // now done with complete request
-                    log.debug("Busy goes false with state WRITING_SECOND");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Busy goes false with state WRITING_SECOND");
+                    }
                     _progState = IDLE;
                     super.setState(STORED);
                     setBusy(false);
                     return;
                 default:  // unexpected!
-                    log.error("Unexpected state found: {}", _progState);
+                    log.error("Unexpected state found: " + _progState);
                     _progState = IDLE;
                     return;
             }
         } else if (e.getPropertyName().equals("State")) {
             CvValue cv = _cvMap.get(getCvNum());
             if (log.isDebugEnabled()) {
-                log.debug("CV State changed to {}", cv.getState());
+                log.debug("CV State changed to " + cv.getState());
             }
             setState(cv.getState());
         } else if (e.getPropertyName().equals("Value")) {
@@ -360,22 +380,28 @@ public class LongAddrVariableValue extends VariableValue
             CvValue cv0 = _cvMap.get(getCvNum());
             CvValue cv1 = highCV;
             int newVal = (cv0.getValue() & 0x3f) * 256 + cv1.getValue();
-            setValue(newVal);  // check for duplicate done inside setValue
+            setValue(newVal);  // check for duplicate done inside setVal
             // state change due to CV state change, so propagate that
             setState(cv0.getState());
             // see if this was a read or write operation
             switch (_progState) {
                 case IDLE:  // no, just a CV update
-                    log.debug("Value changed with state IDLE");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Value changed with state IDLE");
+                    }
                     return;
                 case READING_FIRST:  // yes, now read second
-                    log.debug("Value changed with state READING_FIRST");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Value changed with state READING_FIRST");
+                    }
                     return;
                 case READING_SECOND:  // now done with complete request
-                    log.debug("Value changed with state READING_SECOND");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Value changed with state READING_SECOND");
+                    }
                     return;
                 default:  // unexpected!
-                    log.error("Unexpected state found: {}", _progState);
+                    log.error("Unexpected state found: " + _progState);
                     _progState = IDLE;
                     return;
             }
@@ -407,13 +433,17 @@ public class LongAddrVariableValue extends VariableValue
             addFocusListener(new java.awt.event.FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
-                    log.debug("focusGained");
+                    if (log.isDebugEnabled()) {
+                        log.debug("focusGained");
+                    }
                     enterField();
                 }
 
                 @Override
                 public void focusLost(FocusEvent e) {
-                    log.debug("focusLost");
+                    if (log.isDebugEnabled()) {
+                        log.debug("focusLost");
+                    }
                     exitField();
                 }
             });
@@ -445,7 +475,9 @@ public class LongAddrVariableValue extends VariableValue
     // clean up connections when done
     @Override
     public void dispose() {
-        log.debug("dispose");
+        if (log.isDebugEnabled()) {
+            log.debug("dispose");
+        }
         if (_value != null) {
             _value.removeActionListener(this);
         }

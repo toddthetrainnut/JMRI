@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../XSLT/decoder.xsl"?>
 <!-- Copyright (C) JMRI 2003, 2004 All rights reserved -->
+<!-- $Id$ -->
 <!--                                                                        -->
 <!-- JMRI is free software; you can redistribute it and/or modify it under  -->
 <!-- the terms of version 2 of the GNU General Public License as published  -->
@@ -12,8 +13,6 @@
 <!-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  -->
 <!-- for more details.                                                      -->
 <decoder-config xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://jmri.org/xml/schema/decoder.xsd">
-  <version author="Ronald Kuhn" version="3" lastUpdated="20211201"/> <!-- Correction of "Choice_LigthX.xml" -->
-  <version author="Bob Jacobsen" version="2" lastUpdated="20190727"/> <!-- xinclude for CV19 -->
   <version author="sip@euronet.nl" version="1.1" lastUpdated="20031008"/>
   <!-- Based on the contribution of many others -->
   <!-- V 1.1 changed spelling of "behavior" (Jack Shall) -->
@@ -60,7 +59,7 @@
         <label xml:lang="de">Mittengeschwindigkeit</label>
         <comment xml:lang="it">Valori 0-252</comment>
       </variable>
-      <variable CV="7" item="Decoder Version" readOnly="yes">
+      <variable CV="7" readOnly="yes" item="Decoder Version">
         <decVal/>
         <label>Decoder Version No</label>
         <label xml:lang="it">Versione Decoder: </label>
@@ -134,9 +133,15 @@
         <label>Analog Mode Function Status - F8</label>
         <label xml:lang="it">Funzione di Stato in Analogico : F8</label>
       </variable>
-
-      <xi:include href="http://jmri.org/xml/decoders/nmra/consistAddr.xml"/>
-
+      <variable CV="19" default="0" item="Consist Address" comment="Allows permanent storage of consist address. Range 0-127">
+        <decVal/>
+        <label>Consist Address</label>
+        <label xml:lang="it">Indirizzo Consist</label>
+        <label xml:lang="fr">Addresse UM</label>
+        <label xml:lang="de">Verbundadresse</label>
+        <comment>Allows permanent storage of consist address. Range 0-127</comment>
+        <comment xml:lang="it">Valori ammessi 0-127</comment>
+      </variable>
       <variable item="Consist Address Active For F1" CV="21" mask="XXXXXXXV">
          <xi:include href="http://jmri.org/xml/decoders/parts/enum-LocoAddrConsistAddr.xml"/>
         <label>Consist Address Active For F1</label>
@@ -889,8 +894,8 @@
       </variable>
       <variable item="Light Effects Output 1" CV="125" mask="VVVVVVXX">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
         </enumVal>
         <label>Light Effects Output 1</label>
         <label xml:lang="it">Effetti Luci uscita 1</label>
@@ -902,8 +907,8 @@
       </variable>
       <variable item="Light Effects Output 2" CV="126" mask="VVVVVVXX">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
         </enumVal>
         <label>Light Effects Output 2</label>
         <label xml:lang="it">Effetti Luci uscita 2</label>
@@ -915,8 +920,8 @@
       </variable>
       <variable item="Light Effects Output 3" CV="127" mask="VVVVVVXX">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
         </enumVal>
         <label>Light Effects Output 3</label>
         <label xml:lang="it">Effetti Luci uscita 3</label>
@@ -928,8 +933,8 @@
       </variable>
       <variable item="Light Effects Output 4" CV="128" mask="VVVVVVXX">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
         </enumVal>
         <label>Light Effects Output 4</label>
         <label xml:lang="it">Effetti Luci uscita 4</label>

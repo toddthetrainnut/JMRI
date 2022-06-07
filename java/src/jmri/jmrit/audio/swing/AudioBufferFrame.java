@@ -16,13 +16,13 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import jmri.Audio;
 import jmri.AudioException;
 import jmri.AudioManager;
 import jmri.InstanceManager;
 import jmri.jmrit.audio.AudioBuffer;
 import jmri.jmrit.beantable.AudioTableAction.AudioTableDataModel;
+import jmri.util.FileChooserFilter;
 import jmri.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +65,6 @@ public class AudioBufferFrame extends AbstractAudioFrame {
     JFileChooser fileChooser;
     // AudioWaveFormPanel waveForm = new AudioWaveFormPanel();
 
-    private final static String PREFIX = "IAB";
-
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public AudioBufferFrame(String title, AudioTableDataModel model) {
         super(title, model);
@@ -81,6 +79,7 @@ public class AudioBufferFrame extends AbstractAudioFrame {
     }
 
     @Override
+    @SuppressWarnings("UnnecessaryBoxing")
     public void layoutFrame() {
         super.layoutFrame();
         JPanel p;
@@ -186,9 +185,10 @@ public class AudioBufferFrame extends AbstractAudioFrame {
      * Populate the Edit Buffer frame with default values.
      */
     @Override
+    @SuppressWarnings("UnnecessaryBoxing")
     public void resetFrame() {
         synchronized (lock) {
-            sysName.setText(PREFIX + nextCounter()); // NOI18N
+            sysName.setText("IAB" + nextCounter()); // NOI18N
         }
         userName.setText(null);
         url.setText(null);
@@ -227,8 +227,10 @@ public class AudioBufferFrame extends AbstractAudioFrame {
 
     void browsePressed(ActionEvent e) {
         if (fileChooser == null) {
-            fileChooser = new JFileChooser("resources" + File.separator + "sounds" + File.separator); // NOI18N
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Audio Files (*.wav)", "wav")); // NOI18N
+            fileChooser = new JFileChooser("resources" + File.separator + "sounds" + File.separator);
+            FileChooserFilter audioFileFilter = new FileChooserFilter("Audio Files (*.wav)");
+            audioFileFilter.addExtension("wav");
+            fileChooser.setFileFilter(audioFileFilter);
         }
 
         // Show dialog
@@ -252,14 +254,11 @@ public class AudioBufferFrame extends AbstractAudioFrame {
     }
 
     void applyPressed(ActionEvent e) {
-        String sName = sysName.getText();
-        if (entryError(sName, PREFIX, "" + counter)) {
-            return;
-        }
         String user = userName.getText();
         if (user.equals("")) {
             user = null;
         }
+        String sName = sysName.getText();
         AudioBuffer b;
         try {
             AudioManager am = InstanceManager.getDefault(jmri.AudioManager.class);
@@ -279,12 +278,12 @@ public class AudioBufferFrame extends AbstractAudioFrame {
             b.setStreamed(stream.isSelected());
             if (newBuffer || !b.getURL().equals(url.getText())) {
                 b.setURL(url.getText());
-                log.debug("After load, end loop point = {}", b.getEndLoopPoint());
+                log.debug("After load, end loop point = " + b.getEndLoopPoint());
                 //b.setStartLoopPoint((Long)loopStart.getValue());
                 //b.setEndLoopPoint((Long)loopEnd.getValue());
             } else {
                 if (!b.getURL().equals(url.getText())) {
-                    log.debug("Sound changed from: {}", b.getURL());
+                    log.debug("Sound changed from: " + b.getURL());
                     b.setURL(url.getText());
                 }
             }
@@ -304,8 +303,8 @@ public class AudioBufferFrame extends AbstractAudioFrame {
         return counter++;
     }
 
-    private static void prevCounter() {
-        counter--;
+    private static int prevCounter() {
+        return counter--;
     }
 
     private static final Logger log = LoggerFactory.getLogger(AudioBufferFrame.class);

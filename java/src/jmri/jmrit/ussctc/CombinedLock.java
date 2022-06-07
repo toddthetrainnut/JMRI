@@ -13,25 +13,18 @@ public class CombinedLock implements Lock {
     public CombinedLock(List<Lock> list) {
         this.list = list;
     }
-
-    List<Lock> list;
-
+    
+    List<Lock> list; 
+    
     /**
      * Test the lock conditions
      * @return True if lock is clear and operation permitted
      */
     @Override
-    public boolean isLockClear(LockLogger lockLogger) {
+    public boolean isLockClear() {
         for (Lock lock : list)
-            if (!lock.isLockClear(lockLogger)) return false;
+            if (!lock.isLockClear()) return false;
         return true;
     }
-
-    @Override
-    public String toString() {
-        String retval = isLockClear(debugLockLogger) ? "clear " : "locked";
-        retval = retval+debugLockLogger.memory.getValue();
-        return retval;
-    }
-
+    
 }

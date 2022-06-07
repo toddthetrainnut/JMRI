@@ -2,8 +2,6 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "jmri-json-pong-server-message",
     "type": "object",
-    "description": "Data portion of message from JMRI to client for type \"pong\"",
-    "properties": {
-    },
+    "description": "Data portion of message from JMRI to client for type \"metadata\"",
     "additionalProperties": false
 }

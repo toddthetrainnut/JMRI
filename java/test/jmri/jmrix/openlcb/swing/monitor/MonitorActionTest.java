@@ -3,13 +3,14 @@ package jmri.jmrix.openlcb.swing.monitor;
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MonitorActionTest {
 
@@ -22,7 +23,8 @@ public class MonitorActionTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -34,14 +36,9 @@ public class MonitorActionTest {
         jmri.InstanceManager.setDefault(CanSystemConnectionMemo.class,memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
-        memo = null;
-        tcs.terminateThreads();
-        tcs = null;
         JUnitUtil.tearDown();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(MonitorActionTest.class);

@@ -1,6 +1,7 @@
 package jmri;
 
 import javax.swing.tree.TreeModel;
+import jmri.jmrit.catalog.CatalogTreeNode;
 
 /**
  * Represents a CatalogTree, a tree displaying a taxonomy - e.g. a file system

@@ -1,9 +1,7 @@
 package jmri.jmrix.rps.trackingpanel;
 
 import java.awt.GraphicsEnvironment;
-
 import javax.vecmath.Point3d;
-
 import jmri.InstanceManager;
 import jmri.jmrit.roster.RosterConfigManager;
 import jmri.jmrix.rps.Engine;
@@ -12,15 +10,16 @@ import jmri.jmrix.rps.Reading;
 import jmri.jmrix.rps.Receiver;
 import jmri.jmrix.rps.RpsSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the rps.RpsTrackingFrame class.
  *
- * @author Bob Jacobsen Copyright 2008
+ * @author	Bob Jacobsen Copyright 2008
  */
 public class RpsTrackingFrameTest {
 
@@ -64,7 +63,7 @@ public class RpsTrackingFrameTest {
         f.dispose();
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -73,10 +72,7 @@ public class RpsTrackingFrameTest {
         InstanceManager.setDefault(RosterConfigManager.class, new RosterConfigManager());
     }
 
-    @AfterEach
-    public void tearDown() throws Exception {
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.tearDown();
-    }
+    @After
+    public void tearDown() throws Exception {        JUnitUtil.tearDown();    }
 
 }

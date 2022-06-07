@@ -1,12 +1,15 @@
 package jmri.jmrix.pi.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Tests for the RaspberryPiSensorManagerXml class.
+ * RaspberryPiSensorManagerXmlTest.java
+ *
+ * Description: tests for the RaspberryPiSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -14,15 +17,16 @@ public class RaspberryPiSensorManagerXmlTest {
 
     @Test
     public void testCtor(){
-      Assert.assertNotNull("RaspberryPiSensorManagerXml constructor", new RaspberryPiSensorManagerXml());
+      Assert.assertNotNull("RaspberryPiSensorManagerXml constructor",new RaspberryPiSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,14 +1,15 @@
 package jmri.jmrix.ieee802154.xbee.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * XBeeSensorManagerXmlTest.java
  *
- * Test for the XBeeSensorManagerXml class
+ * Description: tests for the XBeeSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class XBeeSensorManagerXmlTest {
       Assert.assertNotNull("XBeeSensorManagerXml constructor",new XBeeSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

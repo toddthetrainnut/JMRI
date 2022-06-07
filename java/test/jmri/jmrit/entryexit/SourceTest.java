@@ -4,7 +4,6 @@ import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import jmri.InstanceManager;
 import jmri.NamedBean;
 import jmri.Sensor;
@@ -13,11 +12,11 @@ import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.jmrit.display.layoutEditor.LayoutBlockManager;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -103,7 +102,7 @@ public class SourceTest {
         Assert.assertNotNull("getSourceObject", srcobj);  // NOI18N
     }
 
-    @BeforeAll
+    @BeforeClass
     static public void setUp() throws Exception {
         JUnitUtil.setUp();
 
@@ -118,14 +117,9 @@ public class SourceTest {
         sm = InstanceManager.getDefault(SensorManager.class);
     }
 
-    @AfterAll
+    @AfterClass
     static public void tearDown() {
-        JUnitUtil.clearRouteThreads();
-        JUnitUtil.clearTurnoutThreads();
-        JUnitUtil.removeMatchingThreads("Routing stabilising timer");
         panels.forEach((name, panel) -> JUnitUtil.dispose(panel));
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

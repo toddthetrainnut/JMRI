@@ -2,18 +2,15 @@ package jmri.jmrix.pi;
 
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioProvider;
-
 import jmri.JmriException;
 import jmri.Sensor;
 import jmri.util.JUnitUtil;
 import jmri.util.junit.annotations.*;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class RaspberryPiSensorTest extends jmri.implementation.AbstractSensorTestBase {
 
@@ -21,10 +18,10 @@ public class RaspberryPiSensorTest extends jmri.implementation.AbstractSensorTes
     public int numListeners() {return 0;}
 
     @Override
-    public void checkActiveMsgSent() {}
+    public void checkOnMsgSent() {}
 
     @Override
-    public void checkInactiveMsgSent() {}
+    public void checkOffMsgSent() {}
 
     @Override
     public void checkStatusRequestMsgSent() {}
@@ -52,7 +49,7 @@ public class RaspberryPiSensorTest extends jmri.implementation.AbstractSensorTes
         jmri.util.JUnitUtil.waitFor(()->{return t.getState() == t.getRawState();}, "raw state = state");
         Assert.assertEquals("2nd state", Sensor.INACTIVE, t.getState());
 
-        t.setOwnState(Sensor.ACTIVE); // next is considered to run immediately, before debounce
+	t.setOwnState(Sensor.ACTIVE); // next is considered to run immediately, before debounce
         Assert.assertEquals("post-set state", Sensor.INACTIVE, t.getState());
         jmri.util.JUnitUtil.waitFor(()->{return t.getState() == t.getRawState();}, "raw state = state");
         Assert.assertEquals("Final state", Sensor.ACTIVE, t.getState());
@@ -60,41 +57,30 @@ public class RaspberryPiSensorTest extends jmri.implementation.AbstractSensorTes
 
     @Override
     @Test
-    @Disabled("Base class test does not function correctly for RaspberryPi Sensors")
+    @Ignore("Base class test does not function correctly for RaspberryPi Sensors")
     @ToDo("provide mock raspberry pi implementation so code can be tested using parent class test")
     public void testAddListener() throws JmriException {
     }
 
     @Test
-    @Override
     public void testGetPullResistance(){
         Assert.assertEquals("default pull state", jmri.Sensor.PullResistance.PULL_DOWN, t.getPullResistance());
     }
 
-    private GpioProvider myProvider;
-
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
+        GpioProvider myprovider = new PiGpioProviderScaffold();
+        GpioFactory.setDefaultProvider(myprovider);
         JUnitUtil.setUp();
-        JUnitUtil.resetInstanceManager();
-        myProvider = new PiGpioProviderScaffold();
-        GpioFactory.setDefaultProvider(myProvider);
-
-        t = new RaspberryPiSensor("PS4");
+        t = new RaspberryPiSensor("PiS1");
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        if (t != null) {
-            t.dispose(); // is supposed to unprovisionPin 4
-        }
-        // shutdown() will forcefully shutdown all GPIO monitoring threads and scheduled tasks, includes unexport.pin
-        myProvider.shutdown();
-
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.resetInstanceManager();
+	t.dispose();
         JUnitUtil.tearDown();
     }
 

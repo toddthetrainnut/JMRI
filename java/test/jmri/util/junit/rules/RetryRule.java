@@ -2,8 +2,6 @@ package jmri.util.junit.rules;
 
 /**
  * Retries a failing test.
- * <p>Works with org.junit.Test (JUnit4)
- * <p>Does NOT work with org.junit.jupiter.api.Test (JUnit5)
  * <ul>
  * <li>If a test passes on the first time, this rule does nothing; the test is marked as passed
  * <li>If a test fails at first, a warning is logged, and the test is retries up to "retryCount" times.
@@ -36,7 +34,6 @@ public class RetryRule implements TestRule {
         if (retryCount < 0) log.error("retryCount must be zero (no retries) or greater");
     }
 
-    @Override
     public Statement apply(Statement base, Description description) {
         return statement(base, description);
     }

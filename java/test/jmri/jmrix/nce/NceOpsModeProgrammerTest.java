@@ -1,19 +1,21 @@
 package jmri.jmrix.nce;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class NceOpsModeProgrammerTest extends jmri.jmrix.AbstractOpsModeProgrammerTestBase {
 
     private NceTrafficControlScaffold tcis = null;
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         tcis = new NceTrafficControlScaffold();
@@ -21,12 +23,10 @@ public class NceOpsModeProgrammerTest extends jmri.jmrix.AbstractOpsModeProgramm
         programmer = t;
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         programmer = null;
         tcis = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

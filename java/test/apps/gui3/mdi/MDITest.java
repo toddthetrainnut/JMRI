@@ -1,18 +1,17 @@
 package apps.gui3.mdi;
 
 import apps.AppsBase;
-
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * Tests for the MDI application.
+ * Description: Tests for the MDI application.
  *
  * @author Paul Bender Copyright (C) 2016
  */
@@ -49,24 +48,28 @@ public class MDITest {
                 JUnitUtil.initMemoryManager();
                 JUnitUtil.initDebugThrottleManager();
             }
+
+            @Override
+            protected void installShutDownManager() {
+                JUnitUtil.initShutDownManager();
+            }
         };
         Assert.assertNotNull(a);
         // shutdown the application
         AppsBase.handleQuit();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetApplication();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();  // eventually want to test ShutDownTasks?
         JUnitUtil.resetApplication();
-        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
     }
 

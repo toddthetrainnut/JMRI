@@ -1,5 +1,6 @@
 package jmri.jmrix.loconet.configurexml;
 
+import jmri.Turnout;
 import jmri.jmrix.loconet.LnTurnout;
 import jmri.jmrix.loconet.LnTurnoutManager;
 import jmri.jmrix.loconet.LocoNetInterfaceScaffold;
@@ -7,8 +8,10 @@ import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
 import jmri.util.JUnitUtil;
 
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the LnTurnoutManagerXml class
@@ -57,8 +60,10 @@ public class LnTurnoutManagerXmlTest {
     LocoNetSystemConnectionMemo memo;
     LnTurnoutManager lmtm;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
+        JUnitUtil.setUp();
         // prepare an interface
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetInstanceManager();
@@ -66,11 +71,11 @@ public class LnTurnoutManagerXmlTest {
         memo = new LocoNetSystemConnectionMemo("L", "LocoNet");
         lnis = new LocoNetInterfaceScaffold(memo);
         // create and register the manager object
-        lmtm = new LnTurnoutManager(memo, lnis, false);
+        lmtm = new LnTurnoutManager(lnis, lnis, memo.getSystemPrefix(), false);
         jmri.InstanceManager.setTurnoutManager(lmtm);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         memo.dispose();
         lnis = null;

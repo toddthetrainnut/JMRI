@@ -15,7 +15,7 @@ public class JmriSRCPServerAction extends AbstractAction {
     }
 
     public JmriSRCPServerAction() {
-        this("Start JMRI SRCP Server");
+        this("Start SRCP Jmri Server");
     }
 
     @Override

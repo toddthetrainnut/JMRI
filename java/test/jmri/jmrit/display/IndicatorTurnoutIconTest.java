@@ -2,10 +2,8 @@ package jmri.jmrit.display;
 
 import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import jmri.jmrit.display.panelEditor.PanelEditor;
+import org.junit.*;
 
 /**
  * IndicatorTurnoutIconTest.java
@@ -34,7 +32,6 @@ public class IndicatorTurnoutIconTest extends PositionableIconTest {
     }
 
     @Test
-    @Override
     public void testClone() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         JFrame jf = new JFrame();
@@ -50,12 +47,12 @@ public class IndicatorTurnoutIconTest extends PositionableIconTest {
 
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         super.setUp();
         if (!GraphicsEnvironment.isHeadless()) {
-            editor = new EditorScaffold();
+            editor = new PanelEditor("Test IndicatorTurnoutIcon Panel");
             IndicatorTurnoutIcon to = new IndicatorTurnoutIcon(editor);
             jmri.Turnout turnout = jmri.InstanceManager.turnoutManagerInstance().provideTurnout("IT1");
             to.setTurnout(new jmri.NamedBeanHandle<>("IT1", turnout));
@@ -64,7 +61,7 @@ public class IndicatorTurnoutIconTest extends PositionableIconTest {
     }
 
     @Test
-    @Disabled("unreliable on CI servers")
+    @Ignore("unreliable on CI servers")
     @Override
     public void testGetAndSetPositionable() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());

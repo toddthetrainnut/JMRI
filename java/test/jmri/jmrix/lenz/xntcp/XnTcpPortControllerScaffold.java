@@ -4,17 +4,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-
-import jmri.util.JUnitUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of XnTcpAdapter that eases
  * checking whether data was forwarded or not
- *
- * @author Bob Jacobsen Copyright (C) 2006, 2015
+ * 
+ * @author	Bob Jacobsen Copyright (C) 2006, 2015
  */
 class XnTcpPortControllerScaffold extends XnTcpAdapter {
 
@@ -42,10 +39,10 @@ class XnTcpPortControllerScaffold extends XnTcpAdapter {
 
     PipedInputStream otempIPipe;
     PipedOutputStream otempOPipe;
-
+    
     PipedInputStream itempIPipe;
     PipedOutputStream itempOPipe;
-
+    
     protected XnTcpPortControllerScaffold() throws Exception {
         otempIPipe = new PipedInputStream(200);
         tostream = new DataInputStream(otempIPipe);
@@ -59,20 +56,20 @@ class XnTcpPortControllerScaffold extends XnTcpAdapter {
     }
 
     public void flush() {
-        try {
+        try { 
             ostream.flush();
             otempOPipe.flush();
-
+        
             tistream.flush();
             itempOPipe.flush();
 
-            JUnitUtil.waitFor(JUnitUtil.WAITFOR_DEFAULT_DELAY);
+            jmri.util.JUnitUtil.releaseThread(this);
 
         } catch (Exception e) {
             log.error("Exception during flush", e);
         }
     }
-
+    
     /**
      * Returns the InputStream from the port.
      */

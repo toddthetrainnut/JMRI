@@ -5,11 +5,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Arrays;
+import javax.swing.JOptionPane;
 import jmri.jmrix.secsi.SerialMessage;
 import jmri.jmrix.secsi.SerialPortController; // no special xSimulatorController
 import jmri.jmrix.secsi.SerialReply;
 import jmri.jmrix.secsi.SecsiSystemConnectionMemo;
-import jmri.util.ImmediatePipedOutputStream;
+import jmri.jmrix.secsi.SerialTrafficController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,12 +57,12 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
     @Override
     public String openPort(String portName, String appName) {
         try {
-            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeI = new PipedOutputStream();
             log.debug("tempPipeI created");
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
             log.debug("inpipe created {}", inpipe != null);
-            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeO = new PipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {
@@ -207,27 +209,29 @@ public class SimulatorAdapter extends SerialPortController implements Runnable {
             }
             SerialMessage m = readMessage();
             SerialReply r;
-            if (log.isTraceEnabled()) {
-                StringBuilder buf = new StringBuilder();
+            if (log.isDebugEnabled()) {
+                StringBuffer buf = new StringBuffer();
+                buf.append("Secsi Simulator Thread received message: ");
                 if (m != null) {
                     for (int i = 0; i < m.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & m.getElement(i))).append(" ");
+                        buf.append(Integer.toHexString(0xFF & m.getElement(i)) + " ");
                     }
                 } else {
                     buf.append("null message buffer");
                 }
-                log.trace("Secsi Simulator Thread received message: {}", buf ); // generates a lot of traffic
+                log.trace(buf.toString()); // generates a lot of traffic
             }
             if (m != null) {
                 r = generateReply(m);
                 if (r != null) { // ignore errors and null replies
                     writeReply(r);
                     if (log.isDebugEnabled()) {
-                        StringBuilder buf = new StringBuilder();
+                        StringBuffer buf = new StringBuffer();
+                        buf.append("Secsi Simulator Thread sent reply: ");
                         for (int i = 0; i < r.getNumDataElements(); i++) {
-                            buf.append(Integer.toHexString(0xFF & r.getElement(i))).append(" ");
+                            buf.append(Integer.toHexString(0xFF & r.getElement(i)) + " ");
                         }
-                        log.debug("Secsi Simulator Thread sent reply: {}", buf );
+                        log.debug(buf.toString());
                     }
                 }
             }

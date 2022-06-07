@@ -37,16 +37,12 @@ public class SimplePowerServer extends AbstractPowerServer {
      */
     @Override
     public void sendStatus(int Status) throws IOException {
-        switch (Status) {
-            case PowerManager.ON:
-                this.sendStatus("POWER ON\n");
-                break;
-            case PowerManager.OFF:
-                this.sendStatus("POWER OFF\n");
-                break;
-            default:
-                this.sendStatus("POWER UNKNOWN\n");
-                break;
+        if (Status == PowerManager.ON) {
+            this.sendStatus("POWER ON\n");
+        } else if (Status == PowerManager.OFF) {
+            this.sendStatus("POWER OFF\n");
+        } else {
+            this.sendStatus("POWER UNKNOWN\n");
         }
     }
 
@@ -66,7 +62,9 @@ public class SimplePowerServer extends AbstractPowerServer {
               if(v.getOutputString() != null ){
                  sendStatus(v.getOutputString());
               } 
-           } catch(ParseException | TokenMgrError pe){
+           } catch(ParseException pe){
+              sendErrorStatus();
+           } catch(TokenMgrError pe){
               sendErrorStatus();
            }
         } catch(IOException ioe) {

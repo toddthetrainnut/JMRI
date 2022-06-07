@@ -1,13 +1,14 @@
 package jmri.jmrix.zimo;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class Mx1ThrottleManagerTest extends jmri.managers.AbstractThrottleManagerTestBase {
 
@@ -18,8 +19,8 @@ public class Mx1ThrottleManagerTest extends jmri.managers.AbstractThrottleManage
         Assert.assertNotNull("exists",tm);
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         Mx1TrafficController tc = new Mx1TrafficController(){
@@ -35,7 +36,7 @@ public class Mx1ThrottleManagerTest extends jmri.managers.AbstractThrottleManage
         tm = new Mx1ThrottleManager(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

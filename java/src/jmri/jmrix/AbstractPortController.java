@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
-import jmri.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +60,6 @@ abstract public class AbstractPortController implements PortAdapter {
     @Override
     @OverridingMethodsMustInvokeSuper
     public void dispose() {
-        allowConnectionRecovery = false;
         this.getSystemConnectionMemo().dispose();
     }
 
@@ -169,11 +167,8 @@ abstract public class AbstractPortController implements PortAdapter {
      */
     @Override
     public void setOptionState(String option, String value) {
-        log.trace("setOptionState({},{})", option, value);
         if (options.containsKey(option)) {
             options.get(option).configure(value);
-        } else {
-            log.warn("Couldn't find option \"{}\", can't set to \"{}\"", option, value);
         }
     }
 
@@ -209,25 +204,6 @@ abstract public class AbstractPortController implements PortAdapter {
         return null;
     }
 
-
-    @Override
-    public boolean isOptionTypeText(String option) {
-        if (options.containsKey(option)) {
-            return options.get(option).getType() == Option.Type.TEXT;
-        }
-        log.error("did not find option {} for type", option);
-        return false;
-    }
-    
-    @Override
-    public boolean isOptionTypePassword(String option) {
-        if (options.containsKey(option)) {
-            return options.get(option).getType() == Option.Type.PASSWORD;
-        }
-        log.error("did not find option {} for type", option);
-        return false;
-    }
-    
     @Override
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
     justification = "availability was checked before, should never get here")
@@ -250,12 +226,6 @@ abstract public class AbstractPortController implements PortAdapter {
 
     static protected class Option {
 
-        public enum Type {
-            JCOMBOBOX,
-            TEXT,
-            PASSWORD
-        }
-        
         String currentValue = null;
         
         /** 
@@ -267,34 +237,21 @@ abstract public class AbstractPortController implements PortAdapter {
         
         String displayText;
         String[] options;
-        Type type;
-        
-        Boolean advancedOption = true;  // added options in advanced section by default
-
-        public Option(String displayText, @Nonnull String[] options, boolean advanced, Type type) {
-            this.displayText = displayText;
-            this.options = java.util.Arrays.copyOf(options, options.length);
-            this.advancedOption = advanced;
-            this.type = type;            
-        }
+        Boolean advancedOption = true;
 
         public Option(String displayText, String[] options, boolean advanced) {
-            this(displayText, options, advanced, Type.JCOMBOBOX);
-        }
-
-        public Option(String displayText, String[] options, Type type) {
-            this(displayText, options, true, type);
+            this(displayText, options);
+            this.advancedOption = advanced;
         }
 
         public Option(String displayText, String[] options) {
-            this(displayText, options, true, Type.JCOMBOBOX);
+            this.displayText = displayText;
+            this.options = new String[options.length];
+            System.arraycopy(options, 0, this.options, 0, options.length);
         }
 
         void configure(String value) {
-            log.trace("Option.configure({}) with \"{}\", \"{}\"", value, configuredValue, currentValue);
-            if (configuredValue == null ) {
-                configuredValue = value;
-            }
+            if (configuredValue == null ) configuredValue = value;
             currentValue = value;
         }
 
@@ -307,10 +264,6 @@ abstract public class AbstractPortController implements PortAdapter {
 
         String[] getOptions() {
             return options;
-        }
-
-        Type getType() {
-            return type;
         }
 
         String getDisplayText() {
@@ -347,7 +300,7 @@ abstract public class AbstractPortController implements PortAdapter {
      * enabled.
      *
      * If the implementing class does not use a
-     * {@link SystemConnectionMemo}, this method must be overridden.
+     * {@link jmri.jmrix.SystemConnectionMemo}, this method must be overridden.
      * Overriding methods must call <code>super.setDisabled(boolean)</code> to
      * ensure the configuration change state is correctly set.
      *
@@ -384,153 +337,17 @@ abstract public class AbstractPortController implements PortAdapter {
 
     protected boolean allowConnectionRecovery = false;
 
-    /**
-     * {@inheritDoc}
-     * After checking the allowConnectionRecovery flag, closes the 
-     * connection, resets the open flag and attempts a reconnection.
-     */
     @Override
-    public void recover() {
-        if (!allowConnectionRecovery) {
-            return;
-        }
-        opened = false;
-        try {
-            closeConnection();
-        } 
-        catch (RuntimeException e) {
-            log.warn("closeConnection failed");
-        }
-        reconnect();
-    }
-    
-    /**
-     * Abstract class for controllers to close the connection.
-     * Called prior to any re-connection attempts.
-     */
-    protected void closeConnection(){}
-    
-    /**
-     * Attempts to reconnect to a failed port.
-     * Starts a reconnect thread
-     */
-    protected void reconnect() {
-        // If the connection is already open, then we shouldn't try a re-connect.
-        if (opened || !allowConnectionRecovery) {
-            return;
-        }
-        Thread thread = jmri.util.ThreadingUtil.newThread(new ReconnectWait(),
-            "Connection Recovery " + getCurrentPortName());
-        thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            log.error("Unable to join to the reconnection thread");
-        }
-    }
-    
-    /**
-     * Abstract class for controllers to re-setup a connection.
-     * Called on connection reconnect success.
-     */
-    protected void resetupConnection(){}
-    
-    /**
-     * Abstract class for ports to attempt a single re-connection attempt.
-     * Called from within main reconnect thread.
-     * @param retryNum Reconnection attempt number.
-     */
-    protected void reconnectFromLoop(int retryNum){}
+    abstract public void recover();
 
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification="I18N of Info Message")
-    private class ReconnectWait extends Thread {
-        @Override
-        public void run() {
-            boolean reply = true;
-            int count = 0;
-            int interval = reconnectinterval;
-            int totalsleep = 0;
-            while (reply && allowConnectionRecovery) {
-                safeSleep(interval*1000L, "Waiting");
-                count++;
-                totalsleep += interval;
-                reconnectFromLoop(count);
-                reply = !opened;
-                if (opened){
-                    log.info(Bundle.getMessage("ReconnectedTo",getCurrentPortName()));
-                    resetupConnection();
-                    return;
-                }
-                if (count % 10==0) {
-                    //retrying but with twice the retry interval.
-                    interval = Math.min(interval * 2, reconnectMaxInterval);
-                    log.error(Bundle.getMessage("ReconnectFailRetry", totalsleep, count,interval));
-                }
-                if ((reconnectMaxAttempts > -1) && (count >= reconnectMaxAttempts)) {
-                    log.error(Bundle.getMessage("ReconnectFailAbort",totalsleep,count));
-                    reply = false;
-                }
-            }
-        }
-    }
-    
-    /**
-     * Initial interval between reconnection attempts.
-     * Default 1 second.
-     */
-    protected int reconnectinterval = 1;
-    
-    /**
-     * Maximum reconnection attempts that the port should make.
-     * Default 100 attempts.
-     * A value of -1 indicates unlimited attempts.
-     */
-    protected int reconnectMaxAttempts = 100;
+    protected int reconnectinterval = 1000;
+    protected int retryAttempts = 10;
 
-    /**
-     * Maximum interval between reconnection attempts in seconds.
-     * Default 120 seconds.
-     */
-    protected int reconnectMaxInterval = 120;
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setReconnectMaxInterval(int maxInterval) {
-        reconnectMaxInterval = maxInterval;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setReconnectMaxAttempts(int maxAttempts) {
-        reconnectMaxAttempts = maxAttempts;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getReconnectMaxInterval() {
-        return reconnectMaxInterval;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getReconnectMaxAttempts() {
-        return reconnectMaxAttempts;
-    }
-    
     protected static void safeSleep(long milliseconds, String s) {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
-            log.error("Sleep Exception raised during reconnection attempt{}", s);
+            log.error("Sleep Exception raised during reconnection attempt" + s);
         }
     }
 
@@ -558,13 +375,11 @@ abstract public class AbstractPortController implements PortAdapter {
     /**
      * Service method to purge a stream of initial contents
      * while opening the connection.
-     * @param serialStream input data
-     * @throws java.io.IOException from underlying operations
      */
      @SuppressFBWarnings(value = "SR_NOT_CHECKED", justification = "skipping all, don't care what skip() returns")
      protected void purgeStream(@Nonnull java.io.InputStream serialStream) throws java.io.IOException {
         int count = serialStream.available();
-         log.debug("input stream shows {} bytes available", count);
+        log.debug("input stream shows " + count + " bytes available");
         while (count > 0) {
             serialStream.skip(count);
             count = serialStream.available();
@@ -572,7 +387,7 @@ abstract public class AbstractPortController implements PortAdapter {
     }
     
     /**
-     * Get the {@link SystemConnectionMemo} associated with this
+     * Get the {@link jmri.jmrix.SystemConnectionMemo} associated with this
      * object.
      * <p>
      * This method should only be overridden to ensure that a specific subclass
@@ -590,7 +405,7 @@ abstract public class AbstractPortController implements PortAdapter {
     }
 
     /**
-     * Set the {@link SystemConnectionMemo} associated with this
+     * Set the {@link jmri.jmrix.SystemConnectionMemo} associated with this
      * object.
      * <p>
      * Overriding implementations must call

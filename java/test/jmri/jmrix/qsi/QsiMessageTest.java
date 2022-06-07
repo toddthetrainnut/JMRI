@@ -1,16 +1,17 @@
 /**
  * QsiMessageTest.java
  *
- * JUnit tests for the QsiMessage class
+ * Description:	JUnit tests for the QsiMessage class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 package jmri.jmrix.qsi;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 public class QsiMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
@@ -55,14 +56,15 @@ public class QsiMessageTest extends jmri.jmrix.AbstractMessageTestBase {
         Assert.assertEquals("string compare ", "20 ", msg.toString());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new QsiSystemConnectionMemo();
-        tc = new QsiTrafficControlScaffold() {
+        tc = new QsiTrafficControlScaffold(){
             @Override
-            public boolean isSIIBootMode() {
+            public boolean isSIIBootMode(){
                 return true;
             }
         };
@@ -70,11 +72,11 @@ public class QsiMessageTest extends jmri.jmrix.AbstractMessageTestBase {
         m = msg = new QsiMessage(1);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo = null;
-        tc = null;
-        m = msg = null;
+	memo = null;
+	tc = null;
+	m = msg = null;
         JUnitUtil.tearDown();
     }
 

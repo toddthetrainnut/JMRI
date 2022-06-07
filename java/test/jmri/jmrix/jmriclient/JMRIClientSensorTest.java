@@ -1,15 +1,17 @@
 package jmri.jmrix.jmriclient;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JMRIClientSensorTest.java
  *
- * Test for the jmri.jmrix.jmriclient.JMRIClientSensor class
+ * Description:	tests for the jmri.jmrix.jmriclient.JMRIClientSensor class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  * @author      Paul Bender Copyright (C) 2018
  */
 public class JMRIClientSensorTest extends jmri.implementation.AbstractSensorTestBase {
@@ -18,16 +20,17 @@ public class JMRIClientSensorTest extends jmri.implementation.AbstractSensorTest
     public int numListeners() {return 0;}
 
     @Override
-    public void checkActiveMsgSent() {}
+    public void checkOnMsgSent() {}
 
     @Override
-    public void checkInactiveMsgSent() {}
+    public void checkOffMsgSent() {}
 
     @Override
     public void checkStatusRequestMsgSent() {}
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JMRIClientTrafficController tc = new JMRIClientTrafficController() {
@@ -40,11 +43,9 @@ public class JMRIClientSensorTest extends jmri.implementation.AbstractSensorTest
         t = new JMRIClientSensor(3, new JMRIClientSystemConnectionMemo(tc));
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        t.dispose();
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+	t.dispose();
         JUnitUtil.tearDown();
     }
 

@@ -1,16 +1,17 @@
 package jmri.jmrix.openlcb.swing.downloader;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class LoaderPaneTest extends jmri.util.swing.JmriPanelTest {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -20,7 +21,7 @@ public class LoaderPaneTest extends jmri.util.swing.JmriPanelTest {
         helpTarget = "package.jmri.jmrix.openlcb.swing.downloader.LoaderFrame";
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         JUnitUtil.tearDown();

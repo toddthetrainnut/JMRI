@@ -1,23 +1,22 @@
 package jmri.jmrit.operations.rollingstock.cars.tools;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.Assume;
-
 import jmri.jmrit.operations.OperationsTestCase;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ImportCarRosterActionTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        ImportCarRosterAction t = new ImportCarRosterAction();
+        jmri.util.JmriJFrame jf = new jmri.util.JmriJFrame("Import Car Roster Frame");
+        ImportCarRosterAction t = new ImportCarRosterAction("Test Action",jf);
         Assert.assertNotNull("exists",t);
     }
 

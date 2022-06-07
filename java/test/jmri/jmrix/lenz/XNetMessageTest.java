@@ -1,14 +1,15 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.lenz.XNetMessage class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
@@ -64,7 +65,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
     public void testStringCtorEmptyString() {
         msg = new XNetMessage("");
         Assert.assertEquals("length", 0, msg.getNumDataElements());
-        Assert.assertEquals("empty reply", "", msg.toString());
+        Assert.assertTrue("empty reply",msg.toString().equals(""));
     }
 
     @Test
@@ -113,40 +114,40 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
         msg.setElement(1, 0x21);
         msg.setParity();
         Assert.assertEquals("parity set test 1", 0, msg.getElement(2));
-        Assert.assertTrue("parity check test 1", msg.checkParity());
+        Assert.assertEquals("parity check test 1", true, msg.checkParity());
 
         msg = new XNetMessage(3);
         msg.setElement(0, 0x21);
         msg.setElement(1, ~0x21);
         msg.setParity();
         Assert.assertEquals("parity set test 2", 0xFF, msg.getElement(2));
-        Assert.assertTrue("parity check test 2", msg.checkParity());
+        Assert.assertEquals("parity check test 2", true, msg.checkParity());
 
         msg = new XNetMessage(3);
         msg.setElement(0, 0x18);
         msg.setElement(1, 0x36);
         msg.setParity();
         Assert.assertEquals("parity set test 3", 0x2E, msg.getElement(2));
-        Assert.assertTrue("parity check test 3", msg.checkParity());
+        Assert.assertEquals("parity check test 3", true, msg.checkParity());
 
         msg = new XNetMessage(3);
         msg.setElement(0, 0x87);
         msg.setElement(1, 0x31);
         msg.setParity();
         Assert.assertEquals("parity set test 4", 0xB6, msg.getElement(2));
-        Assert.assertTrue("parity check test 4", msg.checkParity());
+        Assert.assertEquals("parity check test 4", true, msg.checkParity());
 
         msg = new XNetMessage(3);
         msg.setElement(0, 0x18);
         msg.setElement(1, 0x36);
         msg.setElement(2, 0x0e);
-        Assert.assertFalse("parity check test 5", msg.checkParity());
+        Assert.assertEquals("parity check test 5", false, msg.checkParity());
 
         msg = new XNetMessage(3);
         msg.setElement(0, 0x18);
         msg.setElement(1, 0x36);
         msg.setElement(2, 0x8e);
-        Assert.assertFalse("parity check test 6", msg.checkParity());
+        Assert.assertEquals("parity check test 6", false, msg.checkParity());
     }
 
     @Test
@@ -841,7 +842,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
     @Test
     public void testGetSpeedAndDirectionMsg(){
        // 128 speed step mode, forward direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0.5f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x13,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -850,7 +851,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x21,msg.getElement(5));
 
        // 128 speed step mode, reverse direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0.5f,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x13,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -859,7 +860,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0xA1,msg.getElement(5));
 
        // 128 speed step mode, forward direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x13,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -868,7 +869,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x61,msg.getElement(5));
 
        // 128 speed step mode, reverse direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0f,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x13,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -877,7 +878,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0xE1,msg.getElement(5));
 
        // 28 speed step mode, forward direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0.5f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x12,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -886,7 +887,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x78,msg.getElement(5));
 
        // 28 speed step mode, reverse direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0.5f,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x12,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -895,7 +896,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0xF8,msg.getElement(5));
 
        // 28 speed step mode, forward direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x12,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -904,7 +905,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x60,msg.getElement(5));
 
        // 28 speed step mode, reverse direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0f,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x12,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -913,7 +914,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0xE0,msg.getElement(5));
 
        // 27 speed step mode, forward direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0.5f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x11,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -922,7 +923,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x7B,msg.getElement(5));
 
        // 27 speed step mode, reverse direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0.5f,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x11,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -931,7 +932,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0xFB,msg.getElement(5));
 
        // 27 speed step mode, forward direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x11,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -940,7 +941,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x63,msg.getElement(5));
 
        // 27 speed step mode, reverse direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x11,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -949,7 +950,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0xE3,msg.getElement(5));
 
        // 14 speed step mode, forward direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0.5f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x10,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -958,7 +959,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x6A,msg.getElement(5));
 
        // 14 speed step mode, reverse direction.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0.5f,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x10,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -967,7 +968,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0xEA,msg.getElement(5));
 
        // 14 speed step mode, forward direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0f,true);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x10,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -976,7 +977,7 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
        Assert.assertEquals(0x62,msg.getElement(5));
 
        // 14 speed step mode, reverse direction, speed 0.
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0f,false);
        Assert.assertEquals(0xE4,msg.getElement(0));
        Assert.assertEquals(0x10,msg.getElement(1));
        Assert.assertEquals(0xC4,msg.getElement(2));
@@ -987,49 +988,49 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
     @Test
     public void testToMonitorStringSpeedAndDirectin128SpeedSteps(){
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0.5f,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 64 and direction Forward in 128 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0.5f,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 64 and direction Reverse in 128 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Forward in 128 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_128,0,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode128,0,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Reverse in 128 Speed Step Mode.",msg.toMonitorString());
     }
 
     @Test
     public void testToMonitorStringSpeedAndDirectin28SpeedSteps(){
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0.5f,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 14 and direction Forward in 28 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0.5f,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 14 and direction Reverse in 28 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Forward in 28 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_28,0,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode28,0,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Reverse in 28 Speed Step Mode.",msg.toMonitorString());
     }
 
     @Test
     public void testToMonitorStringSpeedAndDirectin27SpeedSteps(){
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0.5f,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 14 and direction Forward in 27 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0.5f,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 14 and direction Reverse in 27 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Forward in 27 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_27,0,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode27,0,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Reverse in 27 Speed Step Mode.",msg.toMonitorString());
     }
 
     @Test
     public void testToMonitorStringSpeedAndDirectin14SpeedSteps(){
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0.5f,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0.5f,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 8 and direction Forward in 14 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0.5f,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0.5f,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 8 and direction Reverse in 14 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0,true);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0,true);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Forward in 14 Speed Step Mode.",msg.toMonitorString());
-       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.SpeedStepMode.NMRA_DCC_14,0,false);
+       msg = XNetMessage.getSpeedAndDirectionMsg(1234,jmri.DccThrottle.SpeedStepMode14,0,false);
        Assert.assertEquals("Monitor String","Mobile Decoder Operations Request: Set Address 1234 to Speed Step 0 and direction Reverse in 14 Speed Step Mode.",msg.toMonitorString());
     }
 
@@ -1534,14 +1535,14 @@ public class XNetMessageTest extends jmri.jmrix.AbstractMessageTestBase {
     }
 
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = msg = new XNetMessage(3);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         m = msg = null;
         JUnitUtil.tearDown();

@@ -1,10 +1,10 @@
 package jmri.jmrit.entryexit.configurexml;
 
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -18,12 +18,13 @@ public class EntryExitPairsXmlTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeAll
+    // The minimal setup for log4J
+    @BeforeClass
     static public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterAll
+    @AfterClass
     static public void tearDown() {
         JUnitUtil.tearDown();
     }

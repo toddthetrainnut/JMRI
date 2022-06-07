@@ -3,21 +3,31 @@ package jmri.jmrit.operations.rollingstock.cars.tools;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.text.MessageFormat;
-
-import javax.swing.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsXml;
 import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.operations.locations.schedules.ScheduleManager;
-import jmri.jmrit.operations.rollingstock.cars.*;
+import jmri.jmrit.operations.rollingstock.cars.Car;
+import jmri.jmrit.operations.rollingstock.cars.CarLoad;
+import jmri.jmrit.operations.rollingstock.cars.CarLoads;
+import jmri.jmrit.operations.rollingstock.cars.CarManager;
+import jmri.jmrit.operations.rollingstock.cars.CarTypes;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.jmrit.operations.trains.TrainManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame for adding and editing the car roster for operations.
@@ -53,7 +63,7 @@ public class CarLoadEditFrame extends OperationsFrame implements java.beans.Prop
     public CarLoadEditFrame() {
     }
 
-    String _type; // car type name
+    String _type;
     boolean menuActive = false;
 
     public void initComponents(String type, String selectedItem) {
@@ -62,6 +72,7 @@ public class CarLoadEditFrame extends OperationsFrame implements java.beans.Prop
 
         setTitle(MessageFormat.format(Bundle.getMessage("TitleCarEditLoad"), new Object[]{type}));
 
+        // track which combo box is being edited
         _type = type;
         loadComboboxes();
         loadComboBox.setSelectedItem(selectedItem);
@@ -141,9 +152,9 @@ public class CarLoadEditFrame extends OperationsFrame implements java.beans.Prop
         // build menu
         JMenuBar menuBar = new JMenuBar();
         JMenu toolMenu = new JMenu(Bundle.getMessage("MenuTools"));
-        toolMenu.add(new CarLoadAttributeAction(this));
-        toolMenu.add(new PrintCarLoadsAction(true));
-        toolMenu.add(new PrintCarLoadsAction(false));
+        toolMenu.add(new CarLoadAttributeAction(Bundle.getMessage("CarQuantity"), this));
+        toolMenu.add(new PrintCarLoadsAction(Bundle.getMessage("MenuItemPreview"), true, this));
+        toolMenu.add(new PrintCarLoadsAction(Bundle.getMessage("MenuItemPrint"), false, this));
         menuBar.add(toolMenu);
         setJMenuBar(menuBar);
         // add help menu to window
@@ -189,10 +200,10 @@ public class CarLoadEditFrame extends OperationsFrame implements java.beans.Prop
             carLoads.deleteName(_type, deleteLoad);
         }
         if (ae.getSource() == replaceButton) {
-            String oldLoadName = (String) loadComboBox.getSelectedItem();
-            if (oldLoadName.equals(carLoads.getDefaultEmptyName())) {
+            String oldLoad = (String) loadComboBox.getSelectedItem();
+            if (oldLoad.equals(carLoads.getDefaultEmptyName())) {
                 if (JOptionPane.showConfirmDialog(this, MessageFormat.format(Bundle.getMessage("replaceDefaultEmpty"),
-                        new Object[]{oldLoadName, loadName}), Bundle.getMessage("replaceAll"),
+                        new Object[]{oldLoad, loadName}), Bundle.getMessage("replaceAll"),
                         JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                     return;
                 }
@@ -204,12 +215,12 @@ public class CarLoadEditFrame extends OperationsFrame implements java.beans.Prop
                     return;
                 }
                 carLoads.setDefaultEmptyName(loadName);
-                replaceAllLoads(oldLoadName, loadName);
+                replaceAllLoads(oldLoad, loadName);
                 return;
             }
-            if (oldLoadName.equals(carLoads.getDefaultLoadName())) {
+            if (oldLoad.equals(carLoads.getDefaultLoadName())) {
                 if (JOptionPane.showConfirmDialog(this, MessageFormat.format(Bundle.getMessage("replaceDefaultLoad"),
-                        new Object[]{oldLoadName, loadName}), Bundle.getMessage("replaceAll"),
+                        new Object[]{oldLoad, loadName}), Bundle.getMessage("replaceAll"),
                         JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                     return;
                 }
@@ -221,29 +232,20 @@ public class CarLoadEditFrame extends OperationsFrame implements java.beans.Prop
                     return;
                 }
                 carLoads.setDefaultLoadName(loadName);
-                replaceAllLoads(oldLoadName, loadName);
+                replaceAllLoads(oldLoad, loadName);
                 return;
             }
             if (JOptionPane.showConfirmDialog(this, MessageFormat.format(Bundle.getMessage("replaceMsg"), new Object[]{
-                    oldLoadName, loadName}), Bundle.getMessage("replaceAll"),
+                    oldLoad, loadName}), Bundle.getMessage("replaceAll"),
                     JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                 return;
             }
-            // Comboboxes get deselected during the addName operation
-            String loadType = carLoads.getLoadType(_type, oldLoadName);
-            String loadPriority = carLoads.getPriority(_type, oldLoadName);
-            String pickupComment = carLoads.getPickupComment(_type, oldLoadName);
-            String dropComment = carLoads.getDropComment(_type, oldLoadName);
-            
             carLoads.addName(_type, loadName);
-            carLoads.setLoadType(_type, loadName, loadType);
-            carLoads.setPriority(_type, loadName, loadPriority);
-            carLoads.setPickupComment(_type, loadName, pickupComment);
-            carLoads.setDropComment(_type, loadName, dropComment);
-            replaceLoad(_type, oldLoadName, loadName);
-            carLoads.deleteName(_type, oldLoadName);
+            replaceLoad(_type, oldLoad, loadName);
+            carLoads.deleteName(_type, oldLoad);
         }
         if (ae.getSource() == saveButton) {
+            log.debug("CarLoadEditFrame save button pressed");
             carLoads.setLoadType(_type, (String) loadComboBox.getSelectedItem(), (String) loadTypeComboBox
                     .getSelectedItem());
             carLoads.setPriority(_type, (String) loadComboBox.getSelectedItem(),
@@ -355,7 +357,6 @@ public class CarLoadEditFrame extends OperationsFrame implements java.beans.Prop
         }
         if (e.getPropertyName().equals(CarLoads.LOAD_CHANGED_PROPERTY)) {
             carLoads.updateComboBox(_type, loadComboBox);
-            loadComboBox.setSelectedItem(addTextBox.getText().trim());
         }
     }
 

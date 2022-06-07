@@ -1,27 +1,37 @@
 package jmri.managers;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import jmri.Memory;
 import jmri.implementation.DefaultMemory;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provide the concrete implementation for the Internal Memory Manager.
  *
- * @author Bob Jacobsen Copyright (C) 2004
+ * @author	Bob Jacobsen Copyright (C) 2004
  */
 public class DefaultMemoryManager extends AbstractMemoryManager {
 
-    public DefaultMemoryManager(InternalSystemConnectionMemo memo) {
-        super(memo);
+    @Override
+    public String getSystemPrefix() {
+        return "I";
     }
 
     @Override
-    @Nonnull
-    protected Memory createNewMemory(@Nonnull String systemName, @CheckForNull String userName) throws IllegalArgumentException {
-        // makeSystemName validates that systemName is correct
-        return new DefaultMemory(makeSystemName(systemName), userName);
+    protected Memory createNewMemory(String systemName, String userName) {
+        String prefix = getSystemNamePrefix();
+        if (systemName.isEmpty() || systemName.equals(prefix)) {
+            log.error("Invalid system name for memory: \"{}\" but needed {} followed by a suffix", systemName, prefix);
+            throw new IllegalArgumentException("Invalid system name for memory: \"" + systemName + "\" but needed " + prefix + " followed by a suffix");
+        }
+        // we've decided to enforce that memory system
+        // names start with IM by prepending if not present
+        if (!systemName.startsWith(prefix)) {
+            systemName = makeSystemName(systemName);
+        }
+        return new DefaultMemory(systemName, userName);
     }
+
+    private final static Logger log = LoggerFactory.getLogger(DefaultMemoryManager.class);
 
 }

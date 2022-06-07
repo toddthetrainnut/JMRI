@@ -1,18 +1,19 @@
 package jmri.jmrix.loconet.usb_dcs240.swing;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class Dcs240UsbModeSelectPaneTest extends jmri.util.swing.JmriPanelTest {
 
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         panel = new Dcs240UsbModeSelectPane();
@@ -21,7 +22,7 @@ public class Dcs240UsbModeSelectPaneTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

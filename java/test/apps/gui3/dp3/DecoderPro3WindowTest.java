@@ -1,12 +1,13 @@
 package apps.gui3.dp3;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  *
@@ -22,20 +23,19 @@ public class DecoderPro3WindowTest {
         JUnitUtil.dispose(t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.initDefaultUserMessagePreferences();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initConnectionConfigManager();
-        JUnitUtil.initDebugProgrammerManager();
+        jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
+        jmri.util.JUnitUtil.resetProfileManager();
+        jmri.util.JUnitUtil.initConnectionConfigManager();
+        jmri.util.JUnitUtil.initDebugProgrammerManager();
         jmri.InstanceManager.setDefault(jmri.jmrit.symbolicprog.ProgrammerConfigManager.class,new jmri.jmrit.symbolicprog.ProgrammerConfigManager());
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

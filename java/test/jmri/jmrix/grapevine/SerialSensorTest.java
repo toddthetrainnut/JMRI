@@ -1,13 +1,15 @@
 package jmri.jmrix.grapevine;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.grapevine.SerialSensor class.
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SerialSensorTest extends jmri.implementation.AbstractSensorTestBase {
 
@@ -18,16 +20,16 @@ public class SerialSensorTest extends jmri.implementation.AbstractSensorTestBase
     public int numListeners() {return 0;}
 
     @Override
-    public void checkActiveMsgSent() {}
+    public void checkOnMsgSent() {}
 
     @Override
-    public void checkInactiveMsgSent() {}
+    public void checkOffMsgSent() {}
 
     @Override
     public void checkStatusRequestMsgSent() {}
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new GrapevineSystemConnectionMemo();
@@ -37,8 +39,7 @@ public class SerialSensorTest extends jmri.implementation.AbstractSensorTestBase
     }
 
     // reset objects
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         t.dispose();
         tcis.terminateThreads();

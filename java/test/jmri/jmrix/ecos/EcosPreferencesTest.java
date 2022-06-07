@@ -1,15 +1,15 @@
 package jmri.jmrix.ecos;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Tests for the EcosPreferences class
+ * Tests for the Bundle class
  *
  * @author Paul Bender Copyright (C) 2016
  */
@@ -24,20 +24,17 @@ public class EcosPreferencesTest  {
         Assert.assertNotNull("exists", new jmri.jmrix.ecos.EcosPreferences(memo));
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDefaultUserMessagePreferences();
+        jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
         memo = new jmri.jmrix.ecos.EcosSystemConnectionMemo();
 
         jmri.InstanceManager.store(memo, jmri.jmrix.ecos.EcosSystemConnectionMemo.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

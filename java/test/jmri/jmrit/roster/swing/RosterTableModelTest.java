@@ -1,17 +1,19 @@
 package jmri.jmrit.roster.swing;
 
+import jmri.InstanceManager;
 import jmri.jmrit.roster.Roster;
 import jmri.jmrit.roster.RosterEntry;
 import jmri.util.JUnitUtil;
-
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the roster.swing.RosterTableModel class.
  *
- * @author Bob Jacobsen Copyright (C) 2009
+ * @author	Bob Jacobsen Copyright (C) 2009
  */
 public class RosterTableModelTest {
 
@@ -42,15 +44,15 @@ public class RosterTableModelTest {
         RosterTableModel t = new RosterTableModel();
 
         Assert.assertEquals("id 1", t.getValueAt(0, RosterTableModel.IDCOL));
-        Assert.assertEquals(12, t.getValueAt(0, RosterTableModel.ADDRESSCOL));
+        Assert.assertEquals(Integer.valueOf(12), t.getValueAt(0, RosterTableModel.ADDRESSCOL));
         Assert.assertEquals("33", t.getValueAt(0, RosterTableModel.DECODERCOL));
 
         Assert.assertEquals("id 2", t.getValueAt(1, RosterTableModel.IDCOL));
-        Assert.assertEquals(13, t.getValueAt(1, RosterTableModel.ADDRESSCOL));
+        Assert.assertEquals(Integer.valueOf(13), t.getValueAt(1, RosterTableModel.ADDRESSCOL));
         Assert.assertEquals("34", t.getValueAt(1, RosterTableModel.DECODERCOL));
 
         Assert.assertEquals("id 3", t.getValueAt(2, RosterTableModel.IDCOL));
-        Assert.assertEquals(14, t.getValueAt(2, RosterTableModel.ADDRESSCOL));
+        Assert.assertEquals(Integer.valueOf(14), t.getValueAt(2, RosterTableModel.ADDRESSCOL));
         Assert.assertEquals("35", t.getValueAt(2, RosterTableModel.DECODERCOL));
     }
 
@@ -58,12 +60,15 @@ public class RosterTableModelTest {
     static int NENTRIES = 3;
     static int NKEYS = 4;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
+
+        // Create empty test instance
+        InstanceManager.reset(Roster.class);
+        InstanceManager.setDefault(Roster.class, new Roster());
 
         // first entry
         Element e;
@@ -149,7 +154,7 @@ public class RosterTableModelTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

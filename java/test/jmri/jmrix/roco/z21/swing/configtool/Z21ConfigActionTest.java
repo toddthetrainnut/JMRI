@@ -3,9 +3,10 @@ package jmri.jmrix.roco.z21.swing.configtool;
 import jmri.jmrix.roco.z21.Z21InterfaceScaffold;
 import jmri.jmrix.roco.z21.Z21SystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for Z21ConfigAction class.
@@ -28,7 +29,7 @@ public class Z21ConfigActionTest {
       Assert.assertNotNull("Z21ConfigAction constructor",new Z21ConfigAction(memo));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
@@ -38,7 +39,7 @@ public class Z21ConfigActionTest {
         memo.setTrafficController(tc);
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         memo=null;
         tc.terminateThreads();

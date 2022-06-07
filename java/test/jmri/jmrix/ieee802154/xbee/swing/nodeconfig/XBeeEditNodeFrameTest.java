@@ -1,19 +1,17 @@
 package jmri.jmrix.ieee802154.xbee.swing.nodeconfig;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.ieee802154.xbee.XBeeConnectionMemo;
 import jmri.jmrix.ieee802154.xbee.XBeeInterfaceScaffold;
 import jmri.jmrix.ieee802154.xbee.XBeeNode;
 import jmri.jmrix.ieee802154.xbee.XBeeTrafficController;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of EditNodeFrame
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class XBeeEditNodeFrameTest extends jmri.util.JmriJFrameTestBase {
 
@@ -21,7 +19,7 @@ public class XBeeEditNodeFrameTest extends jmri.util.JmriJFrameTestBase {
     private XBeeConnectionMemo m = null;
     private XBeeNodeConfigFrame parent = null;
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -45,7 +43,7 @@ public class XBeeEditNodeFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         tc = null;
@@ -54,7 +52,6 @@ public class XBeeEditNodeFrameTest extends jmri.util.JmriJFrameTestBase {
            JUnitUtil.dispose(parent);
         }
         parent = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 }

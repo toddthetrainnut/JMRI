@@ -2,7 +2,7 @@ package jmri.jmrit.operations.locations.schedules;
 
 import jmri.jmrit.operations.OperationsTestCase;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  * Tests for the Operations Locations class Last manually cross-checked on

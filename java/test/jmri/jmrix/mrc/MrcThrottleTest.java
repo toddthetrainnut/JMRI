@@ -1,14 +1,14 @@
 package jmri.jmrix.mrc;
 
 import jmri.util.JUnitUtil;
-import jmri.SpeedStepMode;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MrcThrottleTest extends jmri.jmrix.AbstractThrottleTest {
 
@@ -34,20 +34,9 @@ public class MrcThrottleTest extends jmri.jmrix.AbstractThrottleTest {
     @Test
     @Override
     public void testGetSpeedStepMode() {
-        SpeedStepMode expResult = SpeedStepMode.NMRA_DCC_128;
-        SpeedStepMode result = instance.getSpeedStepMode();
+        int expResult = 1;
+        int result = instance.getSpeedStepMode();
         Assert.assertEquals(expResult, result);
-    }
-    
-    /**
-     * Test of getSpeedIncrement method, of class AbstractThrottle.
-     */
-    @Test
-    @Override
-    public void testGetSpeedIncrement() {
-        float expResult = SpeedStepMode.NMRA_DCC_128.increment;
-        float result = instance.getSpeedIncrement();
-        Assert.assertEquals(expResult, result, 0.0);
     }
 
     /**
@@ -368,7 +357,6 @@ public class MrcThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup4 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup4() {
     }
 
@@ -376,12 +364,11 @@ public class MrcThrottleTest extends jmri.jmrix.AbstractThrottleTest {
      * Test of sendFunctionGroup5 method, of class AbstractThrottle.
      */
     @Test
-    @Override
     public void testSendFunctionGroup5() {
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         MrcSystemConnectionMemo memo = new MrcSystemConnectionMemo();
@@ -392,8 +379,7 @@ public class MrcThrottleTest extends jmri.jmrix.AbstractThrottleTest {
         instance = new MrcThrottle(memo,new jmri.DccLocoAddress(42,false));
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

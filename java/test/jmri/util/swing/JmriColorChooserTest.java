@@ -3,14 +3,13 @@ package jmri.util.swing;
 import java.awt.Color;
 import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
-
 import javax.swing.JColorChooser;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
@@ -61,14 +60,14 @@ public class JmriColorChooserTest {
         t.start();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
     }
 

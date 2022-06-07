@@ -2,8 +2,8 @@ package jmri.jmrix.loconet;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jmri.DccLocoAddress;
+import jmri.DccThrottle;
 import jmri.LocoAddress;
-import jmri.SpeedStepMode;
 import jmri.jmrix.AbstractThrottle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,8 @@ public class Pr2Throttle extends AbstractThrottle {
         super(memo);
         this.address = address;
         addr = address.getNumber();
-        setSpeedStepMode(SpeedStepMode.NMRA_DCC_28);
+        setSpeedStepMode(DccThrottle.SpeedStepMode28);
+        this.speedIncrement = 1;  // 128 step mode only
     }
 
     /**
@@ -46,13 +47,13 @@ public class Pr2Throttle extends AbstractThrottle {
         } else if (lSpeed == 1) {
             return -1.f;   // estop
         }
-        if (getSpeedStepMode() == SpeedStepMode.NMRA_DCC_28) {
+        if (getSpeedStepMode() == DccThrottle.SpeedStepMode28) {
             if (lSpeed <= 15) //Value less than 15 is in the stop/estop range bracket
             {
                 return 0.f;
             }
             return (((lSpeed - 12) / 4f) / 28.f);
-        } else if (getSpeedStepMode() == SpeedStepMode.NMRA_DCC_14) {
+        } else if (getSpeedStepMode() == DccThrottle.SpeedStepMode14) {
             if (lSpeed <= 15) //Value less than 15 is in the stop/estop range bracket
             {
                 return 0.f;
@@ -77,10 +78,10 @@ public class Pr2Throttle extends AbstractThrottle {
     protected int intSpeed(float fSpeed) {
         if (fSpeed< 0.) return 1;  // what the parent class does
         switch (this.getSpeedStepMode()) {
-            case NMRA_DCC_28:
-            case MOTOROLA_28:
+            case DccThrottle.SpeedStepMode28:
+            case DccThrottle.SpeedStepMode28Mot:
                 return (int) ((fSpeed * 28) * 4) + 12;
-            case NMRA_DCC_14:
+            case DccThrottle.SpeedStepMode14:
                 return (int) ((fSpeed * 14) * 8) + 8;
                 
             default:
@@ -93,10 +94,9 @@ public class Pr2Throttle extends AbstractThrottle {
     public void writeData() {
         // convert contents
         int stat = 0;
-        int speed;
-        synchronized(this) {
-            speed = intSpeed(speedSetting);
-        }
+
+        int speed = intSpeed(speedSetting);
+
         int dirf = 0; // contains dir, f0, f4-1
         if (getF0()) {
             dirf |= (1 << 4);
@@ -208,7 +208,7 @@ public class Pr2Throttle extends AbstractThrottle {
      */
     @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY") // OK to compare floating point, notify on any change
     @Override
-    public synchronized void setSpeedSetting(float speed) {
+    public void setSpeedSetting(float speed) {
         float oldSpeed = this.speedSetting;
         this.speedSetting = speed;
         if (speed < 0) {
@@ -216,7 +216,9 @@ public class Pr2Throttle extends AbstractThrottle {
         }
 
         writeData();
-        firePropertyChange(SPEEDSETTING, oldSpeed, this.speedSetting); // NOI18N
+        if (oldSpeed != this.speedSetting) {
+            notifyPropertyChangeListener("SpeedSetting", oldSpeed, this.speedSetting); // NOI18N
+        }
         record(speed);
     }
 
@@ -229,7 +231,9 @@ public class Pr2Throttle extends AbstractThrottle {
         boolean old = isForward;
         isForward = forward;
         sendFunctionGroup1();
-        firePropertyChange(ISFORWARD, old, isForward); // NOI18N
+        if (old != isForward) {
+            notifyPropertyChangeListener("IsForward", old, isForward); // NOI18N
+        }
     }
 
     /**
@@ -252,7 +256,7 @@ public class Pr2Throttle extends AbstractThrottle {
      * {@inheritDoc}
      */
     @Override
-    public void throttleDispose() {
+    protected void throttleDispose() {
         finishRecord();
     }
 

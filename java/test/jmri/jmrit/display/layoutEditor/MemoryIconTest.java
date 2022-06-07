@@ -1,14 +1,12 @@
 package jmri.jmrit.display.layoutEditor;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
 import jmri.util.junit.annotations.*;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
- * Test simple functioning of MemoryIcon.
+ * Test simple functioning of MemoryIcon
  *
  * @author Paul Bender Copyright (C) 2016
  */
@@ -16,19 +14,21 @@ public class MemoryIconTest extends jmri.jmrit.display.MemoryIconTest {
 
     @Test
     @Override
-    @Disabled("Superclass method assumes graphical icon (red X)")
+    @Ignore("Superclass method assumes graphical icon (red X)")
     @ToDo("rewrite superclass test so it works in this case.")
     public void testShowEmpty() {
     }
 
     @Test
     @Override
-    @Disabled("When test from superclass is run, Scale is not set")
+    @Ignore("When test from superclass is run, Scale is not set")
     @ToDo("rewrite superclass test so it works in this case.")
     public void testGetAndSetScale(){
     }
+    
 
-    @BeforeEach
+
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -40,17 +40,14 @@ public class MemoryIconTest extends jmri.jmrit.display.MemoryIconTest {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        if (to != null) {
+        if(to!=null) {
            to.getEditor().dispose();
            to = null;
            p = null;
         }
-        JUnitUtil.resetWindows(false,false);
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

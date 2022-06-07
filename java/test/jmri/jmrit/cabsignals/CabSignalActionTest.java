@@ -1,17 +1,19 @@
 package jmri.jmrit.cabsignals;
 
 import java.awt.GraphicsEnvironment;
-
+import jmri.ConsistManager;
+import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of CabSignalAction
  *
- * @author Paul Bender Copyright (C) 2019
+ * @author	Paul Bender Copyright (C) 2019
  */
 public class CabSignalActionTest {
 
@@ -29,12 +31,12 @@ public class CabSignalActionTest {
         Assert.assertNotNull("exists", action);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
        JUnitUtil.tearDown();    
     }

@@ -83,7 +83,7 @@ public class XBeeLight extends AbstractLight {
                    }
                    pin = Integer.parseInt(systemName.substring(seperator + 1));
                } catch (NumberFormatException ex) {
-                   log.debug("Unable to convert {} into the cab and input format of nn:xx", systemName);
+                   log.debug("Unable to convert " + systemName + " into the cab and input format of nn:xx");
               }
            } else {
                try {
@@ -93,11 +93,14 @@ public class XBeeLight extends AbstractLight {
                    // calculate the pin to use.
                    pin = ((address) % 10);
                } catch (NumberFormatException ex) {
-                   log.debug("Unable to convert {} Hardware Address to a number", systemName);
+                   log.debug("Unable to convert " + systemName + " Hardware Address to a number");
                }
            }
            if (log.isDebugEnabled()) {
-               log.debug("Created Light {} (NodeIdentifier {} D{})", systemName, nodeIdentifier, pin);
+               log.debug("Created Light " + systemName
+                    + " (NodeIdentifier " + nodeIdentifier
+                    + " D" + pin
+                    + ")");
            }
         }
     }

@@ -1,7 +1,5 @@
 package jmri.jmrix.lenz.liusbserver;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.charset.StandardCharsets;
 import jmri.jmrix.ConnectionStatus;
 import jmri.jmrix.lenz.LenzCommandStation;
 import jmri.jmrix.lenz.XNetInitializationManager;
@@ -17,7 +14,6 @@ import jmri.jmrix.lenz.XNetNetworkPortController;
 import jmri.jmrix.lenz.XNetReply;
 import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.jmrix.lenz.XNetTrafficController;
-import jmri.util.ImmediatePipedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +60,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
     }
 
     @Override
-    public synchronized void connect() throws java.io.IOException {
+    synchronized public void connect() throws java.io.IOException {
         opened = false;
         log.debug("connect called");
         // open the port in XpressNet mode
@@ -74,18 +70,18 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
             bcastAdapter.connect();
             commAdapter.connect();
             pout = commAdapter.getOutputStream();
-            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeO = new PipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
             opened = true;
         } catch (java.io.IOException e) {
-            log.error("init (pipe): Exception",e);
+            log.error("init (pipe): Exception: " + e.toString());
             ConnectionStatus.instance().setConnectionState(
                         this.getSystemConnectionMemo().getUserName(),
                         m_HostName, ConnectionStatus.CONNECTION_DOWN);
             throw e; // re-throw so this can be seen externally.
         } catch (Exception ex) {
-            log.error("init (connect): Exception", ex);
+            log.error("init (connect): Exception: " + ex.toString());
             ConnectionStatus.instance().setConnectionState(
                         this.getSystemConnectionMemo().getUserName(),
                         m_HostName, ConnectionStatus.CONNECTION_DOWN);
@@ -141,25 +137,24 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
         XNetTrafficController packets = (new LIUSBServerXNetPacketizer(new LenzCommandStation()));
         packets.connectPort(this);
 
+        // start operation
+        // packets.startThreads();
         this.getSystemConnectionMemo().setXNetTrafficController(packets);
 
         // Start the threads that handle the network communication.
         startCommThread();
         startBCastThread();
 
-        new XNetInitializationManager()
-                .memo(this.getSystemConnectionMemo())
-                .setDefaults()
-                .versionCheck()
-                .setTimeout(30000)
-                .init();
+        new XNetInitializationManager(this.getSystemConnectionMemo());
     }
 
     /**
      * Start the Communication port thread.
      */
     private void startCommThread() {
-        commThread = new Thread(() -> { // start a new thread
+        commThread = new Thread(new Runnable() {
+            @Override
+            public void run() { // start a new thread
                 // this thread has one task.  It repeatedly reads from the two
                 // incomming network connections and writes the resulting
                 // messages from the network ports and writes any data
@@ -169,22 +164,27 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
                 BufferedReader bufferedin
                         = new BufferedReader(
                                 new InputStreamReader(commAdapter.getInputStream(),
-                                        StandardCharsets.UTF_8));
+                                        java.nio.charset.Charset.forName("UTF-8")));
                 for (;;) {
                     try {
                         synchronized (commAdapter) {
                             r = loadChars(bufferedin);
                         }
                     } catch (java.io.IOException e) {
+                        // continue;
                         // start the process of trying to recover from
                         // a failed connection.
                         commAdapter.recover();
                         break; // then exit the for loop.
                     }
-                    log.debug("Network Adapter Received Reply: {}",r);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Network Adapter Received Reply: "
+                                + r.toString());
+                    }
                     writeReply(r);
                 }
-            });
+            }
+        });
         commThread.start();
     }
 
@@ -192,7 +192,9 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
      * Start the Broadcast Port thread.
      */
     private void startBCastThread() {
-        bcastThread = new Thread(() -> { // start a new thread
+        bcastThread = new Thread(new Runnable() {
+            @Override
+            public void run() { // start a new thread
                 // this thread has one task.  It repeatedly reads from the two
                 // incomming network connections and writes the resulting
                 // messages from the network ports and writes any data received
@@ -202,32 +204,48 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
                 BufferedReader bufferedin
                         = new BufferedReader(
                                 new InputStreamReader(bcastAdapter.getInputStream(),
-                                        StandardCharsets.UTF_8));
+                                        java.nio.charset.Charset.forName("UTF-8")));
                 for (;;) {
                     try {
                         synchronized (bcastAdapter) {
                             r = loadChars(bufferedin);
                         }
                     } catch (java.io.IOException e) {
+                        //continue;
                         // start the process of trying to recover from
                         // a failed connection.
                         bcastAdapter.recover();
                         break; // then exit the for loop.
                     }
                     if (log.isDebugEnabled()) {
-                        log.debug("Network Adapter Received Reply: {}", r.toString());
+                        log.debug("Network Adapter Received Reply: "
+                                + r.toString());
                     }
                     r.setUnsolicited(); // Anything coming through the
                     // broadcast port is an
                     // unsolicited message.
                     writeReply(r);
                 }
-            });
+            }
+        });
         bcastThread.start();
     }
 
+    /**
+     * Local method to do specific configuration.
+     */
+    @Deprecated
+    static public LIUSBServerAdapter instance() {
+        if (mInstance == null) {
+            mInstance = new LIUSBServerAdapter();
+        }
+        return mInstance;
+    }
+
+    volatile static LIUSBServerAdapter mInstance = null;
+
     private synchronized void writeReply(XNetReply r) {
-        log.debug("Write reply to outpipe: {}", r);
+        log.debug("Write reply to outpipe: {}", r.toString());
         int i;
         int len = (r.getElement(0) & 0x0f) + 2;  // opCode+Nbytes+ECC
         for (i = 0; i < len; i++) {
@@ -252,7 +270,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
     private XNetReply loadChars(java.io.BufferedReader istream) throws java.io.IOException {
         // The LIUSBServer sends us data as strings of hex values.
         // These hex values are followed by a <cr><lf>
-        String s;
+        String s = "";
         s = istream.readLine();
         log.debug("Received from port: {}", s);
         if (s == null) {
@@ -267,7 +285,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
      * it calls the default recovery method for both of the internal adapters.
      */
     @Override
-    public synchronized void recover() {
+    synchronized public void recover() {
         bcastAdapter.recover();
         commAdapter.recover();
     }
@@ -286,7 +304,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
      */
     private static class BroadCastPortAdapter extends jmri.jmrix.AbstractNetworkPortController {
 
-        private final LIUSBServerAdapter parent;
+        private LIUSBServerAdapter parent;
 
         public BroadCastPortAdapter(LIUSBServerAdapter p) {
             super(p.getSystemConnectionMemo());
@@ -298,7 +316,6 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
 
         @Override
         public void configure() {
-            // no additional configuration required
         }
 
         @Override
@@ -317,8 +334,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
         }
 
         @Override
-        @SuppressFBWarnings(value="OVERRIDING_METHODS_MUST_INVOKE_SUPER", 
-                justification="this object does not own SystemConnectionMemo")
+        @SuppressWarnings("OverridingMethodsMustInvokeSuper")
         public void dispose() {
             // override to prevent super class from disposing of the
             // SystemConnectionMemo since this object does not own it
@@ -330,7 +346,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
      */
     private static class CommunicationPortAdapter extends jmri.jmrix.AbstractNetworkPortController {
 
-        private final LIUSBServerAdapter parent;
+        private LIUSBServerAdapter parent;
 
         public CommunicationPortAdapter(LIUSBServerAdapter p) {
             super(p.getSystemConnectionMemo());
@@ -342,7 +358,6 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
 
         @Override
         public void configure() {
-            // no additional configuration required
         }
 
         @Override
@@ -361,8 +376,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
         }
 
         @Override
-        @SuppressFBWarnings(value="OVERRIDING_METHODS_MUST_INVOKE_SUPER", 
-                justification="this object does not own SystemConnectionMemo")
+        @SuppressWarnings("OverridingMethodsMustInvokeSuper")
         public void dispose() {
             // override to prevent super class from disposing of the
             // SystemConnectionMemo since this object does not own it
@@ -390,7 +404,7 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
                         //puts the command station into service mode.
                         log.error("Communications port dropped", ex);
                     }
-                }
+                }   
             };
         }
         else {
@@ -399,6 +413,6 @@ public class LIUSBServerAdapter extends XNetNetworkPortController {
         jmri.util.TimerUtil.schedule(keepAliveTimer,keepAliveTimeoutValue,keepAliveTimeoutValue);
     }
 
-    private static final Logger log = LoggerFactory.getLogger(LIUSBServerAdapter.class);
+    private final static Logger log = LoggerFactory.getLogger(LIUSBServerAdapter.class);
 
 }

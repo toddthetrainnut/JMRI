@@ -1,6 +1,6 @@
 package apps.startup.configurexml;
 
-import jmri.util.startup.StartupActionsManager;
+import apps.StartupActionsManager;
 import apps.startup.TriggerRouteModel;
 import jmri.InstanceManager;
 import jmri.configurexml.AbstractXmlAdapter;

@@ -22,6 +22,18 @@ public class CarRoads extends RollingStockAttribute implements InstanceManagerAu
     public CarRoads() {
     }
 
+    /**
+     * Get the default instance of this class.
+     *
+     * @return the default instance of this class
+     * @deprecated since 4.9.2; use
+     * {@link jmri.InstanceManager#getDefault(java.lang.Class)} instead
+     */
+    @Deprecated
+    public static synchronized CarRoads instance() {
+        return InstanceManager.getDefault(CarRoads.class);
+    }
+
     @Override
     protected String getDefaultNames() {
         return ROADS;
@@ -50,17 +62,25 @@ public class CarRoads extends RollingStockAttribute implements InstanceManagerAu
 
     /**
      * Get the maximum character length of a road name when printing on a
-     * manifest or switch list. Characters after the hyphen are ignored.
+     * manifest or switch list. Characters after the "-" are ignored.
      *
      * @return the maximum character length of a car road name
      */
     @Override
     public int getMaxNameLength() {
-        if (maxNameSubStringLength == 0) {
-            super.getMaxNameSubStringLength();
-            log.info("Max road name ({}) length {}", maxName, maxNameSubStringLength);
+        if (maxNameLength == 0) {
+            maxName = "";
+            maxNameLength = MIN_NAME_LENGTH;
+            for (String name : getNames()) {
+                String[] subString = name.split("-");
+                if (subString[0].length() > maxNameLength) {
+                    maxName = name;
+                    maxNameLength = subString[0].length();
+                }
+            }
+            log.info("Max road name ({}) length {}", maxName, maxNameLength);
         }
-        return maxNameSubStringLength;
+        return maxNameLength;
     }
 
     /**
@@ -71,7 +91,7 @@ public class CarRoads extends RollingStockAttribute implements InstanceManagerAu
      *
      */
     public void store(Element root) {
-        store(root, Xml.ROADS, Xml.ROAD);
+        store(root, Xml.ROADS, Xml.ROAD, Xml.ROAD_NAMES);
     }
 
     public void load(Element root) {

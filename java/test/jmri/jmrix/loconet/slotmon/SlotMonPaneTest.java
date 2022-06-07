@@ -5,12 +5,13 @@ import jmri.jmrix.loconet.LocoNetInterfaceScaffold;
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
 import jmri.jmrix.loconet.SlotManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SlotMonPaneTest extends jmri.util.swing.JmriPanelTest {
 
@@ -26,8 +27,9 @@ public class SlotMonPaneTest extends jmri.util.swing.JmriPanelTest {
         memo.dispose();
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         panel = new SlotMonPane();
@@ -36,7 +38,7 @@ public class SlotMonPaneTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

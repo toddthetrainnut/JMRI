@@ -5,6 +5,7 @@ import jmri.implementation.DccSignalMast;
 import jmri.jmrit.beantable.signalmast.SignalMastAddPane;
 import jmri.jmrix.loconet.LNCPSignalMast;
 import jmri.jmrix.loconet.SlotManager;
+import jmri.util.*;
 
 import javax.annotation.Nonnull;
 

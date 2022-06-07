@@ -2,13 +2,17 @@ package jmri.jmris.srcp;
 
 import java.beans.PropertyChangeListener;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
-
-import jmri.*;
+import jmri.DccLocoAddress;
+import jmri.DccThrottle;
+import jmri.JmriException;
+import jmri.LocoAddress;
+import jmri.Throttle;
+import jmri.ThrottleManager;
 import jmri.jmris.AbstractThrottleServer;
-import jmri.SystemConnectionMemo;
+import jmri.jmrix.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +25,12 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
 
     private static final Logger log = LoggerFactory.getLogger(JmriSRCPThrottleServer.class);
 
-    private final OutputStream output;
+    private final DataOutputStream output;
 
     private final ArrayList<Integer> busList;
     private final ArrayList<LocoAddress> addressList;
 
-    public JmriSRCPThrottleServer(DataInputStream inStream, OutputStream outStream) {
+    public JmriSRCPThrottleServer(DataInputStream inStream, DataOutputStream outStream) {
         super();
         busList = new ArrayList<>();
         addressList = new ArrayList<>();
@@ -39,7 +43,7 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
      */
     @Override
     public void sendStatus(LocoAddress l) throws IOException {
-        output.write( Bundle.getMessage("Error499").getBytes());
+        TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error499"));
     }
 
     /*
@@ -51,12 +55,12 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
         log.debug("send Status called with bus {} and address {}", bus, address);
 
         /* translate the bus into a system connection memo */
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
-            output.write(Bundle.getMessage("Error412").getBytes());
+            TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error412"));
             return;
         }
 
@@ -67,9 +71,9 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
             // address, so we need to convert the address to a DccLocoAddress
             // object first.
             DccLocoAddress addr = new DccLocoAddress(address, !(t.canBeShortAddress(address)));
-            Boolean isForward = (Boolean) t.getThrottleInfo(addr, Throttle.ISFORWARD);
-            Float speedSetting = (Float) t.getThrottleInfo(addr, Throttle.SPEEDSETTING);
-            SpeedStepMode speedStepMode = (SpeedStepMode) t.getThrottleInfo(addr, Throttle.SPEEDSTEPMODE);
+            Boolean isForward = (Boolean) t.getThrottleInfo(addr, "IsForward");
+            Float speedSetting = (Float) t.getThrottleInfo(addr, "SpeedSetting");
+            Integer speedStepMode = (Integer) t.getThrottleInfo(addr, "SpeedStepMode");
             Boolean f0 = (Boolean) t.getThrottleInfo(addr, "F0");
             Boolean f1 = (Boolean) t.getThrottleInfo(addr, "F1");
             Boolean f2 = (Boolean) t.getThrottleInfo(addr, "F2");
@@ -102,22 +106,21 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
             // and now build the output string to send
             String StatusString = "100 INFO " + bus + " GL " + address + " ";
             StatusString += isForward ? "1 " : "0 ";
-            {
-                int numSteps = 100;
-                // For NMRA DCC speed step modes, we use the number of steps from that mode.
-                // Non-NMRA modes are not supported, so for those, we fall back to 100 steps.
-                switch(speedStepMode) {
-                    case NMRA_DCC_128:
-                    case NMRA_DCC_28:
-                    case NMRA_DCC_27:
-                    case NMRA_DCC_14:
-                        numSteps = speedStepMode.numSteps;
-                        break;
-                    default:
-                        numSteps = 100;
-                        break;
-                }
-                StatusString += (int) java.lang.Math.ceil(speedSetting * numSteps) + " " + numSteps;
+            switch (speedStepMode) {
+                case DccThrottle.SpeedStepMode14:
+                    StatusString += (int) java.lang.Math.ceil(speedSetting * 14) + " " + 14;
+                    break;
+                case DccThrottle.SpeedStepMode27:
+                    StatusString += (int) java.lang.Math.ceil(speedSetting * 27) + " " + 27;
+                    break;
+                case DccThrottle.SpeedStepMode28:
+                    StatusString += (int) java.lang.Math.ceil(speedSetting * 28) + " " + 28;
+                    break;
+                case DccThrottle.SpeedStepMode128:
+                    StatusString += (int) java.lang.Math.ceil(speedSetting * 126) + " " + 126;
+                    break;
+                default:
+                    StatusString += (int) java.lang.Math.ceil(speedSetting * 100) + " " + 100;
             }
             StatusString += f0 ? " 1" : " 0";
             StatusString += f1 ? " 1" : " 0";
@@ -149,15 +152,15 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
             StatusString += f27 ? " 1" : " 0";
             StatusString += f28 ? " 1" : " 0";
             StatusString += "\n\r";
-            output.write(StatusString.getBytes());
+            TimeStampedOutput.writeTimestamp(output, StatusString);
         } else {
-            output.write(Bundle.getMessage("Error412").getBytes());
+            TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error412"));
         }
     }
 
     @Override
     public void sendErrorStatus() throws IOException {
-        output.write(Bundle.getMessage("Error499").getBytes());
+        TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error499"));
     }
 
     @Override
@@ -178,7 +181,7 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
         String StatusString = "101 INFO " + bus + " GL " + address.getNumber() + " "; // assume DCC for now.
         StatusString += address.getProtocol() == jmri.LocoAddress.Protocol.DCC_SHORT ? "N 1 28" : "N 2 28";
         StatusString += "\n\r";
-        output.write(StatusString.getBytes());
+        TimeStampedOutput.writeTimestamp(output, StatusString);
     }
 
     @Override
@@ -195,7 +198,7 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
         String StatusString = "102 INFO " + bus + " GL " + address.getNumber(); // assume DCC for now.
         StatusString += address.getProtocol() == jmri.LocoAddress.Protocol.DCC_SHORT ? "N 1 28" : "N 2 28";
         StatusString += "\n\r";
-        output.write(StatusString.getBytes());
+        TimeStampedOutput.writeTimestamp(output, StatusString);
     }
 
     public void initThrottle(int bus, int address, boolean isLong,
@@ -203,12 +206,12 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
         log.debug("initThrottle called with bus {} and address {}", bus, address);
 
         /* translate the bus into a system connection memo */
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
-            output.write(Bundle.getMessage("Error412").getBytes());
+            TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error412"));
             return;
         }
 
@@ -229,12 +232,12 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
         log.debug("releaseThrottle called with bus {} and address {}", bus, address);
 
         /* translate the bus into a system connection memo */
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
-            output.write(Bundle.getMessage("Error412").getBytes());
+            TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error412"));
             return;
         }
 
@@ -262,13 +265,13 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
     public void setThrottleSpeedAndDirection(int bus, int address, float speed, boolean isForward) {
         log.debug("Setting Speed for address {} bus {} to {} with direction {}",
                 address, bus, speed, isForward ? "forward" : "reverse");
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
             try {
-                output.write(Bundle.getMessage("Error412").getBytes());
+                TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error412"));
             } catch (IOException ioe) {
                 log.error("Error writing to network port");
             }
@@ -305,13 +308,13 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
     public void setThrottleFunctions(int bus, int address, ArrayList<Boolean> fList) {
         log.debug("Setting Functions for address {} bus {}",
                 address, bus);
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
             try {
-                output.write(Bundle.getMessage("Error412").getBytes());
+                TimeStampedOutput.writeTimestamp(output, Bundle.getMessage("Error412"));
             } catch (IOException ioe) {
                 log.error("Error writing to network port");
             }
@@ -330,7 +333,22 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
             if (addressList.contains(addr)) {
                 log.debug("Throttle in throttle list");
                 Throttle t = throttleList.get(addressList.indexOf(addr));
-                setFunctionsByThrottle(t,fList);
+                for (int i = 0; i < fList.size(); i++) {
+                    try {
+                        java.lang.reflect.Method setter = t.getClass()
+                                .getMethod("setF" + i, boolean.class);
+                        setter.invoke(t, fList.get(i));
+                    } catch (java.lang.NoSuchMethodException
+                            | java.lang.IllegalAccessException
+                            | java.lang.reflect.InvocationTargetException ex1) {
+                        log.error("", ex1);
+                        try {
+                            sendErrorStatus();
+                        } catch (IOException ioe) {
+                            log.error("Error writing to network port");
+                        }
+                    }
+                }
 
             }
         }
@@ -367,12 +385,12 @@ public class JmriSRCPThrottleServer extends AbstractThrottleServer {
         @Override
         public void propertyChange(java.beans.PropertyChangeEvent e) {
             if (log.isDebugEnabled()) {
-                log.debug("Property change event received {} / {}", e.getPropertyName(), e.getNewValue());
+                log.debug("Property change event received " + e.getPropertyName() + " / " + e.getNewValue());
             }
             switch (e.getPropertyName()) {
-                case Throttle.SPEEDSETTING:
-                case Throttle.SPEEDSTEPS:
-                case Throttle.ISFORWARD:
+                case "SpeedSetting":
+                case "SpeedSteps":
+                case "IsForward":
                     try {
                         clientServer.sendStatus(bus, address);
                     } catch (IOException ioe) {

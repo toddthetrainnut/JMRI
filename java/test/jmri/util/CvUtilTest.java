@@ -5,14 +5,15 @@
  */
 package jmri.util;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.junit.Assert;
 
 /**
@@ -25,20 +26,21 @@ public class CvUtilTest {
     public CvUtilTest() {
     }
 
-    @BeforeAll
+    @BeforeClass
     public static void setUpClass() {
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDownClass() {
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

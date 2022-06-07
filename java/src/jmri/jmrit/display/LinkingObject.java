@@ -28,12 +28,12 @@ import javax.swing.JPopupMenu;
  */
 public interface LinkingObject extends Cloneable {
 
-    String getURL();
+    public String getURL();
 
-    void setULRL(String u);
+    public void setULRL(String u);
 
-    void updateSize();
+    public void updateSize();
 
-    boolean setLinkMenu(JPopupMenu popup);
+    public boolean setLinkMenu(JPopupMenu popup);
 //    public void doMouseClicked(MouseEvent event);   
 }

@@ -72,16 +72,16 @@ abstract public class Siglet {
         }
 
         defineIO(); // user method that will load inputs
-        if (inputs == null || inputs.length < 1 || (inputs.length == 1 && inputs[0] == null)) {
+        if (inputs == null || inputs.length <= 0) {
             log.error("Siglet start invoked {}, but no inputs provided", ((name!=null && !name.isEmpty()) ? "for \""+name+"\"" : "(without a name)") );
-            throw new IllegalArgumentException("No defineIO inputs");
+            return;
         }
 
         pq = new PropertyChangeEventQueue(inputs);
         setOutput();
 
         // run one cycle at start
-        thread = jmri.util.ThreadingUtil.newThread(() -> {
+        thread = new Thread(() -> {
             while (true) {
                 try {
                     PropertyChangeEvent pe = pq.take();
@@ -110,16 +110,14 @@ abstract public class Siglet {
 
     /**
      * Stop execution of the logic.
+     * <p>
+     * Note: completion not guaranteed when this returns, as the internal
+     * operation may proceed for a short time. It's safe to call "start" again
+     * without worrying about that.
      */
     public void stop() {
         if (thread != null) {
-            Thread tempThread = thread;
-            tempThread.interrupt();
-            try {
-                tempThread.join();
-            } catch (InterruptedException ex) {
-                log.debug("stop interrupted");
-            }
+            thread.interrupt();
         }
     }
 

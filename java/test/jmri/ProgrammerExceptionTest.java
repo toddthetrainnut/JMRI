@@ -1,9 +1,10 @@
 package jmri;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for ProgrammerException class.
@@ -23,14 +24,14 @@ public class ProgrammerExceptionTest {
       Assert.assertNotNull("ProgrammerException string constructor",new ProgrammerException("test exception"));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         JUnitUtil.tearDown();
    }

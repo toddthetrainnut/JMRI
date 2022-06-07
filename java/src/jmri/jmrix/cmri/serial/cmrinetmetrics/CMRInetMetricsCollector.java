@@ -1,8 +1,11 @@
 package jmri.jmrix.cmri.serial.cmrinetmetrics;
 
+import jmri.jmrix.cmri.CMRISystemConnectionMemo;
 import jmri.jmrix.cmri.serial.SerialListener;
 import jmri.jmrix.cmri.serial.SerialMessage;
 import jmri.jmrix.cmri.serial.SerialReply;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Listener class for collecting CMRInet network traffic and error messages.
@@ -29,7 +32,7 @@ public class CMRInetMetricsCollector implements SerialListener {
     }
 
     protected void init() {
-        log.info("CMRInetMetricsCollector - init");
+        System.out.println("CMRInetMetricsCollector - init");
     }
     
     /**
@@ -43,7 +46,6 @@ public class CMRInetMetricsCollector implements SerialListener {
      * Transmit packets.
      * Monitor any transmit packets to collect metrics.
      */
-    @Override
     public synchronized void message(SerialMessage l) 
     { 
        int aPacketTypeID = 0;
@@ -89,7 +91,6 @@ public class CMRInetMetricsCollector implements SerialListener {
      * Receive packets.
      * Monitor any read (reply) packets to collect metrics.
      */
-    @Override
     public synchronized void reply(SerialReply l) 
     { 
        int aPacketTypeID = 0;
@@ -128,6 +129,6 @@ public class CMRInetMetricsCollector implements SerialListener {
        }
     }
 
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CMRInetMetricsCollector.class.getName());
+    // private final static Logger log = LoggerFactory.getLogger(CMRInetMetricsCollector.class.getName());
 
 }

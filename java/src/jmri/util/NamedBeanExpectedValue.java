@@ -1,6 +1,7 @@
 package jmri.util;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import jmri.ExpectedState;
 import jmri.InstanceManager;
 import jmri.NamedBean;
@@ -30,7 +31,7 @@ public class NamedBeanExpectedValue<T extends NamedBean, S extends Object> exten
      * @param name  the name
      * @param state the expected state
      */
-    public NamedBeanExpectedValue(@Nonnull T bean, @Nonnull String name, @Nonnull S state) {
+    public NamedBeanExpectedValue(@Nonnull T bean, @Nonnull String name, @Nullable S state) {
         this.handle = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(name, bean);
         this.state = state;
     }
@@ -52,13 +53,12 @@ public class NamedBeanExpectedValue<T extends NamedBean, S extends Object> exten
     }
 
     @Override
-    public void setExpectedState(@Nonnull S state) throws UnsupportedOperationException {
+    public void setExpectedState(S state) throws UnsupportedOperationException {
         S old = this.state;
         this.state = state;
         this.propertyChangeSupport.firePropertyChange(EXPECTED_STATE, old, state);
     }
 
-    @Nonnull
     @Override
     public T getObject() {
         return this.handle.getBean();
@@ -69,7 +69,6 @@ public class NamedBeanExpectedValue<T extends NamedBean, S extends Object> exten
      *
      * @return the name
      */
-    @Nonnull
     public String getName() {
         return this.handle.getName();
     }

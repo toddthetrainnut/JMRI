@@ -1,32 +1,30 @@
 package jmri.jmrix.rfid.generic.standalone;
 
-import jmri.jmrix.rfid.RfidSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * StandaloneTrafficControllerTest.java
  *
- * Test for the StandaloneTrafficController class
+ * Description:	tests for the StandaloneTrafficController class
  *
- * @author Paul Bender Copyright (C) 2012,2016
+ * @author	Paul Bender Copyright (C) 2012,2016
  */
 public class StandaloneTrafficControllerTest extends jmri.jmrix.rfid.RfidTrafficControllerTest {
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        tc = new StandaloneTrafficController(new RfidSystemConnectionMemo());
+        tc = new StandaloneTrafficController(new StandaloneSystemConnectionMemo());
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 }

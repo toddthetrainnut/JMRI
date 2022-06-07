@@ -10,9 +10,11 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -36,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * dragging a row from the turnout table to be dropped on a turnout label
  * <p>
  * To work right, the SlipTurnoutIcon needs to have all images the same size.
- * Based upon MultiSensorIconAdder by Bob Jacobsen and Pete Cressman
+ * Based upon MultiSensorIconAdder by Bob Jacobsen {@literal &} Pete Cressman
  *
  * @author Bob Jacobsen Copyright (c) 2007
  * @author Kevin Dickerson Copyright (c) 2010
@@ -44,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SlipIconAdder extends IconAdder {
 
-    HashMap<String, NamedBeanHandle<Turnout>> _turnoutMap = new HashMap<>();
+    HashMap<String, NamedBeanHandle<Turnout>> _turnoutMap = new HashMap<String, NamedBeanHandle<Turnout>>();
     int _lastIndex = 0;
 
     public static final String NamedBeanFlavorMime = DataFlavor.javaJVMLocalObjectMimeType
@@ -92,7 +94,7 @@ public class SlipIconAdder extends IconAdder {
     /** {@inheritDoc} */
     @Override
     public void reset() {
-        _turnoutMap = new HashMap<>();
+        _turnoutMap = new HashMap<String, NamedBeanHandle<Turnout>>();
         _lastIndex = 0;
         super.reset();
     }
@@ -131,10 +133,30 @@ public class SlipIconAdder extends IconAdder {
         _typePanel.add(threeWayButton);
         _typePanel.add(scissorButton);
         _iconPanel.add(_typePanel);
-        doubleSlipButton.addActionListener(actionEvent -> slipUpdate(0x00));
-        singleSlipButton.addActionListener(actionEvent -> slipUpdate(0x02));
-        threeWayButton.addActionListener(actionEvent -> slipUpdate(0x04));
-        scissorButton.addActionListener(actionEvent -> slipUpdate(0x08));
+        doubleSlipButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                slipUpdate(0x00);
+            }
+        });
+        singleSlipButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                slipUpdate(0x02);
+            }
+        });
+        threeWayButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                slipUpdate(0x04);
+            }
+        });
+        scissorButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                slipUpdate(0x08);
+            }
+        });
 
         if (lowerWestToLowerEastButton.getActionListeners().length > 0) {
             lowerWestToLowerEastButton.removeActionListener(lowerWestToLowerEastButton.getActionListeners()[0]);
@@ -152,8 +174,18 @@ public class SlipIconAdder extends IconAdder {
             _buttonSlipPanel.add(lowerWestToLowerEastButton);
             _buttonSlipPanel.add(upperWestToUpperEastButton);
             _iconPanel.add(_buttonSlipPanel);
-            lowerWestToLowerEastButton.addActionListener(actionEvent -> updateSingleSlipRoute(false));
-            upperWestToUpperEastButton.addActionListener(actionEvent -> updateSingleSlipRoute(true));
+            lowerWestToLowerEastButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    updateSingleSlipRoute(false);
+                }
+            });
+            upperWestToUpperEastButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    updateSingleSlipRoute(true);
+                }
+            });
         } else if (getTurnoutType() == 0x04) {
             ButtonGroup group = new ButtonGroup();
             lowerWestToLowerEastButton.setText(Bundle.getMessage("ToLower"));
@@ -174,8 +206,18 @@ public class SlipIconAdder extends IconAdder {
             _buttonSlipPanel.add(lowerWestToLowerEastButton);
             _buttonSlipPanel.add(upperWestToUpperEastButton);
             _iconPanel.add(_buttonSlipPanel);
-            lowerWestToLowerEastButton.addActionListener(actionEvent -> changeNumScissorTurnouts());
-            upperWestToUpperEastButton.addActionListener(actionEvent -> changeNumScissorTurnouts());
+            lowerWestToLowerEastButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    changeNumScissorTurnouts();
+                }
+            });
+            upperWestToUpperEastButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    changeNumScissorTurnouts();
+                }
+            });
         }
 
         JPanel rowPanel = null;
@@ -283,13 +325,13 @@ public class SlipIconAdder extends IconAdder {
         rowPanel.add(Box.createHorizontalStrut(STRUT_SIZE));
         JPanel panel = null;
         cnt = 0;
-        for (int i = _iconOrderList.size() - 1; i >= 0; i--) {
+        for (int i = _order.size() - 1; i >= 0; i--) {
             if (panel == null) {
                 panel = new JPanel();
                 panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
                 panel.add(Box.createHorizontalStrut(STRUT_SIZE));
             }
-            String key = _iconOrderList.get(i);
+            String key = _order.get(i);
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
             p.add(new JLabel(Bundle.getMessage(key)));
@@ -495,15 +537,16 @@ public class SlipIconAdder extends IconAdder {
     }
 
     void delete(int index) {
-        if (index >= _iconOrderList.size()) {
+        if (index >= _order.size()) {
             return;
         }
-        String key = _iconOrderList.get(index);
+        String key = _order.get(index);
         if (log.isDebugEnabled()) {
-            log.debug("delete({}) Sizes: _iconMap= {}, _iconOrderList= {}", index, _iconMap.size(), _iconOrderList.size());
+            log.debug("delete(" + index + ") Sizes: _iconMap= " + _iconMap.size()
+                    + ", _order= " + _order.size());
         }
         _iconMap.remove(key);
-        _iconOrderList.remove(index);
+        _order.remove(index);
     }
 
     /**
@@ -514,7 +557,7 @@ public class SlipIconAdder extends IconAdder {
      * @return Unique object
      */
     public NamedIcon getIcon(int index) {
-        return (NamedIcon) _iconMap.get(_iconOrderList.get(index)).getIcon();
+        return (NamedIcon) _iconMap.get(_order.get(index)).getIcon();
     }
 
     /**
@@ -567,9 +610,14 @@ public class SlipIconAdder extends IconAdder {
         if (name == null) {
             name = turnout.getSystemName();
         }
-        for (NamedBeanHandle<Turnout> turnoutNamedBeanHandle : _turnoutMap.values()) {
-            if (name.equals(turnoutNamedBeanHandle.getName())) {
-                JOptionPane.showMessageDialog(this, java.text.MessageFormat.format(Bundle.getMessage("DupTurnoutName"), name), Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
+        Iterator<NamedBeanHandle<Turnout>> iter = _turnoutMap.values().iterator();
+        while (iter.hasNext()) {
+            if (name.equals(iter.next().getName())) {
+                JOptionPane.showMessageDialog(this, java.text.MessageFormat.format(
+                        Bundle.getMessage("DupTurnoutName"),
+                        new Object[]{name}),
+                        Bundle.getMessage("ErrorTitle"),
+                        JOptionPane.ERROR_MESSAGE);
                 return false;
             }
         }
@@ -631,8 +679,10 @@ public class SlipIconAdder extends IconAdder {
                         }
                         e.dropComplete(true);
                         if (log.isDebugEnabled()) {
-                            log.debug("DropPanel.drop COMPLETED for {}", comp.getName());
+                            log.debug("DropPanel.drop COMPLETED for "
+                                    + comp.getName());
                         }
+                        return;
                     } else {
                         if (log.isDebugEnabled()) {
                             log.debug("DropPanel.drop REJECTED!");
@@ -640,7 +690,12 @@ public class SlipIconAdder extends IconAdder {
                         e.rejectDrop();
                     }
                 }
-            } catch (IOException | UnsupportedFlavorException ioe) {
+            } catch (IOException ioe) {
+                if (log.isDebugEnabled()) {
+                    log.debug("DropPanel.drop REJECTED!");
+                }
+                e.rejectDrop();
+            } catch (UnsupportedFlavorException ufe) {
                 if (log.isDebugEnabled()) {
                     log.debug("DropPanel.drop REJECTED!");
                 }

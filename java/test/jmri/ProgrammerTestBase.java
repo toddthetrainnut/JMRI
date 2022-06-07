@@ -1,7 +1,10 @@
 package jmri;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import java.util.List;
+import jmri.ProgListener;
+import jmri.ProgrammingMode;
+import jmri.util.JUnitUtil;
+import org.junit.*;
 
 /**
  * JUnit tests for the Programmer interface
@@ -52,10 +55,9 @@ abstract public class ProgrammerTestBase {
                 programmer.getMode());        
     }
     
-    @Test
+    @Test(expected = java.lang.IllegalArgumentException.class)
     public void testSetModeNull() {
-        Throwable throwable = Assert.assertThrows(IllegalArgumentException.class, () -> programmer.setMode(null));
-        Assertions.assertNotNull(throwable.getMessage());
+        programmer.setMode(null);
     }
 
     @Test
@@ -69,10 +71,11 @@ abstract public class ProgrammerTestBase {
                 programmer.writeCV("1",42,null);
     }
     
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     abstract public void setUp();
 
-    @AfterEach
+    @After
     abstract public void tearDown();
 
 }

@@ -1,9 +1,10 @@
 package jmri.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 
 /**
  * Checks of java bean storage.
@@ -59,13 +60,13 @@ public class DefaultJavaBeanConfigXMLTest {
         Assert.assertTrue(start.equals(end));
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

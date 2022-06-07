@@ -1,13 +1,12 @@
 package jmri.jmrix.loconet.loconetovertcp;
 
-import jmri.InstanceManager;
 import jmri.jmrix.loconet.LocoNetInterfaceScaffold;
 import jmri.jmrix.loconet.LocoNetSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for LnTcpServer class.
@@ -16,28 +15,27 @@ import org.mockito.Mockito;
  */
 public class LnTcpServerTest {
 
-    LocoNetSystemConnectionMemo memo;
-    
     @Test
     public void getInstanceTest() {
         Assert.assertNotNull("Server getInstance", LnTcpServer.getDefault());
         LnTcpServer.getDefault().disable();  // turn the server off after enabled during creation.
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        memo = Mockito.mock(LocoNetSystemConnectionMemo.class);
+        LocoNetSystemConnectionMemo memo = new LocoNetSystemConnectionMemo();
         // ensure memo exists in order to later use InstanceManager.getDefault()
-        InstanceManager.store(memo,LocoNetSystemConnectionMemo.class);
+        LocoNetInterfaceScaffold lnis = new LocoNetInterfaceScaffold(memo);
+        memo.setLnTrafficController(lnis);
+        memo.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100, true, false, true);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
-        memo = null;
         JUnitUtil.tearDown();
+        JUnitUtil.resetInstanceManager();
     }
 
 }

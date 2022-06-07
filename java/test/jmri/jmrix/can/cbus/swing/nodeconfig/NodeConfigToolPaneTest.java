@@ -1,16 +1,16 @@
 package jmri.jmrix.can.cbus.swing.nodeconfig;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.jmrix.can.cbus.CbusPreferences;
 import jmri.jmrix.can.cbus.node.CbusNodeTableDataModel;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of NodeConfigToolPane
@@ -27,26 +27,28 @@ public class NodeConfigToolPaneTest extends jmri.util.swing.JmriPanelTest {
         
         CbusNodeTableDataModel nodeModel = new CbusNodeTableDataModel(memo, 3,CbusNodeTableDataModel.MAX_COLUMN);
         jmri.InstanceManager.setDefault(CbusNodeTableDataModel.class,nodeModel );
+        
         jmri.InstanceManager.setDefault(jmri.jmrix.can.cbus.CbusPreferences.class,new CbusPreferences() );
         
-        NodeConfigToolPane nodeConfigpanel = new NodeConfigToolPane();
-        nodeConfigpanel.initComponents(memo);
+        NodeConfigToolPane panel = new NodeConfigToolPane();
+        panel.initComponents(memo);
         
-        Assert.assertNotNull("exists", nodeConfigpanel);
+        Assert.assertNotNull("exists", panel);
         Assert.assertNotNull("core node model exists", nodeModel);
         
+        
         nodeModel.dispose();
+        nodeModel = null;
 
     }
+    
     
     private CanSystemConnectionMemo memo;
     private TrafficControllerScaffold tcis;
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetInstanceManager();
         memo = new CanSystemConnectionMemo();
         tcis = new TrafficControllerScaffold();
         memo.setTrafficController(tcis);
@@ -56,17 +58,11 @@ public class NodeConfigToolPaneTest extends jmri.util.swing.JmriPanelTest {
         helpTarget = "package.jmri.jmrix.can.cbus.swing.nodeconfig.NodeConfigToolPane";
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        
-        tcis.terminateThreads();
-        memo.dispose();
         tcis = null;
         memo = null;
-        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
-
     }
 
 }

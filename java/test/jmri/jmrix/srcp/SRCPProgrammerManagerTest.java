@@ -1,14 +1,15 @@
 package jmri.jmrix.srcp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * SRCPProgrammerManagerTest.java
  *
- * Test for the jmri.jmrix.srcp.SRCPProgrammerManager class
+ * Description: tests for the jmri.jmrix.srcp.SRCPProgrammerManager class
  *
  * @author Bob Jacobsen
  */
@@ -25,14 +26,13 @@ public class SRCPProgrammerManagerTest {
         Assert.assertNotNull(s);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 }

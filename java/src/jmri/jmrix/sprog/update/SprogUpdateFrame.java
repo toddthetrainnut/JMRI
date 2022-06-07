@@ -91,13 +91,11 @@ abstract public class SprogUpdateFrame
         tc.setSprogState(SprogState.NORMAL);
     }
 
-    /**
-     * Stops Timer.
+    /** 
      * {@inheritDoc}
      */
     @Override
     public void dispose() {
-        stopTimer();
         tc = null;
         _memo = null;
         super.dispose();
@@ -279,7 +277,7 @@ abstract public class SprogUpdateFrame
         if (retVal == JFileChooser.APPROVE_OPTION) {
             hexFile = new SprogHexFile(hexFileChooser.getSelectedFile().getPath());
             if (log.isDebugEnabled()) {
-                log.debug("hex file chosen: {}", hexFile.getName());
+                log.debug("hex file chosen: " + hexFile.getName());
             }
             if ((!hexFile.getName().contains("sprog"))) {
                 JOptionPane.showMessageDialog(this, Bundle.getMessage("HexFileSelectDialogString"),
@@ -371,14 +369,14 @@ abstract public class SprogUpdateFrame
     /**
      * Internal routine to stop timer, as all is well.
      */
-    synchronized void stopTimer() {
+    synchronized protected void stopTimer() {
         if (timer != null) {
             timer.stop();
         }
     }
 
     /**
-     * Internal routine to handle timer starts and restarts.
+     * Internal routine to handle timer starts {@literal &} restarts.
      * 
      * @param delay milliseconds until action
      */

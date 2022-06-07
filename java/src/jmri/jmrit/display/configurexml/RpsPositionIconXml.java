@@ -1,9 +1,8 @@
 package jmri.jmrit.display.configurexml;
 
-import jmri.configurexml.JmriConfigureXmlException;
 import jmri.jmrit.catalog.NamedIcon;
-import jmri.jmrit.display.*;
-
+import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.RpsPositionIcon;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -63,11 +62,9 @@ public class RpsPositionIconXml extends PositionableLabelXml {
      *
      * @param element Top level Element to unpack.
      * @param o       an Editor as an Object
-     * @throws JmriConfigureXmlException when a error prevents creating the objects as as
-     *                   required by the input XML
      */
     @Override
-    public void load(Element element, Object o) throws JmriConfigureXmlException {
+    public void load(Element element, Object o) {
         Editor ed = (Editor) o;
         RpsPositionIcon l = new RpsPositionIcon(ed);
 
@@ -77,7 +74,7 @@ public class RpsPositionIconXml extends PositionableLabelXml {
         if (active == null) {
             active = ed.loadFailed("RpsPositionIcon: icon \"active\" ", name);
             if (active == null) {
-                log.info("RpsPositionIcon: icon \"active\" removed for url= {}", name);
+                log.info("RpsPositionIcon: icon \"active\" removed for url= " + name);
                 return;
             }
         }
@@ -88,7 +85,7 @@ public class RpsPositionIconXml extends PositionableLabelXml {
         if (error == null) {
             error = ed.loadFailed("RpsPositionIcon: icon \"error\" ", name);
             if (error == null) {
-                log.info("RpsPositionIcon: \"error\" removed for url= {}", name);
+                log.info("RpsPositionIcon: \"error\" removed for url= " + name);
                 return;
             }
         }
@@ -147,11 +144,7 @@ public class RpsPositionIconXml extends PositionableLabelXml {
         if (icon != null) {
             l.setErrorIcon(icon);
         }
-        try {
-            ed.putItem(l);
-        } catch (Positionable.DuplicateIdException e) {
-            throw new JmriConfigureXmlException("Positionable id is not unique", e);
-        }
+        ed.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.SENSORS, element);
     }

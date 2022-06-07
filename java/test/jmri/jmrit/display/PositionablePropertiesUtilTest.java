@@ -3,16 +3,16 @@ package jmri.jmrit.display;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class PositionablePropertiesUtilTest {
 
@@ -26,7 +26,7 @@ public class PositionablePropertiesUtilTest {
     }
 
     @Test
-    public void testNoChangesApplyLabel() throws Positionable.DuplicateIdException {
+    public void testNoChangesApplyLabel() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         Editor ef = new EditorScaffold();
         PositionableLabel label = new PositionableLabel("one", ef);
@@ -49,16 +49,14 @@ public class PositionablePropertiesUtilTest {
         Assert.assertEquals("No Change Font",f,label.getFont());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.resetWindows(false,false);
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

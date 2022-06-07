@@ -1,60 +1,33 @@
 package jmri.jmrit.beantable;
 
-import jmri.util.JUnitAppender;
+import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import jmri.util.ThreadingUtil;
-
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
-import org.netbeans.jemmy.operators.JFrameOperator;
+import org.junit.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
-@DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
 public class ListedTableFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @Test
-    @Override
-    public void testShowAndClose() {
-        ((ListedTableFrame)frame).initTables();
-        frame.initComponents();
-        ThreadingUtil.runOnLayout(() -> {
-            frame.setVisible(true);
-        });
-        JFrameOperator fo = new JFrameOperator(frame);
-        // It's up at this point, and can be manipulated
-        // Ask to close window
-        fo.requestClose();
-    }
-
-    @Test
-    public void testNoInitTablesError() {
-        ListedTableFrame.tabbedTableItemListArrayArray.clear(); // reset static BeanTable list
-        frame.initComponents();
-        JUnitAppender.assertErrorMessageStartsWith("No tables loaded: ");
-    }
-
-    @Test
-    @Override
-    public void testAccessibleContent() {
-        ((ListedTableFrame)frame).initTables();
-        super.testAccessibleContent();
-    }
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.initDefaultUserMessagePreferences();
-        frame = new ListedTableFrame<>();
+        if(!GraphicsEnvironment.isHeadless()) {
+           jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
+           frame = new ListedTableFrame();
+        }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // should be converted to check of scheduled ShutDownActions
         super.tearDown();
     }
 

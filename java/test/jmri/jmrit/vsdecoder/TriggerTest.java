@@ -1,7 +1,7 @@
 package jmri.jmrit.vsdecoder;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  * Tests for the Trigger class

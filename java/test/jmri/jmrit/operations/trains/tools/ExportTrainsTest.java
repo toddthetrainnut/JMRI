@@ -1,19 +1,15 @@
 package jmri.jmrit.operations.trains.tools;
 
 import java.awt.GraphicsEnvironment;
-import java.io.File;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.Assume;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.TrainManager;
 import jmri.util.JUnitOperationsUtil;
-import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
@@ -34,29 +30,32 @@ public class ExportTrainsTest extends OperationsTestCase {
         Assert.assertNotNull("exists", exportTrains);
 
         JUnitOperationsUtil.initOperationsData();
-
+        
         // built trains increase coverage
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
         Train train = tmanager.getTrainByName("STF");
         Assert.assertTrue(train.build());
 
         // next should cause export complete dialog to appear
-        Thread export = new Thread(exportTrains::writeOperationsTrainsFile);
+        Thread export = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                exportTrains.writeOperationsTrainsFile();
+            }
+        });
         export.setName("Export Trains"); // NOI18N
         export.start();
 
-        JUnitUtil.waitFor(() -> {
+        jmri.util.JUnitUtil.waitFor(() -> {
             return export.getState().equals(Thread.State.WAITING);
         }, "wait for prompt");
 
         JemmyUtil.pressDialogButton(Bundle.getMessage("ExportComplete"), Bundle.getMessage("ButtonOK"));
 
-        File file = new File(ExportTrains.defaultOperationsFilename());
+        java.io.File file = new java.io.File(ExportTrains.defaultOperationsFilename());
         Assert.assertTrue("Confirm file creation", file.exists());
-
-        JUnitOperationsUtil.checkOperationsShutDownTask();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(ExportTrainsTest.class);
+
 }

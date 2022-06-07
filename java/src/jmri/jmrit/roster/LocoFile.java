@@ -31,26 +31,21 @@ import org.slf4j.LoggerFactory;
 public class LocoFile extends XmlFile {
 
     /**
-     * Convert to a canonical text form for ComboBoxes, etc.
-     * @return loco title.
+     * Convert to a canonical text form for ComboBoxes, etc
      */
     public String titleString() {
         return "no title form yet";
     }
 
     /**
-     * Load a CvTableModel from the locomotive element in the File.
+     * Load a CvTableModel from the locomotive element in the File
      *
      * @param loco    A JDOM Element containing the locomotive definition
      * @param cvModel An existing CvTableModel object which will have the CVs
      *                from the loco Element appended. It is intended, but not
      *                required, that this be empty.
-     * @param mfgID   Decoder manufacturer. Used to check if there's need for special
-     *                treatment.
-     * @param family  Decoder family. Used to check if there's need for special
-     *                treatment.
      */
-    public static void loadCvModel(Element loco, CvTableModel cvModel, String mfgID, String family) {
+    public static void loadCvModel(Element loco, CvTableModel cvModel, String family) {
         CvValue cvObject;
         // get the CVs and load
         String rosterName = loco.getAttributeValue("id");
@@ -69,20 +64,20 @@ public class LocoFile extends XmlFile {
         if (values != null) {
             // get the CV values and load
             if (log.isDebugEnabled()) {
-                log.debug("Found {} CVvalues", values.getChildren("CVvalue").size());
+                log.debug("Found " + values.getChildren("CVvalue").size() + " CVvalues");
             }
 
             for (Element element : values.getChildren("CVvalue")) {
                 // locate the row
                 if (element.getAttribute("name") == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("unexpected null in name {} {}", element, element.getAttributes());
+                        log.debug("unexpected null in name " + element + " " + element.getAttributes());
                     }
                     break;
                 }
                 if (element.getAttribute("value") == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("unexpected null in value {} {}", element, element.getAttributes());
+                        log.debug("unexpected null in value " + element + " " + element.getAttributes());
                     }
                     break;
                 }
@@ -91,36 +86,15 @@ public class LocoFile extends XmlFile {
                 String value = element.getAttribute("value").getValue();
                 log.debug("CV named {} has value: {}", name, value);
 
-                // Fairly ugly hack to migrate Indexed CVs of existing Tsunami2 & Econami
-                // roster entries to full NMRA S9.2.2 format (include CV 31 value).
-                if (family != null && (family.startsWith("Tsunami2") || family.startsWith("Econami")) && name.matches("\\d+\\.\\d+")) {
-                    String oldName = name;
-                    name = "16." + oldName;
-                    log.info("CV{} renamed to {} has value: {}", oldName, name, value);
-                }
-
-                // check whether the CV already exists, i.e. due to a variable definition
                 cvObject = cvModel.allCvMap().get(name);
-                if (cvObject == null && name.equals("19")) {
-                    log.info("CV19 special case triggered, kept without Variable; {} {}", mfgID, family);
+                if (cvObject == null) {
+                    // need to disable this warning as ESU files do not generate CV entries until panel load time
+                    // log.warn("CV "+name+" was in loco file, but not defined by the decoder definition");
                     cvModel.addCV(name, false, false, false);
                     cvObject = cvModel.allCvMap().get(name);
                 }
-                if (cvObject == null) {
-                    log.trace("undefined CV check with mfgID={} family={}", mfgID, family);
-                    if ( (mfgID != null && mfgID.equals("151")) || (family != null && family.startsWith("ESU ")) ) { // Electronic Solutions Ulm GmbH
-                        // ESU files do not generate CV entries until panel load time
-                        cvModel.addCV(name, false, false, false);
-                        cvObject = cvModel.allCvMap().get(name);
-                     } else {
-                        // this is a valid way to migrate a decoder definition, i.e. to remove a variable.
-                        log.info("CV {} was in loco file, but not defined by the decoder definition; migrated", name);
-                    }
-                }
-                if (cvObject != null) {
-                    cvObject.setValue(Integer.parseInt(value));
-                    cvObject.setState(CvValue.FROMFILE);
-                }
+                cvObject.setValue(Integer.parseInt(value));
+                cvObject.setState(CvValue.FROMFILE);
             }
         } else {
             log.error("no values element found in config file; CVs not configured for ID=\"{}\"", rosterName);
@@ -160,7 +134,7 @@ public class LocoFile extends XmlFile {
 
         // get the Variable values and load
         if (log.isDebugEnabled()) {
-            log.debug("Found {} varValue elements", decoderDef.getChildren("varValue").size());
+            log.debug("Found " + decoderDef.getChildren("varValue").size() + " varValue elements");
         }
 
         // preload an index
@@ -195,8 +169,7 @@ public class LocoFile extends XmlFile {
                 var.setValue(value);
             } else {
                 if (selectMissingVarResponse(item) == MessageResponse.REPORT) {
-                    // not an warning, as this is how some definitions are migrated to remove erroneous variables
-                    log.debug("Did not find locofile variable \"{}\" in decoder definition, no variable loaded", item);
+                    log.warn("Did not find locofile variable \"{}\" in decoder definition, not loading", item);
                 }
             }
         }
@@ -230,7 +203,7 @@ public class LocoFile extends XmlFile {
      */
     public void writeFile(File file, CvTableModel cvModel, VariableTableModel variableModel, RosterEntry r) {
         if (log.isDebugEnabled()) {
-            log.debug("writeFile to {} {}", file.getAbsolutePath(), file.getName());
+            log.debug("writeFile to " + file.getAbsolutePath() + " " + file.getName());
         }
         try {
             // This is taken in large part from "Java and XML" page 368
@@ -265,7 +238,7 @@ public class LocoFile extends XmlFile {
             if (variableModel != null) {
                 for (int i = 0; i < variableModel.getRowCount(); i++) {
                     decoderDef.addContent(new Element("varValue")
-                            .setAttribute("item", variableModel.getItem(i))
+                            .setAttribute("item", variableModel.getLabel(i))
                             .setAttribute("value", variableModel.getValString(i))
                     );
                 }
@@ -309,7 +282,7 @@ public class LocoFile extends XmlFile {
      */
     public void writeFile(File pFile, Element pRootElement, RosterEntry pEntry) {
         if (log.isDebugEnabled()) {
-            log.debug("writeFile to {} {}", pFile.getAbsolutePath(), pFile.getName());
+            log.debug("writeFile to " + pFile.getAbsolutePath() + " " + pFile.getName());
         }
         try {
             // This is taken in large part from "Java and XML" page 368
@@ -319,7 +292,7 @@ public class LocoFile extends XmlFile {
 
             // Update the locomotive.id element
             if (log.isDebugEnabled()) {
-                log.debug("pEntry: {}", pEntry);
+                log.debug("pEntry: " + pEntry);
             }
             pRootElement.getChild("locomotive").getAttribute("id").setValue(pEntry.getId());
 
@@ -346,7 +319,7 @@ public class LocoFile extends XmlFile {
      */
     public void writeFile(File pFile, Element existingElement, Element newLocomotive) {
         if (log.isDebugEnabled()) {
-            log.debug("writeFile to {} {}", pFile.getAbsolutePath(), pFile.getName());
+            log.debug("writeFile to " + pFile.getAbsolutePath() + " " + pFile.getName());
         }
         try {
             // This is taken in large part from "Java and XML" page 368
@@ -375,7 +348,7 @@ public class LocoFile extends XmlFile {
     }
 
     static public String getFileLocation() {
-        return Roster.getDefault().getRosterFilesLocation();
+        return Roster.getDefault().getRosterLocation() + "roster" + File.separator;
     }
 
     // initialize logging

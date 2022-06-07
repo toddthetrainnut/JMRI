@@ -26,8 +26,7 @@ public class SerialReply extends jmri.jmrix.AbstractMRReply {
     }
 
     /**
-     * Is reply to poll message.
-     * @return element 0.
+     * Is reply to poll message
      */
     public int getAddr() {
         return getElement(0);

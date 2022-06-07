@@ -1,13 +1,20 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
+ * <p>
+ * Title: XNetTrafficRouterTest </p>
+ * <p>
+ * Description: </p>
+ * <p>
+ * Copyright: Copyright (c) 2002</p>
  *
- * @author Bob Jacobsen Copyright 2002
+ * @author Bob Jacobsen
  */
 public class XNetTrafficRouterTest {
 
@@ -45,7 +52,7 @@ public class XNetTrafficRouterTest {
 
         // check receipt
         Assert.assertEquals("one message sent", 1, upstream.outbound.size());
-        Assert.assertSame(upstream.outbound.elementAt(0), m);
+        Assert.assertTrue(upstream.outbound.elementAt(0) == m);
     }
 
     static int count = 0;
@@ -131,17 +138,16 @@ public class XNetTrafficRouterTest {
 
         // disconnect
         router.disconnectPort(upstream);
-        Assert.assertFalse(router.status());
+        Assert.assertTrue("not connected", !router.status());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

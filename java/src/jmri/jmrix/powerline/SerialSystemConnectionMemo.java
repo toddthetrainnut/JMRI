@@ -1,11 +1,7 @@
 package jmri.jmrix.powerline;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
-
-import jmri.*;
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
-import jmri.util.NamedBeanComparator;
+import jmri.InstanceManager;
 
 /**
  * Lightweight class to denote that a system is active, and provide general
@@ -18,10 +14,11 @@ import jmri.util.NamedBeanComparator;
  * multiple connections by
  * @author Ken Cameron Copyright (C) 2011
  */
-public class SerialSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class SerialSystemConnectionMemo extends jmri.jmrix.SystemConnectionMemo {
 
     public SerialSystemConnectionMemo() {
         super("P", "Powerline");
+        register(); // registers general type
         InstanceManager.store(this, SerialSystemConnectionMemo.class); // also register as specific type
 
         // create and register the ComponentFactory
@@ -60,36 +57,80 @@ public class SerialSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnecti
     }
 
     /**
+     * Tells which managers this class provides.
+     */
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        }
+        if (type.equals(jmri.SensorManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.TurnoutManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.LightManager.class)) {
+            return true;
+        }
+        return false; // nothing, by default
+    }
+
+    /**
+     * Provide manager by class
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.SensorManager.class)) {
+            return (T) getSensorManager();
+        }
+        if (T.equals(jmri.TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        if (T.equals(jmri.LightManager.class)) {
+            return (T) getLightManager();
+        }
+        return null; // nothing, by default
+    }
+
+    protected SerialTurnoutManager turnoutManager;
+    protected SerialLightManager lightManager;
+    protected SerialSensorManager sensorManager;
+
+    /**
      * Configure the common managers for Powerline connections. This puts the
      * common manager config in one place.
      */
     public void configureManagers() {
         // now does nothing here, it's done by the specific class
-        register(); // registers general type
     }
 
     public SerialTurnoutManager getTurnoutManager() {
-        return get(TurnoutManager.class);
+        return turnoutManager;
     }
 
     public SerialLightManager getLightManager() {
-        return get(LightManager.class);
+        return lightManager;
     }
 
     public SerialSensorManager getSensorManager() {
-        return get(SensorManager.class);
+        return sensorManager;
     }
 
     public void setTurnoutManager(SerialTurnoutManager m) {
-        store(m,TurnoutManager.class);
+        turnoutManager = m;
     }
 
     public void setLightManager(SerialLightManager m) {
-        store(m,LightManager.class);
+        lightManager = m;
     }
 
     public void setSensorManager(SerialSensorManager m) {
-        store(m,SensorManager.class);
+        sensorManager = m;
     }
 
     @Override
@@ -98,14 +139,18 @@ public class SerialSystemConnectionMemo extends jmri.jmrix.DefaultSystemConnecti
     }
 
     @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
-    }
-
-    @Override
     public void dispose() {
         serialTrafficController = null;
         InstanceManager.deregister(this, SerialSystemConnectionMemo.class);
+        if (turnoutManager != null) {
+            InstanceManager.deregister(turnoutManager, jmri.jmrix.powerline.SerialTurnoutManager.class);
+        }
+        if (lightManager != null) {
+            InstanceManager.deregister(lightManager, jmri.jmrix.powerline.SerialLightManager.class);
+        }
+        if (sensorManager != null) {
+            InstanceManager.deregister(sensorManager, jmri.jmrix.powerline.SerialSensorManager.class);
+        }
         super.dispose();
     }
 

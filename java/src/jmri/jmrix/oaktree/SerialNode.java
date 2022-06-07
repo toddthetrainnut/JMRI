@@ -70,11 +70,9 @@ public class SerialNode extends AbstractNode {
 
     /**
      * Create a new SerialNode without a name supplied.
-     * <p>
-     * Assumes a node address of 0, and a node type of 0 (IO24).
-     * If this constructor is used, actual node address must be set using
+     * Assumes a node address of 0, and a node type of 0 (IO24). If this
+     * constructor is used, actual node address must be set using
      * setNodeAddress, and actual node type using 'setNodeType'
-     * @param memo system connection.
      */
     public SerialNode(OakTreeSystemConnectionMemo memo) {
         this(0, IO24, memo);
@@ -82,10 +80,8 @@ public class SerialNode extends AbstractNode {
 
     /**
      * Create a new SerialNode and initialize default instance variables
-     *
-     * @param address Address of node on serial bus (0-255).
-     * @param type type constant from the class.
-     * @param memo system connection.
+     * address - Address of node on serial bus (0-255) type - a type constant
+     * from the class
      */
     public SerialNode(int address, int type, OakTreeSystemConnectionMemo memo) {
         _memo = memo;
@@ -167,10 +163,7 @@ public class SerialNode extends AbstractNode {
     }
 
     /**
-     * Get Node type.
-     * <p>
-     * Current types are: IO24, I048, O48.
-     * @return node type.
+     * Get Node type. Current types are: IO24, I048, O48.
      */
     public int getNodeType() {
         return (nodeType);
@@ -178,7 +171,6 @@ public class SerialNode extends AbstractNode {
 
     /**
      * Set Node type.
-     * @param type node type e.g. IO48 , IO24
      */
     @SuppressWarnings("fallthrough")
     @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH")
@@ -250,8 +242,6 @@ public class SerialNode extends AbstractNode {
 
     boolean warned = false;
 
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value = "SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification = "only logging 1st warning string passed")
     void warn(String s) {
         if (warned) {
             return;
@@ -298,7 +288,7 @@ public class SerialNode extends AbstractNode {
                 }
             }
         } catch (JmriException e) {
-            log.error("exception in markChanges", e);
+            log.error("exception in markChanges: " + e);
         }
     }
 

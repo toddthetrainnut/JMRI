@@ -1,15 +1,13 @@
 package jmri.jmrit.operations.trains;
 
 import jmri.jmrit.operations.OperationsTestCase;
-
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Test;
 
 /**
  *
  * @author Paul Bender Copyright (C) 2017
  */
-@Timeout(10)
 public class TrainsTableActionTest extends OperationsTestCase {
 
     @Test

@@ -2,12 +2,11 @@ package jmri.jmrit.operations.locations.tools;
 
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-
-import javax.swing.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsXml;
 import jmri.jmrit.operations.locations.Location;
@@ -15,6 +14,8 @@ import jmri.jmrit.operations.locations.Track;
 import jmri.jmrit.operations.locations.TrackEditFrame;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame that allows user to select alternate track and options.
@@ -51,7 +52,7 @@ class AlternateTrackFrame extends OperationsFrame implements java.beans.Property
             updateTrackCombobox();
             _track.getLocation().addPropertyChangeListener(this);
         }
-
+        
         JPanel pControls = new JPanel();
         pControls.add(saveButton);
         saveButton.setEnabled(_track != null);
@@ -62,11 +63,10 @@ class AlternateTrackFrame extends OperationsFrame implements java.beans.Property
         getContentPane().add(pAlternate);
         getContentPane().add(pControls);
         
-        addHelpMenu("package.jmri.jmrit.operations.Operations_AlternateTrack", true); // NOI18N
-
-        initMinimumSize(new Dimension(Control.panelWidth300, Control.panelHeight200));
+        initMinimumSize(new Dimension(Control.panelWidth300, Control.panelHeight100));
+        
     }
-
+    
     private void updateTrackCombobox() {
         _track.getLocation().updateComboBox(trackBox);
         trackBox.removeItem(_track); // remove this track from consideration
@@ -76,13 +76,6 @@ class AlternateTrackFrame extends OperationsFrame implements java.beans.Property
     @Override
     public void buttonActionPerformed(java.awt.event.ActionEvent ae) {
         if (ae.getSource() == saveButton) {
-            // warn user that planned pickups and alternate track don't work
-            // together
-            if (trackBox.getSelectedItem() != null && _track.getIgnoreUsedLengthPercentage() > 0) {
-                JOptionPane.showMessageDialog(null, Bundle.getMessage("PPWarningAlternate"),
-                        Bundle.getMessage("PPWarningConfiguration"),
-                        JOptionPane.ERROR_MESSAGE);
-            }
             _track.setAlternateTrack((Track) trackBox.getSelectedItem());
             OperationsXml.save();
             if (Setup.isCloseWindowOnSaveEnabled()) {
@@ -90,7 +83,7 @@ class AlternateTrackFrame extends OperationsFrame implements java.beans.Property
             }
         }
     }
-
+    
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
         if (Control.SHOW_PROPERTY) {

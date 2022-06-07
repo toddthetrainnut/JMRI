@@ -2,12 +2,10 @@ package jmri.jmrit.display.configurexml;
 
 import java.util.HashMap;
 import java.util.List;
-
 import jmri.SignalHead;
-import jmri.configurexml.JmriConfigureXmlException;
 import jmri.jmrit.catalog.NamedIcon;
-import jmri.jmrit.display.*;
-
+import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.SignalHeadIcon;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -20,20 +18,21 @@ import org.slf4j.LoggerFactory;
  */
 public class SignalHeadIconXml extends PositionableLabelXml {
 
-    static final HashMap<String, String> _nameMap = new HashMap<>();
+    static final java.util.ResourceBundle rbean = java.util.ResourceBundle.getBundle("jmri.NamedBeanBundle");
+    static final HashMap<String, String> _nameMap = new HashMap<String, String>();
 
     public SignalHeadIconXml() {
-        // map previous store names to property key names
-        _nameMap.put("red", "SignalHeadStateRed");
-        _nameMap.put("yellow", "SignalHeadStateYellow");
-        _nameMap.put("green", "SignalHeadStateGreen");
-        _nameMap.put("lunar", "SignalHeadStateLunar");
-        _nameMap.put("held", "SignalHeadStateHeld");
-        _nameMap.put("dark", "SignalHeadStateDark");
-        _nameMap.put("flashred", "SignalHeadStateFlashingRed");
-        _nameMap.put("flashyellow", "SignalHeadStateFlashingYellow");
-        _nameMap.put("flashgreen", "SignalHeadStateFlashingGreen");
-        _nameMap.put("flashlunar", "SignalHeadStateFlashingLunar");
+        // map previous store names to actual localized names
+        _nameMap.put("red", rbean.getString("SignalHeadStateRed"));
+        _nameMap.put("yellow", rbean.getString("SignalHeadStateYellow"));
+        _nameMap.put("green", rbean.getString("SignalHeadStateGreen"));
+        _nameMap.put("lunar", rbean.getString("SignalHeadStateLunar"));
+        _nameMap.put("held", rbean.getString("SignalHeadStateHeld"));
+        _nameMap.put("dark", rbean.getString("SignalHeadStateDark"));
+        _nameMap.put("flashred", rbean.getString("SignalHeadStateFlashingRed"));
+        _nameMap.put("flashyellow", rbean.getString("SignalHeadStateFlashingYellow"));
+        _nameMap.put("flashgreen", rbean.getString("SignalHeadStateFlashingGreen"));
+        _nameMap.put("flashlunar", rbean.getString("SignalHeadStateFlashingLunar"));
     }
 
     /**
@@ -57,43 +56,43 @@ public class SignalHeadIconXml extends PositionableLabelXml {
         element.setAttribute("litmode", "" + p.getLitMode());
 
         Element elem = new Element("icons");
-        NamedIcon icon = p.getIcon("SignalHeadStateHeld");
+        NamedIcon icon = p.getIcon(rbean.getString("SignalHeadStateHeld"));
         if (icon != null) {
             elem.addContent(storeIcon("held", icon));
         }
-        icon = p.getIcon("SignalHeadStateDark");
+        icon = p.getIcon(rbean.getString("SignalHeadStateDark"));
         if (icon != null) {
             elem.addContent(storeIcon("dark", icon));
         }
-        icon = p.getIcon("SignalHeadStateRed");
+        icon = p.getIcon(rbean.getString("SignalHeadStateRed"));
         if (icon != null) {
             elem.addContent(storeIcon("red", icon));
         }
-        icon = p.getIcon("SignalHeadStateYellow");
+        icon = p.getIcon(rbean.getString("SignalHeadStateYellow"));
         if (icon != null) {
             elem.addContent(storeIcon("yellow", icon));
         }
-        icon = p.getIcon("SignalHeadStateGreen");
+        icon = p.getIcon(rbean.getString("SignalHeadStateGreen"));
         if (icon != null) {
             elem.addContent(storeIcon("green", icon));
         }
-        icon = p.getIcon("SignalHeadStateLunar");
+        icon = p.getIcon(rbean.getString("SignalHeadStateLunar"));
         if (icon != null) {
             elem.addContent(storeIcon("lunar", icon));
         }
-        icon = p.getIcon("SignalHeadStateFlashingRed");
+        icon = p.getIcon(rbean.getString("SignalHeadStateFlashingRed"));
         if (icon != null) {
             elem.addContent(storeIcon("flashred", icon));
         }
-        icon = p.getIcon("SignalHeadStateFlashingYellow");
+        icon = p.getIcon(rbean.getString("SignalHeadStateFlashingYellow"));
         if (icon != null) {
             elem.addContent(storeIcon("flashyellow", icon));
         }
-        icon = p.getIcon("SignalHeadStateFlashingGreen");
+        icon = p.getIcon(rbean.getString("SignalHeadStateFlashingGreen"));
         if (icon != null) {
             elem.addContent(storeIcon("flashgreen", icon));
         }
-        icon = p.getIcon("SignalHeadStateFlashingLunar");
+        icon = p.getIcon(rbean.getString("SignalHeadStateFlashingLunar"));
         if (icon != null) {
             elem.addContent(storeIcon("flashlunar", icon));
         }
@@ -114,11 +113,9 @@ public class SignalHeadIconXml extends PositionableLabelXml {
      *
      * @param element Top level Element to unpack.
      * @param o       an Editor as an Object
-     * @throws JmriConfigureXmlException when a error prevents creating the objects as as
-     *                   required by the input XML
      */
     @Override
-    public void load(Element element, Object o) throws JmriConfigureXmlException {
+    public void load(Element element, Object o) {
         // create the objects
         Editor ed = (Editor) o;
         SignalHeadIcon l = new SignalHeadIcon(ed);
@@ -138,7 +135,7 @@ public class SignalHeadIconXml extends PositionableLabelXml {
         if (sh != null) {
             l.setSignalHead(name);
         } else {
-            log.error("SignalHead named '{}' not found.", attr.getValue());
+            log.error("SignalHead named '" + attr.getValue() + "' not found.");
             //    ed.loadFailed();
             return;
         }
@@ -155,60 +152,61 @@ public class SignalHeadIconXml extends PositionableLabelXml {
             Element icons = element.getChild("icons");
             Element elem = element;
             if (icons != null) {
-                aspects = icons.getChildren();
+                List<Element> c = icons.getChildren();
+                aspects = c;
                 elem = icons;
             }
-            for (Element value : aspects) {
-                String aspect = value.getName();
+            for (int i = 0; i < aspects.size(); i++) {
+                String aspect = aspects.get(i).getName();
                 NamedIcon icon = loadIcon(l, aspect, elem, "SignalHead \"" + name + "\": icon \"" + aspect + "\" ", ed);
                 if (icon != null) {
                     l.setIcon(_nameMap.get(aspect), icon);
                 } else {
-                    log.info("SignalHead \"{}\": icon \"{}\" removed", name, aspect);
+                    log.info("SignalHead \"" + name + "\": icon \"" + aspect + "\" removed");
                 }
             }
-            log.debug("{} icons loaded for {}", aspects.size(), l.getNameString());
+            log.debug(aspects.size() + " icons loaded for " + l.getNameString());
         } else {
             // old style as attributes - somewhere around pre 2.5.4
             NamedIcon icon = loadSignalIcon("red", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateRed", icon);
+                l.setIcon(rbean.getString("SignalHeadStateRed"), icon);
             }
             icon = loadSignalIcon("yellow", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateYellow", icon);
+                l.setIcon(rbean.getString("SignalHeadStateYellow"), icon);
             }
             icon = loadSignalIcon("green", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateGreen", icon);
+                l.setIcon(rbean.getString("SignalHeadStateGreen"), icon);
             }
             icon = loadSignalIcon("lunar", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateLunar", icon);
+                l.setIcon(rbean.getString("SignalHeadStateLunar"), icon);
             }
             icon = loadSignalIcon("held", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateHeld", icon);
+                l.setIcon(rbean.getString("SignalHeadStateHeld"), icon);
             }
             icon = loadSignalIcon("dark", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateDark", icon);
+                l.setIcon(rbean.getString("SignalHeadStateDark"), icon);
             }
             icon = loadSignalIcon("flashred", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateFlashingRed", icon);
+                l.setIcon(rbean.getString("SignalHeadStateFlashingRed"), icon);
             }
             icon = loadSignalIcon("flashyellow", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateFlashingYellow", icon);
+                l.setIcon(rbean.getString("SignalHeadStateFlashingYellow"), icon);
             }
             icon = loadSignalIcon("flashgreen", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateFlashingGreen", icon);
+                l.setIcon(rbean.getString("SignalHeadStateFlashingGreen"), icon);
             }
             icon = loadSignalIcon("flashlunar", rotation, l, element, name, ed);
             if (icon != null) {
-                l.setIcon("SignalHeadStateFlashingLunar", icon);
+                l.setIcon(rbean.getString("SignalHeadStateFlashingLunar"), icon);
             }
         }
         Element elem = element.getChild("iconmaps");
@@ -224,7 +222,7 @@ public class SignalHeadIconXml extends PositionableLabelXml {
                 l.setClickMode(attr.getIntValue());
             }
         } catch (org.jdom2.DataConversionException e) {
-            log.error("Failed on clickmode attribute: ", e);
+            log.error("Failed on clickmode attribute: " + e);
         }
 
         try {
@@ -233,14 +231,10 @@ public class SignalHeadIconXml extends PositionableLabelXml {
                 l.setLitMode(attr.getBooleanValue());
             }
         } catch (org.jdom2.DataConversionException e) {
-            log.error("Failed on litmode attribute: ", e);
+            log.error("Failed on litmode attribute: " + e);
         }
 
-        try {
-            ed.putItem(l);
-        } catch (Positionable.DuplicateIdException e) {
-            throw new JmriConfigureXmlException("Positionable id is not unique", e);
-        }
+        ed.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.SIGNALS, element);
     }
@@ -256,22 +250,21 @@ public class SignalHeadIconXml extends PositionableLabelXml {
                 if (icon == null) {
                     icon = ed.loadFailed(msg, iconName);
                     if (icon == null) {
-                        log.info("{} removed for url= {}", msg, iconName);
+                        log.info(msg + " removed for url= " + iconName);
                     }
                 }
                 if (icon != null) {
                     icon.setRotation(rotation, l);
                 }
             } else {
-                log.info("did not load file aspect {} for SignalHead {}", aspect, name);
+                log.info("did not load file aspect " + aspect + " for SignalHead " + name);
             }
         }
         if (icon == null) {
-            log.info("SignalHead Icon \"{}\": icon \"{}\" removed", name, aspect);
+            log.info("SignalHead Icon \"" + name + "\": icon \"" + aspect + "\" removed");
         }
         return icon;
     }
 
     private final static Logger log = LoggerFactory.getLogger(SignalHeadIconXml.class);
-
 }

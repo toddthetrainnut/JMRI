@@ -1,13 +1,7 @@
 package jmri.jmrit.operations.rollingstock.engines.tools;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import java.awt.GraphicsEnvironment;
 import java.io.File;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.OperationsXml;
@@ -17,33 +11,42 @@ import jmri.jmrit.operations.locations.Track;
 import jmri.jmrit.operations.rollingstock.engines.Engine;
 import jmri.jmrit.operations.rollingstock.engines.EngineManager;
 import jmri.util.JUnitOperationsUtil;
+import jmri.util.junit.rules.*;
 import jmri.util.swing.JemmyUtil;
+
+import org.junit.*;
+import org.junit.rules.*;
 
 /**
  *
  * @author Paul Bender Copyright (C) 2017
  */
-@Timeout(60)
 public class ImportEnginesTest extends OperationsTestCase {
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60); // 60 second timeout for methods in this test class.
+
+    @Rule
+    public RetryRule retryRule = new RetryRule(2); // allow 2 retries
 
     @Test
     public void testCTor() {
         ImportEngines t = new ImportEngines();
-        assertThat(t).withFailMessage("exists").isNotNull();
+        Assert.assertNotNull("exists", t);
     }
 
     @Test
-    @DisabledIfSystemProperty(named ="java.awt.headless", matches ="true")
-    @DisabledIfSystemProperty(named = "jmri.skipjythontests", matches = "true")
     public void testReadFile() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+
         EngineManager emanager = InstanceManager.getDefault(EngineManager.class);
         JUnitOperationsUtil.initOperationsData();
         // check number of engines in operations data
-        assertThat(emanager.getNumEntries()).withFailMessage("engines").isEqualTo(4);
+        Assert.assertEquals("engines", 4, emanager.getNumEntries());
 
         // export engines to create file
         ExportEngines exportEngines = new ExportEngines();
-        assertThat(exportEngines).withFailMessage("exists").isNotNull();
+        Assert.assertNotNull("exists", exportEngines);
 
         // should cause export complete dialog to appear
         Thread export = new Thread(new Runnable() {
@@ -68,11 +71,11 @@ public class ImportEnginesTest extends OperationsTestCase {
         }
 
         java.io.File file = new java.io.File(ExportEngines.defaultOperationsFilename());
-        assertThat(file.exists()).withFailMessage("Confirm file creation").isTrue();
+        Assert.assertTrue("Confirm file creation", file.exists());
 
         // delete all engines
         emanager.deleteAll();
-        assertThat(emanager.getNumEntries()).withFailMessage("engines").isEqualTo(0);
+        Assert.assertEquals("engines", 0, emanager.getNumEntries());
 
         // do import      
         Thread mb = new ImportEngines(){
@@ -111,18 +114,17 @@ public class ImportEnginesTest extends OperationsTestCase {
             // do nothing
         }
         // confirm import successful
-        assertThat(emanager.getNumEntries()).withFailMessage("engines").isEqualTo(4);
-        
-
+        Assert.assertEquals("engines", 4, emanager.getNumEntries());
     }
 
     @Test
-    @DisabledIfSystemProperty(named ="java.awt.headless", matches ="true")
     public void testImportEnginesWithLocations() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+
         EngineManager emanager = InstanceManager.getDefault(EngineManager.class);
         JUnitOperationsUtil.initOperationsData();
         // check number of engines in operations data
-        assertThat(emanager.getNumEntries()).withFailMessage("engines").isEqualTo(4);
+        Assert.assertEquals("engines", 4, emanager.getNumEntries());
 
         // give an engine a location and track assignment
         LocationManager lmanager = InstanceManager.getDefault(LocationManager.class);
@@ -130,11 +132,11 @@ public class ImportEnginesTest extends OperationsTestCase {
         Track track = loc.getTrackByName("NI Yard", null);
 
         Engine e1 = emanager.getByRoadAndNumber("PC", "5559");
-        assertThat(e1.setLocation(loc, track)).withFailMessage("place engine on tracck").isEqualTo(Track.OKAY);
+        Assert.assertEquals("place engine on tracck", Track.OKAY, e1.setLocation(loc, track));
 
         // export engines to create file
         ExportEngines exportEngines = new ExportEngines();
-        assertThat(exportEngines).withFailMessage("exists").isNotNull();
+        Assert.assertNotNull("exists", exportEngines);
 
         // should cause export complete dialog to appear
         Thread export = new Thread(new Runnable() {
@@ -159,11 +161,11 @@ public class ImportEnginesTest extends OperationsTestCase {
         }
 
         java.io.File file = new java.io.File(ExportEngines.defaultOperationsFilename());
-        assertThat(file.exists()).withFailMessage("Confirm file creation").isTrue();
+        Assert.assertTrue("Confirm file creation", file.exists());
 
         // delete all engines
         emanager.deleteAll();
-        assertThat(emanager.getNumEntries()).withFailMessage("engines").isEqualTo(0);
+        Assert.assertEquals("engines", 0, emanager.getNumEntries());
         // delete location
         lmanager.deregister(loc);
 
@@ -177,10 +179,6 @@ public class ImportEnginesTest extends OperationsTestCase {
         };
         mb.setName("Test Import Engines"); // NOI18N
         mb.start();
-        
-        jmri.util.JUnitUtil.waitFor(() -> {
-            return mb.getState().equals(Thread.State.WAITING);
-        }, "wait for dialog");
 
         // dialog windows should now open asking to add 2 models
         JemmyUtil.pressDialogButton(Bundle.getMessage("engineAddModel"), Bundle.getMessage("ButtonYes"));
@@ -233,9 +231,7 @@ public class ImportEnginesTest extends OperationsTestCase {
         }
 
         // confirm import successful
-        assertThat(emanager.getNumEntries()).withFailMessage("engines").isEqualTo(4);
-        
-
+        Assert.assertEquals("engines", 4, emanager.getNumEntries());
     }
 
     // private final static Logger log = LoggerFactory.getLogger(ImportEnginesTest.class);

@@ -1,9 +1,5 @@
 package jmri.jmrix.dccpp;
 
-import static jmri.jmrix.dccpp.DCCppConstants.MAX_TURNOUT_ADDRESS;
-
-import java.util.Locale;
-import javax.annotation.Nonnull;
 import jmri.Turnout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,60 +16,53 @@ import org.slf4j.LoggerFactory;
 public class DCCppTurnoutManager extends jmri.managers.AbstractTurnoutManager implements DCCppListener {
 
     protected DCCppTrafficController tc = null;
+    protected String prefix = null;
 
     /**
-     * Create a new DCC++ TurnoutManager.
+     * Create an new DCC++ TurnoutManager.
      * Has to register for DCC++ events.
      *
-     * @param memo the supporting system connection memo
+     * @param controller the TrafficController to connect the TurnoutManager to
+     * @param prefix the system connection prefix string as set for this connection in SystemConnectionMemo
      */
-    public DCCppTurnoutManager(DCCppSystemConnectionMemo memo) {
-        super(memo);
-        tc = memo.getDCCppTrafficController();
-        // set up listener
+    public DCCppTurnoutManager(DCCppTrafficController controller, String prefix) {
+        super();
+        tc = controller;
+        this.prefix = prefix;
         tc.addDCCppListener(DCCppInterface.FEEDBACK, this);
-        // request list of turnouts
-        tc.sendDCCppMessage(DCCppMessage.makeTurnoutListMsg(), this);
-        // request list of outputs
-        tc.sendDCCppMessage(DCCppMessage.makeOutputListMsg(), this);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public DCCppSystemConnectionMemo getMemo() {
-        return (DCCppSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return prefix;
     }
 
     // DCCpp-specific methods
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
+    /** {@inheritDoc} */
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Turnout createNewTurnout(String systemName, String userName) {
+        Turnout t = null;
         // check if the output bit is available
         int bitNum = getBitFromSystemName(systemName);
         if (bitNum < 0) {
-            throw new IllegalArgumentException("Cannot get Bit from System Name " + systemName);
+            return null;
         }
         // make the new Turnout object
-        Turnout t = new DCCppTurnout(getSystemPrefix(), bitNum, tc);
+        t = new DCCppTurnout(prefix, bitNum, tc);
         t.setUserName(userName);
         return t;
     }
 
-    /**
-     * {@inheritDoc}
-     * Listen for turnouts, creating them as needed.
-     */
+    /** {@inheritDoc}
+    * Listen for turnouts, creating them as needed.
+    */
     @Override
     public void message(DCCppReply l) {
+        if (log.isDebugEnabled()) {
+            log.debug("received message: {}", l.toString());
+        }
         if (l.isTurnoutReply()) {
-            log.debug("received Turnout Reply message: '{}'", l);
             // parse message type
             int addr = l.getTOIDInt();
             if (addr >= 0) {
@@ -82,23 +71,19 @@ public class DCCppTurnoutManager extends jmri.managers.AbstractTurnoutManager im
                 log.debug("message has address: {}", addr);
                 // reach here for switch command; make sure we know 
                 // about this one
-                String s = getSystemNamePrefix() + addr;
-                DCCppTurnout found = (DCCppTurnout) getBySystemName(s);
-                if ( found == null) {
-                    // need to create a new one, set some attributes, 
-                    //  and send the message on to the newly created object.
-                    DCCppTurnout t = (DCCppTurnout) provideTurnout(s);
-                    t.setFeedbackMode(Turnout.MONITORING);
-//                    t.setComment(l.toComment());  //removed to avoid confusion since this is only set, not updated 
-                    t.initmessage(l);
+                String s = prefix + typeLetter() + addr;
+                if (null == getBySystemName(s)) {
+                    // need to create a new one, and send the message on 
+                    // to the newly created object.
+                    ((DCCppTurnout) provideTurnout(s)).setFeedbackMode(Turnout.MONITORING);
+                    ((DCCppTurnout) provideTurnout(s)).initmessage(l);
                 } else {
                     // The turnout exists, forward this message to the 
                     // turnout
-                    found.message(l);
+                    ((DCCppTurnout) getBySystemName(s)).message(l);
                 }
             }
-        } else if (l.isOutputReply()) {
-            log.debug("received Output Reply message: '{}'", l);
+        } else if (l.isOutputCmdReply()) {
             // parse message type
             int addr = l.getOutputNumInt();
             if (addr >= 0) {
@@ -107,19 +92,16 @@ public class DCCppTurnoutManager extends jmri.managers.AbstractTurnoutManager im
                 log.debug("message has address: {}", addr);
                 // reach here for switch command; make sure we know 
                 // about this one
-                String s = getSystemNamePrefix() + addr;
-                DCCppTurnout found = (DCCppTurnout) getBySystemName(s);
-                if (found == null) {
+                String s = prefix + typeLetter() + addr;
+                if (null == getBySystemName(s)) {
                     // need to create a new one, and send the message on 
                     // to the newly created object.
-                    DCCppTurnout t = (DCCppTurnout) provideTurnout(s);
-                    t.setFeedbackMode(Turnout.EXACT);
-//                  t.setComment(l.toComment());  //removed to avoid confusion since this is only set, not updated 
-                    t.initmessage(l);
+                    ((DCCppTurnout) provideTurnout(s)).setFeedbackMode(Turnout.EXACT);
+                    ((DCCppTurnout) provideTurnout(s)).initmessage(l);
                 } else {
                     // The turnout exists, forward this message to the 
                     // turnout
-                    found.message(l);
+                    ((DCCppTurnout) getBySystemName(s)).message(l);
                 }
             }
         }
@@ -131,7 +113,6 @@ public class DCCppTurnoutManager extends jmri.managers.AbstractTurnoutManager im
      * represent the Turnout.CLOSED state.
      */
     @Override
-    @Nonnull
     public String getClosedText() {
         return Bundle.getMessage("TurnoutStateClosed");
     }
@@ -142,65 +123,73 @@ public class DCCppTurnoutManager extends jmri.managers.AbstractTurnoutManager im
      * represent the Turnout.THROWN state.
      */
     @Override
-    @Nonnull
     public String getThrownText() {
         return Bundle.getMessage("TurnoutStateThrown");
     }
 
     /**
-     * Listen for the outgoing messages (to the command station)
+     * Listen for the messages to the LI100/LI101
      */
     @Override
     public void message(DCCppMessage l) {
     }
 
-    // Handle message timeout notification
-    // If the message still has retries available, reduce retries and send it back to the traffic controller.
+    /**
+     * Handle a timeout notification.
+     */
     @Override
     public void notifyTimeout(DCCppMessage msg) {
-        log.debug("Notified of timeout on message '{}' , {} retries available.", msg, msg.getRetries());
-        if (msg.getRetries() > 0) {
-            msg.setRetries(msg.getRetries() - 1);
-            tc.sendDCCppMessage(msg, this);
-        }        
+        if (log.isDebugEnabled()) {
+            log.debug("Notified of timeout on message" + msg.toString());
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
-        return (getBitFromSystemName(systemName) != -1) ? NameValidity.VALID : NameValidity.INVALID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String systemName, @Nonnull Locale locale) {
-        return validateIntegerSystemNameFormat(systemName, 0, MAX_TURNOUT_ADDRESS, locale);
     }
 
     /**
      * Get the bit address from the system name.
      *
-     * @param systemName a valid Turnout System Name
-     * @return the turnout number extracted from the system name
+     * @return -1 for failure
      */
     public int getBitFromSystemName(String systemName) {
-        try {
-            validateSystemNameFormat(systemName, Locale.getDefault());
-        } catch (IllegalArgumentException ex) {
+        // validate the system Name leader characters
+        if ((!systemName.startsWith(getSystemPrefix() + typeLetter()))) {
+            // here if an illegal DCC++ turnout system name
+            log.error("illegal character in header field of DCC++ turnout system name: {} prefix {} type {}",
+                    systemName, getSystemPrefix(), typeLetter());
             return -1;
         }
-        return Integer.parseInt(systemName.substring(getSystemNamePrefix().length()));
+        // name must be in the DCCppTnnnnn format (DCCPP is user configurable)
+        int num = 0;
+        try {
+            num = Integer.parseInt(systemName.substring(
+                    getSystemPrefix().length() + 1, systemName.length()));
+        } catch (Exception e) {
+            log.error("invalid character in number field of system name: {}", systemName);
+            return -1;
+        }
+        if (num < 0) {
+            log.error("invalid DCC++ turnout system name: {}", systemName);
+            return -1;
+        } else if (num > DCCppConstants.MAX_ACC_DECODER_JMRI_ADDR) {
+            log.error("bit number out of range in DCC++ turnout system name: {}", systemName);
+            return -1;
+        }
+        return num;
+    }
+
+    /**
+     * Validate system name format.
+     *
+     * @return VALID if system name has a valid format, else return INVALID
+     */
+    @Override
+    public NameValidity validSystemNameFormat(String systemName) {
+        return (getBitFromSystemName(systemName) != 0) ? NameValidity.VALID : NameValidity.INVALID;
     }
 
     /** {@inheritDoc} */
@@ -208,6 +197,13 @@ public class DCCppTurnoutManager extends jmri.managers.AbstractTurnoutManager im
     public String getEntryToolTip() {
         return Bundle.getMessage("AddOutputEntryToolTip");
     }
+
+    @Deprecated
+    static public DCCppTurnoutManager instance() {
+        //if (_instance == null) _instance = new DCCppTurnoutManager();
+        return _instance;
+    }
+    static DCCppTurnoutManager _instance = null;
 
     private final static Logger log = LoggerFactory.getLogger(DCCppTurnoutManager.class);
 

@@ -3,9 +3,10 @@ package jmri.jmrix.can.adapters.gridconnect.canrs;
 import jmri.jmrix.can.CanMessage;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.can.adapters.gridconnect.canrs.MergMessage class
@@ -51,8 +52,9 @@ public class MergMessageTest extends jmri.jmrix.AbstractMessageTestBase {
         Assert.assertEquals("extended format 4 byte", ":X91A85678R12345678;", g.toString());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         new TrafficControllerScaffold();
@@ -68,11 +70,9 @@ public class MergMessageTest extends jmri.jmrix.AbstractMessageTestBase {
         m = g = new MergMessage(msg);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = g = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+	m = g = null;
         JUnitUtil.tearDown();
-
     }
 }

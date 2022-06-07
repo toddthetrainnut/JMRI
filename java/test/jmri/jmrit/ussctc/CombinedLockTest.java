@@ -1,78 +1,72 @@
 package jmri.jmrit.ussctc;
 
 import java.util.*;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for CombinedLock classes in the jmri.jmrit.ussctc package
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class CombinedLockTest {
 
     @Test
     public void testEmpty() {
         ArrayList<Lock> list = new ArrayList<>();
-
+        
         CombinedLock lock = new CombinedLock(list);
-
-        Assert.assertTrue(lock.isLockClear(Lock.turnoutLockLogger));
+        
+        Assert.assertTrue(lock.isLockClear());
     }
 
     @Test
     public void testOnePass() {
         ArrayList<Lock> list = new ArrayList<>();
         list.add(new Lock() {
-            @Override
-            public boolean isLockClear(LockLogger l) { return true; }
+            public boolean isLockClear() { return true; }
         });
 
         CombinedLock lock = new CombinedLock(list);
-
-        Assert.assertTrue(lock.isLockClear(Lock.turnoutLockLogger));
+        
+        Assert.assertTrue(lock.isLockClear());
     }
 
     @Test
     public void testOneFail() {
         ArrayList<Lock> list = new ArrayList<>();
         list.add(new Lock() {
-            @Override
-            public boolean isLockClear(LockLogger l) { return false; }
+            public boolean isLockClear() { return false; }
         });
 
         CombinedLock lock = new CombinedLock(list);
-
-        Assert.assertTrue( ! lock.isLockClear(Lock.turnoutLockLogger));
+        
+        Assert.assertTrue( ! lock.isLockClear());
     }
 
     @Test
     public void testSecondFail() {
         ArrayList<Lock> list = new ArrayList<>();
         list.add(new Lock() {
-            @Override
-            public boolean isLockClear(LockLogger l) { return true; }
+            public boolean isLockClear() { return true; }
         });
         list.add(new Lock() {
-            @Override
-            public boolean isLockClear(LockLogger l) { return false; }
+            public boolean isLockClear() { return false; }
         });
-
+ 
         CombinedLock lock = new CombinedLock(list);
-
-        Assert.assertTrue( ! lock.isLockClear(Lock.turnoutLockLogger));
+        
+        Assert.assertTrue( ! lock.isLockClear());
     }
 
-
-    @BeforeEach
+        
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

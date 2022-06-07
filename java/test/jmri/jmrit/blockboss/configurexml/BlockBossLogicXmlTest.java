@@ -8,18 +8,17 @@ import jmri.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.jdom2.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * BlockBossLogicXmlTest.java
  *
- * Test for the BlockBossLogicXml class
+ * Description: tests for the BlockBossLogicXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -27,11 +26,18 @@ public class BlockBossLogicXmlTest {
 
     @Test
     public void testCtor(){
-      assertThat(new BlockBossLogicXml()).withFailMessage("BlockBossLogicXml constructor").isNotNull();
+      Assert.assertNotNull("BlockBossLogicXml constructor",new BlockBossLogicXml());
     }
-
+    
     int count() {
-        return InstanceManager.getDefault(BlockBossLogicProvider.class).provideAll().size();
+        int ret = 0;
+        Enumeration<BlockBossLogic> en = BlockBossLogic.entries();
+        
+        while (en.hasMoreElements()) {
+            en.nextElement();
+            ret++;
+        }
+        return ret;
     }
 
     @Test
@@ -44,7 +50,7 @@ public class BlockBossLogicXmlTest {
                 }
         );
         InstanceManager.getDefault(jmri.SensorManager.class).getSensor("IS1");
-
+        
         Element el = new Element("signalelements")
                 .setAttribute("class", "jmri.jmrit.blockboss.configurexml.BlockBossLogicXml")
                 .addContent(
@@ -57,12 +63,12 @@ public class BlockBossLogicXmlTest {
                         )
                 );
 
-        assertThat(count()).withFailMessage("zero before").isEqualTo(0);
-
+        Assert.assertEquals("zero before", count(), 0);
+        
         BlockBossLogicXml bb = new BlockBossLogicXml();
         bb.load(el, null);
 
-        assertThat(count()).withFailMessage("one after").isEqualTo(1);
+        Assert.assertEquals("one after", count(), 1);
     }
 
     @Test
@@ -75,7 +81,7 @@ public class BlockBossLogicXmlTest {
                 }
         );
         InstanceManager.getDefault(jmri.SensorManager.class).getSensor("IS1");
-
+        
         Element el = new Element("signalelements")
                 .setAttribute("class", "jmri.jmrit.blockboss.configurexml.BlockBossLogicXml")
                 .addContent(
@@ -88,12 +94,12 @@ public class BlockBossLogicXmlTest {
                         )
                 );
 
-        assertThat(count()).withFailMessage("zero before").isEqualTo(0);
-
+        Assert.assertEquals("zero before", count(), 0);
+        
         BlockBossLogicXml bb = new BlockBossLogicXml();
         bb.load(el, null);
 
-        assertThat(count()).withFailMessage("zero after").isEqualTo(0);
+        Assert.assertEquals("zero after", count(), 0);
 
         jmri.util.JUnitAppender.assertErrorMessage("SignalHead IH1 not defined, <signalelement> element referring to it is ignored");
     }
@@ -108,7 +114,7 @@ public class BlockBossLogicXmlTest {
                 }
         );
         InstanceManager.getDefault(jmri.SensorManager.class).getSensor("IS1");
-
+        
         Element el = new Element("signalelements")
                 .setAttribute("class", "jmri.jmrit.blockboss.configurexml.BlockBossLogicXml")
                 .addContent(
@@ -120,35 +126,35 @@ public class BlockBossLogicXmlTest {
                         )
                 );
 
-        assertThat(count()).withFailMessage("zero before").isEqualTo(0);
-
+        Assert.assertEquals("zero before", count(), 0);
+        
         BlockBossLogicXml bb = new BlockBossLogicXml();
         bb.load(el, null);
 
-        assertThat(count()).withFailMessage("zero after").isEqualTo(0);
-
+        Assert.assertEquals("zero after", count(), 0);
+        
         jmri.util.JUnitAppender.assertErrorMessage("Ignoring a <signalelement> element with no signal attribute value");
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetInstanceManager();
         JUnitUtil.initInternalSensorManager();
-        JUnitUtil.initInternalSignalHeadManager();
-
+        
         // clear the BlockBossLogic static list
+        Enumeration<BlockBossLogic> en = BlockBossLogic.entries();
         ArrayList<SignalHead> heads = new ArrayList<>();
-
-        for (BlockBossLogic b : InstanceManager.getDefault(BlockBossLogicProvider.class).provideAll()) {
-            heads.add(b.getDrivenSignalNamedBean().getBean());
+        while (en.hasMoreElements()) {
+            heads.add(en.nextElement().getDrivenSignalNamedBean().getBean());
         }
         for (SignalHead head : heads) {  // avoids ConcurrentModificationException
             BlockBossLogic.getStoppedObject(head);
         }
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.clearBlockBossLogic();
         JUnitUtil.tearDown();

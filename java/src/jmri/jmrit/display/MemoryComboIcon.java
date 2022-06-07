@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 public class MemoryComboIcon extends PositionableJPanel
         implements java.beans.PropertyChangeListener, ActionListener {
 
-    private final JComboBox<String> _comboBox;
-    private final ComboModel _model;
+    private JComboBox<String> _comboBox;
+    private ComboModel _model;
 
     // the associated Memory object
     private NamedBeanHandle<Memory> namedMemory;
@@ -219,31 +219,36 @@ public class MemoryComboIcon extends PositionableJPanel
     protected void edit() {
         _iconEditor = new IconAdder("Memory") {
             JList<String> list;
-            final JButton bDel = new JButton(Bundle.getMessage("deleteSelection"));
-            final JButton bAdd = new JButton(Bundle.getMessage("addItem"));
-            final JTextField textfield = new JTextField(30);
+            JButton bDel = new JButton(Bundle.getMessage("deleteSelection"));
+            JButton bAdd = new JButton(Bundle.getMessage("addItem"));
+            JTextField textfield = new JTextField(30);
             int idx;
 
             @Override
             protected void addAdditionalButtons(JPanel p) {
                 _listModel = new DefaultListModel<>();
-                bDel.addActionListener(a -> {
-                    if ( list == null ){ return; }
-                    idx = list.getSelectedIndex();
-                    if (idx >= 0) {
-                        _listModel.removeElementAt(idx);
+                bDel.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent a) {
+                        idx = list.getSelectedIndex();
+                        if (idx >= 0) {
+                            _listModel.removeElementAt(idx);
+                        }
                     }
                 });
-                bAdd.addActionListener(a -> {
-                    String text = textfield.getText();
-                    if (text == null || list == null || text.length() == 0 || _listModel.indexOf(text) >= 0) {
-                        return;
+                bAdd.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent a) {
+                        String text = textfield.getText();
+                        if (text == null || text.length() == 0 || _listModel.indexOf(text) >= 0) {
+                            return;
+                        }
+                        idx = list.getSelectedIndex();
+                        if (idx < 0) {
+                            idx = _listModel.getSize();
+                        }
+                        _listModel.add(idx, text);
                     }
-                    idx = list.getSelectedIndex();
-                    if (idx < 0) {
-                        idx = _listModel.getSize();
-                    }
-                    _listModel.add(idx, text);
                 });
                 for (int i = 0; i < _model.getSize(); i++) {
                     _listModel.add(i, _model.getElementAt(i));
@@ -271,7 +276,12 @@ public class MemoryComboIcon extends PositionableJPanel
 
         makeIconEditorFrame(this, "Memory", true, _iconEditor);
         _iconEditor.setPickList(jmri.jmrit.picker.PickListModel.memoryPickModelInstance());
-        ActionListener addIconAction = a -> editMemory();
+        ActionListener addIconAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                editMemory();
+            }
+        };
 
         _iconEditor.makeIconPanel(false);
         _iconEditor.complete(addIconAction, false, true, true);

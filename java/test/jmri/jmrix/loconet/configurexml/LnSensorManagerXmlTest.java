@@ -1,14 +1,15 @@
 package jmri.jmrix.loconet.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * LnSensorManagerXmlTest.java
  *
- * Test for the LnSensorManagerXml class
+ * Description: tests for the LnSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class LnSensorManagerXmlTest {
       Assert.assertNotNull("LnSensorManagerXml constructor",new LnSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

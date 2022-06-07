@@ -1,82 +1,72 @@
 package jmri.jmrix.lenz.hornbyelite;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
-import jmri.jmrix.lenz.*;
+import jmri.jmrix.lenz.XNetInterfaceScaffold;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * EliteXNetSystemConnectionMemoTest.java
- * <p>
- * Test for the jmri.jmrix.lenz.EliteXNetSystemConnectionMemo class
  *
- * @author Paul Bender
+ * Description:	tests for the jmri.jmrix.lenz.EliteXNetSystemConnectionMemo class
+ *
+ * @author	Paul Bender
  */
-public class EliteXNetSystemConnectionMemoTest extends SystemConnectionMemoTestBase<EliteXNetSystemConnectionMemo> {
-
-    private XNetTrafficController tc;
+public class EliteXNetSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
     @Test
-    @Override
     public void testCtor() {
-        Assert.assertNotNull(scm);
-        Assert.assertNotNull(scm.getXNetTrafficController());
-        Assert.assertEquals(tc,scm.getXNetTrafficController());
+        EliteXNetSystemConnectionMemo t = (EliteXNetSystemConnectionMemo) scm;
+        Assert.assertNotNull(t);
+        Assert.assertNotNull(t.getXNetTrafficController());
         // While we are constructing the memo, we should also set the 
         // SystemMemo parameter in the traffic controller.
-        Mockito.verify(tc).setSystemConnectionMemo(scm);
+        Assert.assertNotNull(t.getXNetTrafficController().getSystemConnectionMemo());
     }
 
     @Test
     public void testXNetTrafficControllerSetCtor() {
-        XNetTrafficController tc2 = Mockito.mock(XNetTrafficController.class);
-        HornbyEliteCommandStation cs = Mockito.mock(HornbyEliteCommandStation.class);
-        Mockito.when(tc2.getCommandStation()).thenReturn(cs);
-        Assert.assertNotNull(scm);
+        EliteXNetSystemConnectionMemo t = (EliteXNetSystemConnectionMemo)scm;
+        XNetInterfaceScaffold tc = new XNetInterfaceScaffold(new HornbyEliteCommandStation());
+        Assert.assertNotNull(t);
         // the default constructor does not set the traffic controller
-        Assert.assertNotEquals(tc2, scm.getXNetTrafficController());
+        Assert.assertNotEquals(tc,t.getXNetTrafficController());
         // so we need to do this ourselves.
-        scm.setXNetTrafficController(tc2);
-        Assert.assertNotNull(scm.getXNetTrafficController());
-        Assert.assertEquals(tc2,scm.getXNetTrafficController());
-        // and while we're doing that, we should also set the SystemMemo
+        t.setXNetTrafficController(tc);
+        Assert.assertNotNull(t.getXNetTrafficController());
+        // and while we're doing that, we should also set the SystemMemo 
         // parameter in the traffic controller.
-        Mockito.verify(tc2).setSystemConnectionMemo(scm);
+        Assert.assertNotNull(tc.getSystemConnectionMemo());
     }
 
     @Override
     @Test
     public void testProvidesConsistManager() {
-        scm.setCommandStation(scm.getXNetTrafficController().getCommandStation());
-        Assert.assertFalse(scm.provides(jmri.ConsistManager.class));
+        EliteXNetSystemConnectionMemo t = (EliteXNetSystemConnectionMemo) scm;
+        t.setCommandStation(t.getXNetTrafficController().getCommandStation());
+        Assert.assertFalse(t.provides(jmri.ConsistManager.class));
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         // infrastructure objects
-        HornbyEliteCommandStation cs = Mockito.mock(HornbyEliteCommandStation.class);
-        tc = Mockito.mock(XNetTrafficController.class);
-        Mockito.when(tc.getCommandStation()).thenReturn(cs);
+        XNetInterfaceScaffold tc = new XNetInterfaceScaffold(new HornbyEliteCommandStation());
 
-        scm = new EliteXNetSystemConnectionMemo(tc);
-        scm.setPowerManager(Mockito.mock(XNetPowerManager.class));
-        scm.setThrottleManager(Mockito.mock(EliteXNetThrottleManager.class));
-        scm.setSensorManager(Mockito.mock(XNetSensorManager.class));
-        scm.setLightManager(Mockito.mock(XNetLightManager.class));
-        scm.setTurnoutManager(Mockito.mock(EliteXNetTurnoutManager.class));
-        scm.setProgrammerManager(Mockito.mock(XNetProgrammerManager.class));
+        EliteXNetSystemConnectionMemo memo = new EliteXNetSystemConnectionMemo(tc);
+        memo.setSensorManager(new jmri.jmrix.lenz.XNetSensorManager(tc,memo.getSystemPrefix()));
+        memo.setLightManager(new jmri.jmrix.lenz.XNetLightManager(tc,memo.getSystemPrefix()));
+        memo.setTurnoutManager(new EliteXNetTurnoutManager(tc,memo.getSystemPrefix()));
+        scm = memo;
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        scm.dispose();
-        scm = null;
         JUnitUtil.tearDown();
     }
 

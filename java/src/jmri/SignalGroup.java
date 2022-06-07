@@ -1,7 +1,5 @@
 package jmri;
 
-import javax.annotation.CheckForNull;
-
 /**
  * Signal Groups are used to represent European subsidary signals that would
  * be sited with a signal mast. Such subsidary signals would be used to
@@ -102,7 +100,6 @@ public interface SignalGroup extends NamedBean {
      * @param x index of the Signal Mast Aspect in the list
      * @return the aspect or null if there are no aspects with that index
      */
-    @CheckForNull
     public String getSignalMastAspectByIndex(int x);
 
     /**
@@ -148,7 +145,6 @@ public interface SignalGroup extends NamedBean {
      * @param x Index of the SignalHead in the Group
      * @return null if there are no Signal Heads with that index in the group
      */
-    @CheckForNull
     public String getHeadItemNameByIndex(int x);
 
     /**
@@ -314,7 +310,6 @@ public interface SignalGroup extends NamedBean {
      * @param pTurnout Index for the turnout in the signal head item
      * @return null if the Turnout or Signal Head is invalid
      */
-    @CheckForNull
     public String getTurnoutNameByIndex(int x, int pTurnout);
 
     /**
@@ -324,7 +319,6 @@ public interface SignalGroup extends NamedBean {
      * @param pTurnout Index for the turnout in the signal head item
      * @return null if the Turnout or Signal Head is invalid
      */
-    @CheckForNull
     public Turnout getTurnoutByIndex(int x, int pTurnout);
 
     /**
@@ -374,7 +368,6 @@ public interface SignalGroup extends NamedBean {
      * @param pSensor Index of the Sensor in the head item
      * @return null if the Sensor or Signal Head is invalid
      */
-    @CheckForNull
     public String getSensorNameByIndex(int x, int pSensor);
 
     /**
@@ -384,7 +377,6 @@ public interface SignalGroup extends NamedBean {
      * @param pSensor Index of the Sensor in the head item
      * @return null if the Sensor or Signal Head is invalid
      */
-    @CheckForNull
     public Sensor getSensorByIndex(int x, int pSensor);
 
     /**

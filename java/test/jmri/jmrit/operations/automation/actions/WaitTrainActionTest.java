@@ -1,14 +1,13 @@
 package jmri.jmrit.operations.automation.actions;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.automation.AutomationItem;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.TrainManager;
 import jmri.util.JUnitOperationsUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -90,9 +89,6 @@ public class WaitTrainActionTest extends OperationsTestCase {
         Assert.assertFalse(automationItem.isActionRunning());
         Assert.assertTrue(automationItem.isActionSuccessful());
         Assert.assertEquals("action item status", Bundle.getMessage("ButtonOK"), automationItem.getStatus());
-        
-        JUnitOperationsUtil.checkOperationsShutDownTask();
-
     }
 
     @Test
@@ -130,8 +126,6 @@ public class WaitTrainActionTest extends OperationsTestCase {
         
         Assert.assertFalse(automationItem.isActionRunning());
         Assert.assertTrue(automationItem.isActionSuccessful());
-        
-
     }
 
     @Test
@@ -175,9 +169,6 @@ public class WaitTrainActionTest extends OperationsTestCase {
         train1.move();
         Assert.assertFalse(automationItem.isActionRunning());
         Assert.assertTrue(automationItem.isActionSuccessful());
-        
-        JUnitOperationsUtil.checkOperationsShutDownTask();
-
     }
     
     @Test
@@ -205,8 +196,6 @@ public class WaitTrainActionTest extends OperationsTestCase {
         action.cancelAction();
         Assert.assertFalse(automationItem.isActionRunning());
         Assert.assertFalse(automationItem.isActionSuccessful());
-        
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(WaitTrainActionTest.class);

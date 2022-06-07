@@ -17,17 +17,17 @@ public class JsonMemoryServiceFactory implements JsonServiceFactory<JsonMemoryHt
 
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{MEMORY, MEMORIES};
     }
 
     @Override
-    public JsonMemorySocketService getSocketService(JsonConnection connection, String version) {
+    public JsonMemorySocketService getSocketService(JsonConnection connection) {
         return new JsonMemorySocketService(connection);
     }
 
     @Override
-    public JsonMemoryHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonMemoryHttpService getHttpService(ObjectMapper mapper) {
         return new JsonMemoryHttpService(mapper);
     }
 

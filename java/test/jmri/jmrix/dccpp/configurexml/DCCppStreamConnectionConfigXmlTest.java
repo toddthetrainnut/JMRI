@@ -1,9 +1,7 @@
 package jmri.jmrix.dccpp.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
 import jmri.jmrix.dccpp.DCCppSystemConnectionMemo;
 import jmri.jmrix.dccpp.DCCppStreamConnectionConfig;
 
@@ -14,16 +12,15 @@ import jmri.jmrix.dccpp.DCCppStreamConnectionConfig;
  */
 public class DCCppStreamConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractStreamConnectionConfigXmlTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new DCCppStreamConnectionConfigXml();
         cc = new DCCppStreamConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         // if we've started a traffic controller, dispose of it
         if (cc.getAdapter() != null) {
@@ -31,8 +28,9 @@ public class DCCppStreamConnectionConfigXmlTest extends jmri.jmrix.configurexml.
                ((DCCppSystemConnectionMemo)cc.getAdapter().getSystemConnectionMemo()).dispose();
             }
         }
+
+        JUnitUtil.tearDown();
         xmlAdapter = null;
         cc = null;
-        JUnitUtil.tearDown();
     }
 }

@@ -2,33 +2,34 @@ package jmri.jmrit.vsdecoder.swing;
 
 import java.awt.GraphicsEnvironment;
 import java.util.List;
-
 import jmri.BlockManager;
 import jmri.InstanceManager;
 import jmri.ReporterManager;
 import jmri.jmrit.operations.locations.Location;
 import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.vsdecoder.listener.ListeningSpot;
-import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ManageLocationsFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
-        JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp();
         ListeningSpot s = new ListeningSpot();
         ReporterManager rmgr = jmri.InstanceManager.getDefault(jmri.ReporterManager.class);
-        Object[][] reporterTable = new Object[rmgr.getObjectCount()][6];
+        String[] reporterNameArray = rmgr.getSystemNameArray(); // deprecated, but we test until removed
+        jmri.util.JUnitAppender.suppressWarnMessage("Manager#getSystemNameArray() is deprecated");
 
+        Object[][] reporterTable = new Object[reporterNameArray.length][6];
         BlockManager bmgr = jmri.InstanceManager.getDefault(jmri.BlockManager.class);
-        Object[][] blockTable = new Object[bmgr.getObjectCount()][6];
+        String[] blockNameArray = bmgr.getSystemNameArray(); // deprecated, but we test until removed
+        jmri.util.JUnitAppender.suppressWarnMessage("Manager#getSystemNameArray() is deprecated");
+        Object[][] blockTable = new Object[blockNameArray.length][6];
 
         LocationManager lmgr = InstanceManager.getDefault(LocationManager.class);
         List<Location> locations = lmgr.getLocationsByIdList();
@@ -40,11 +41,9 @@ public class ManageLocationsFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         super.tearDown();
     }
 

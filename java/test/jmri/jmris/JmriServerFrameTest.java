@@ -2,7 +2,7 @@ package jmri.jmris;
 
 import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmris.JmriServerFrame class
@@ -11,7 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
  */
 public class JmriServerFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -19,6 +20,12 @@ public class JmriServerFrameTest extends jmri.util.JmriJFrameTestBase {
         if(!GraphicsEnvironment.isHeadless()){
            frame = new JmriServerFrame();
         }
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+        super.tearDown();
     }
 
 }

@@ -3,6 +3,7 @@ package jmri.jmrix.loconet.soundloader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Font;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -161,7 +162,7 @@ public class EditorTableDataModel extends javax.swing.table.AbstractTableModel {
                     return null;
                 }
             default:
-                log.error("internal state inconsistent with table requst for {} {}", row, col);
+                log.error("internal state inconsistent with table requst for " + row + " " + col);
                 return null;
         }
     }
@@ -189,7 +190,7 @@ public class EditorTableDataModel extends javax.swing.table.AbstractTableModel {
                 b = new JTextField((String) getValueAt(1, REPLACEBUTTONCOL));
                 return b.getPreferredSize().width + 30;
             default:
-                log.warn("Unexpected column in getPreferredWidth: {}", col);
+                log.warn("Unexpected column in getPreferredWidth: " + col);
                 return new JTextField(8).getPreferredSize().width;
         }
     }
@@ -239,7 +240,7 @@ public class EditorTableDataModel extends javax.swing.table.AbstractTableModel {
         try {
             buff = new jmri.jmrit.sound.WavBuffer(chooser.getSelectedFile());
         } catch (Exception e) {
-            log.error("Exception loading file", e);
+            log.error("Exception loading file: " + e);
             return;
         }
         // store to memory
@@ -291,10 +292,9 @@ public class EditorTableDataModel extends javax.swing.table.AbstractTableModel {
     }
 
     /**
-     * Configure a table to have our standard rows and columns.
-     * This is optional, in that other table formats can use this table model.
-     * But we put it here to help keep it consistent.
-     * @param table table to configured.
+     * Configure a table to have our standard rows and columns. This is
+     * optional, in that other table formats can use this table model. But we
+     * put it here to help keep it consistent.
      */
     public void configureTable(JTable table) {
         // allow reordering of the columns
@@ -341,8 +341,6 @@ public class EditorTableDataModel extends javax.swing.table.AbstractTableModel {
      * Service method to set up a column so that it will hold a button for it's
      * values.
      *
-     * @param table The overall table, accessed for formatting
-     * @param column Which column to configure with this call
      * @param sample Typical button, used for size
      */
     void setColumnToHoldButton(JTable table, int column, JButton sample) {

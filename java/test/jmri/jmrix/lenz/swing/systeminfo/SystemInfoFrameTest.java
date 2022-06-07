@@ -1,25 +1,24 @@
 package jmri.jmrix.lenz.swing.systeminfo;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * SystemInfoFrameTest.java
  *
- * Test for the jmri.jmrix.lenz.swing.systeminfo.SystemInfoFrame
+ * Description:	tests for the jmri.jmrix.lenz.swing.systeminfo.SystemInfoFrame
  * class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class SystemInfoFrameTest extends jmri.util.JmriJFrameTestBase {
 
     private jmri.jmrix.lenz.XNetInterfaceScaffold t = null;
     private jmri.jmrix.lenz.XNetSystemConnectionMemo memo = null;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -31,12 +30,11 @@ public class SystemInfoFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         memo = null;
         t = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 

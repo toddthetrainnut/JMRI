@@ -1,16 +1,16 @@
 package jmri.jmrit.beantable;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
-
+import org.junit.Before;
+import org.junit.Test;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
 import javax.swing.JTextField;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class AddNewDevicePanelTest {
 
@@ -28,14 +28,15 @@ public class AddNewDevicePanelTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.resetInstanceManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.resetInstanceManager();
         jmri.util.JUnitUtil.tearDown();

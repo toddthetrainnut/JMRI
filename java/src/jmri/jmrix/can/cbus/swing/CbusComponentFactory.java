@@ -1,7 +1,6 @@
 package jmri.jmrix.can.cbus.swing;
 
 import jmri.jmrix.can.CanSystemConnectionMemo;
-import jmri.jmrix.can.ConfigurationManager;
 
 /**
  * Provide access to Swing components for the Cbus subsystem.
@@ -26,11 +25,7 @@ public class CbusComponentFactory extends jmri.jmrix.swing.ComponentFactory {
         if (memo.getDisabled()) {
             return null;
         }
-        if (memo.getProtocol().equals(ConfigurationManager.SPROGCBUS)) {
-            return new SprogCbusMenu(memo);
-        } else {
-            return new CbusMenu(memo);
-        }
+        return new CbusMenu(memo);
     }
 
 }

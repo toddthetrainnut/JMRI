@@ -1,14 +1,15 @@
 package jmri.jmrit.revhistory.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * FileHistoryXmlTest.java
  *
- * Test for the FileHistoryXml class
+ * Description: tests for the FileHistoryXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class FileHistoryXmlTest {
       Assert.assertNotNull("FileHistoryXml constructor",new FileHistoryXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

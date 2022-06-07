@@ -1,5 +1,6 @@
 package jmri.jmrix.maple.simulator;
 
+import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import jmri.jmrix.maple.MapleSystemConnectionMemo;
@@ -24,7 +25,6 @@ public class ConnectionConfig extends jmri.jmrix.AbstractSimulatorConnectionConf
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p serial port adapter.
      */
     public ConnectionConfig(jmri.jmrix.SerialPortAdapter p) {
         super(p);

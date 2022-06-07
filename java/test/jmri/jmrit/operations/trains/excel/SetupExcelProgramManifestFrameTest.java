@@ -1,17 +1,14 @@
 package jmri.jmrit.operations.trains.excel;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.setup.Setup;
-import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
@@ -36,14 +33,12 @@ public class SetupExcelProgramManifestFrameTest extends OperationsTestCase {
         f.initComponents();
         Assert.assertTrue(f.isShowing());
 
-        JemmyUtil.enterClickAndLeaveThreadSafe(f.addButton);
+        JemmyUtil.enterClickAndLeave(f.addButton);
 
         // abort find file
         JemmyUtil.pressDialogButton(Bundle.getMessage("FindDesiredExcelFile"), "Cancel");
-        JemmyUtil.waitFor(f);
+
         JUnitUtil.dispose(f);
-        
-        JUnitOperationsUtil.checkOperationsShutDownTask();
     }
 
     @Test
@@ -55,12 +50,12 @@ public class SetupExcelProgramManifestFrameTest extends OperationsTestCase {
         f.initComponents();
         Assert.assertTrue(f.isShowing());
 
-        JemmyUtil.enterClickAndLeaveThreadSafe(f.testButton);
+        JemmyUtil.enterClickAndLeave(f.testButton);
+
         // kill dialog
         JemmyUtil.pressDialogButton(f, Bundle.getMessage("ManifestCreatorNotFound"), Bundle.getMessage("ButtonOK"));
-        JemmyUtil.waitFor(f);
+
         JUnitUtil.dispose(f);
-        JUnitOperationsUtil.checkOperationsShutDownTask();
     }
 
     @Test
@@ -82,7 +77,6 @@ public class SetupExcelProgramManifestFrameTest extends OperationsTestCase {
         Assert.assertEquals("", "Test File Name", InstanceManager.getDefault(TrainCustomManifest.class).getFileName());
 
         JUnitUtil.dispose(f);
-        JUnitOperationsUtil.checkOperationsShutDownTask();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(SetupExcelProgramManifestFrameTest.class);

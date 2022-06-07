@@ -1,6 +1,11 @@
 package jmri.web.servlet.directory;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.ReadableByteChannel;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -10,33 +15,33 @@ import jmri.util.FileUtil;
 import jmri.web.servlet.ServletUtil;
 import org.eclipse.jetty.util.StringUtil;
 import org.eclipse.jetty.util.URIUtil;
-import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Override
- * {@link org.eclipse.jetty.util.resource.Resource#getListHTML(java.lang.String, boolean, java.lang.String)}
+ * {@link org.eclipse.jetty.util.resource.Resource#getListHTML(java.lang.String, boolean)}
  * in {@link org.eclipse.jetty.util.resource.Resource} so that directory
  * listings can include the complete JMRI look and feel.
  *
- * @author Randall Wood Copright 2016, 2020
+ * @author Randall Wood (C) 2016
  */
-public class DirectoryResource extends PathResource {
+public class DirectoryResource extends Resource {
 
+    private final Resource resource;
     private final Locale locale;
 
-    public DirectoryResource(Locale locale, Resource resource) throws IOException {
-        super(resource.getFile());
+    public DirectoryResource(Locale locale, Resource resource) {
+        this.resource = resource;
         this.locale = locale;
     }
 
     @Override
-    public String getListHTML(String base, boolean parent, String query)
+    public String getListHTML(String base, boolean parent)
             throws IOException {
-        String basePath = URIUtil.canonicalPath(base);
-        if (basePath == null || !isDirectory()) {
+        String resource = URIUtil.canonicalPath(base);
+        if (resource == null || !isDirectory()) {
             return null;
         }
 
@@ -46,31 +51,31 @@ public class DirectoryResource extends PathResource {
         }
         Arrays.sort(ls);
 
-        String decodedBase = URIUtil.decodePath(basePath);
-        String title = Bundle.getMessage(this.locale, "DirectoryTitle", StringUtil.sanitizeXmlString(decodedBase)); // NOI18N
+        String decodedBase = URIUtil.decodePath(resource);
+        String title = Bundle.getMessage(this.locale, "DirectoryTitle", deTag(decodedBase)); // NOI18N
 
         StringBuilder table = new StringBuilder(4096);
         String row = Bundle.getMessage(this.locale, "TableRow"); // NOI18N
         if (parent) {
             table.append(String.format(this.locale, row,
-                    URIUtil.addPaths(basePath, "../"),
+                    URIUtil.addPaths(resource, "../"),
                     Bundle.getMessage(this.locale, "ParentDirectory"),
                     "",
                     ""));
         }
 
-        String encodedBase = hrefEncodeURI(basePath);
+        String encodedBase = hrefEncodeURI(resource);
 
         DateFormat dfmt = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, this.locale);
         for (String l : ls) {
             Resource item = addPath(l);
-            String itemPath = URIUtil.addPaths(encodedBase, URIUtil.encodePath(l));
-            if (item.isDirectory() && !itemPath.endsWith("/")) {
-                itemPath += URIUtil.SLASH;
+            String path = URIUtil.addPaths(encodedBase, URIUtil.encodePath(l));
+            if (item.isDirectory() && !path.endsWith("/")) {
+                path += URIUtil.SLASH;
             }
             table.append(String.format(this.locale, row,
-                    itemPath,
-                    StringUtil.sanitizeXmlString(l),
+                    path,
+                    deTag(l),
                     Bundle.getMessage(this.locale, "SizeInBytes", item.length()),
                     dfmt.format(new Date(item.lastModified())))
             );
@@ -83,28 +88,16 @@ public class DirectoryResource extends PathResource {
                         InstanceManager.getDefault(ServletUtil.class).getRailroadName(false),
                         title
                 ),
-                InstanceManager.getDefault(ServletUtil.class).getNavBar(this.locale, basePath),
+                InstanceManager.getDefault(ServletUtil.class).getNavBar(this.locale, resource),
                 InstanceManager.getDefault(ServletUtil.class).getRailroadName(false),
-                InstanceManager.getDefault(ServletUtil.class).getFooter(this.locale, basePath),
+                InstanceManager.getDefault(ServletUtil.class).getFooter(this.locale, resource),
                 title,
                 table
         );
     }
 
-    @Override
-    public boolean equals(Object other) {
-        // spotbugs errors if equals is not overridden, so override and call super
-        return super.equals(other);
-    }
-
-    @Override
-    public int hashCode() {
-        // spotbugs errors if equals is present, but not hashCode, so override and call super
-        return super.hashCode();
-    }
-
     /*
-     * Originally copied from private static method of org.eclipse.jetty.util.resource.Resource
+     * TODO: Do we already have something like this elsewhere in the JMRI code or in a required library?
      */
     /**
      * Encode any characters that could break the URI string in an HREF. Such as
@@ -118,7 +111,7 @@ public class DirectoryResource extends PathResource {
      * @return the defanged text.
      */
     private static String hrefEncodeURI(String raw) {
-        StringBuilder buf = null;
+        StringBuffer buf = null;
 
         loop:
         for (int i = 0; i < raw.length(); i++) {
@@ -128,7 +121,7 @@ public class DirectoryResource extends PathResource {
                 case '"':
                 case '<':
                 case '>':
-                    buf = new StringBuilder(raw.length() << 1);
+                    buf = new StringBuffer(raw.length() << 1);
                     break loop;
                 default:
                     log.debug("Unhandled code: {}", c);
@@ -144,16 +137,16 @@ public class DirectoryResource extends PathResource {
             switch (c) {
                 case '"':
                     buf.append("%22");
-                    break;
+                    continue;
                 case '\'':
                     buf.append("%27");
-                    break;
+                    continue;
                 case '<':
                     buf.append("%3C");
-                    break;
+                    continue;
                 case '>':
                     buf.append("%3E");
-                    break;
+                    continue;
                 default:
                     buf.append(c);
             }
@@ -162,6 +155,92 @@ public class DirectoryResource extends PathResource {
         return buf.toString();
     }
 
+    /*
+     * TODO: Do we already have something like this elsewhere in the JMRI code or in a required library?
+     */
+    private static String deTag(String raw) {
+        return StringUtil.replace(StringUtil.replace(raw, "<", "&lt;"), ">", "&gt;");
+    }
+
+    /*
+     * Abstract methods of Resource that must be overridden.
+     */
+    @Override
+    public boolean isContainedIn(Resource rsrc) throws MalformedURLException {
+        return this.resource.isContainedIn(rsrc);
+    }
+
+    @Override
+    public void close() {
+        this.resource.close();
+    }
+
+    @Override
+    public boolean exists() {
+        return this.resource.exists();
+    }
+
+    @Override
+    public boolean isDirectory() {
+        return this.resource.isDirectory();
+    }
+
+    @Override
+    public long lastModified() {
+        return this.resource.lastModified();
+    }
+
+    @Override
+    public long length() {
+        return this.resource.length();
+    }
+
+    @Override
+    @Deprecated  // will be removed when superclass method is removed due to @Override
+    public URL getURL() {
+        return this.resource.getURL();
+    }
+
+    @Override
+    public File getFile() throws IOException {
+        return this.resource.getFile();
+    }
+
+    @Override
+    public String getName() {
+        return this.resource.getName();
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        return this.resource.getInputStream();
+    }
+
+    @Override
+    public boolean delete() throws SecurityException {
+        return this.resource.delete();
+    }
+
+    @Override
+    public boolean renameTo(Resource rsrc) throws SecurityException {
+        return this.resource.renameTo(rsrc);
+    }
+
+    @Override
+    public String[] list() {
+        return this.resource.list();
+    }
+
+    @Override
+    public Resource addPath(String string) throws IOException, MalformedURLException {
+        return this.resource.addPath(string);
+    }
+
+    @Override
+    public ReadableByteChannel getReadableByteChannel() throws IOException {
+        return this.resource.getReadableByteChannel();
+    }
+
     // initialize logging
-    private static final Logger log = LoggerFactory.getLogger(DirectoryResource.class);
+    private final static Logger log = LoggerFactory.getLogger(DirectoryResource.class);
 }

@@ -8,9 +8,9 @@ import jmri.jmrix.srcp.SRCPSystemConnectionMemo;
 import jmri.jmrix.srcp.SRCPTrafficController;
 
 /**
- * Frame for user input of SRCP messages.
+ * Description:	Frame for user input of SRCP messages
  *
- * @author Bob Jacobsen Copyright (C) 2008
+ * @author	Bob Jacobsen Copyright (C) 2008
  */
 public class PacketGenFrame extends jmri.util.JmriJFrame implements jmri.jmrix.srcp.SRCPListener {
 
@@ -66,14 +66,12 @@ public class PacketGenFrame extends jmri.util.JmriJFrame implements jmri.jmrix.s
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        SRCPMessage m = new SRCPMessage(input.length() + 1);
-        for (int i = 0; i < input.length(); i++) {
-            m.setElement(i, input.charAt(i));
+        SRCPMessage m = new SRCPMessage(packetTextField.getText().length() + 1);
+        for (int i = 0; i < packetTextField.getText().length(); i++) {
+            m.setElement(i, packetTextField.getText().charAt(i));
         }
 
-        m.setElement(input.length(), '\n');
+        m.setElement(packetTextField.getText().length(), '\n');
         tc.sendSRCPMessage(m, this);
     }
 

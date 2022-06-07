@@ -1,5 +1,6 @@
 package jmri.jmrix.dcc4pc;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.DataInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
@@ -108,13 +109,22 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
     protected void addTrailerToOutput(byte[] msg, int offset, AbstractMRMessage m) {
     }
 
+    /**
+     * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
+     */
+    @Deprecated
+    @SuppressFBWarnings(value = "MS_PKGPROTECT")
+    // SpotBugs wants this package protected, but we're removing it when multi-connection
+    // migration is complete
+    final static protected Dcc4PcTrafficController self = null;
+
     Dcc4PcMessage mLastMessage;  //Last message requested with a reply listener ie from external methods
     Dcc4PcMessage mLastSentMessage; //Last message actually sent from within the code, ie getResponse.
 
     @Override
     synchronized protected void forwardToPort(AbstractMRMessage m, AbstractMRListener reply) {
         if (log.isDebugEnabled()) {
-            log.debug("forwardToPort message: [{}]", m);
+            log.debug("forwardToPort message: [" + m + "]");
         }
         if (port == null) {
             return;
@@ -150,12 +160,12 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
         try {
             if (ostream != null) {
                 if (log.isDebugEnabled()) {
-                    StringBuilder f = new StringBuilder();
+                    StringBuilder f = new StringBuilder("formatted message: ");
                     for (int i = 0; i < msg.length; i++) {
                         f.append(Integer.toHexString(0xFF & msg[i]));
                         f.append(" ");
                     }
-                    log.debug("formatted message: {}", f);
+                    log.debug(new String(f));
                 }
                 while (m.getRetries() >= 0) {
                     if (portReadyToSend(controller)) {
@@ -166,13 +176,19 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                         } catch (InterruptedException ex) {
                             Thread.currentThread().interrupt();
                         } catch (Exception ex) {
-                            log.warn("sendMessage: Exception: {}", ex.toString());
+                            log.warn("sendMessage: Exception: " + ex.toString());
                         }
                         ostream.flush();
                         port.setDTR(false);
                         break;
                     } else if (m.getRetries() >= 0) {
-                        log.debug("Retry message: {} attempts remaining: {}", m, m.getRetries());
+                        if (log.isDebugEnabled()) {
+                            StringBuilder b = new StringBuilder("Retry message: ");
+                            b.append(m.toString());
+                            b.append(" attempts remaining: ");
+                            b.append(m.getRetries());
+                            log.debug(new String(b));
+                        }
                         m.setRetries(m.getRetries() - 1);
                         try {
                             synchronized (xmtRunnable) {
@@ -183,7 +199,7 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                             log.error("retry wait interrupted");
                         }
                     } else {
-                        log.warn("sendMessage: port not ready for data sending: {}", java.util.Arrays.toString(msg));
+                        log.warn("sendMessage: port not ready for data sending: " + java.util.Arrays.toString(msg));
                     }
                 }
             } else {
@@ -239,7 +255,7 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
             }
             return true;
         } catch (java.io.IOException ex) {
-            log.error("IO Exception{}", ex.toString());
+            log.error("IO Exception" + ex.toString());
         }
         return !port.isDSR();
     }
@@ -279,16 +295,16 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
             //log.debug(mLastMessage.getElement(0));
             if (mLastSentMessage.isForChildBoard()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("This is a message for a child board {}", ((Dcc4PcReply) msg).toHexString());
-                    log.debug("Originate {}", mLastMessage.toString());
+                    log.debug("This is a message for a child board " + ((Dcc4PcReply) msg).toHexString());
+                    log.debug("Originate " + mLastMessage.toString());
                 }
                 if ((mLastSentMessage.getNumDataElements() - 1) == msg.getElement(1)) {
                     log.debug("message lengths match");
                     waitingForMore = true;
                     try {
                         Thread.sleep(10);
-                    } catch (InterruptedException ex) {
-                        log.debug("InterruptedException", ex);
+                    } catch (Exception ex) {
+                        log.debug(ex.getLocalizedMessage(), ex);
                     }
                     //log.debug("We do not forward the response to the listener as it has not been formed");
                     lastIncomplete = null;
@@ -298,14 +314,14 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("Not all of the command was sent, we need to figure out a way to resend the bits");
-                        log.debug("Original Message length {}", mLastSentMessage.getNumDataElements());
-                        log.debug("What CID has procced in size {}", (byte) msg.getElement(1));
-                        log.debug("Reply is in error {}", ((Dcc4PcReply) msg).toHexString());
+                        log.debug("Original Message length " + mLastSentMessage.getNumDataElements());
+                        log.debug("What CID has procced in size " + (byte) msg.getElement(1));
+                        log.debug("Reply is in error " + ((Dcc4PcReply) msg).toHexString());
                     }
                 }
             } else if (mLastSentMessage.getElement(0) == 0x0C) {
                 if (log.isDebugEnabled()) {
-                    log.debug("last message was a get response {}", ((Dcc4PcReply) msg).toHexString());
+                    log.debug("last message was a get response " + ((Dcc4PcReply) msg).toHexString());
                 }
                 if (msg.getElement(0) == Dcc4PcReply.SUCCESS) {
                     ((Dcc4PcReply) msg).strip();
@@ -371,13 +387,14 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                 }
             }
         } else {
-            log.debug("Last message sent was null {}", ((Dcc4PcReply) msg).toHexString());
+            log.debug("Last message sent was null " + ((Dcc4PcReply) msg).toHexString());
         }
 
         // message is complete, dispatch it !!
         replyInDispatch = true;
         if (log.isDebugEnabled()) {
-            log.debug("dispatch reply of length {} contains {} state {}", msg.getNumDataElements(), msg.toString(), mCurrentState);
+            log.debug("dispatch reply of length " + msg.getNumDataElements()
+                    + " contains " + msg.toString() + " state " + mCurrentState);
         }
         // forward the message to the registered recipients,
         // which includes the communications monitor
@@ -401,7 +418,7 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                     // message, otherwise go on to the next message
                     if (msg.isRetransmittableErrorMsg()) {
                         if (log.isDebugEnabled()) {
-                            log.debug("Automatic Recovery from Error Message: {}", msg.toString());
+                            log.debug("Automatic Recovery from Error Message: " + msg.toString());
                         }
                         synchronized (xmtRunnable) {
                             mCurrentState = AUTORETRYSTATE;
@@ -461,7 +478,8 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
             // Unsolicited message
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Unsolicited Message Received {}", msg.toString());
+                log.debug("Unsolicited Message Received "
+                        + msg.toString());
             }
             replyInDispatch = false;
         }
@@ -493,7 +511,7 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                             mLastMessage = null;
                             mLastSentMessage = null;
                             readingData = false;
-                            log.warn("timeout flushes receive buffer: {}", ((Dcc4PcReply) msg).toHexString());
+                            log.warn("timeout flushes receive buffer: " + ((Dcc4PcReply) msg).toHexString());
                             msg.flush();
                             i = 0;  // restart
                             flushReceiveChars = false;
@@ -501,7 +519,7 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                         } else {
                             if (canReceive()) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Set data {}, {}", i, char1 & 0xff);
+                                    log.debug("Set data " + i + ", " + (char1 & 0xff));
                                 }
                                 msg.setElement(i, char1);
                                 waiting = false;
@@ -515,7 +533,7 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                                 }
                             } else {
                                 i--; // flush char
-                                log.error("unsolicited character received: {}", Integer.toHexString(char1));
+                                log.error("unsolicited character received: " + Integer.toHexString(char1));
                             }
                         }
                     } else if (!port.isDSR()) {
@@ -569,10 +587,10 @@ public class Dcc4PcTrafficController extends AbstractMRTrafficController impleme
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // retain if needed later
-                log.error("{} from {}", InterruptMessage, e.getMessage());
+                log.error(InterruptMessage);
             }
         }
-        log.debug("TIMEOUT in transmitWait, mCurrentState:{} {} port dsr {} wait time {}", mCurrentState, state, port.isDSR(), waitTime);
+        log.debug("TIMEOUT in transmitWait, mCurrentState:" + mCurrentState + " " + state + " port dsr " + port.isDSR() + " wait time " + waitTime);
     }
 
     private final static Logger log = LoggerFactory.getLogger(Dcc4PcTrafficController.class);

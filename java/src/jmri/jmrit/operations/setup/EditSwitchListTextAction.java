@@ -2,7 +2,6 @@ package jmri.jmrit.operations.setup;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -16,7 +15,11 @@ import javax.swing.AbstractAction;
 public class EditSwitchListTextAction extends AbstractAction {
 
     public EditSwitchListTextAction() {
-        super(Bundle.getMessage("TitleSwitchListText"));
+        this(Bundle.getMessage("TitleSwitchListText"));
+    }
+
+    public EditSwitchListTextAction(String s) {
+        super(s);
     }
 
     EditSwitchListTextFrame f = null;

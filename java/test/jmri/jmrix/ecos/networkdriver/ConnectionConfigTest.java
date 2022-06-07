@@ -1,36 +1,31 @@
 package jmri.jmrix.ecos.networkdriver;
 
-import jmri.jmrix.ecos.EcosSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for ConnectionConfig class.
  *
- * @author Paul Bender Copyright (C) 2016, 2021
+ * @author Paul Bender Copyright (C) 2016
  **/
+
 public class ConnectionConfigTest extends jmri.jmrix.AbstractSerialConnectionConfigTestBase  {
 
-    private EcosSystemConnectionMemo memo;
-
-    @BeforeEach
-    @Override
-    public void setUp() {
+   @Before
+   public void setUp() {
         JUnitUtil.setUp();
+
         JUnitUtil.initDefaultUserMessagePreferences();
-
-        memo = new EcosSystemConnectionMemo(); // takes care of cleaning up the EcosPreferenceManager
         cc = new ConnectionConfig();
-        ((ConnectionConfig)cc).setInstance(); // create an adapter assumed to exist in tests
-    }
+   }
 
-    @AfterEach
-    @Override
-    public void tearDown(){
-        cc = null;
-        memo.dispose();
+   @After
+   public void tearDown(){
+        cc=null;
         JUnitUtil.tearDown();
-    }
+   }
 
 }

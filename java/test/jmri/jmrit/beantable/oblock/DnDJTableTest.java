@@ -1,41 +1,37 @@
 package jmri.jmrit.beantable.oblock;
 
 import java.awt.GraphicsEnvironment;
-
-import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
-
-import jmri.util.gui.GuiLafPreferencesManager;
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class DnDJTableTest {
 
     @Test
-    public void testDesktopCtor() {
-        // use original _desktop interface (for DnD support)
-        InstanceManager.getDefault(GuiLafPreferencesManager.class).setOblockEditTabbed(false);
-
+    public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        TableFrames tf = new TableFrames();
-        OBlockTableModel obtm = new OBlockTableModel(tf);
-        DnDJTable ddt = new DnDJTable(obtm, new int[0]);
-        Assert.assertNotNull("exists", ddt);
-        JUnitUtil.dispose(tf.getDesktopFrame());
+        TableFrames f = new TableFrames();
+        OBlockTableModel obtm = new OBlockTableModel(f);
+        DnDJTable t = new DnDJTable(obtm,new int[0]);
+        Assert.assertNotNull("exists",t);
+        JUnitUtil.dispose(f);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

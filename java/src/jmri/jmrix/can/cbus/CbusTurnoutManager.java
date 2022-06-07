@@ -1,9 +1,9 @@
 package jmri.jmrix.can.cbus;
 
-import java.beans.PropertyChangeEvent;
-import java.util.Locale;
-import javax.annotation.*;
-import jmri.*;
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+import jmri.JmriException;
+import jmri.Turnout;
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.managers.AbstractTurnoutManager;
 import org.slf4j.Logger;
@@ -24,108 +24,154 @@ public class CbusTurnoutManager extends AbstractTurnoutManager {
 
     /**
      * Ctor using a given system connection memo
-     * @param memo System Connection
      */
     public CbusTurnoutManager(CanSystemConnectionMemo memo) {
-        super(memo);
+        this.memo = memo;
+        prefix = memo.getSystemPrefix();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
+    private CanSystemConnectionMemo memo;
+    private String prefix = "M";
+
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
-        String addr = systemName.substring(getSystemPrefix().length() + 1);
+    public String getSystemPrefix() {
+        return prefix;
+    }
+
+    /** 
+     * {@inheritDoc} 
+     * Override to normalize System Name
+     */
+    @Override
+    @Nonnull
+    public Turnout provideTurnout(@Nonnull String name) {
+        Turnout result = getTurnout(name);
+        if (result == null) {
+            if (name.startsWith(prefix + typeLetter())) {
+                result = newTurnout(name, null);
+            } else {
+                result = newTurnout(makeSystemName(name), null);
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * {@inheritDoc} 
+     */
+    @Override
+    protected Turnout createNewTurnout(String systemName, String userName) {
+        String addr = systemName.substring(prefix.length() + 1);
         // first, check validity
-        String newAddress;
         try {
-            newAddress = CbusAddress.validateSysName(addr);
+            validateSystemNameFormat(addr);
         } catch (IllegalArgumentException e) {
-            log.error("Unable to create CbusTurnout, {}", e.getMessage());
+            log.error(e.toString());
             throw e;
         }
+        // validate (will add "+" to unsigned int)
+        String newAddress = CbusAddress.validateSysName(addr);
         // OK, make
-        Turnout t = new CbusTurnout(getSystemPrefix(), newAddress, ((CanSystemConnectionMemo)getMemo()).getTrafficController());
+        Turnout t = new CbusTurnout(prefix, newAddress, memo.getTrafficController());
         t.setUserName(userName);
         return t;
     }
 
-    /**
-     * {@inheritDoc}
+    /** 
+     * {@inheritDoc} 
      */
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
+    /** 
+     * {@inheritDoc} 
      */
     @Override
-    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) {
+    public String createSystemName(String curAddress, String prefix) throws JmriException {
         // first, check validity
-        String newAddress;
         try {
-            newAddress = CbusAddress.validateSysName(curAddress);
-         } catch (IllegalArgumentException e) {
-            newAddress = curAddress;
+            validateSystemNameFormat(curAddress);
+        } catch (IllegalArgumentException e) {
+            throw new JmriException(e.toString());
         }
+        // prefix unsigned int with "+" as service to user
+        String newAddress = CbusAddress.validateSysName(curAddress);
         return prefix + typeLetter() + newAddress;
     }
 
-    @Override
-    @Nonnull
-    @CheckReturnValue
-    public String getNextValidSystemName(@Nonnull NamedBean currentBean) throws JmriException {
-        if (!allowMultipleAdditions(currentBean.getSystemName())) throw new UnsupportedOperationException("Not supported");
-
-        String currentName = currentBean.getSystemName();
-        String suffix = Manager.getSystemSuffix(currentName);
-        String type = Manager.getTypeLetter(currentName);
-        String prefix = Manager.getSystemPrefix(currentName);
-
-        String nextName = CbusAddress.getIncrement(suffix);
-
-        if (nextName==null) {
-            throw new JmriException("No existing number found when incrementing " + currentName);
-        }
-        return prefix+type+nextName;
-
-    }
-
-    /**
-     * {@inheritDoc}
+    /** 
+     * {@inheritDoc} 
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull Locale locale) {
-        validateSystemNamePrefix(name, locale);
+    public String getNextValidAddress(String curAddress, String prefix) throws JmriException {
+        String testAddr = curAddress;
+        // make sure starting name is valid
         try {
-            CbusAddress.validateSysName(name.substring(getSystemNamePrefix().length()));
-        } catch (IllegalArgumentException ex) {
-            throw new jmri.NamedBean.BadSystemNameException(locale, "InvalidSystemNameCustom", ex.getMessage());
+            validateSystemNameFormat(testAddr);
+        } catch (IllegalArgumentException e) {
+            throw new JmriException(e.toString());
         }
-        return name;
+        testAddr = CbusAddress.validateSysName(testAddr); // normalize Merg address
+        Turnout t = getBySystemName(prefix + typeLetter() + testAddr);
+        if (t != null) {
+            // build local addresses
+            for (int x = 1; x < 10; x++) {
+                testAddr = CbusAddress.getIncrement(testAddr); // getIncrement will perform a max check on the numbers
+                t = getBySystemName(prefix + typeLetter() + testAddr);
+                if (t == null) {
+                    // If the hardware address + x does not already exist,
+                    // then this can be considered the next valid address.
+                    return testAddr;
+                }
+            }
+            // feedback when next address is also in use
+            log.warn("10 hardware addresses starting at {} already in use. No new {} Turnouts added", curAddress, memo.getUserName());
+            return null;
+        } else {
+            // If the initially requested hardware address does not already exist,
+            // then this can be considered the next valid address.
+            return testAddr;
+        }
     }
-
-    /**
-     * {@inheritDoc}
+    
+    /** 
+     * {@inheritDoc} 
      */
     @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
+    public NameValidity validSystemNameFormat(String systemName) {
         String addr;
         try {
-            addr = systemName.substring(getSystemPrefix().length() + 1); // get only the address part
+            addr = systemName.substring(prefix.length() + 1); // get only the address part
         } catch (StringIndexOutOfBoundsException e){
             return NameValidity.INVALID;
         }
         try {
-            CbusAddress.validateSysName(addr);
+            validateSystemNameFormat(addr);
         } catch (IllegalArgumentException e){
             return NameValidity.INVALID;
         }
         return NameValidity.VALID;
+    }
+
+    /**
+     * Work out the details for Cbus hardware address validation.
+     * Logging of handled cases no higher than WARN.
+     *
+     * @param address the hardware address to check
+     * @throws IllegalArgumentException when delimiter is not found
+     */
+    void validateSystemNameFormat(String address) throws IllegalArgumentException {
+        String newAddress = CbusAddress.validateSysName(address);
+        log.debug("validated system name {}", newAddress);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public Turnout getBySystemName(@Nonnull String key) {
+        return _tsys.get(key);
     }
 
     /**
@@ -134,14 +180,6 @@ public class CbusTurnoutManager extends AbstractTurnoutManager {
     @Override
     public String getEntryToolTip() {
         return Bundle.getMessage("AddOutputEntryToolTip");
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent e) {
-        super.propertyChange(e);
-        if (e.getPropertyName().equals("inverted")) {
-            firePropertyChange("beaninverted", null, null); //IN18N
-        }
     }
 
     private final static Logger log = LoggerFactory.getLogger(CbusTurnoutManager.class);

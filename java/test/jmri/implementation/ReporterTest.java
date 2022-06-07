@@ -1,9 +1,7 @@
 package jmri.implementation;
 
 import jmri.Reporter;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the Reporter class
@@ -86,7 +84,7 @@ public class ReporterTest {
         Assert.assertSame("After null report, LastReport Object is identical to otr", otr, r.getLastReport());
     }
 
-    @BeforeEach
+    @Before
     public void setUp(){
        jmri.util.JUnitUtil.setUp();
        r = new AbstractReporter("SYS", "usr") {
@@ -103,7 +101,7 @@ public class ReporterTest {
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
        r = null;
        jmri.util.JUnitUtil.tearDown();

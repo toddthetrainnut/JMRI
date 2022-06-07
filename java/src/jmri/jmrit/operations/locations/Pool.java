@@ -2,11 +2,9 @@ package jmri.jmrit.operations.locations;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import jmri.beans.Bean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jmri.beans.Bean;
 
 /**
  * Represents a pool of tracks that share their length.
@@ -23,7 +21,7 @@ public class Pool extends Bean {
     private final static Logger log = LoggerFactory.getLogger(Pool.class);
 
     // stores tracks for this pool
-    protected List<Track> _tracks = new ArrayList<>();
+    protected List<Track> _tracks = new ArrayList<Track>();
 
     protected String _id = "";
 
@@ -59,14 +57,13 @@ public class Pool extends Bean {
     }
 
     public Pool(String id, String name) {
-        super(false);
         log.debug("New pool ({}) id: {}", name, id);
         _name = name;
         _id = id;
     }
 
     public void dispose() {
-        firePropertyChange(DISPOSE, null, DISPOSE);
+        this.propertyChangeSupport.firePropertyChange(DISPOSE, null, DISPOSE);
     }
 
     /**
@@ -80,7 +77,7 @@ public class Pool extends Bean {
             int oldSize = _tracks.size();
             _tracks.add(track);
 
-            firePropertyChange(LISTCHANGE_CHANGED_PROPERTY, oldSize, _tracks.size());
+            this.propertyChangeSupport.firePropertyChange(LISTCHANGE_CHANGED_PROPERTY, Integer.valueOf(oldSize), Integer.valueOf(_tracks.size()));
         }
     }
 
@@ -95,28 +92,21 @@ public class Pool extends Bean {
             int oldSize = _tracks.size();
             _tracks.remove(track);
 
-            firePropertyChange(LISTCHANGE_CHANGED_PROPERTY, oldSize, _tracks.size());
+            this.propertyChangeSupport.firePropertyChange(LISTCHANGE_CHANGED_PROPERTY, Integer.valueOf(oldSize), Integer.valueOf(_tracks.size()));
         }
     }
 
     public List<Track> getTracks() {
         // Return a copy to protect the internal list
-        return new ArrayList<>(_tracks);
+        return new ArrayList<Track>(_tracks);
     }
 
     public int getTotalLengthTracks() {
-        return getTracks().stream().map(track -> track.getLength()).reduce(0, Integer::sum);
-    }
-    
-    public int getMaxLengthTrack(Track track) {
-        int length = getTotalLengthTracks();
-        for (Track t : getTracks()) {
-            if (t == track) {
-                continue;
-            }
-            length = length - t.getMinimumLength();
+        int total = 0;
+        for (Track track : getTracks()) {
+            total += track.getLength();
         }
-        return length;
+        return total;
     }
 
     /**

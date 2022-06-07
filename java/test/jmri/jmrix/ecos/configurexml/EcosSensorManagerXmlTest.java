@@ -1,14 +1,15 @@
 package jmri.jmrix.ecos.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * EcosSensorManagerXmlTest.java
  *
- * Test for the EcosSensorManagerXml class
+ * Description: tests for the EcosSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class EcosSensorManagerXmlTest {
       Assert.assertNotNull("EcosSensorManagerXml constructor",new EcosSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

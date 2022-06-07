@@ -1,12 +1,14 @@
 package jmri.jmrit.symbolicprog;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.util.AlphanumComparator class.
  *
- * @author Paul Bender Copyright 2016
+ * @author	Paul Bender Copyright 2016
  */
 public class CVNameComparatorTest extends jmri.util.AlphanumComparatorTest {
 
@@ -36,14 +38,14 @@ public class CVNameComparatorTest extends jmri.util.AlphanumComparatorTest {
 
     
     // from here down is testing infrastructure
-    @BeforeEach
+    @Before
     @Override
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
         ac = new CVNameComparator();
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();

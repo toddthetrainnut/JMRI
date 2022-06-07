@@ -2,12 +2,12 @@ package jmri.jmrit.operations;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import jmri.*;
-import jmri.implementation.AbstractShutDownTask;
+import jmri.InstanceManager;
+import jmri.InstanceManagerAutoDefault;
+import jmri.InstanceManagerAutoInitialize;
+import jmri.ShutDownManager;
+import jmri.ShutDownTask;
+import jmri.implementation.QuietShutDownTask;
 import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.operations.locations.schedules.ScheduleManager;
 import jmri.jmrit.operations.rollingstock.cars.CarManager;
@@ -17,6 +17,8 @@ import jmri.jmrit.operations.setup.AutoBackup;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.jmrit.operations.trains.TrainManager;
 import jmri.jmrit.operations.trains.schedules.TrainScheduleManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A manager for Operations. This manager controls the Operations ShutDownTask.
@@ -30,6 +32,18 @@ public final class OperationsManager implements InstanceManagerAutoDefault, Inst
     static private final Logger log = LoggerFactory.getLogger(OperationsManager.class);
 
     public OperationsManager() {
+    }
+
+    /**
+     * Get the default instance of this class.
+     *
+     * @return the default instance of this class
+     * @deprecated since 4.9.2; use
+     * {@link jmri.InstanceManager#getDefault(java.lang.Class)} instead
+     */
+    @Deprecated
+    public synchronized static OperationsManager getInstance() {
+        return InstanceManager.getDefault(OperationsManager.class);
     }
 
     /**
@@ -95,16 +109,17 @@ public final class OperationsManager implements InstanceManagerAutoDefault, Inst
      *
      * @return A new ShutDownTask
      */
-    public static ShutDownTask getDefaultShutDownTask() {
-        return new AbstractShutDownTask("Save Operations State") { // NOI18N
+    public ShutDownTask getDefaultShutDownTask() {
+        return new QuietShutDownTask("Save Operations State") { // NOI18N
             @Override
-            public void run() {
+            public boolean execute() {
                 try {
                     OperationsXml.save();
                 } catch (Exception ex) {
                     log.warn("Error saving operations state: {}", ex.getMessage());
                     log.debug("Details follow: ", ex);
                 }
+                return true;
             }
         };
     }
@@ -121,7 +136,7 @@ public final class OperationsManager implements InstanceManagerAutoDefault, Inst
         InstanceManager.getDefault(RouteManager.class);
         InstanceManager.getDefault(ScheduleManager.class);
         InstanceManager.getDefault(TrainScheduleManager.class);
-        this.setShutDownTask(OperationsManager.getDefaultShutDownTask());
+        this.setShutDownTask(this.getDefaultShutDownTask());
         // auto backup?
         if (Setup.isAutoBackupEnabled()) {
             try {

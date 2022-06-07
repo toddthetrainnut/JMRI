@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
  * Reporter objects are obtained from a ReporterManager, which in turn is
  * generally located from the InstanceManager. A typical call sequence might be:
  * <pre>
- * Reporter device = InstanceManager.getDefault(jmri.ReporterManager.class).newReporter("23",null);
+ * Reporter device = InstanceManager.getDefault(jmri.ReporterManager.class).newReporter(null,"23");
  * </pre>
  * <p>
  * Each Reporter has a two names. The "user" name is entirely free form, and can
@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
  * @see jmri.Reporter
  * @see jmri.InstanceManager
  */
-public interface ReporterManager extends ProvidingManager<Reporter>, NameIncrementingManager {
+public interface ReporterManager extends ProvidingManager<Reporter> {
 
     /**
      * Locate via user name, then system name if needed. If that fails, create a
@@ -53,12 +53,11 @@ public interface ReporterManager extends ProvidingManager<Reporter>, NameIncreme
      *                                  due to an illegal name or name that
      *                                  can't be parsed.
      */
-    @Nonnull
-    public Reporter provideReporter(@Nonnull String name) throws IllegalArgumentException;
+    @Nonnull public
+    Reporter provideReporter(@Nonnull String name);
 
-    /** {@inheritDoc} */
     @Override
-    @Nonnull
+    /** {@inheritDoc} */
     default public Reporter provide(@Nonnull String name) throws IllegalArgumentException { return provideReporter(name); }
 
     /**
@@ -68,8 +67,8 @@ public interface ReporterManager extends ProvidingManager<Reporter>, NameIncreme
      * @param name User name or system name to match
      * @return null if no match found
      */
-    @CheckForNull
-    public Reporter getReporter(@Nonnull String name);
+    @CheckForNull public
+    Reporter getReporter(@Nonnull String name);
 
     /**
      * Locate an instance based on a system name. Returns null if no instance
@@ -78,9 +77,8 @@ public interface ReporterManager extends ProvidingManager<Reporter>, NameIncreme
      * @param systemName the system name to locate
      * @return requested Reporter object or null if none exists
      */
-    @CheckForNull
-    @Override
-    public Reporter getBySystemName(@Nonnull String systemName);
+    @CheckForNull public
+    Reporter getBySystemName(@Nonnull String systemName);
 
     /**
      * Locate an instance based on a user name. Returns null if no instance
@@ -89,9 +87,8 @@ public interface ReporterManager extends ProvidingManager<Reporter>, NameIncreme
      * @param userName the user name to locate
      * @return requested Reporter object or null if none exists
      */
-    @CheckForNull
-    @Override
-    public Reporter getByUserName(@Nonnull String userName);
+    @CheckForNull public
+    Reporter getByUserName(@Nonnull String userName);
 
     /**
      * Locate an instance based on a user name, or if that fails, by system
@@ -100,13 +97,11 @@ public interface ReporterManager extends ProvidingManager<Reporter>, NameIncreme
      * @param userName the name to locate
      * @return requested Reporter object or null if none exists
      */
-    @CheckForNull
-    public Reporter getByDisplayName(@Nonnull String userName);
+    @CheckForNull public
+    Reporter getByDisplayName(@Nonnull String userName);
 
     /**
-     * Return an instance with the specified system and user names.
-     * <p>
-     * Note that
+     * Return an instance with the specified system and user names. Note that
      * two calls with the same arguments will get the same instance; there is
      * only one Reporter object representing a given physical Reporter and
      * therefore only one with a specific system or user name.
@@ -134,22 +129,28 @@ public interface ReporterManager extends ProvidingManager<Reporter>, NameIncreme
      *                                  an illegal name or name that can't
      *                                  be parsed.
      */
-    @Nonnull
-    public Reporter newReporter(@Nonnull String systemName, String userName) throws IllegalArgumentException;
+    @Nonnull public
+    Reporter newReporter(@Nonnull String systemName, String userName);
 
     /**
-     * Get a system name for a given hardware address and system prefix.
+     * Determine if it is possible to add a range of reporters in numerical
+     * order.
      *
-     * @param curAddress desired hardware address
-     * @param prefix     system prefix used in system name, excluding Bean type-letter..
-     * @return the complete Reporter system name for the prefix and current
-     *         address
-     * @throws jmri.JmriException if unable to create a system name for the
-     *                            given address, possibly due to invalid address
-     *                            format
+     * @param systemName the system name
+     * @return true if multiple reporters can be added
      */
-    @Nonnull
-    public String createSystemName(@Nonnull String curAddress, @Nonnull String prefix) throws JmriException;
+    public boolean allowMultipleAdditions(@Nonnull String systemName);
+
+    /**
+     * Determine if the address supplied is valid and free, if not then it shall
+     * return the next free valid address up to a maximum of 10 addresses away
+     * from the initial address.
+     *
+     * @param prefix     system prefix used to make up the systemName
+     * @param curAddress hardware address of the turnout to check
+     * @return the next available address
+     */
+    public String getNextValidAddress(@Nonnull String curAddress, @Nonnull String prefix);
 
     /**
      * {@inheritDoc}

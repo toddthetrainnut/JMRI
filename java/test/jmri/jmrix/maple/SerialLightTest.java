@@ -1,14 +1,15 @@
 package jmri.jmrix.maple;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the jmri.jmrix.maple.SerialLight class
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SerialLightTest {
 
@@ -27,7 +28,8 @@ public class SerialLightTest {
         Assert.assertNotNull("exists", l2);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
@@ -35,12 +37,10 @@ public class SerialLightTest {
         _memo = new MapleSystemConnectionMemo("K", "Maple");
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         _memo = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(SerialLightTest.class);

@@ -13,7 +13,7 @@
 
 import jmri
 import jmri.jmrit.roster
-import org.apache.commons.csv
+import com.csvreader
 from javax.swing import JFileChooser, JOptionPane
 from jmri.jmrit.symbolicprog import CvTableModel
 import java
@@ -39,35 +39,35 @@ outputHeader = True
 def writeHeader(csvFile):
     # Write the header line
     # Entries from the Basic roster entry
-    csvFile.print("RosterID")
-    csvFile.print("RoadName")
-    csvFile.print("RoadNumber")
-    csvFile.print("Manufacturer")
-    csvFile.print("Owner")
-    csvFile.print("Model")
-    csvFile.print("Address")
-    csvFile.print("Is Long?")
-    csvFile.print("Speed Limit")
-    csvFile.print("Comment")
-    csvFile.print("Decoder Family")
-    csvFile.print("Decoder Model")
-    csvFile.print("Decoder Comment")
+    csvFile.write("RosterID")
+    csvFile.write("RoadName")
+    csvFile.write("RoadNumber")
+    csvFile.write("Manufacturer")
+    csvFile.write("Owner")
+    csvFile.write("Model")
+    csvFile.write("Address")
+    csvFile.write("Is Long?")
+    csvFile.write("Speed Limit")
+    csvFile.write("Comment")
+    csvFile.write("Decoder Family")
+    csvFile.write("Decoder Model")
+    csvFile.write("Decoder Comment")
 
     # Function labels
     for func in range(0,28+1):
-        csvFile.print("Fn%02d" % func)
+        csvFile.write("Fn%02d" % func)
 
     # Now add some CV values
-    csvFile.print("CV19")
-    csvFile.print("CV7")
-    csvFile.print("CV8")
+    csvFile.write("CV19")
+    csvFile.write("CV7")
+    csvFile.write("CV8")
 
     # Lastly, add some single bits from CV29
-    csvFile.print("Speed Steps (CV29.1)")
-    csvFile.print("DC mode (CV29.2)")
+    csvFile.write("Speed Steps (CV29.1)")
+    csvFile.write("DC mode (CV29.2)")
 
     # Notify the writer of the end of the header record
-    csvFile.println();
+    csvFile.endRecord()
     print "Header written"
 
 # Write the value of the specified CV in the specified format
@@ -88,32 +88,32 @@ def writeDetails(csvFile):
     # now loop through the matched entries, outputing things
     for entry in rosterlist.toArray() :
         # Most parameters are text-based, so can be output directly
-        csvFile.print(entry.getId())
-        csvFile.print(entry.getRoadName())
-        csvFile.print(entry.getRoadNumber())
-        csvFile.print(entry.getMfg())
-        csvFile.print(entry.getOwner())
-        csvFile.print(entry.getModel())
-        csvFile.print(entry.getDccAddress())
+        csvFile.write(entry.getId())
+        csvFile.write(entry.getRoadName())
+        csvFile.write(entry.getRoadNumber())
+        csvFile.write(entry.getMfg())
+        csvFile.write(entry.getOwner())
+        csvFile.write(entry.getModel())
+        csvFile.write(entry.getDccAddress())
 
         # 'isLongAddress' is a boolean function so we need
         # to deal with outputting that in this way
         if entry.longAddress:
-            csvFile.print("Yes")
+            csvFile.write("Yes")
         else:
-            csvFile.print("No")
+            csvFile.write("No")
 
         # Max Speed is a number - we need to convert to a string
-        csvFile.print("%d%%" % entry.getMaxSpeedPCT())
+        csvFile.write("%d%%" % entry.getMaxSpeedPCT())
 
-        csvFile.print(entry.getComment())
-        csvFile.print(entry.getDecoderFamily())
-        csvFile.print(entry.getDecoderModel())
-        csvFile.print(entry.getDecoderComment())
+        csvFile.write(entry.getComment())
+        csvFile.write(entry.getDecoderFamily())
+        csvFile.write(entry.getDecoderModel())
+        csvFile.write(entry.getDecoderComment())
 
         # Now output function labels
         for func in range(0,28+1):
-            csvFile.print(entry.getFunctionLabel(func))
+            csvFile.write(entry.getFunctionLabel(func))
 
         # Finally, we deal with reading in the CV values and
         # outputing those we're interested in
@@ -130,9 +130,9 @@ def writeDetails(csvFile):
         # function defined earlier.
         # These examples are all in decimal - if you require
         # hex, change "%d" to "0x%x" or "0x%X"
-        csvFile.print(writeCvValue(cvTable.getCvByNumber("19"), "%d"))
-        csvFile.print(writeCvValue(cvTable.getCvByNumber("7"), "%d"))
-        csvFile.print(writeCvValue(cvTable.getCvByNumber("8"), "%d"))
+        csvFile.write(writeCvValue(cvTable.getCvByNumber("19"), "%d"))
+        csvFile.write(writeCvValue(cvTable.getCvByNumber("7"), "%d"))
+        csvFile.write(writeCvValue(cvTable.getCvByNumber("8"), "%d"))
 
         # Lastly, we deal with examining specific bits of CV29.
         #
@@ -143,9 +143,9 @@ def writeDetails(csvFile):
         # individual bits:
         #
         #   if (cv29Value & {value}) == {value}:
-        #       csvFile.print("bit set")
+        #       csvFile.write("bit set")
         #   else:
-        #       csvFile.print("bit clear")
+        #       csvFile.write("bit clear")
         #
         # where {value} is one of the following:
         #
@@ -169,18 +169,18 @@ def writeDetails(csvFile):
         # Now do the bitwise comparisons.
         # First example is speedsteps, which is the second bit 
         if (cv29Value & 2) == 2:
-            csvFile.print("28/128 Steps")
+            csvFile.write("28/128 Steps")
         else:
-            csvFile.print("14 Steps")
+            csvFile.write("14 Steps")
 
         # Second example is DC mode, which is the third bit 
         if (cv29Value & 4) == 4:
-            csvFile.print("On")
+            csvFile.write("On")
         else:
-            csvFile.print("Off")
+            csvFile.write("Off")
 
         # Notify the writer of the end of this detail record
-        csvFile.println()
+        csvFile.endRecord()
         csvFile.flush()
         print "Entry", entry.getId(), "written"
 
@@ -201,7 +201,7 @@ if ret == JFileChooser.APPROVE_OPTION:
     # We've got a valid filename
     outFile = fc.getSelectedFile().toString()
     print "Output file:", outFile
-    csvFile = org.apache.commons.csv.CSVPrinter(java.io.BufferedWriter(java.io.FileWriter(outFile)),org.apache.commons.csv.CSVFormat.DEFAULT)
+    csvFile = com.csvreader.CsvWriter(java.io.BufferedOutputStream(java.io.FileOutputStream(outFile)),',',java.nio.charset.Charset.defaultCharset())
 
     # Output the header if required
     if outputHeader==True:

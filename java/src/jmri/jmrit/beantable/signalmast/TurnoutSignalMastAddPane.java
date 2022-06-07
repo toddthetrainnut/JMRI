@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -165,7 +166,7 @@ public class TurnoutSignalMastAddPane extends SignalMastAddPane {
             }
         }
         currentMast.resetPreviousStates(resetPreviousState.isSelected());
-        if (!username.isEmpty()) {
+        if (!username.equals("")) {
             currentMast.setUserName(username);
         }
         currentMast.setAllowUnLit(allowUnLit.isSelected());
@@ -177,7 +178,6 @@ public class TurnoutSignalMastAddPane extends SignalMastAddPane {
 
     String stateThrown = InstanceManager.turnoutManagerInstance().getThrownText();
     String stateClosed = InstanceManager.turnoutManagerInstance().getClosedText();
-    
     String[] turnoutStates = new String[]{stateClosed, stateThrown};
     int[] turnoutStateValues = new int[]{Turnout.CLOSED, Turnout.THROWN};
 
@@ -219,7 +219,7 @@ public class TurnoutSignalMastAddPane extends SignalMastAddPane {
         }
 
         TurnoutAspectPanel(String turnoutName, int state) {
-            if (turnoutName == null || turnoutName.isEmpty()) {
+            if (turnoutName == null || turnoutName.equals("")) {
                 return;
             }
             beanBox.setDefaultNamedBean(InstanceManager.turnoutManagerInstance().getTurnout(turnoutName));
@@ -239,7 +239,7 @@ public class TurnoutSignalMastAddPane extends SignalMastAddPane {
         }
 
         void setSelectedTurnout(String name) {
-            if (name == null || name.isEmpty()) {
+            if (name == null || name.equals("")) {
                 return;
             }
             beanBox.setDefaultNamedBean(InstanceManager.turnoutManagerInstance().getTurnout(name));

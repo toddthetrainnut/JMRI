@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * Based on work by Bob Jacobsen
  *
  * @author Kevin Dickerson Copyright (C) 2012
- *
+ * 
  */
 public class MarklinTurnout extends AbstractTurnout
         implements MarklinListener {
@@ -27,8 +27,6 @@ public class MarklinTurnout extends AbstractTurnout
      * identification in the system name.
      *
      * @param number address of the turnout
-     * @param prefix system prefix
-     * @param etc connection traffic controller
      */
     public MarklinTurnout(int number, String prefix, MarklinTrafficController etc) {
         super(prefix + "T" + number);
@@ -40,11 +38,9 @@ public class MarklinTurnout extends AbstractTurnout
 
     MarklinTrafficController tc;
 
-    /**
-     * {@inheritDoc}
-     */
+    // Handle a request to change state by sending a turnout command
     @Override
-    protected void forwardCommandChangeToLayout(int newState) {
+    protected void forwardCommandChangeToLayout(int s) {
         // implementing classes will typically have a function/listener to get
         // updates from the layout, which will then call
         //  public void firePropertyChange(String propertyName,
@@ -53,19 +49,19 @@ public class MarklinTurnout extends AbstractTurnout
         // _once_ if anything has changed state (or set the commanded state directly)
 
         // sort out states
-        if ((newState & Turnout.CLOSED) != 0) {
+        if ((s & Turnout.CLOSED) != 0) {
             // first look for the double case, which we can't handle
-            if ((newState & Turnout.THROWN) != 0) {
+            if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN {}", newState);
+                log.error("Cannot command both CLOSED and THROWN " + s);
                 return;
             } else {
                 // send a CLOSED command
-                sendMessage(!getInverted());
+                sendMessage(true ^ getInverted());
             }
         } else {
             // send a THROWN command
-            sendMessage(getInverted());
+            sendMessage(false ^ getInverted());
         }
     }
 
@@ -142,7 +138,7 @@ public class MarklinTurnout extends AbstractTurnout
                 try {
                     sendOffMessage((state ? 1 : 0));
                 } catch (Exception e) {
-                    log.error("Exception occurred while sending delayed off to turnout", e);
+                    log.error("Exception occurred while sending delayed off to turnout: " + e);
                 }
             }
         }, METERINTERVAL);
@@ -180,7 +176,7 @@ public class MarklinTurnout extends AbstractTurnout
                         setKnownStateFromCS(Turnout.CLOSED);
                         break;
                     default:
-                        log.warn("Unknown state command {}", m.getElement(9));
+                        log.warn("Unknown state command " + m.getElement(9));
                 }
             }
         }
@@ -199,5 +195,4 @@ public class MarklinTurnout extends AbstractTurnout
     static final int METERINTERVAL = 100;  // msec wait before closed
 
     private final static Logger log = LoggerFactory.getLogger(MarklinTurnout.class);
-
 }

@@ -1,14 +1,15 @@
 package jmri.jmrix.secsi;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the SerialSensorManager class.
  *
- * @author Bob Jacobsen Copyright 2003, 2007
+ * @author	Bob Jacobsen Copyright 2003, 2007
  * @author Paul Bender Copyright (C) 2016
  */
 public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
@@ -55,8 +56,9 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
         Assert.assertTrue("3rd UA 2", n0.getSensorsActive());
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
@@ -72,16 +74,9 @@ public class SerialSensorManagerTest extends jmri.managers.AbstractSensorMgrTest
         l = new SerialSensorManager(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        if ( l != null ){
-            l.dispose();
-        }
-        l = null;
-        tcis.terminateThreads();
-        memo.dispose();
-        tcis = null;
-        memo = null;
+        l.dispose();
         JUnitUtil.tearDown();
     }
 

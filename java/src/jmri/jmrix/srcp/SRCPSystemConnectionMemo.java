@@ -1,15 +1,7 @@
 package jmri.jmrix.srcp;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.ResourceBundle;
 import jmri.InstanceManager;
-import jmri.NamedBean;
-import jmri.ShutDownManager;
-import jmri.jmrix.DefaultSystemConnectionMemo;
-import jmri.jmrix.srcp.swing.SRCPComponentFactory;
-import jmri.jmrix.swing.ComponentFactory;
-import jmri.util.NamedBeanComparator;
 
 /**
  * Lightweight class to denote that a system is active, and provide general
@@ -18,34 +10,43 @@ import jmri.util.NamedBeanComparator;
  * Objects of specific subtypes are registered in the instance manager to
  * activate their particular system.
  *
- * @author Bob Jacobsen Copyright (C) 2010
- * @author Paul Bender Copyright (C) 2015-2016
+ * @author	Bob Jacobsen Copyright (C) 2010
+ * @author	Paul Bender Copyright (C) 2015-2016
  */
-public class SRCPSystemConnectionMemo extends DefaultSystemConnectionMemo {
+public class SRCPSystemConnectionMemo extends jmri.jmrix.SystemConnectionMemo {
 
     public SRCPSystemConnectionMemo(String prefix, String name, SRCPTrafficController et) {
         super(prefix, name);
-        if (et != null) {
-            setTrafficController(et);
-        }
+        this.et = et;
+        this.et.setSystemConnectionMemo(this);
         register();
         InstanceManager.store(this, SRCPSystemConnectionMemo.class); // also register as specific type
-        InstanceManager.store(cf = new SRCPComponentFactory(this), ComponentFactory.class);
+        InstanceManager.store(cf = new jmri.jmrix.srcp.swing.SRCPComponentFactory(this), 
+         jmri.jmrix.swing.ComponentFactory.class);
     }
 
     public SRCPSystemConnectionMemo(SRCPTrafficController et) {
-        this("D", "SRCP", et);
+        super("D", "SRCP");
+        this.et = et;
+        this.et.setSystemConnectionMemo(this);
+        register();
+        InstanceManager.store(this, SRCPSystemConnectionMemo.class); // also register as specific type
+        InstanceManager.store(cf = new jmri.jmrix.srcp.swing.SRCPComponentFactory(this), 
+         jmri.jmrix.swing.ComponentFactory.class);
     }
 
     public SRCPSystemConnectionMemo() {
-        this("D", "SRCP", null);
+        super("D", "SRCP");
+        register(); // registers general type
+        InstanceManager.store(this, SRCPSystemConnectionMemo.class); // also register as specific type
+        InstanceManager.store(cf = new jmri.jmrix.srcp.swing.SRCPComponentFactory(this), 
+         jmri.jmrix.swing.ComponentFactory.class);
     }
 
     jmri.jmrix.swing.ComponentFactory cf = null;
 
     /**
      * Provides access to the TrafficController for this particular connection.
-     * @return SRCP traffic controller.
      */
     public SRCPTrafficController getTrafficController() {
         return et;
@@ -56,6 +57,16 @@ public class SRCPSystemConnectionMemo extends DefaultSystemConnectionMemo {
         this.et.setSystemConnectionMemo(this);
     }
     private SRCPTrafficController et;
+
+    /**
+     * Configure the common managers for SRCP connections. This puts the
+     * common manager config in one place. This method is static so that it can
+     * be referenced from classes that don't inherit, including
+     * hexfile.HexFileFrame and locormi.LnMessageClient
+     */
+    public void configureManagers() {
+
+    }
 
     /**
      * Configure the programming manager and "command station" objects
@@ -88,7 +99,7 @@ public class SRCPSystemConnectionMemo extends DefaultSystemConnectionMemo {
     }
 
     /**
-     * {@inheritDoc}
+     * Tells which managers this class provides.
      */
     @Override
     public boolean provides(Class<?> type) {
@@ -101,36 +112,28 @@ public class SRCPSystemConnectionMemo extends DefaultSystemConnectionMemo {
     }
 
     @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
-    }
-
-    @Override
     public void dispose() {
-        if (et != null) {
-            InstanceManager.getDefault(ShutDownManager.class).deregister(et.shutDownTask);
-        }
         et = null;
         InstanceManager.deregister(this, SRCPSystemConnectionMemo.class);
         if (cf != null) {
-            InstanceManager.deregister(cf, ComponentFactory.class);
+            InstanceManager.deregister(cf, jmri.jmrix.swing.ComponentFactory.class);
         }
         super.dispose();
     }
 
     // private list of busMemos, so the parser visitor can pass information
     // to the bus representation.
-    private ArrayList<SRCPBusConnectionMemo> busMemos = null;
+    private java.util.ArrayList<SRCPBusConnectionMemo> busMemos = null;
 
     public SRCPBusConnectionMemo getMemo(int i) {
         if (busMemos == null) {
-            busMemos = new ArrayList<>();
+            busMemos = new java.util.ArrayList<SRCPBusConnectionMemo>();
             // there is always a bus 0, so add it now.
             busMemos.add(0, new SRCPBusConnectionMemo(getTrafficController(), getSystemPrefix(), 0));
         }
         try {
             return busMemos.get(i);
-        } catch (IndexOutOfBoundsException ie) {
+        } catch (java.lang.IndexOutOfBoundsException ie) {
             // this memo must not exist in the list, add it and return it.
             busMemos.add(i, new SRCPBusConnectionMemo(getTrafficController(), getSystemPrefix(), i));
             return busMemos.get(i);

@@ -1,16 +1,15 @@
 package jmri.jmris.simpleserver;
 
 import java.io.File;
-
 import jmri.InstanceManager;
-import jmri.InstanceManagerAutoDefault;
 import jmri.util.FileUtil;
 
-public class SimpleServerManager implements InstanceManagerAutoDefault {
+public class SimpleServerManager {
 
     private SimpleServerPreferences preferences;
     private SimpleServer server;
-    public SimpleServerManager(){
+
+    private SimpleServerManager() {
         if (InstanceManager.getNullableDefault(SimpleServerPreferences.class) == null) {
             String fileName = FileUtil.getUserFilesPath() + "networkServices" + File.separator + "SimpleServer.xml";
             if ((new File(fileName)).exists()) {
@@ -22,6 +21,13 @@ public class SimpleServerManager implements InstanceManagerAutoDefault {
         preferences = InstanceManager.getDefault(SimpleServerPreferences.class);
     }
 
+    public static SimpleServerManager getInstance() {
+        if (InstanceManager.getNullableDefault(SimpleServerManager.class) == null) {
+            InstanceManager.store(new SimpleServerManager(), SimpleServerManager.class); // NOI18N
+        }
+        return InstanceManager.getDefault(SimpleServerManager.class);
+    }
+
     public SimpleServerPreferences getPreferences() {
         if (preferences == null) {
             preferences = new SimpleServerPreferences();
@@ -30,7 +36,7 @@ public class SimpleServerManager implements InstanceManagerAutoDefault {
     }
 
     public static SimpleServerPreferences getSimpleServerPreferences() {
-        return InstanceManager.getDefault(SimpleServerManager.class).getPreferences();
+        return getInstance().getPreferences();
     }
 
     public SimpleServer getServer() {
@@ -41,6 +47,6 @@ public class SimpleServerManager implements InstanceManagerAutoDefault {
     }
 
     public static SimpleServer getSimpleServer() {
-        return InstanceManager.getDefault(SimpleServerManager.class).getServer();
+        return getInstance().getServer();
     }
 }

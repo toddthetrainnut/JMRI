@@ -1,14 +1,15 @@
 package jmri.jmrix.internal.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * InternalTurnoutManagerXmlTest.java
  *
- * Test for the InternalTurnoutManagerXml class
+ * Description: tests for the InternalTurnoutManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class InternalTurnoutManagerXmlTest {
       Assert.assertNotNull("InternalTurnoutManagerXml constructor",new InternalTurnoutManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,13 +1,14 @@
 package apps;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * Tests for the JmriFaceless application.
+ * Description: Tests for the JmriFaceless application.
  *
  * @author Paul Bender Copyright (C) 2016
  */
@@ -43,23 +44,28 @@ public class JmriFacelessTest {
                 JUnitUtil.initMemoryManager();
                 JUnitUtil.initDebugThrottleManager();
             }
+
+            @Override
+            protected void installShutDownManager() {
+                JUnitUtil.initShutDownManager();
+            }
         };
         Assert.assertNotNull(a);
         // shutdown the application
         AppsBase.handleQuit();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetApplication();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.resetApplication();
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

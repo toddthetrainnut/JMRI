@@ -17,6 +17,4 @@
  * default system connection, otherwise it returns the power state for the named
  * system connection.
  */
-// include empty DefaultAnnotation to avoid excessive recompilation
-@edu.umd.cs.findbugs.annotations.DefaultAnnotation(value={})
 package jmri.server.json.power;

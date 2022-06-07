@@ -1,9 +1,7 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -20,7 +18,8 @@ public class LocoNetConsistManagerTest extends jmri.implementation.AbstractConsi
        Assert.assertTrue("CS Consist Possible",cm.isCommandStationConsistPossible());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp()  {
         JUnitUtil.setUp();
@@ -31,7 +30,7 @@ public class LocoNetConsistManagerTest extends jmri.implementation.AbstractConsi
         cm = new LocoNetConsistManager(memo);
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         cm = null;

@@ -1,7 +1,6 @@
 package jmri;
 
 import java.util.List;
-import java.util.SortedSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jmri.jmrit.audio.AudioFactory;
@@ -57,7 +56,7 @@ public interface AudioManager extends Manager<Audio> {
 
     /**
      * Get the Audio with the user name, then system name if needed; if that fails, create a
-     * new Audio.
+     * new Audio. 
      * If the name is a valid system name, it will be used for the
      * new Audio. Otherwise, the makeSystemName method will attempt to turn it
      * into a valid system name.
@@ -71,8 +70,8 @@ public interface AudioManager extends Manager<Audio> {
     public Audio provideAudio(@Nonnull String name) throws AudioException;
 
     /**
-     * Get an existing Audio or return null if it doesn't exists.
-     *
+     * Get an existing Audio or return null if it doesn't exists. 
+     * 
      * Locates via user name, then system name if needed.
      *
      * @param name User name or system name to match
@@ -88,7 +87,6 @@ public interface AudioManager extends Manager<Audio> {
      * @param systemName Audio object system name (such as IAS1 or IAB4)
      * @return requested Audio object or null if none exists
      */
-    @Override
     @CheckForNull
     public Audio getBySystemName(@Nonnull String systemName);
 
@@ -99,12 +97,11 @@ public interface AudioManager extends Manager<Audio> {
      * @param userName Audio object user name
      * @return requested Audio object or null if none exists
      */
-    @Override
     @CheckForNull
     public Audio getByUserName(@Nonnull String userName);
 
     /**
-     * Return an Audio with the specified system and user names.
+     * Return an Audio with the specified system and user names. 
      * Note that
      * two calls with the same arguments will get the same instance; there is
      * only one Audio object representing a given physical Audio and therefore
@@ -146,15 +143,13 @@ public interface AudioManager extends Manager<Audio> {
     public AudioFactory getActiveAudioFactory();
 
     /**
-     * Get the specified Audio sub-type NamedBeans.
+     * Get a list of specified Audio sub-type objects' system names.
      *
      * @param subType sub-type to retrieve
-     * @return Unmodifiable access to a SortedSet of NamedBeans for the specified Audio sub-type .
-     *
-     * @since 4.17.6
+     * @return List of specified Audio sub-type objects' system names.
      */
     @Nonnull
-    public SortedSet<Audio> getNamedBeanSet(char subType);
+    public List<String> getSystemNameList(char subType);
 
     /**
      * Perform any initialisation operations
@@ -165,11 +160,5 @@ public interface AudioManager extends Manager<Audio> {
      * Perform any clean-up operations
      */
     public void cleanup();
-
-    /**
-     * Determine if this AudioManager is initialised
-     * @return true if initialised
-     */
-    public boolean isInitialised();
 
 }

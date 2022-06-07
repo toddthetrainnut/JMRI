@@ -3,6 +3,7 @@ package jmri.managers;
 import jmri.jmrix.debugthrottle.DebugThrottleManager;
 import jmri.jmrix.debugthrottle.DebugThrottle;
 import jmri.DccLocoAddress;
+import jmri.DccThrottle;
 import jmri.ThrottleListener;
 import jmri.LocoAddress;
 
@@ -22,7 +23,7 @@ public class StealingThrottleManager extends DebugThrottleManager {
     /**
      * Constructor.
      */
-    public StealingThrottleManager(jmri.SystemConnectionMemo memo) {
+    public StealingThrottleManager(jmri.jmrix.SystemConnectionMemo memo) {
         super(memo);
     }
 
@@ -32,7 +33,21 @@ public class StealingThrottleManager extends DebugThrottleManager {
     @Override
     public void requestThrottleSetup(LocoAddress a, boolean control) {
         // Immediately trigger the steal callback.
-        notifyDecisionRequest(a, ThrottleListener.DecisionType.STEAL);
+        notifyDecisionRequest(a,ThrottleListener.DecisionType.STEAL);
+    }
+    
+    /**
+     * @deprecated since 4.15.7; use #responseThrottleDecision
+     */
+    @Deprecated
+    @Override
+    public void stealThrottleRequest(LocoAddress a, ThrottleListener l,boolean steal){
+        if(steal) {
+            responseThrottleDecision(a, l, ThrottleListener.DecisionType.STEAL);
+        } else {
+            cancelThrottleRequest(a,l);
+            failedThrottleRequest(a,"user declined to steal");
+        }
     }
 
     /**

@@ -1,18 +1,15 @@
 package jmri.jmrix.dccpp;
 
-import javax.annotation.Nonnull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Defines the standard/common routines used in multiple classes related to the
- * DCC++ Command Station, on a DCC++ network.
+ * a DCC++ Command Station, on a DCC++ network.
  *
  * @author Bob Jacobsen Copyright (C) 2001
  * @author Portions by Paul Bender Copyright (C) 2003
  * @author Mark Underwood Copyright (C) 2015
- * @author Harald Barth Copyright (C) 2019
  *
  * Based on LenzCommandStation by Bob Jacobsen and Paul Bender
  */
@@ -25,80 +22,40 @@ public class DCCppCommandStation implements jmri.CommandStation {
      * get from the layout.
      *
      */
-    @Nonnull private String stationType = "Unknown";
-    @Nonnull private String build       = "Unknown";
-    @Nonnull private String version     = "0.0.0";
+    private String baseStationType;
+    private String codeBuildDate;
     private DCCppRegisterManager rmgr = null;
-    private int maxNumSlots = DCCppConstants.MAX_MAIN_REGISTERS; //default to register size
 
     public DCCppCommandStation() {
         super();
+        rmgr = new DCCppRegisterManager();
     }
 
     public DCCppCommandStation(DCCppSystemConnectionMemo memo) {
         super();
         adaptermemo = memo;
+        rmgr = new DCCppRegisterManager();
     }
 
-    public void setStationType(String s) {
-        if (!stationType.equals(s)) {
-            log.info("Station Type set to '{}'", s);
-            stationType = s;            
-        }
+    public void setBaseStationType(String s) {
+ baseStationType = s;
     }
     
-    /**
-     * Get the Station Type of the connected Command Station
-     * it is populated by response from the CS, initially "Unknown" 
-     * @return StationType
-     */
-    @Nonnull
-    public String getStationType() {
-        return stationType;
+    public String getBaseStationType() {
+ return baseStationType;
     }
 
-    public void setBuild(String s) {
-        if (!build.equals(s)) {
-            log.info("Build set to '{}'", s);
-            build = s;            
-        }
+    public void setCodeBuildDate(String s) {
+ codeBuildDate = s;
+    }
+
+    public String getCodeBuildDate() {
+ return codeBuildDate;
     }
 
     /**
-     * Get the Build of the connected Command Station
-     * it is populated by response from the CS, initially "Unknown" 
-     * @return Build
-     */
-    @Nonnull
-    public String getBuild() {
-        return build;
-    }
-
-    public void setVersion(String s) {
-        if (!version.equals(s)) {
-            if (jmri.Version.isCanonicalVersion(s)) {
-                log.info("Version set to '{}'", s);
-                version = s;
-            } else {
-                log.warn("'{}' is not a canonical version, version not changed", s);
-            }
-        }
-    }
-
-    /**
-     * Get the canonical version of the connected Command Station
-     * it is populated by response from the CS, so initially '0.0.0' 
-     * @return Version
-     */
-    @Nonnull
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Parse the DCC++ CS status response to pull out the base station version
+     * Parses the DCC++ CS status response to pull out the base station version
      * and software version.
-     * @param l status response to query.
      */
     protected void setCommandStationInfo(DCCppReply l) {
  // V1.0 Syntax
@@ -112,36 +69,17 @@ public class DCCppCommandStation implements jmri.CommandStation {
         // Changes from v1.1: space between "DCC++" and "BASE", and "BUILD" is removed.
         // V1.0/V1.1/V1.2 Simplified
         // String syntax = "iDCC\\+\\+\\s?(.*):\\s?(?:BUILD)? (.*)";
-
-        setStationType(l.getStationType());
-        setBuild(l.getBuildString());
-        setVersion(l.getVersion());
-    }
-
-    protected void setCommandStationMaxNumSlots(DCCppReply l) {
-        int newNumSlots = l.getValueInt(1);
-        setCommandStationMaxNumSlots(newNumSlots);
-    }
-    protected void setCommandStationMaxNumSlots(int newNumSlots) {
-        if (newNumSlots < maxNumSlots) {
-            log.warn("Command Station maxNumSlots cannot be reduced from {} to {}", maxNumSlots, newNumSlots);
-            return;
-        }
-        if (newNumSlots != maxNumSlots) {
-            log.info("changing maxNumSlots from {} to {}", maxNumSlots, newNumSlots);
-            maxNumSlots = newNumSlots;
-        }
-    }
-    protected int getCommandStationMaxNumSlots() {
-        return maxNumSlots;
+        
+        baseStationType = l.getStatusVersionString();
+        codeBuildDate = l.getStatusBuildDateString();
     }
 
     /**
      * Provide the version string returned during the initial check.
-     * @return version string.
+     * This function is not yet implemented...
      */
     public String getVersionString() {
-        return(stationType + ": BUILD " + build);
+        return(baseStationType + ": BUILD " + codeBuildDate);
     }
 
     /**
@@ -151,99 +89,15 @@ public class DCCppCommandStation implements jmri.CommandStation {
 
     /**
      * DCC++ command station does provide Ops Mode.
-     * @return always true.
      */
     public boolean isOpsModePossible() {
-        return true;
-    }
-
-    /**
-     * Does this command station require JMRI to send periodic function refresh packets?
-     * @return true if required, false if not
-     */
-    public boolean isFunctionRefreshRequired() {
-        boolean ret = true;
-        try {
-            //command stations starting with 3 handle their own function refresh
-            ret = (jmri.Version.compareCanonicalVersions(version, "3.0.0") < 0);
-        } catch (IllegalArgumentException ignore) {
-        }
-        return ret;  
-    }
-
-    /**
-     * Can this command station handle the Read with a starting value ('V'erify)
-     * @return true if yes or false if no
-     */
-    public boolean isReadStartValSupported() {
-        boolean ret = false;
-        try {
-            //command stations starting with 3 can handle reads with startVals
-            ret = (jmri.Version.compareCanonicalVersions(version, "3.0.0") >= 0);
-        } catch (IllegalArgumentException ignore) {
-        }
-        return ret;  
-    }
- 
-    /**
-     * Can this command station handle the Servo and Vpin Turnout creation message formats?
-     * @return true if yes or false if no
-     */
-    public boolean isServoTurnoutCreationSupported() {
-        boolean ret = false;
-        try {
-            // SERVO and VPIN turnout commands added at 3.2.0
-            ret = (jmri.Version.compareCanonicalVersions(version, "3.2.0") >= 0);
-        } catch (IllegalArgumentException ignore) {
-        }
-        return ret;  
-    }
-
-    /**
-     * Does this command station need the throttle register to be sent?
-     * @return true if yes or false if no
-     */
-    public boolean isThrottleRegisterRequired() {
-        boolean ret = true;
-        try {
-            ret = (jmri.Version.compareCanonicalVersions(version, "4.0.0") < 0);
-        } catch (IllegalArgumentException ignore) {
-        }
-        return ret;  
-    }
-
-    /**
-     * Can this command station handle the newer (V4) function message format?
-     * @return true if yes or false if no
-     */
-    public boolean isFunctionV4Supported() {
-        boolean ret = false;
-        try {
-            ret = (jmri.Version.compareCanonicalVersions(version, "4.0.0") >= 0);
-        } catch (IllegalArgumentException ignore) {
-        }
-        return ret;  
-    }
-
-    /**
-     * Can this command station handle the newer (V4) program message formats?
-     * @return true if yes or false if no
-     */
-    public boolean isProgramV4Supported() {
-        boolean ret = false;
-        try {
-            ret = (jmri.Version.compareCanonicalVersions(version, "4.0.1") >= 0);
-        } catch (IllegalArgumentException ignore) {
-        }
-        return ret;  
+ return true;
     }
 
     // A few utility functions
     /**
      * Get the Lower byte of a locomotive address from the decimal locomotive
      * address.
-     * @param address loco address.
-     * @return loco address byte lo.
      */
     public static int getDCCAddressLow(int address) {
         /* For addresses below 128, we just return the address, otherwise,
@@ -261,8 +115,6 @@ public class DCCppCommandStation implements jmri.CommandStation {
     /**
      * Get the Upper byte of a locomotive address from the decimal locomotive
      * address.
-     * @param address loco address.
-     * @return high byte of address.
      */
     public static int getDCCAddressHigh(int address) {
         /* this isn't actually the high byte, For addresses below 128, we
@@ -289,7 +141,7 @@ public class DCCppCommandStation implements jmri.CommandStation {
      * @param repeats Number of times to repeat the transmission.
      */
     @Override
-    public boolean sendPacket(@Nonnull byte [] packet, int repeats) {
+    public boolean sendPacket(byte[] packet, int repeats) {
 
         if (_tc == null) {
             log.error("Send Packet Called without setting traffic controller");
@@ -297,11 +149,8 @@ public class DCCppCommandStation implements jmri.CommandStation {
         }
 
         int reg = 0;  // register 0, so this doesn't repeat
-        //  DCC++ BaseStation code appends its own error-correction byte.
-        // So we have to omit the JMRI-generated one.
-        DCCppMessage msg = DCCppMessage.makeWriteDCCPacketMainMsg(reg, packet.length - 1, packet);
-        assert msg != null;
-        log.debug("sendPacket:'{}'", msg);
+        DCCppMessage msg = DCCppMessage.makeWriteDCCPacketMainMsg(reg, packet.length, packet);
+        log.debug("sendPacket:'{}'", msg.toString());
 
         for (int i = 0; i < repeats; i++) {
             _tc.sendDCCppMessage(msg, null);
@@ -329,12 +178,6 @@ public class DCCppCommandStation implements jmri.CommandStation {
 
     private DCCppSystemConnectionMemo adaptermemo;
 
-    private void creatermgr() {
-        if (rmgr == null) {
-            rmgr = new DCCppRegisterManager(maxNumSlots);
-        }
-    }
-
     @Override
     public String getUserName() {
         if (adaptermemo == null) {
@@ -344,34 +187,29 @@ public class DCCppCommandStation implements jmri.CommandStation {
     }
 
     @Override
-    @Nonnull
     public String getSystemPrefix() {
         if (adaptermemo == null) {
-            return "D";
+            return "DCCPP";
         }
         return adaptermemo.getSystemPrefix();
     }
 
     public int requestNewRegister(int addr) {
-        creatermgr();
-        return (rmgr.requestRegister(addr));
+ return(rmgr.requestRegister(addr));
     }
 
     public void releaseRegister(int addr) {
-        creatermgr();
-        rmgr.releaseRegister(addr);
+ rmgr.releaseRegister(addr);
     }
 
     // Return DCCppConstants.NO_REGISTER_FREE if address is not in list
     public int getRegisterNum(int addr) {
-        creatermgr();
-        return (rmgr.getRegisterNum(addr));
+ return(rmgr.getRegisterNum(addr));
     }
 
     // Return DCCppConstants.REGISTER_UNALLOCATED if register is unused.
     public int getRegisterAddress(int num) {
-        creatermgr();
-        return (rmgr.getRegisterAddress(num));
+ return(rmgr.getRegisterAddress(num));
     }
 
     /*
@@ -380,3 +218,4 @@ public class DCCppCommandStation implements jmri.CommandStation {
     private final static Logger log = LoggerFactory.getLogger(DCCppCommandStation.class);
 
 }
+

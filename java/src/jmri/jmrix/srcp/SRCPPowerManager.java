@@ -2,7 +2,8 @@ package jmri.jmrix.srcp;
 
 import jmri.JmriException;
 import jmri.PowerManager;
-import jmri.managers.AbstractPowerManager;
+
+import java.beans.PropertyChangeListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,26 +11,33 @@ import org.slf4j.LoggerFactory;
 /**
  * PowerManager implementation for controlling layout power
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2008
+ * @author	Bob Jacobsen Copyright (C) 2001, 2008
  */
-public class SRCPPowerManager extends AbstractPowerManager<SRCPBusConnectionMemo> implements SRCPListener {
+public class SRCPPowerManager implements PowerManager, SRCPListener {
 
-    boolean waiting = false;
-    int onReply = UNKNOWN;
     int _bus = 0;
-    SRCPTrafficController tc = null;
+    SRCPBusConnectionMemo _memo;
 
     public SRCPPowerManager(SRCPBusConnectionMemo memo, int bus) {
-        super(memo);
         // connect to the TrafficManager
+        _memo = memo;
         tc = memo.getTrafficController();
         tc.addSRCPListener(this);
         _bus = bus;
     }
 
     @Override
+    public String getUserName() {
+        return _memo.getUserName();
+    }
+
+    int power = UNKNOWN;
+
+    boolean waiting = false;
+    int onReply = UNKNOWN;
+
+    @Override
     public void setPower(int v) throws JmriException {
-        int old = power;
         power = UNKNOWN; // while waiting for reply
         checkTC();
         if (v == ON) {
@@ -43,12 +51,17 @@ public class SRCPPowerManager extends AbstractPowerManager<SRCPBusConnectionMemo
             // configure to wait for reply
             waiting = true;
             onReply = PowerManager.OFF;
-            firePowerPropertyChange(old, power);
+            firePropertyChange("Power", null, null);
             // send "Kill main track"
             SRCPMessage l = SRCPMessage.getKillMain();
             tc.sendSRCPMessage(l, this);
         }
-        firePowerPropertyChange(old, power);
+        firePropertyChange("Power", null, null);
+    }
+
+    @Override
+    public int getPower() {
+        return power;
     }
 
     // to free resources when no longer used
@@ -64,13 +77,55 @@ public class SRCPPowerManager extends AbstractPowerManager<SRCPBusConnectionMemo
         }
     }
 
+    // to hear of changes
+    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
+
+    @Override
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    protected void firePropertyChange(String p, Object old, Object n) {
+        pcs.firePropertyChange(p, old, n);
+    }
+
+    @Override
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return pcs.getPropertyChangeListeners(propertyName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
+    }
+
+    SRCPTrafficController tc = null;
+
     // to listen for status changes from SRCP system
     @Override
     public void reply(SRCPReply m) {
         if (waiting) {
-            int old = power;
             power = onReply;
-            firePowerPropertyChange(old, power);
+            firePropertyChange("Power", null, null);
         }
         waiting = false;
     }
@@ -78,7 +133,9 @@ public class SRCPPowerManager extends AbstractPowerManager<SRCPBusConnectionMemo
     // to listen for status changes from SRCP system
     @Override
     public void reply(jmri.jmrix.srcp.parser.SimpleNode n) {
-        log.debug("reply called with simpleNode {}", n.jjtGetValue());
+        if (log.isDebugEnabled()) {
+            log.debug("reply called with simpleNode " + n.jjtGetValue());
+        }
         reply(new SRCPReply(n));
     }
 

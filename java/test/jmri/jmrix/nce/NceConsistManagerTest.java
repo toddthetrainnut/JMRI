@@ -4,9 +4,7 @@ import jmri.DccLocoAddress;
 import jmri.util.JUnitUtil;
 import jmri.util.JUnitAppender;
 import jmri.util.junit.annotations.*;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -19,7 +17,7 @@ public class NceConsistManagerTest extends jmri.implementation.AbstractConsistMa
 
     @Override
     @Test
-    @Disabled("produces multiple error messages on CI servers")
+    @Ignore("produces multiple error messages on CI servers")
     @ToDo("rewrite parent class test here with appropriate replies to consist memory read requests")
     public void testGetConsist() {
         // getConsist with a valid address should always return
@@ -31,7 +29,7 @@ public class NceConsistManagerTest extends jmri.implementation.AbstractConsistMa
     }
 
     @Test
-    @Disabled("produces multiple error messages on CI servers")
+    @Ignore("produces multiple error messages on CI servers")
     @ToDo("rewrite parent class test here with appropriate replies to consist memory read requests")
     @Override
     public void testConsists() {
@@ -45,7 +43,7 @@ public class NceConsistManagerTest extends jmri.implementation.AbstractConsistMa
 
     @Override
     @Test
-    @Disabled("causes NPE on Appveyor; produces multiple error messages on CI servers")
+    @Ignore("causes NPE on Appveyor; produces multiple error messages on CI servers")
     @ToDo("rewrite parent class test here with appropriate replies to consist memory read requests. Investigate why Appveyor throws NPE while getting port name from traffic controller")
     public void testRequestUpdateFromLayout() {
        super.testRequestUpdateFromLayout();
@@ -56,7 +54,8 @@ public class NceConsistManagerTest extends jmri.implementation.AbstractConsistMa
        JUnitAppender.suppressErrorMessage("Time out reading NCE command station consist memory");
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -66,11 +65,10 @@ public class NceConsistManagerTest extends jmri.implementation.AbstractConsistMa
         cm = new NceConsistManager(memo);
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         cm = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

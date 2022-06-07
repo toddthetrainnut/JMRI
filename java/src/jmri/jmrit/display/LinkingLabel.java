@@ -3,13 +3,9 @@ package jmri.jmrit.display;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
-
 import javax.annotation.Nonnull;
 import javax.swing.JPopupMenu;
-
-import jmri.JmriException;
 import jmri.jmrit.catalog.NamedIcon;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,29 +68,32 @@ public class LinkingLabel extends PositionableLabel implements LinkingObject {
 //    public void doMouseReleased(MouseEvent event) {}
     @Override
     public void doMouseClicked(MouseEvent event) {
-        log.debug("click to {}", url);
+        log.debug("click to " + url);
         try {
             if (url.startsWith("frame:")) {
                 // locate JmriJFrame and push to front
                 String frame = url.substring(6);
                 final jmri.util.JmriJFrame jframe = jmri.util.JmriJFrame.getFrame(frame);
                 if (jframe != null) {  //ignore if jframe not found
-                    java.awt.EventQueue.invokeLater(() -> {
-                        //if frame was minimized, restore
-                        if (jframe.getExtendedState() == java.awt.Frame.ICONIFIED) {
-                            jframe.setExtendedState(java.awt.Frame.NORMAL);
+                    java.awt.EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            //if frame was minimized, restore
+                            if (jframe.getExtendedState() == java.awt.Frame.ICONIFIED) {
+                                jframe.setExtendedState(java.awt.Frame.NORMAL);
+                            }
+                            //bring the frame to the foreground
+                            jframe.toFront();
+                            jframe.repaint();
                         }
-                        //bring the frame to the foreground
-                        jframe.toFront();
-                        jframe.repaint();
                     });
                 } else {
-                    log.error("Frame '{}' not found, cannot link to it.", frame);
+                    log.error("Frame '" + frame + "' not found, cannot link to it.");
                 }
             } else if (url.length() > 0) {
-                jmri.util.HelpUtil.openWebPage(url);
+                jmri.util.ExternalLinkContentViewerUI.activateURL(new java.net.URL(url));
             }
-        } catch (JmriException t) {
+        } catch (IOException | URISyntaxException t) {
             log.error("Error handling link", t);
         }
         super.doMouseClicked(event);

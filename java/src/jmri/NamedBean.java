@@ -4,8 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import javax.annotation.CheckForNull;
@@ -93,11 +91,6 @@ public interface NamedBean extends Comparable<NamedBean>, PropertyChangeProvider
     public static final String QUOTED_NAME_FORMAT = "\"%s\" (%s)";
 
     /**
-     * Property of changed state.
-     */
-    public static final String PROPERTY_STATE = "state";
-
-    /**
      * User's identification for the item. Bound parameter so manager(s) can
      * listen to changes. Any given user name must be unique within the layout.
      * Must not match the system name.
@@ -129,11 +122,6 @@ public interface NamedBean extends Comparable<NamedBean>, PropertyChangeProvider
 
     /**
      * Display the system-specific name.
-     * <p>Note that this is a firm contract:  toString() in
-     * all implementing classes must return the system name
-     * followed by optional additional information.
-     * Using code can assume that the result of toString() will always be
-     * or start with the system name followed by some kind of separator character.
      *
      * @return the system-specific name
      */
@@ -154,7 +142,7 @@ public interface NamedBean extends Comparable<NamedBean>, PropertyChangeProvider
 
     /**
      * Get the name to display, formatted per {@link NamedBean.DisplayOptions}.
-     *
+     * 
      * @param options the DisplayOptions to use
      * @return the display name formatted per options
      */
@@ -186,6 +174,42 @@ public interface NamedBean extends Comparable<NamedBean>, PropertyChangeProvider
             default:
                 return userName != null ? userName : systemName;
         }
+    }
+    
+    /**
+     * Get a fully formatted display that includes the SystemName and, if set,
+     * the UserName.
+     * <p>
+     * This is the same as calling {@link #getDisplayName(DisplayOptions)} with
+     * the parameter {@link DisplayOptions#USERNAME_SYSTEMNAME}.
+     *
+     * @return {@code UserName (SystemName)} or {@code SystemName} if the
+     *         UserName is null, empty, or matches the SystemName
+     * @deprecated since 4.17.2; use {@link #getDisplayName(DisplayOptions)}
+     *             with {@link DisplayOptions#USERNAME_SYSTEMNAME} instead
+     */
+    @CheckReturnValue
+    @Nonnull
+    @Deprecated
+    public default String getFullyFormattedDisplayName() {
+        return getDisplayName(DisplayOptions.USERNAME_SYSTEMNAME);
+    }
+
+    /**
+     * Returns a fully formatted display that includes the SystemName and
+     * UserName if set. This uses the format {@value #DISPLAY_NAME_FORMAT}
+     *
+     * @param userNameFirst ignored; retained for compatibility until removed
+     * @return {@code UserName (SystemName)} or {@code SystemName} if the
+     *         UserName is null, empty, or matches the SystemName
+     * @deprecated since 4.17.2; use {@link #getDisplayName(DisplayOptions)}
+     *             with {@link DisplayOptions#USERNAME_SYSTEMNAME} instead
+     */
+    @CheckReturnValue
+    @Nonnull
+    @Deprecated
+    public default String getFullyFormattedDisplayName(boolean userNameFirst) {
+        return getDisplayName(DisplayOptions.USERNAME_SYSTEMNAME);
     }
 
     /**
@@ -341,14 +365,6 @@ public interface NamedBean extends Comparable<NamedBean>, PropertyChangeProvider
     public void setComment(@CheckForNull String comment);
 
     /**
-     * Get a list of references for the specified bean.
-     *
-     * @param bean The bean to be checked.
-     * @return a list of NamedBeanUsageReports or an empty ArrayList.
-     */
-    default List<NamedBeanUsageReport> getUsageReport(@CheckForNull NamedBean bean) { return (new ArrayList<>()); }
-
-    /**
      * Attach a key/value pair to the NamedBean, which can be retrieved later.
      * These are not bound properties as yet, and don't throw events on
      * modification. Key must not be null.
@@ -475,211 +491,32 @@ public interface NamedBean extends Comparable<NamedBean>, PropertyChangeProvider
     @CheckReturnValue
     public int compareSystemNameSuffix(@Nonnull String suffix1, @Nonnull String suffix2, @Nonnull NamedBean n2);
 
-    /**
-     * Parent class for a set of classes that describe if a user name or system
-     * name is a bad name.
-     */
-    public class BadNameException extends IllegalArgumentException {
+    public class BadUserNameException extends IllegalArgumentException {
 
-        private final String localizedMessage;
-
-        /**
-         * Create an exception with no message to the user or for logging.
-         */
-        protected BadNameException() {
-            super();
-            localizedMessage = super.getMessage();
-        }
-
-        /**
-         * Create a localized exception, suitable for display to the user.This
-         * takes the non-localized message followed by the localized message.
-         * <p>
-         * Use {@link #getLocalizedMessage()} to display the message to the
-         * user, and use {@link #getMessage()} to record the message in logs.
-         *
-         * @param logging the English message for logging
-         * @param display the localized message for display
-         */
-        protected BadNameException(String logging, String display) {
-            super(logging);
-            localizedMessage = display;
-        }
-
-        @Override
-        public String getLocalizedMessage() {
-            return localizedMessage;
-        }
-
-    }
-
-    public class BadUserNameException extends BadNameException {
-
-        /**
-         * Create an exception with no message to the user or for logging. Use
-         * only when calling methods likely have alternate mechanism for
-         * allowing user to understand why exception was thrown.
-         */
         public BadUserNameException() {
             super();
         }
 
-        /**
-         * Create a localized exception, suitable for display to the user. This
-         * takes the same arguments as
-         * {@link jmri.Bundle#getMessage(java.util.Locale, java.lang.String, java.lang.Object...)}
-         * as it uses that method to create both the localized and loggable
-         * messages.
-         * <p>
-         * Use {@link #getLocalizedMessage()} to display the message to the
-         * user, and use {@link #getMessage()} to record the message in logs.
-         * <p>
-         * <strong>Note</strong> the message must be accessible by
-         * {@link jmri.Bundle}.
-         *
-         * @param locale  the locale to be used
-         * @param message bundle key to be translated
-         * @param subs    One or more objects to be inserted into the message
-         */
-        public BadUserNameException(Locale locale, String message, Object... subs) {
-            super(Bundle.getMessage(Locale.ENGLISH, message, subs),
-                    Bundle.getMessage(locale, message, subs));
-        }
-
-        /**
-         * Create a localized exception, suitable for display to the user. This
-         * takes the non-localized message followed by the localized message.
-         * <p>
-         * Use {@link #getLocalizedMessage()} to display the message to the
-         * user, and use {@link #getMessage()} to record the message in logs.
-         *
-         * @param logging the English message for logging
-         * @param display the localized message for display
-         */
-        public BadUserNameException(String logging, String display) {
-            super(logging, display);
+        public BadUserNameException(String message) {
+            super(message);
         }
     }
 
-    public class BadSystemNameException extends BadNameException {
+    public class BadSystemNameException extends IllegalArgumentException {
 
-        /**
-         * Create an exception with no message to the user or for logging. Use
-         * only when calling methods likely have alternate mechanism for
-         * allowing user to understand why exception was thrown.
-         */
         public BadSystemNameException() {
             super();
         }
 
-        /**
-         * Create a localized exception, suitable for display to the user. This
-         * takes the same arguments as
-         * {@link jmri.Bundle#getMessage(java.util.Locale, java.lang.String, java.lang.Object...)}
-         * as it uses that method to create both the localized and loggable
-         * messages.
-         * <p>
-         * Use {@link #getLocalizedMessage()} to display the message to the
-         * user, and use {@link #getMessage()} to record the message in logs.
-         * <p>
-         * <strong>Note</strong> the message must be accessible by
-         * {@link jmri.Bundle}.
-         *
-         * @param locale  the locale to be used
-         * @param message bundle key to be translated
-         * @param subs    One or more objects to be inserted into the message
-         */
-        public BadSystemNameException(Locale locale, String message, Object... subs) {
-            this(Bundle.getMessage(Locale.ENGLISH, message, subs),
-                    Bundle.getMessage(locale, message, subs));
-        }
-
-        /**
-         * Create a localized exception, suitable for display to the user. This
-         * takes the non-localized message followed by the localized message.
-         * <p>
-         * Use {@link #getLocalizedMessage()} to display the message to the
-         * user, and use {@link #getMessage()} to record the message in logs.
-         *
-         * @param logging the English message for logging
-         * @param display the localized message for display
-         */
-        public BadSystemNameException(String logging, String display) {
-            super(logging, display);
-        }
-    }
-
-    public class DuplicateSystemNameException extends IllegalArgumentException {
-
-        private final String localizedMessage;
-
-        /**
-         * Create an exception with no message to the user or for logging. Use
-         * only when calling methods likely have alternate mechanism for
-         * allowing user to understand why exception was thrown.
-         */
-        public DuplicateSystemNameException() {
-            super();
-            localizedMessage = super.getMessage();
-        }
-
-        /**
-         * Create a exception.
-         *
-         * @param message bundle key to be translated
-         */
-        public DuplicateSystemNameException(String message) {
+        public BadSystemNameException(String message) {
             super(message);
-            localizedMessage = super.getMessage();
-        }
-
-        /**
-         * Create a localized exception, suitable for display to the user. This
-         * takes the same arguments as
-         * {@link jmri.Bundle#getMessage(java.util.Locale, java.lang.String, java.lang.Object...)}
-         * as it uses that method to create both the localized and loggable
-         * messages.
-         * <p>
-         * Use {@link #getLocalizedMessage()} to display the message to the
-         * user, and use {@link #getMessage()} to record the message in logs.
-         * <p>
-         * <strong>Note</strong> the message must be accessible by
-         * {@link jmri.Bundle}.
-         *
-         * @param locale  the locale to be used
-         * @param message bundle key to be translated
-         * @param subs    One or more objects to be inserted into the message
-         */
-        public DuplicateSystemNameException(Locale locale, String message, Object... subs) {
-            this(Bundle.getMessage(locale, message, subs),
-                    Bundle.getMessage(locale, message, subs));
-        }
-
-        /**
-         * Create a localized exception, suitable for display to the user. This
-         * takes the non-localized message followed by the localized message.
-         * <p>
-         * Use {@link #getLocalizedMessage()} to display the message to the
-         * user, and use {@link #getMessage()} to record the message in logs.
-         *
-         * @param logging the English message for logging
-         * @param display the localized message for display
-         */
-        public DuplicateSystemNameException(String logging, String display) {
-            super(logging);
-            localizedMessage = display;
-        }
-
-        @Override
-        public String getLocalizedMessage() {
-            return localizedMessage;
         }
     }
 
     /**
      * Display options for {@link #getDisplayName(DisplayOptions)}. The quoted
-     * forms are intended to be used in sentences and messages, while the
-     * unquoted forms are intended for use in user interface elements like lists
+     * forms are intended to be used in sentances and messages, while the
+     * unquoted forms are intended for use in user inteface elements like lists
      * and combo boxes.
      */
     public enum DisplayOptions {

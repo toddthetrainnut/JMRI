@@ -1,7 +1,6 @@
 package jmri.jmrit.timetable;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 import jmri.util.JUnitUtil;
 
@@ -50,13 +49,13 @@ public class LayoutTest {
         Assert.assertEquals("Test Name", layout.toString());  // NOI18N
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

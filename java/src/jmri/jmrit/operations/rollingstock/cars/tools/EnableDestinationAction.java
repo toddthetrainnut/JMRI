@@ -1,9 +1,7 @@
 package jmri.jmrit.operations.rollingstock.cars.tools;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import jmri.jmrit.operations.rollingstock.cars.CarSetFrame;
 
 /**
@@ -17,8 +15,8 @@ public class EnableDestinationAction extends AbstractAction {
 
     CarSetFrame _csFrame;
 
-    public EnableDestinationAction(CarSetFrame frame) {
-        super(Bundle.getMessage("MenuEnableDestination"));
+    public EnableDestinationAction(String s, CarSetFrame frame) {
+        super(s);
         _csFrame = frame;
     }
 

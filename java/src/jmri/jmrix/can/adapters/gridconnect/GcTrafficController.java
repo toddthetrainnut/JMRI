@@ -15,9 +15,7 @@ import org.slf4j.LoggerFactory;
  * Traffic controller for the GridConnect protocol.
  * <p>
  * GridConnect uses messages transmitted as an ASCII string of up to 24
- * characters of the form: :ShhhhNd0d1d2d3d4d5d6d7; 
- * <p>
- * The S indicates a standard
+ * characters of the form: :ShhhhNd0d1d2d3d4d5d6d7; The S indicates a standard
  * CAN frame hhhh is the two byte header (11 useful bits) N or R indicates a
  * normal or remote frame d0 - d7 are the (up to) 8 data bytes
  *
@@ -25,9 +23,6 @@ import org.slf4j.LoggerFactory;
  */
 public class GcTrafficController extends TrafficController {
 
-    /**
-     * Create new GridConnect Traffic Controller.
-     */
     public GcTrafficController() {
         super();
         this.setSynchronizeRx(false);
@@ -35,7 +30,6 @@ public class GcTrafficController extends TrafficController {
 
     /**
      * Forward a CanMessage to all registered CanInterface listeners.
-     * {@inheritDoc}
      */
     @Override
     protected void forwardMessage(AbstractMRListener client, AbstractMRMessage m) {
@@ -44,7 +38,6 @@ public class GcTrafficController extends TrafficController {
 
     /**
      * Forward a CanReply to all registered CanInterface listeners.
-     * {@inheritDoc}
      */
     @Override
     protected void forwardReply(AbstractMRListener client, AbstractMRReply r) {
@@ -55,62 +48,51 @@ public class GcTrafficController extends TrafficController {
     public static final int NORMAL = 0;
     public static final int BOOTMODE = 1;
 
-    /**
-     * Get the GridConnect State.
-     * @return NORMAL or BOOTMODE
-     */
     public int getgcState() {
         return gcState;
     }
 
-    /**
-     * Set the GridConnect State.
-     * @param state NORMAL or BOOTMODE
-     */
-    public void setgcState(int state) {
-        gcState = state;
-        log.debug("Setting gcState {}", state);
+    public void setgcState(int s) {
+        gcState = s;
+        log.debug("Setting gcState " + s);
     }
 
-    /**
-     * Get if GcTC is in Boot Mode.
-     * @return true if in Boot Mode, else False.
-     */
     public boolean isBootMode() {
         return gcState == BOOTMODE;
     }
 
     /**
      * Forward a preformatted message to the actual interface.
-     * {@inheritDoc}
      */
     @Override
     public void sendCanMessage(CanMessage m, CanListener reply) {
-        log.debug("GcTrafficController sendCanMessage() {}", m.toString());
+        log.debug("GcTrafficController sendCanMessage() " + m.toString());
         sendMessage(m, reply);
     }
 
     /**
      * Forward a preformatted reply to the actual interface.
-     * {@inheritDoc}
      */
     @Override
     public void sendCanReply(CanReply r, CanListener reply) {
-        log.debug("TrafficController sendCanReply() {}", r.toString());
+        log.debug("TrafficController sendCanReply() " + r.toString());
         notifyReply(r, reply);
     }
 
     /**
-     * Does nothing.
-     * {@inheritDoc}
+     * Add trailer to the outgoing byte stream.
+     *
+     * @param msg    The output byte stream
+     * @param offset the first byte not yet used
      */
     @Override
     protected void addTrailerToOutput(byte[] msg, int offset, AbstractMRMessage m) {
+        return;
     }
 
     /**
-     * Determine how much many bytes the entire message will take, 
-     * including space for header and trailer.
+     * Determine how much many bytes the entire message will take, including
+     * space for header and trailer
      *
      * @param m The message to be sent
      * @return Number of bytes
@@ -120,19 +102,16 @@ public class GcTrafficController extends TrafficController {
         return m.getNumDataElements();
     }
 
-    /**
-     * Get new message for hardware protocol.
-     * @return New GridConnect Message.
-     */
+    // New message for hardware protocol
     @Override
     protected AbstractMRMessage newMessage() {
         log.debug("New GridConnectMessage created");
-        return new GridConnectMessage();
+        GridConnectMessage msg = new GridConnectMessage();
+        return msg;
     }
 
     /**
-     * Make a CanReply from a GridConnect reply.
-     * {@inheritDoc}
+     * Make a CanReply from a GridConnect reply
      */
     @Override
     public CanReply decodeFromHardware(AbstractMRReply m) {
@@ -148,23 +127,22 @@ public class GcTrafficController extends TrafficController {
     }
 
     /**
-     * Encode a CanMessage for the hardware.
-     * {@inheritDoc}
+     * Encode a CanMessage for the hardware
      */
     @Override
     public AbstractMRMessage encodeForHardware(CanMessage m) {
         //log.debug("Encoding for hardware");
-        return new GridConnectMessage(m);
+        GridConnectMessage ret = new GridConnectMessage(m);
+
+        return ret;
     }
 
-    /**
-     * New reply from hardware.
-     * {@inheritDoc}
-     */
+    // New reply from hardware
     @Override
     protected AbstractMRReply newReply() {
         log.debug("New GridConnectReply created");
-        return new GridConnectReply();
+        GridConnectReply reply = new GridConnectReply();
+        return reply;
     }
 
     /*
@@ -180,12 +158,8 @@ public class GcTrafficController extends TrafficController {
         return false;
     }
 
-    /**
-     * Detect if the reply buffer ends with ";".
-     * @param r Reply
-     * @return true if contains end, else false.
-     */
     boolean endNormalReply(AbstractMRReply r) {
+        // Detect if the reply buffer ends with ";"
         int num = r.getNumDataElements() - 1;
         //log.debug("endNormalReply checking "+(num+1)+" of "+(r.getNumDataElements()));
         if (r.getElement(num) == ';') {
@@ -225,7 +199,7 @@ public class GcTrafficController extends TrafficController {
             //if (log.isDebugEnabled()) log.debug("char: "+(char1&0xFF)+" i: "+i);
             // if there was a timeout, flush any char received and start over
             if (flushReceiveChars) {
-                log.warn("timeout flushes receive buffer: {}", msg.toString());
+                log.warn("timeout flushes receive buffer: " + msg.toString());
                 msg.flush();
                 i = 0;  // restart
                 flushReceiveChars = false;
@@ -237,7 +211,7 @@ public class GcTrafficController extends TrafficController {
                 }
             } else {
                 i--; // flush char
-                log.error("unsolicited character received: {}", Integer.toHexString(char1));
+                log.error("unsolicited character received: " + Integer.toHexString(char1));
             }
         }
     }

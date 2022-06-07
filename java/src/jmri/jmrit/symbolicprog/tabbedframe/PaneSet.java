@@ -76,19 +76,19 @@ public class PaneSet {
         String decoderModel = r.getDecoderModel();
         String decoderFamily = r.getDecoderFamily();
         if (log.isDebugEnabled()) {
-            log.debug("selected loco uses decoder {} {}", decoderFamily, decoderModel);
+            log.debug("selected loco uses decoder " + decoderFamily + " " + decoderModel);
         }
         // locate a decoder like that.
         List<DecoderFile> l = InstanceManager.getDefault(DecoderIndexFile.class).matchingDecoderList(null, decoderFamily, null, null, null, decoderModel);
         if (log.isDebugEnabled()) {
-            log.debug("found {} matches", l.size());
+            log.debug("found " + l.size() + " matches");
         }
         if (l.size() == 0) {
-            log.debug("Loco uses {} {} decoder, but no such decoder defined", decoderFamily, decoderModel);
+            log.debug("Loco uses " + decoderFamily + " " + decoderModel + " decoder, but no such decoder defined");
             // fall back to use just the decoder name, not family
             l = InstanceManager.getDefault(DecoderIndexFile.class).matchingDecoderList(null, null, null, null, null, decoderModel);
             if (log.isDebugEnabled()) {
-                log.debug("found {} matches without family key", l.size());
+                log.debug("found " + l.size() + " matches without family key");
             }
         }
         if (l.size() > 0) {
@@ -98,7 +98,7 @@ public class PaneSet {
             if (decoderModel.equals("")) {
                 log.debug("blank decoderModel requested, so nothing loaded");
             } else {
-                log.warn("no matching \"{}\" decoder found for loco, no decoder info loaded", decoderModel);
+                log.warn("no matching \"" + decoderModel + "\" decoder found for loco, no decoder info loaded");
             }
         }
     }
@@ -109,13 +109,14 @@ public class PaneSet {
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug("loadDecoderFile from {} {}", DecoderFile.fileLocation, df.getFileName());
+            log.debug("loadDecoderFile from " + DecoderFile.fileLocation
+                    + " " + df.getFileName());
         }
 
         try {
             decoderRoot = df.rootFromName(DecoderFile.fileLocation + df.getFileName());
         } catch (JDOMException | IOException e) {
-            log.error("Exception while loading decoder XML file: {}", df.getFileName(), e);
+            log.error("Exception while loading decoder XML file: " + df.getFileName(), e);
         }
         // load variables from decoder tree
         df.getProductID();
@@ -159,7 +160,7 @@ public class PaneSet {
         List<Element> paneList = base.getChildren("pane");
 
         if (log.isDebugEnabled()) {
-            log.debug("will process {} pane definitions", paneList.size());
+            log.debug("will process " + paneList.size() + " pane definitions");
         }
 
         for (Element e : paneList) {
@@ -172,14 +173,10 @@ public class PaneSet {
     /**
      * Create a single pane from a "pane" element in programmer or decoder
      * definition
-     * @param name pane name.
-     * @param pane pane element.
-     * @param modelElem model element.
-     * @param r roster entry.
      */
     public void newPane(String name, Element pane, Element modelElem, RosterEntry r) {
         if (log.isDebugEnabled()) {
-            log.debug("newPane {}", name);
+            log.debug("newPane " + name);
         }
         // create a panel to hold columns
         PaneProgPane p = new PaneProgPane(container, name, pane, cvModel, variableModel, modelElem, r);
@@ -193,8 +190,7 @@ public class PaneSet {
     }
 
     /**
-     * Store current content to file.
-     * @param re roster entry to store.
+     * Store current content to file
      */
     public void storeFile(RosterEntry re) {
         // set up file write

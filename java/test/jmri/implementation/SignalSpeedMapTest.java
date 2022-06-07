@@ -1,7 +1,9 @@
 package jmri.implementation;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the SignalSpeedMap class
@@ -29,7 +31,7 @@ public class SignalSpeedMapTest {
         "Stop"
     };
 
-    SignalSpeedMap map;
+    SignalSpeedMap map; // can't static init before class; use @BeforeClass when changing to JUnit4
     
     /**
      * To avoid breaking signal systems, speed definitions should
@@ -86,7 +88,7 @@ public class SignalSpeedMapTest {
         }        
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetInstanceManager();
@@ -97,7 +99,7 @@ public class SignalSpeedMapTest {
         map = new SignalSpeedMap();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         map = null;
         jmri.util.JUnitUtil.tearDown();

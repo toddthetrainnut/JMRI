@@ -1,8 +1,8 @@
 package jmri;
 
-import java.util.Set;
-import javax.annotation.Nonnull;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Represent a Turnout on the layout.
@@ -35,7 +35,7 @@ import javax.annotation.CheckForNull;
  * <p>
  * The AbstractTurnout class contains a basic implementation of the state and
  * messaging code, and forms a useful start for a system-specific
- * implementation. Specific implementations, e.g. for
+ * implementation. Specific implementations in the jmrix package, e.g. for
  * LocoNet and NCE, will convert to and from the layout commands.
  * <p>
  * The states and names are Java Bean parameters, so that listeners can be
@@ -72,17 +72,17 @@ import javax.annotation.CheckForNull;
  * @see jmri.InstanceManager
  * @see jmri.jmrit.simpleturnoutctrl.SimpleTurnoutCtrlFrame
  */
-public interface Turnout extends DigitalIO, VariableControlSpanBean {
+public interface Turnout extends DigitalIO {
 
     /**
-     * Constant representing a "closed" state, either in readback or as a
+     * Constant representing an "closed" state, either in readback or as a
      * commanded state. Note that it's possible to be both CLOSED and THROWN at
      * the same time on some systems, which should be called INCONSISTENT
      */
     public static final int CLOSED = DigitalIO.ON;
 
     /**
-     * Constant representing a "thrown" state, either in readback or as a
+     * Constant representing an "thrown" state, either in readback or as a
      * commanded state. Note that it's possible to be both CLOSED and THROWN at
      * the same time on some systems, which should be called INCONSISTENT
      */
@@ -142,13 +142,6 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
     public static final int DELAYED = 128;
 
     /**
-     * Constant representing "loconet alternate feedback method". In this case, the layout
-     * hardware can sense both positions of the turnout, which is used to set
-     * the known state. Hardware use OPS_SW_REP alternate message.
-     */
-    public static final int LNALTERNATE = 256;
-
-    /**
      * Constant representing turnout lockout cab commands
      */
     public static final int CABLOCKOUT = 1;
@@ -167,14 +160,6 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
      * Constant representing a locked turnout
      */
     public static final int LOCKED = 1;
-
-    /**
-     * Get a list of valid feedback types. The valid types depend on the
-     * implemented system.
-     *
-     * @return array of feedback types
-     */
-    public Set<Integer> getValidFeedbackModes();
 
     /**
      * Get a representation of the feedback type. This is the OR of possible
@@ -259,22 +244,17 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
      * @param toper TurnoutOperation subclass instance
      */
     @InvokeOnLayoutThread
-    public void setTurnoutOperation(@CheckForNull TurnoutOperation toper);
+    public void setTurnoutOperation(@Nullable TurnoutOperation toper);
 
     /**
-     * Return the inverted state of the specified state
-     * Does NOT invert INCONSISTENT
+     * return the inverted state of the specified state
      * @param inState the specified state
      * @return the inverted state
      */
     public static int invertTurnoutState(int inState) {
-        int result = UNKNOWN;
-        if (inState == CLOSED) {
+        int result = CLOSED;
+        if (result == inState) {
             result = THROWN;
-        } else if (inState == THROWN){
-            result = CLOSED;
-        } else if (inState == INCONSISTENT){
-            result = INCONSISTENT;
         }
         return result;
     }
@@ -290,26 +270,12 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
      * Sensor-based feedback will not function until these sensors have been
      * provided.
      *
-     * @param name the user or system name of the sensor
-     * @param number the feedback number of the sensor, indexed from 0
+     * @param pName the user or system name of the sensor
      * @throws jmri.JmriException if unable to assign the feedback sensor
      */
-    public default void provideFeedbackSensor(@CheckForNull String name, int number) throws JmriException {
-        switch (number) {
-            case 0:
-                provideFirstFeedbackSensor(name);
-                break;
-            case 1:
-                provideSecondFeedbackSensor(name);
-                break;
-            default:
-                throw new IllegalArgumentException("Turnouts have no more than two sensors");
-        }
-    }
+    public void provideFirstFeedbackSensor(@Nullable String pName) throws JmriException;
 
-    public void provideFirstFeedbackSensor(@CheckForNull String pName) throws JmriException;
-
-    public void provideSecondFeedbackSensor(@CheckForNull String pName) throws JmriException;
+    public void provideSecondFeedbackSensor(@Nullable String pName) throws JmriException;
 
     /**
      * Get the first feedback sensor.
@@ -357,6 +323,21 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
      */
     @InvokeOnLayoutThread
     public void setInitialKnownStateFromFeedback();
+
+    /**
+     * Get number of output bits.
+     *
+     * @return the size of the output, currently 1 or 2
+     */
+    public int getNumberOutputBits();
+
+    /**
+     * Set number of output bits.
+     *
+     * @param num the size of the output, currently 1 or 2
+     */
+    @InvokeOnLayoutThread
+    public void setNumberOutputBits(int num);
 
     /**
      * Get control type.
@@ -433,8 +414,8 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
     public boolean canLock(int turnoutLockout);
 
     /**
-     * Provide the possible locking modes for a turnout.
-     * These may require additional configuration, e.g.
+     * Provide the possible locking modes for a turnout.  
+     * These may require additional configuration, e.g. 
      * setting of a decoder definition for PUSHBUTTONLOCKOUT,
      * before {@link #canLock(int)} will return true.
      *
@@ -480,7 +461,6 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
     /**
      * Get a human readable representation of the locking decoder type for this turnout.
      *
-     * In AbstractTurnout this String defaults to PushbuttonPacket.unknown , ie "None"
      * @return the name of the decoder type; null indicates none defined
      */
     @CheckForNull
@@ -491,7 +471,7 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
      *
      * @param decoderName the name of the decoder type
      */
-    public void setDecoderName(@CheckForNull String decoderName);
+    public void setDecoderName(@Nullable String decoderName);
 
     /**
      * Use a binary output for sending commands. This appears to expose a
@@ -513,98 +493,5 @@ public interface Turnout extends DigitalIO, VariableControlSpanBean {
     public String getStraightSpeed();
 
     public void setStraightSpeed(String s) throws JmriException;
-
-    /**
-     * Check if this Turnout can follow the state of another Turnout.
-     *
-     * @return true if this Turnout is capable of following; false otherwise
-     */
-    // Note: not `canFollow()` to allow JavaBeans introspection to find
-    // the property "canFollow"
-    public boolean isCanFollow();
-
-    /**
-     * Get the Turnout this Turnout is following.
-     *
-     * @return the leading Turnout or null if none; null if
-     *         {@link #isCanFollow()} is false
-     */
-    @CheckForNull
-    public Turnout getLeadingTurnout();
-
-    /**
-     * Set the Turnout this Turnout will follow.
-     * <p>
-     * It is valid for two or more turnouts to follow each other in a circular
-     * pattern.
-     * <p>
-     * It is recommended that a following turnout's feedback mode be
-     * {@link #DIRECT}.
-     * <p>
-     * It is recommended to explicitly call
-     * {@link #setFollowingCommandedState(boolean)} after calling this method or
-     * to use {@link #setLeadingTurnout(jmri.Turnout, boolean)} to ensure this
-     * Turnout follows the leading Turnout in the expected manner.
-     *
-     * @param turnout the leading Turnout or null if this Turnout should not
-     *                follow another Turnout; silently ignored if
-     *                {@link #isCanFollow()} is false
-     */
-    public void setLeadingTurnout(@CheckForNull Turnout turnout);
-
-    /**
-     * Set both the leading Turnout and if the commanded state of the leading
-     * Turnout is followed. This is a convenience method for calling both
-     * {@link #setLeadingTurnout(jmri.Turnout)} and
-     * {@link #setFollowingCommandedState(boolean)}.
-     *
-     * @param turnout                 the leading Turnout or null if this
-     *                                Turnout should not follow another Turnout;
-     *                                silently ignored if {@link #isCanFollow()}
-     *                                is false
-     * @param followingCommandedState true to have all states match leading
-     *                                turnout; false to only have non-commanded
-     *                                states match
-     */
-    public void setLeadingTurnout(@CheckForNull Turnout turnout, boolean followingCommandedState);
-
-    /**
-     * Check if this Turnout is following all states or only the non-commanded
-     * states of the leading Turnout.
-     *
-     * @return true if following all states; false otherwise
-     */
-    public boolean isFollowingCommandedState();
-
-    /**
-     * Set if this Turnout follows all states or only the non-commanded states
-     * of the leading Turnout.
-     * <p>
-     * A Turnout can be commanded to be {@link #THROWN} or {@link #CLOSED}, but
-     * can also have additional states {@link #INCONSISTENT} and
-     * {@link #UNKNOWN}. There are some use cases where a following Turnout
-     * should match all states of the leading Turnout, in which case this should
-     * be true, but there are also use cases where the following Turnout should
-     * only match the INCONSISTENT and UNKNOWN states of the leading Turnout,
-     * but should otherwise be independently commanded, in which case this
-     * should be false.
-     *
-     * @param following true to have all states match leading turnout; false to
-     *                  only have non-commanded states match
-     */
-    public void setFollowingCommandedState(boolean following);
-
-    /**
-     * Before setting commanded state, if required by manager, apply wait interval until
-     * outputIntervalEnds() to put less pressure on the connection.
-     * <p>
-     * Used to insert a delay before calling {@link #setCommandedState(int)} to spread out a series of
-     * output commands, as in {@link jmri.implementation.MatrixSignalMast#updateOutputs(char[])} and
-     * {@link jmri.implementation.DefaultRoute} class SetRouteThread#run().
-     * Interval value is kept in the Memo per hardware connection, default = 0
-     *
-     * @param s turnout state to forward
-     */
-    public void setCommandedStateAtInterval(int s);
 
 }

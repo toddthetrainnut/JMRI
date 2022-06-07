@@ -1,5 +1,6 @@
 package apps.TrainCrew;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -9,8 +10,7 @@ import org.junit.Test;
  */
 public class InstallFromURLTest  {
 
-    @Test
-    public void testCtor() {
+    @Test public void testCtor() {
         new InstallFromURL();
     }
 }

@@ -12,31 +12,31 @@ import jmri.jmrit.logix.OBlock;
  */
 public interface IndicatorTrack extends Positionable {
 
-    void setOccSensor(String pName);
+    public void setOccSensor(String pName);
 
-    void setOccSensorHandle(NamedBeanHandle<Sensor> senHandle);
+    public void setOccSensorHandle(NamedBeanHandle<Sensor> senHandle);
 
-    Sensor getOccSensor();
+    public Sensor getOccSensor();
 
-    NamedBeanHandle<Sensor> getNamedOccSensor();
+    public NamedBeanHandle<Sensor> getNamedOccSensor();
 
-    void setOccBlock(String pName);
+    public void setOccBlock(String pName);
 
-    void setOccBlockHandle(NamedBeanHandle<OBlock> blockHandle);
+    public void setOccBlockHandle(NamedBeanHandle<OBlock> blockHandle);
 
-    OBlock getOccBlock();
+    public OBlock getOccBlock();
 
-    NamedBeanHandle<OBlock> getNamedOccBlock();
+    public NamedBeanHandle<OBlock> getNamedOccBlock();
 
-    void setShowTrain(boolean set);
+    public void setShowTrain(boolean set);
 
-    boolean showTrain();
+    public boolean showTrain();
 
-    ArrayList<String> getPaths();
+    public ArrayList<String> getPaths();
 
-    void addPath(String path);
+    public void addPath(String path);
 
-    void removePath(String path);
+    public void removePath(String path);
 
-    void setStatus(int state);
+    public void setStatus(int state);
 }

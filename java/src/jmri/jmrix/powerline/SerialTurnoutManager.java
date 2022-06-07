@@ -1,9 +1,6 @@
 package jmri.jmrix.powerline;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
-
-import jmri.*;
+import jmri.Turnout;
 import jmri.managers.AbstractTurnoutManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,50 +17,76 @@ import org.slf4j.LoggerFactory;
  */
 public class SerialTurnoutManager extends AbstractTurnoutManager {
 
-    private SerialTrafficController tc = null;
+    SerialTrafficController tc = null;
 
     public SerialTurnoutManager(SerialTrafficController tc) {
-        super(tc.getAdapterMemo());
+        super();
         this.tc = tc;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public SerialSystemConnectionMemo getMemo() {
-        return (SerialSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return tc.getAdapterMemo().getSystemPrefix();
     }
 
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return false;
     }
 
     @Override
-    @javax.annotation.Nonnull
-    @javax.annotation.CheckReturnValue
-    public String getNextValidSystemName(@Nonnull NamedBean currentBean) throws JmriException {
-        throw new jmri.JmriException("getNextValidSystemName should not have been called");
+    public String getNextValidAddress(String curAddress, String prefix) {
+
+        //If the hardware address passed does not already exist then this can
+        //be considered the next valid address.
+        Turnout s = getBySystemName(prefix + typeLetter() + curAddress);
+        if (s == null) {
+            return curAddress;
+        }
+
+        // This bit deals with handling the curAddress, and how to get the next address.
+        int iName = 0;
+        // Address starts with a single letter called a House Code.
+        String houseCode = curAddress.substring(0, 1);
+        try {
+            iName = Integer.parseInt(curAddress.substring(1));
+        } catch (NumberFormatException ex) {
+            log.error("Unable to convert {} Hardware Address to a number", curAddress);
+            jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).
+                    showErrorMessage(Bundle.getMessage("ErrorTitle"),
+                            Bundle.getMessage("ErrorConvertNumberX", curAddress), "" + ex, "", true, false);
+            return null;
+        }
+
+        // Check to determine if the systemName is in use, return null if it is,
+        // otherwise return the next valid address.
+        s = getBySystemName(prefix + typeLetter() + curAddress);
+        if (s != null) {
+            for (int x = 1; x < 10; x++) {
+                iName++;
+                s = getBySystemName(prefix + typeLetter() + houseCode + (iName));
+                if (s == null) {
+                    return houseCode + iName;
+                }
+            }
+            return null;
+        } else {
+            return houseCode + iName;
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Turnout createNewTurnout(String systemName, String userName) {
         // validate the system name, and normalize it
         String sName = tc.getAdapterMemo().getSerialAddress().normalizeSystemName(systemName);
-        if (sName.isEmpty()) {
+        if (sName.equals("")) {
             // system name is not valid
-            throw new IllegalArgumentException("Cannot create Turnout System Name from " + systemName);
+            return null;
         }
         // does this turnout already exist
         Turnout t = getBySystemName(sName);
         if (t != null) {
-            return t;
+            return null;
         }
 
         // create the turnout
@@ -78,20 +101,13 @@ public class SerialTurnoutManager extends AbstractTurnoutManager {
     }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format
+     *
+     * @return 'true' if system name has a valid format, else returns 'false'
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull Locale locale) {
-        return tc.getAdapterMemo().getSerialAddress().validateSystemNameFormat(name, typeLetter(), locale);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
-        return tc.getAdapterMemo().getSerialAddress().validSystemNameFormat(systemName, typeLetter());
+    public NameValidity validSystemNameFormat(String systemName) {
+        return (tc.getAdapterMemo().getSerialAddress().validSystemNameFormat(systemName, 'T'));
     }
 
     /**
@@ -105,3 +121,5 @@ public class SerialTurnoutManager extends AbstractTurnoutManager {
     private final static Logger log = LoggerFactory.getLogger(SerialTurnoutManager.class);
 
 }
+
+

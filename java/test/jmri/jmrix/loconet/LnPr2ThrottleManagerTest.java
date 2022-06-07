@@ -1,13 +1,14 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class LnPr2ThrottleManagerTest extends jmri.managers.AbstractThrottleManagerTestBase {
 
@@ -20,15 +21,15 @@ public class LnPr2ThrottleManagerTest extends jmri.managers.AbstractThrottleMana
                  ((LnPr2ThrottleManager)tm).getActiveAddress());
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         memo = new LocoNetSystemConnectionMemo();
         tm = new LnPr2ThrottleManager(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         memo.dispose();
         JUnitUtil.tearDown();

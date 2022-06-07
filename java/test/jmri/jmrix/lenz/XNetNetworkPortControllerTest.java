@@ -1,8 +1,8 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the XNetNetworkPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class XNetNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        apc = new XNetNetworkPortController(){
@@ -31,7 +31,7 @@ public class XNetNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPor
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

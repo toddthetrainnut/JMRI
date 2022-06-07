@@ -1,13 +1,18 @@
 package jmri.util.usb;
 
 import java.io.UnsupportedEncodingException;
-
-import javax.usb.*;
-
+import javax.usb.UsbDevice;
+import javax.usb.UsbDisconnectedException;
+import javax.usb.UsbException;
 import jmri.util.JUnitAppender;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /**
  *
@@ -15,61 +20,55 @@ import org.junit.jupiter.api.*;
  */
 public class UsbUtilTest {
 
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
+
     @Test
     public void testGetFullProductName() {
-        // test MFG and product name complete
-        Assert.assertEquals("Foo Bar", UsbUtil.getFullProductName(new UsbDeviceScaffold("Foo","Bar")));
-        // test no MFG or product name
-        Assert.assertEquals(null, UsbUtil.getFullProductName(new UsbDeviceScaffold(null,null)));
-        // test exceptions thrown by device
-        Assert.assertEquals(null, UsbUtil.getFullProductName(new UsbDeviceScaffold("foo","bar"){
-            @Override
-            public String getManufacturerString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
-               throw new UsbException("foo");
-            }
-        }));
-        JUnitAppender.assertErrorMessageStartsWith("Unable to read data from ");
-        Assert.assertEquals(null, UsbUtil.getFullProductName(new UsbDeviceScaffold("foo","bar"){
-            @Override
-            public String getManufacturerString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
-                throw new UnsupportedEncodingException("foo");
-            }
-        }));
-        Assert.assertEquals(null, UsbUtil.getFullProductName(new UsbDeviceScaffold("foo","bar"){
-            @Override
-            public String getManufacturerString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
-                throw new UsbDisconnectedException("foo");
-            }
-        }));
-        JUnitAppender.assertErrorMessageStartsWith("Unable to read data from ");
-        Assert.assertEquals(null, UsbUtil.getFullProductName(new UsbDeviceScaffold("foo","bar"){
-            @Override
-            public String getManufacturerString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
-                throw new UsbDisconnectedException("foo");
-            }
-        }));
-        JUnitAppender.assertErrorMessageStartsWith("Unable to read data from ");
-        // test that unexpected exception is not caught
+        UsbDevice mockDevice = Mockito.mock(UsbDevice.class);
         try {
-            Assert.assertEquals(null, UsbUtil.getFullProductName(new UsbDeviceScaffold("foo","bar"){
-                @Override
-                public String getManufacturerString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
-                    throw new NullPointerException("foo");
-                }
-            }));
-            Assert.fail("NPE not thrown");
-        } catch (NullPointerException ex) {
-            // catch exception to not break test
+            // test MFG and product name complete
+            Mockito.when(mockDevice.getManufacturerString()).thenReturn("Foo");
+            Mockito.when(mockDevice.getProductString()).thenReturn("Bar");
+            Assert.assertEquals("Foo Bar", UsbUtil.getFullProductName(mockDevice));
+            // test product name contains MFG name
+            Mockito.when(mockDevice.getProductString()).thenReturn("FooBar");
+            Assert.assertEquals("FooBar", UsbUtil.getFullProductName(mockDevice));
+            // test no MFG or product name
+            Mockito.when(mockDevice.getManufacturerString()).thenReturn(null);
+            Mockito.when(mockDevice.getProductString()).thenReturn(null);
+            Assert.assertEquals(null, UsbUtil.getFullProductName(mockDevice));
+            // test exceptions thrown by device
+            Mockito.when(mockDevice.getManufacturerString()).thenThrow(UsbException.class);
+            Assert.assertEquals(null, UsbUtil.getFullProductName(mockDevice));
+            JUnitAppender.assertErrorMessage("Unable to read data from " + mockDevice.toString());
+            Mockito.when(mockDevice.getManufacturerString()).thenThrow(UnsupportedEncodingException.class);
+            Assert.assertEquals(null, UsbUtil.getFullProductName(mockDevice));
+            JUnitAppender.assertErrorMessage("Unable to read data from " + mockDevice.toString());
+            Mockito.when(mockDevice.getManufacturerString()).thenThrow(UsbDisconnectedException.class);
+            Assert.assertEquals(null, UsbUtil.getFullProductName(mockDevice));
+            JUnitAppender.assertErrorMessage("Unable to read data from " + mockDevice.toString());
+            // test that unexpected exception is not caught
+            try {
+                Mockito.when(mockDevice.getManufacturerString()).thenThrow(NullPointerException.class);
+                Assert.assertEquals("", UsbUtil.getFullProductName(mockDevice));
+                Assert.fail("NPE not thrown");
+            } catch (NullPointerException ex) {
+                // catch exception to not break test
+            }
+            JUnitAppender.assertErrorMessage("Unable to read data from " + mockDevice.toString());
+        } catch (UsbException | UnsupportedEncodingException | UsbDisconnectedException ex) {
+            // try/catch to match API, however mock object will not throw these
         }
-        JUnitAppender.assertErrorMessageStartsWith("Unable to read data from ");
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

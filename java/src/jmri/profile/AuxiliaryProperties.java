@@ -4,7 +4,7 @@ package jmri.profile;
  * JMRI local copy of the NetBeans Platform
  * org.netbeans.spi.project.AuxiliaryProperties.
  *
- * @author Randall Wood
+ * @author rhwood
  */
 public interface AuxiliaryProperties {
 

@@ -1,7 +1,6 @@
 package jmri.jmrit.operations.rollingstock.engines;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -12,8 +11,12 @@ import javax.swing.AbstractAction;
  */
 public class EnginesTableAction extends AbstractAction {
 
+    public EnginesTableAction(String s) {
+        super(s);
+    }
+
     public EnginesTableAction() {
-        super(Bundle.getMessage("MenuEngines")); // NOI18N
+        this(Bundle.getMessage("MenuEngines")); // NOI18N
     }
 
     @Override

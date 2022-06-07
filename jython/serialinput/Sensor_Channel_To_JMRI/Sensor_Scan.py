@@ -65,14 +65,8 @@ class SerialSensorMux(jmri.jmrit.automat.AbstractAutomaton) :
                 print mesg, " Not Available"
                 return 1
         if sensor_state == 1 :
-            if s.getInverted():
-                s.setKnownState(INACTIVE)
-            else:
                 s.setKnownState(ACTIVE)
         if sensor_state == 0 :
-            if s.getInverted():
-                s.setKnownState(ACTIVE)
-            else:
                 s.setKnownState(INACTIVE)
 
         return 1    # to continue 0 to Kill Script

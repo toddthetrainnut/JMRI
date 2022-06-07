@@ -1,5 +1,6 @@
 package jmri.jmrix.tams.swing.monitor;
 
+import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import jmri.jmrix.tams.TamsListener;
@@ -13,7 +14,7 @@ import jmri.jmrix.tams.swing.TamsPanelInterface;
  *
  * Based on work by Bob Jacobsen
  *
- * @author Kevin Dickerson Copyright (C) 2012
+ * @author	Kevin Dickerson Copyright (C) 2012
  */
 public class TamsMonPane extends jmri.jmrix.AbstractMonPane implements TamsListener, TamsPanelInterface {
 
@@ -109,6 +110,19 @@ public class TamsMonPane extends jmri.jmrix.AbstractMonPane implements TamsListe
             } else {
                 logMessage("ASCII rep: " , l);
             }
+        }
+    }
+
+    /**
+     * Nested class to create one of these using old-style defaults
+     */
+    static public class Default extends jmri.jmrix.tams.swing.TamsNamedPaneAction {
+
+        public Default() {
+            super(Bundle.getMessage("CommandMonitor"),
+                    new jmri.util.swing.sdi.JmriJFrameInterface(),
+                    TamsMonPane.class.getName(),
+                    jmri.InstanceManager.getDefault(TamsSystemConnectionMemo.class));
         }
     }
 

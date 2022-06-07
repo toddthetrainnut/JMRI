@@ -1,11 +1,8 @@
 package jmri.jmrix.openlcb.swing.tie;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmrix.can.swing.tie.TieToolFrame class
@@ -15,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class TieToolFrameTest {
 
     @Test
-    public void testCreateAndShow() {
+    public void testCreateAndShow() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         jmri.util.JmriJFrame f = new TieToolFrame();
@@ -28,15 +25,15 @@ public class TieToolFrameTest {
         f.dispose();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 }

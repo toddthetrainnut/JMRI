@@ -20,17 +20,17 @@ public class JsonPowerServiceFactory implements JsonServiceFactory<JsonPowerHttp
     public static final String POWER = "power";
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{POWER};
     }
 
     @Override
-    public JsonPowerSocketService getSocketService(JsonConnection connection, String version) {
+    public JsonPowerSocketService getSocketService(JsonConnection connection) {
         return new JsonPowerSocketService(connection);
     }
 
     @Override
-    public JsonPowerHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonPowerHttpService getHttpService(ObjectMapper mapper) {
         return new JsonPowerHttpService(mapper);
     }
 

@@ -1712,7 +1712,9 @@ class LocoThrot(jmri.jmrit.automat.AbstractAutomaton) :
     def clearLocoFromBlocks(self, oldId) :
         # search the block list for the matching loco
         blockList = []
-        for b in blocks.getNamedBeanSet() :
+        blockArray = blocks.getSystemNameList().toArray()
+        for x in blockArray :
+            b = blocks.getBySystemName(x)
             if (b.getValue() == oldId) :
                 b.setValue(None)
         return

@@ -1,12 +1,14 @@
 package jmri;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the NamedBean interface
  *
- * @author Bob Jacobsen Copyright (C) 2017
+ * @author	Bob Jacobsen Copyright (C) 2017
  */
 public class NamedBeanTest {
 
@@ -20,12 +22,12 @@ public class NamedBeanTest {
         Assert.assertEquals("foo", normalForm);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
     }

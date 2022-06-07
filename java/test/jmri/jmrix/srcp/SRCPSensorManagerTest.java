@@ -1,16 +1,16 @@
 package jmri.jmrix.srcp;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * SRCPSensorManagerTest.java
  * <p>
- * Test for the jmri.jmrix.srcp.SRCPSensorManager class
+ * Description:	tests for the jmri.jmrix.srcp.SRCPSensorManager class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  * @author Paul Bender Copyright (C) 2016
  */
 public class SRCPSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
@@ -24,8 +24,9 @@ public class SRCPSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBa
         Assert.assertNotNull(l);
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         SRCPBusConnectionMemo sm = new SRCPBusConnectionMemo(new SRCPTrafficController() {
@@ -34,13 +35,12 @@ public class SRCPSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBa
             }
         }, "A", 1);
 
-        l = new SRCPSensorManager(sm);
+        l = new SRCPSensorManager(sm, 1);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         l.dispose();
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 }

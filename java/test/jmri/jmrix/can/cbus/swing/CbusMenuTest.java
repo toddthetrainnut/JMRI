@@ -1,33 +1,35 @@
 package jmri.jmrix.can.cbus.swing;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import java.awt.GraphicsEnvironment;
 import jmri.jmrix.can.CanSystemConnectionMemo;
+import jmri.jmrix.can.TestTrafficController;
+import jmri.jmrix.can.TrafficController;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of CbusMenu
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class CbusMenuTest {
 
 
     // private TrafficController tc = null;
-    private CanSystemConnectionMemo m;
+    private CanSystemConnectionMemo m = null;
  
     @Test
-    @DisabledIfSystemProperty(named ="java.awt.headless", matches ="true")
     public void testCtor() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless()); 
         CbusMenu action = new CbusMenu(m);
-        assertThat(action).isNotNull();
+        Assert.assertNotNull("exists", action);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // tc = new TestTrafficController();
@@ -36,10 +38,8 @@ public class CbusMenuTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() { 
-        m.dispose();
-        m = null;
         JUnitUtil.tearDown();
         // tc = null;
     }

@@ -1,10 +1,11 @@
 package jmri.jmris;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * tests for decendents of the jmri.jmris.AbstractRouteServer class
@@ -17,27 +18,27 @@ public class AbstractRouteServerTest {
 
     @Test
     public void testCtor() {
-        assertThat(rs).isNotNull();
+        Assert.assertNotNull(rs);
     }
 
-    @BeforeEach
+    @Before
     public void setUp(){
        jmri.util.JUnitUtil.setUp();
        rs = new AbstractRouteServer(){
           @Override
-          public void sendStatus(String route, int Status) {
+          public void sendStatus(String route, int Status) throws IOException {
           }
           @Override
-          public void sendErrorStatus(String route) {
+          public void sendErrorStatus(String route) throws IOException {
           }
           @Override
-          public void parseStatus(String statusString) {
+          public void parseStatus(String statusString) throws IOException {
           }
 
        };
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
        jmri.util.JUnitUtil.tearDown();
     }

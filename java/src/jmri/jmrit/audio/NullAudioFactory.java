@@ -1,8 +1,6 @@
 package jmri.jmrit.audio;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.List;
 import jmri.Audio;
 import jmri.AudioManager;
 import jmri.InstanceManager;
@@ -59,8 +57,6 @@ public class NullAudioFactory extends AbstractAudioFactory {
                 + " version - " + jmri.Version.name(); // NOI18N
     }
 
-    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-            justification = "OK to write to static variables to record static library status")
     @Override
     public void cleanup() {
         // Stop the command thread
@@ -69,45 +65,42 @@ public class NullAudioFactory extends AbstractAudioFactory {
         // Get the active AudioManager
         AudioManager am = InstanceManager.getDefault(jmri.AudioManager.class);
 
-        // Retrieve list of AudioSource objects and remove the sources
-        SortedSet<Audio> sources = new TreeSet<>(am.getNamedBeanSet(Audio.SOURCE));
-        for (Audio source: sources) {
-            if (log.isDebugEnabled()) {
-                log.debug("Removing NullAudioSource: {}", source.getSystemName());
+        // Retrieve list of Audio Objects and remove the sources
+        for (Audio audio : am.getNamedBeanSet()) {
+            if (audio.getSubType() == Audio.SOURCE) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Removing NullAudioSource: " + audio.getSystemName());
+                }
+                // Cast to NullAudioSource and cleanup
+                ((NullAudioSource) audio).cleanup();
             }
-            // Includes cleanup
-            source.dispose();
         }
 
-        // Now, retrieve list of AudioBuffer objects and remove the buffers
-        SortedSet<Audio> buffers = new TreeSet<>(am.getNamedBeanSet(Audio.BUFFER));
-        for (Audio buffer : buffers) {
-            if (log.isDebugEnabled()) {
-                log.debug("Removing NullAudioBuffer: {}", buffer.getSystemName());
+        // Now, re-retrieve list of Audio objects and remove the buffers
+        for (Audio audio : am.getNamedBeanSet()) {
+            if (audio.getSubType() == Audio.BUFFER) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Removing NullAudioBuffer: " + audio.getSystemName());
+                }
+                // Cast to NullAudioBuffer and cleanup
+                ((NullAudioBuffer) audio).cleanup();
             }
-            // Includes cleanup
-            buffer.dispose();
         }
 
-        // Lastly, retrieve list of AudioListener objects and remove listener.
-        SortedSet<Audio> listeners = new TreeSet<>(am.getNamedBeanSet(Audio.LISTENER));
-        for (Audio listener : listeners) {
-            if (log.isDebugEnabled()) {
-                log.debug("Removing NullAudioListener: {}", listener.getSystemName());
+        // Lastly, re-retrieve list and remove listener.
+        for (Audio audio : am.getNamedBeanSet()) {
+            if (audio.getSubType() == Audio.LISTENER) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Removing NullAudioListener: " + audio.getSystemName());
+                }
+                // Cast to NullAudioListener and cleanup
+                ((NullAudioListener) audio).cleanup();
             }
-            // Includes cleanup
-            listener.dispose();
         }
 
         // Finally, shutdown NullAudio and close the output device
         log.debug("Shutting down NullAudio");
         // Do nothing
-        initialised = false;
-    }
-
-    @Override
-    public boolean isInitialised() {
-        return initialised;
     }
 
     @Override

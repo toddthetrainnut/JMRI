@@ -3,10 +3,20 @@ package jmri.implementation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
-
-import jmri.*;
+import jmri.Conditional;
+import jmri.ConditionalAction;
+import jmri.ConditionalVariable;
+import jmri.InstanceManager;
+import jmri.JmriException;
+import jmri.Logix;
+import jmri.Memory;
+import jmri.NamedBean;
+import jmri.NamedBeanHandle;
+import jmri.SignalHead;
+import jmri.Timebase;
 import jmri.jmrit.beantable.LRouteTableAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,24 +30,12 @@ import org.slf4j.LoggerFactory;
 public class DefaultLogix extends AbstractNamedBean
         implements Logix {
 
-    private final ConditionalManager conditionalManager;
-
     public DefaultLogix(String systemName, String userName) {
-        this(systemName,userName,InstanceManager.getDefault(ConditionalManager.class));
-    }
-
-    public DefaultLogix(String systemName,String userName,ConditionalManager conditionalManager) {
         super(systemName, userName);
-        this.conditionalManager = conditionalManager;
     }
 
     public DefaultLogix(String systemName) {
-        this(systemName,InstanceManager.getDefault(ConditionalManager.class));
-    }
-
-    public DefaultLogix(String systemName,ConditionalManager conditionalManager) {
         super(systemName);
-        this.conditionalManager = conditionalManager;
     }
 
     @Override
@@ -47,7 +45,7 @@ public class DefaultLogix extends AbstractNamedBean
     }
 
     /**
-     * Persistant instance variables (saved between runs). Order is significant.
+     * Persistant instance variables (saved between runs)
      */
     ArrayList<String> _conditionalSystemNames = new ArrayList<String>();
     ArrayList<JmriSimplePropertyListener> _listeners = new ArrayList<JmriSimplePropertyListener>();
@@ -205,11 +203,12 @@ public class DefaultLogix extends AbstractNamedBean
         }
         // check other Logix(es) for use of this conditional (systemName) for use as a
         // variable in one of their conditionals
-        ArrayList<String> checkReferences = conditionalManager.getWhereUsed(systemName);
+        ArrayList<String> checkReferences = InstanceManager.getDefault(jmri.ConditionalManager.class).getWhereUsed(systemName);
         if (checkReferences != null) {
             Conditional c = getConditional(systemName);
             String refName = checkReferences.get(0);
-            Logix x = conditionalManager.getParentLogix(refName);
+            Logix x = InstanceManager.getDefault(jmri.ConditionalManager.class)
+                .getParentLogix(refName);
             Conditional cRef = x.getConditional(refName);
             return new String[]{c.getUserName(), c.getSystemName(), cRef.getUserName(),
                 cRef.getSystemName(), x.getUserName(), x.getSystemName()};
@@ -221,7 +220,7 @@ public class DefaultLogix extends AbstractNamedBean
             return null;
         }
         // delete the Conditional object
-        Conditional c = conditionalManager.getBySystemName(systemName);
+        Conditional c = InstanceManager.getDefault(jmri.ConditionalManager.class).getBySystemName(systemName);
         if (c == null) {
             log.error("attempt to delete non-existing Conditional - {}", systemName);  // NOI18N
             return null;
@@ -236,10 +235,15 @@ public class DefaultLogix extends AbstractNamedBean
      */
     @Override
     public void calculateConditionals() {
-        for (String conditionalSystemName : _conditionalSystemNames) {
-            Conditional c = getConditional(conditionalSystemName);
+        // are there Conditionals to calculate?
+        // There are conditionals to calculate
+        String cName = "";
+        Conditional c = null;
+        for (int i = 0; i < _conditionalSystemNames.size(); i++) {
+            cName = _conditionalSystemNames.get(i);
+            c = getConditional(cName);
             if (c == null) {
-                log.error("Invalid conditional system name when calculating Logix - {}", conditionalSystemName);  // NOI18N
+                log.error("Invalid conditional system name when calculating Logix - " + cName);  // NOI18N
             } else {
                 // calculate without taking any action unless Logix is enabled
                 c.calculate(mEnabled, null);
@@ -266,8 +270,8 @@ public class DefaultLogix extends AbstractNamedBean
         assembleListenerList();
         // create and attach the needed property change listeners
         // start a minute Listener if needed
-        for (JmriSimplePropertyListener listener : _listeners) {
-            startListener(listener);
+        for (int i = 0; i < _listeners.size(); i++) {
+            startListener(_listeners.get(i));
         }
         // mark this Logix as busy
         _isActivated = true;
@@ -276,12 +280,13 @@ public class DefaultLogix extends AbstractNamedBean
     }
 
     private void resetConditionals() {
-        for (String conditionalSystemName : _conditionalSystemNames) {
-            Conditional conditional = getConditional(conditionalSystemName);
+        for (int i = 0; i < _conditionalSystemNames.size(); i++) {
+            Conditional conditional = getConditional(_conditionalSystemNames.get(i));
             if (conditional != null) {
                 try {
                     conditional.setState(NamedBean.UNKNOWN);
-                } catch (JmriException ignore) {
+                } catch (JmriException e) {
+                    // ignore
                 }
             }
         }
@@ -317,13 +322,14 @@ public class DefaultLogix extends AbstractNamedBean
             _isGuiSet = true;
             return;
         }
-        for (String cName : _conditionalSystemNames) {
+        for (int i = 0; i < _conditionalSystemNames.size(); i++) {
+            String cName = _conditionalSystemNames.get(i);
             Conditional conditional = getConditional(cName);
             if (conditional == null) {
                 // A Logix index entry exists without a corresponding conditional.  This
                 // should never happen.
                 log.error("setGuiNames: Missing conditional for Logix index entry,  Logix name = '{}', Conditional index name = '{}'",  // NOI18N
-                        getSystemName(), cName);
+                    getSystemName(), cName);
                 continue;
             }
             List<ConditionalVariable> varList = conditional.getCopyOfStateVariables();
@@ -331,9 +337,10 @@ public class DefaultLogix extends AbstractNamedBean
             ArrayList<ConditionalVariable> badVariable = new ArrayList<>();
             for (ConditionalVariable var : varList) {
                 // Find any Conditional State Variables
-                if (var.getType() == Conditional.Type.CONDITIONAL_TRUE || var.getType() == Conditional.Type.CONDITIONAL_FALSE) {
+                if (var.getType() == Conditional.Type.CONDITIONAL_TRUE
+                        || var.getType() == Conditional.Type.CONDITIONAL_FALSE) {
                     // Get the referenced (target) conditonal -- The name can be either a system name or a user name
-                    Conditional cRef = conditionalManager.getConditional(var.getName());
+                    Conditional cRef = InstanceManager.getDefault(jmri.ConditionalManager.class).getConditional(var.getName());
                     if (cRef != null) {
                         // re-arrange names as needed
                         var.setName(cRef.getSystemName());      // The state variable reference is now a conditional system name
@@ -344,19 +351,21 @@ public class DefaultLogix extends AbstractNamedBean
                             var.setGuiName(uName);
                         }
                         // Add the conditional reference to the where used map
-                        conditionalManager.addWhereUsed(var.getName(), cName);
+                        InstanceManager.getDefault(jmri.ConditionalManager.class).addWhereUsed(var.getName(), cName);
                         isDirty = true;
                     } else {
                         log.error("setGuiNames: For conditional '{}' in logix '{}', the referenced conditional, '{}',  does not exist",  // NOI18N
-                                cName, getSystemName(), var.getName());
+                             cName, getSystemName(), var.getName());
                     }
                 }
 
                 // Find any Entry/Exit State Variables
-                if (var.getType() == Conditional.Type.ENTRYEXIT_ACTIVE || var.getType() == Conditional.Type.ENTRYEXIT_INACTIVE) {
+                if (var.getType() == Conditional.Type.ENTRYEXIT_ACTIVE
+                        || var.getType() == Conditional.Type.ENTRYEXIT_INACTIVE) {
                     if (!NXUUID.matcher(var.getName()).find()) {
                         // Either a user name or an old style system name (plain UUID)
-                        jmri.jmrit.entryexit.DestinationPoints dp = InstanceManager.getDefault(jmri.jmrit.entryexit.EntryExitPairs.class).
+                        jmri.jmrit.entryexit.DestinationPoints dp =
+                                InstanceManager.getDefault(jmri.jmrit.entryexit.EntryExitPairs.class).
                                 getNamedBean(var.getName());
                         if (dp != null) {
                             // Replace name with current system name
@@ -364,7 +373,7 @@ public class DefaultLogix extends AbstractNamedBean
                             isDirty = true;
                         } else {
                             log.error("setGuiNames: For conditional '{}' in logix '{}', the referenced Entry Exit Pair, '{}',  does not exist",  // NOI18N
-                                    cName, getSystemName(), var.getName());
+                                 cName, getSystemName(), var.getName());
                             badVariable.add(var);
                         }
                     }
@@ -372,7 +381,7 @@ public class DefaultLogix extends AbstractNamedBean
             }
             if (badVariable.size() > 0) {
                 isDirty = true;
-                badVariable.forEach(varList::remove);
+                badVariable.forEach((badVar) -> varList.remove(badVar));
             }
             if (isDirty) {
                 conditional.setStateVariables(varList);
@@ -383,10 +392,13 @@ public class DefaultLogix extends AbstractNamedBean
             ArrayList<ConditionalAction> badAction = new ArrayList<>();
             for (ConditionalAction action : actionList) {
                 // Find any Entry/Exit Actions
-                if (action.getType() == Conditional.Action.SET_NXPAIR_ENABLED || action.getType() == Conditional.Action.SET_NXPAIR_DISABLED || action.getType() == Conditional.Action.SET_NXPAIR_SEGMENT) {
+                if (action.getType() == Conditional.Action.SET_NXPAIR_ENABLED
+                        || action.getType() == Conditional.Action.SET_NXPAIR_DISABLED
+                        || action.getType() == Conditional.Action.SET_NXPAIR_SEGMENT) {
                     if (!NXUUID.matcher(action.getDeviceName()).find()) {
                         // Either a user name or an old style system name (plain UUID)
-                        jmri.jmrit.entryexit.DestinationPoints dp = InstanceManager.getDefault(jmri.jmrit.entryexit.EntryExitPairs.class).
+                        jmri.jmrit.entryexit.DestinationPoints dp =
+                                InstanceManager.getDefault(jmri.jmrit.entryexit.EntryExitPairs.class).
                                 getNamedBean(action.getDeviceName());
                         if (dp != null) {
                             // Replace name with current system name
@@ -394,7 +406,7 @@ public class DefaultLogix extends AbstractNamedBean
                             isDirty = true;
                         } else {
                             log.error("setGuiNames: For conditional '{}' in logix '{}', the referenced Entry Exit Pair, '{}',  does not exist",  // NOI18N
-                                    cName, getSystemName(), action.getDeviceName());
+                                 cName, getSystemName(), action.getDeviceName());
                             badAction.add(action);
                         }
                     }
@@ -402,7 +414,7 @@ public class DefaultLogix extends AbstractNamedBean
             }
             if (badAction.size() > 0) {
                 isDirty = true;
-                badAction.forEach(actionList::remove);
+                badAction.forEach((badAct) -> actionList.remove(badAct));
             }
             if (isDirty) {
                 conditional.setAction(actionList);
@@ -412,21 +424,21 @@ public class DefaultLogix extends AbstractNamedBean
     }
 
     /**
-     * Assemble a list of Listeners needed to activate this Logix.
+     * Assembles a list of Listeners needed to activate this Logix
      */
     private void assembleListenerList() {
-        // initialize by cleaning up
-        // start from end down to safely delete preventing concurrent modification ex
+        // initialize
         for (int i = _listeners.size() - 1; i >= 0; i--) {
             removeListener(_listeners.get(i));
         }
-        _listeners = new ArrayList<>();
+        _listeners = new ArrayList<JmriSimplePropertyListener>();
         // cycle thru Conditionals to find objects to listen to
         for (int i = 0; i < _conditionalSystemNames.size(); i++) {
             Conditional conditional = getConditional(_conditionalSystemNames.get(i));
             if (conditional != null) {
                 List<ConditionalVariable> variableList = conditional.getCopyOfStateVariables();
-                for (ConditionalVariable variable : variableList) {
+                for (int k = 0; k < variableList.size(); k++) {
+                    ConditionalVariable variable = variableList.get(k);
                     // check if listening for a change has been suppressed
                     int varListenerType = 0;
                     String varName = variable.getName();
@@ -484,10 +496,6 @@ public class DefaultLogix extends AbstractNamedBean
                             varListenerType = LISTENER_TYPE_SIGNALHEAD;
                             signalAspect = SignalHead.DARK;
                             break;
-                        case SIGNAL_HEAD_LUNAR:
-                            varListenerType = LISTENER_TYPE_SIGNALHEAD;
-                            signalAspect = SignalHead.LUNAR;
-                            break;
                         case SIGNAL_HEAD_FLASHRED:
                             varListenerType = LISTENER_TYPE_SIGNALHEAD;
                             signalAspect = SignalHead.FLASHRED;
@@ -499,10 +507,6 @@ public class DefaultLogix extends AbstractNamedBean
                         case SIGNAL_HEAD_FLASHGREEN:
                             varListenerType = LISTENER_TYPE_SIGNALHEAD;
                             signalAspect = SignalHead.FLASHGREEN;
-                            break;
-                        case SIGNAL_HEAD_FLASHLUNAR:
-                            varListenerType = LISTENER_TYPE_SIGNALHEAD;
-                            signalAspect = SignalHead.FLASHLUNAR;
                             break;
                         case SIGNAL_HEAD_LIT:
                         case SIGNAL_HEAD_HELD:
@@ -521,7 +525,7 @@ public class DefaultLogix extends AbstractNamedBean
                             varListenerType = LISTENER_TYPE_ENTRYEXIT;
                             break;
                         default:
-                            if (!LRouteTableAction.getLogixInitializer().equals(varName)) {
+                            if (!LRouteTableAction.LOGIX_INITIALIZER.equals(varName)) {
                                 log.warn("Unhandled conditional variable type: {}", varType);  // NOI18N
                             }
                             break;
@@ -552,11 +556,13 @@ public class DefaultLogix extends AbstractNamedBean
                                         namedBean, varType, conditional);
                                 break;
                             case LISTENER_TYPE_WARRANT:
-                                listener = new JmriSimplePropertyListener(null, LISTENER_TYPE_WARRANT, namedBean, varType, conditional);
+                                listener = new JmriSimplePropertyListener(null, LISTENER_TYPE_WARRANT,
+                                        namedBean, varType, conditional);
                                 break;
                             case LISTENER_TYPE_FASTCLOCK:
                                 listener = new JmriClockPropertyListener("minutes", LISTENER_TYPE_FASTCLOCK,  // NOI18N
-                                        varName, varType, conditional, variable.getNum1(), variable.getNum2());
+                                        varName, varType, conditional,
+                                        variable.getNum1(), variable.getNum2());
                                 break;
                             case LISTENER_TYPE_SIGNALHEAD:
                                 if (signalAspect < 0) {
@@ -573,16 +579,8 @@ public class DefaultLogix extends AbstractNamedBean
                                 }
                                 break;
                             case LISTENER_TYPE_SIGNALMAST:
-                                if (varType == Conditional.Type.SIGNAL_MAST_LIT) {
-                                    listener = new JmriTwoStatePropertyListener("Lit", LISTENER_TYPE_SIGNALMAST,  // NOI18N
-                                            namedBean, varType, conditional);
-                                } else if (varType == Conditional.Type.SIGNAL_MAST_HELD) {
-                                    listener = new JmriTwoStatePropertyListener("Held", LISTENER_TYPE_SIGNALMAST,  // NOI18N
-                                            namedBean, varType, conditional);
-                                } else {
-                                    listener = new JmriTwoStatePropertyListener("Aspect", LISTENER_TYPE_SIGNALMAST,  // NOI18N
-                                            namedBean, varType, conditional);
-                                }
+                                listener = new JmriTwoStatePropertyListener("Aspect", LISTENER_TYPE_SIGNALMAST,  // NOI18N
+                                        namedBean, varType, conditional);
                                 break;
                             case LISTENER_TYPE_OBLOCK:
                                 listener = new JmriTwoStatePropertyListener("state", LISTENER_TYPE_OBLOCK,  // NOI18N
@@ -593,8 +591,10 @@ public class DefaultLogix extends AbstractNamedBean
                                         namedBean, varType, conditional);
                                 break;
                             default:
-                                if (!LRouteTableAction.getLogixInitializer().equals(varName)) {
-                                    log.error("Unknown (new) Variable Listener type= {}, for varName= {}, varType= {} in Conditional, {}", varListenerType, varName, varType, _conditionalSystemNames.get(i));
+                                if (!LRouteTableAction.LOGIX_INITIALIZER.equals(varName)) {
+                                    log.error("Unknown (new) Variable Listener type= " + varListenerType + ", for varName= "  // NOI18N
+                                            + varName + ", varType= " + varType + " in Conditional, "  // NOI18N
+                                            + _conditionalSystemNames.get(i));
                                 }
                                 continue;
                         }
@@ -615,7 +615,8 @@ public class DefaultLogix extends AbstractNamedBean
                                 listener.addConditional(conditional);
                                 break;
                             case LISTENER_TYPE_FASTCLOCK:
-                                JmriClockPropertyListener cpl = (JmriClockPropertyListener) _listeners.get(positionOfListener);
+                                JmriClockPropertyListener cpl
+                                        = (JmriClockPropertyListener) _listeners.get(positionOfListener);
                                 cpl.setRange(variable.getNum1(), variable.getNum2());
                                 cpl.addConditional(conditional);
                                 break;
@@ -624,30 +625,36 @@ public class DefaultLogix extends AbstractNamedBean
                                     listener = _listeners.get(positionOfListener);
                                     listener.addConditional(conditional);
                                 } else {
-                                    JmriMultiStatePropertyListener mpl = (JmriMultiStatePropertyListener) _listeners.get(positionOfListener);
+                                    JmriMultiStatePropertyListener mpl
+                                            = (JmriMultiStatePropertyListener) _listeners.get(positionOfListener);
                                     mpl.addConditional(conditional);
                                     mpl.setState(signalAspect);
                                 }
                                 break;
                             default:
-                                log.error("Unknown (old) Variable Listener type= {}, for varName= {}, varType= {} in Conditional, {}",
-                                        varListenerType, varName, varType, _conditionalSystemNames.get(i));
+                                log.error("Unknown (old) Variable Listener type= " + varListenerType + ", for varName= "  // NOI18N
+                                        + varName + ", varType= " + varType + " in Conditional, "  // NOI18N
+                                        + _conditionalSystemNames.get(i));
                         }
                     }
                     // addition listeners needed for memory compare
-                    if (varType == Conditional.Type.MEMORY_COMPARE || varType == Conditional.Type.MEMORY_COMPARE_INSENSITIVE) {
-                        positionOfListener = getPositionOfListener(varListenerType, varType, variable.getDataString());
+                    if (varType == Conditional.Type.MEMORY_COMPARE
+                            || varType == Conditional.Type.MEMORY_COMPARE_INSENSITIVE) {
+                        positionOfListener = getPositionOfListener(varListenerType, varType,
+                                variable.getDataString());
                         if (positionOfListener == -1) {
                             String name = variable.getDataString();
                             try {
                                 Memory my = InstanceManager.memoryManagerInstance().provideMemory(name);
-                                NamedBeanHandle<?> nb = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(name, my);
+                                NamedBeanHandle<?> nb = jmri.InstanceManager.getDefault(
+                                        jmri.NamedBeanHandleManager.class).getNamedBeanHandle(name, my);
 
                                 listener = new JmriTwoStatePropertyListener("value", LISTENER_TYPE_MEMORY,  // NOI18N
-                                        nb, varType, conditional);
+                                        nb, varType,
+                                        conditional);
                                 _listeners.add(listener);
                             } catch (IllegalArgumentException ex) {
-                                log.error("invalid memory name= \"{}\" in state variable", name);  // NOI18N
+                                log.error("invalid memory name= \"" + name + "\" in state variable");  // NOI18N
                                 break;
                             }
                         } else {
@@ -657,8 +664,11 @@ public class DefaultLogix extends AbstractNamedBean
                     }
                 }
             } else {
-                log.error("invalid conditional system name in Logix \"{}\" assembleListenerList DELETING {} from Conditional list.", getSystemName(), _conditionalSystemNames.get(i));  // NOI18N
+                log.error("invalid conditional system name in Logix \"" + getSystemName()  // NOI18N
+                        + "\" assembleListenerList DELETING "  // NOI18N
+                        + _conditionalSystemNames.get(i) + " from Conditional list.");  // NOI18N
                 _conditionalSystemNames.remove(i);
+
             }
         }
     }
@@ -801,57 +811,61 @@ public class DefaultLogix extends AbstractNamedBean
         NamedBean nb;
         NamedBeanHandle<?> namedBeanHandle;
 
-        if (listener.getType() == LISTENER_TYPE_FASTCLOCK) {
-            Timebase tb = InstanceManager.getDefault(jmri.Timebase.class);
-            tb.addMinuteChangeListener(listener);
-        } else {
-            namedBeanHandle = listener.getNamedBean();
-            if (namedBeanHandle == null) {
-                switch (listener.getType()) {
-                    case LISTENER_TYPE_SENSOR:
-                        msg = "sensor";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_TURNOUT:
-                        msg = "turnout";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_LIGHT:
-                        msg = "light";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_CONDITIONAL:
-                        msg = "conditional";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_SIGNALHEAD:
-                        msg = "signalhead";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_SIGNALMAST:
-                        msg = "signalmast";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_MEMORY:
-                        msg = "memory";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_WARRANT:
-                        msg = "warrant";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_OBLOCK:
-                        msg = "oblock";  // NOI18N
-                        break;
-                    case LISTENER_TYPE_ENTRYEXIT:
-                        msg = "entry exit";  // NOI18N
-                        break;
-                    default:
-                        msg = "unknown";  // NOI18N
+        switch (listener.getType()) {
+            case LISTENER_TYPE_FASTCLOCK:
+                Timebase tb = InstanceManager.getDefault(jmri.Timebase.class);
+                tb.addMinuteChangeListener(listener);
+                return;
+            default:
+                namedBeanHandle = listener.getNamedBean();
+                if (namedBeanHandle == null) {
+                    switch (listener.getType()) {
+                        case LISTENER_TYPE_SENSOR:
+                            msg = "sensor";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_TURNOUT:
+                            msg = "turnout";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_LIGHT:
+                            msg = "light";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_CONDITIONAL:
+                            msg = "conditional";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_SIGNALHEAD:
+                            msg = "signalhead";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_SIGNALMAST:
+                            msg = "signalmast";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_MEMORY:
+                            msg = "memory";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_WARRANT:
+                            msg = "warrant";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_OBLOCK:
+                            msg = "oblock";  // NOI18N
+                            break;
+                        case LISTENER_TYPE_ENTRYEXIT:
+                            msg = "entry exit";  // NOI18N
+                            break;
+                        default:
+                            msg = "unknown";  // NOI18N
+                    }
+                    break;
                 }
-                log.error("Bad name for {} '{}' when setting up Logix listener [ {} ]", // NOI18N
-                        msg, listener.getDevName(), this.getSystemName());
-            } else {
                 nb = namedBeanHandle.getBean();
-                nb.addPropertyChangeListener(listener, namedBeanHandle.getName(), "Logix " + getDisplayName());  // NOI18N
-            }
+                nb.addPropertyChangeListener(listener, namedBeanHandle.getName(),
+                        "Logix " + getDisplayName());  // NOI18N
+                return;
         }
+        log.error("Bad name for {} '{}' when setting up Logix listener [ {} ]", // NOI18N
+                msg, listener.getDevName(), this.getSystemName());
     }
 
     /**
-     * Remove a listener of the required type
+     * Removes a listener of the required type
      */
     private void removeListener(JmriSimplePropertyListener listener) {
         String msg = null;
@@ -918,7 +932,8 @@ public class DefaultLogix extends AbstractNamedBean
         } catch (Exception ex) {
             log.error("Bad name for listener on \"{}\": ", listener.getDevName(), ex);  // NOI18N
         }
-        log.error("Bad name for {} listener on \"{}\" when removing", msg, listener.getDevName());  // NOI18N
+        log.error("Bad name for " + msg + " listener on \"" + listener.getDevName()  // NOI18N
+                + "\" when removing");  // NOI18N
     }
 
     /* /**
@@ -1061,11 +1076,11 @@ public class DefaultLogix extends AbstractNamedBean
 
             String cName = "";
             Conditional c = null;
-            for (String conditionalSystemName : _conditionalSystemNames) {
-                cName = conditionalSystemName;
-                c = conditionalManager.getBySystemName(cName);
+            for (int i = 0; i < _conditionalSystemNames.size(); i++) {
+                cName = _conditionalSystemNames.get(i);
+                c = InstanceManager.getDefault(jmri.ConditionalManager.class).getBySystemName(cName);
                 if (c != null) {
-                    for (ConditionalAction ca : c.getCopyOfActions()) {
+                    for (jmri.ConditionalAction ca : c.getCopyOfActions()) {
                         if (nb.equals(ca.getBean())) {
                             java.beans.PropertyChangeEvent e = new java.beans.PropertyChangeEvent(this, "DoNotDelete", null, null);  // NOI18N
                             throw new java.beans.PropertyVetoException(Bundle.getMessage("InUseLogixAction", nb.getBeanType(), getDisplayName()), e);   // NOI18N
@@ -1080,31 +1095,6 @@ public class DefaultLogix extends AbstractNamedBean
                 }
             }
         }
-    }
-
-    @Override
-    public List<NamedBeanUsageReport> getUsageReport(NamedBean bean) {
-        List<NamedBeanUsageReport> report = new ArrayList<>();
-        if (bean != null) {
-            for (int i = 0; i < getNumConditionals(); i++) {
-                DefaultConditional cdl = (DefaultConditional) getConditional(getConditionalByNumberOrder(i));
-                cdl.getStateVariableList().forEach((variable) -> {
-                    if (bean.equals(variable.getBean())) {
-                        report.add(new NamedBeanUsageReport("ConditionalVariable", cdl, variable.toString()));
-                    }
-                    if (bean.equals(variable.getNamedBeanData())) {
-                        report.add(new NamedBeanUsageReport("ConditionalVariableData", cdl, variable.toString()));
-                    }
-                });
-                cdl.getActionList().forEach((action) -> {
-                    if (bean.equals(action.getBean())) {
-                        boolean triggerType = cdl.getTriggerOnChange();
-                        report.add(new NamedBeanUsageReport("ConditionalAction", cdl, action.description(triggerType)));
-                    }
-                });
-            }
-        }
-        return report;
     }
 
     private final static Logger log = LoggerFactory.getLogger(DefaultLogix.class);

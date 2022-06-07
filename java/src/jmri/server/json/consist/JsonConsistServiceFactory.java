@@ -14,17 +14,17 @@ public class JsonConsistServiceFactory implements JsonServiceFactory<JsonConsist
 
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{JsonConsist.CONSIST, JsonConsist.CONSISTS};
     }
 
     @Override
-    public JsonConsistSocketService getSocketService(JsonConnection connection, String version) {
+    public JsonConsistSocketService getSocketService(JsonConnection connection) {
         return new JsonConsistSocketService(connection);
     }
 
     @Override
-    public JsonConsistHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonConsistHttpService getHttpService(ObjectMapper mapper) {
         return new JsonConsistHttpService(mapper);
     }
 

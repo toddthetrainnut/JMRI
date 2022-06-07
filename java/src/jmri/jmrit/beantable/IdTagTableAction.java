@@ -2,21 +2,22 @@ package jmri.jmrit.beantable;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
+import java.text.DateFormat;
+import java.util.Date;
 import javax.annotation.Nonnull;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
-
 import jmri.IdTag;
 import jmri.IdTagManager;
 import jmri.InstanceManager;
 import jmri.Manager;
-import jmri.managers.DefaultRailComManager;
-import jmri.managers.ProxyIdTagManager;
+import jmri.NamedBean;
+import jmri.Reporter;
+import jmri.util.ConnectionNameFromSystemName;
 import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * @author  Matthew Harris Copyright (C) 2011
  * @since 2.11.4
  */
-public class IdTagTableAction extends AbstractTableAction<IdTag> implements PropertyChangeListener {
+public class IdTagTableAction extends AbstractTableAction<IdTag> {
 
     /**
      * Create an action with a specific title.
@@ -40,30 +41,22 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> implements Prop
      */
     public IdTagTableAction(String actionName) {
         super(actionName);
-        init();
-    }
-    
-    final void init(){
-        tagManager.addPropertyChangeListener(this);
     }
     
     @Nonnull
-    protected IdTagManager tagManager = InstanceManager.getDefault(IdTagManager.class);
+    protected IdTagManager tagManager = InstanceManager.getDefault(jmri.IdTagManager.class);
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void setManager(@Nonnull Manager<IdTag> t) {
-        tagManager.removePropertyChangeListener(this);
         if (t instanceof IdTagManager) {
             tagManager = (IdTagManager) t;
             if (m != null) {
                 m.setManager(tagManager);
             }
         }
-        // if t is not an instance of IdTagManager, tagManager may not change.
-        tagManager.addPropertyChangeListener(this);
     }
 
     public IdTagTableAction() {
@@ -72,11 +65,172 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> implements Prop
 
     /**
      * Create the JTable DataModel, along with the changes for the specific case
-     * of IdTag objects.
+     * of IdTag objects
      */
     @Override
     protected void createModel() {
-        m = new IdTagTableDataModel(tagManager);
+        m = new BeanTableDataModel<IdTag>() {
+
+            public static final int WHERECOL = NUMCOLUMN;
+            public static final int WHENCOL = WHERECOL + 1;
+            public static final int CLEARCOL = WHENCOL + 1;
+
+            @Override
+            public String getValue(String name) {
+                IdTag tag = tagManager.getBySystemName(name);
+                if (tag == null) {
+                    return "?";
+                }
+                return tag.getTagID();
+            }
+
+            @Override
+            public Manager<IdTag> getManager() {
+                return tagManager;
+            }
+
+            @Override
+            public IdTag getBySystemName(String name) {
+                return tagManager.getBySystemName(name);
+            }
+
+            @Override
+            public IdTag getByUserName(String name) {
+                return tagManager.getByUserName(name);
+            }
+
+            @Override
+            public void clickOn(IdTag t) {
+                // don't do anything on click; not used in this class, because
+                // we override setValueAt
+            }
+
+            @Override
+            public void setValueAt(Object value, int row, int col) {
+                if (col == CLEARCOL) {
+                    IdTag t = getBySystemName(sysNameList.get(row));
+                    if (log.isDebugEnabled()) {
+                        log.debug("Clear where & when last seen for " + t.getSystemName());
+                    }
+                    t.setWhereLastSeen(null);
+                    fireTableRowsUpdated(row, row);
+                } else {
+                    super.setValueAt(value, row, col);
+                }
+            }
+
+            @Override
+            public int getColumnCount() {
+                return CLEARCOL + 1;
+            }
+
+            @Override
+            public String getColumnName(int col) {
+                switch (col) {
+                    case VALUECOL:
+                        return Bundle.getMessage("ColumnIdTagID");
+                    case WHERECOL:
+                        return Bundle.getMessage("ColumnIdWhere");
+                    case WHENCOL:
+                        return Bundle.getMessage("ColumnIdWhen");
+                    case CLEARCOL:
+                        return "";
+                    default:
+                        return super.getColumnName(col);
+                }
+            }
+
+            @Override
+            public Class<?> getColumnClass(int col) {
+                switch (col) {
+                    case VALUECOL:
+                    case WHERECOL:
+                    case WHENCOL:
+                        return String.class;
+                    case CLEARCOL:
+                        return JButton.class;
+                    default:
+                        return super.getColumnClass(col);
+                }
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                switch (col) {
+                    case VALUECOL:
+                    case WHERECOL:
+                    case WHENCOL:
+                        return false;
+                    case CLEARCOL:
+                        return true;
+                    default:
+                        return super.isCellEditable(row, col);
+                }
+            }
+
+            @Override
+            public Object getValueAt(int row, int col) {
+                IdTag t;
+                switch (col) {
+                    case WHERECOL:
+                        Reporter r;
+                        t = getBySystemName(sysNameList.get(row));
+                        return (t != null) ? (((r = t.getWhereLastSeen()) != null) ? r.getSystemName() : null) : null;
+                    case WHENCOL:
+                        Date d;
+                        t = getBySystemName(sysNameList.get(row));
+                        return (t != null) ? (((d = t.getWhenLastSeen()) != null)
+                                ? DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(d) : null) : null;
+                    case CLEARCOL:
+                        return Bundle.getMessage("ButtonClear");
+                    default:
+                        return super.getValueAt(row, col);
+                }
+            }
+
+            @Override
+            public int getPreferredWidth(int col) {
+                switch (col) {
+                    case SYSNAMECOL:
+                    case WHERECOL:
+                    case WHENCOL:
+                        return new JTextField(12).getPreferredSize().width;
+                    case VALUECOL:
+                        return new JTextField(10).getPreferredSize().width;
+                    case CLEARCOL:
+                        return new JButton(Bundle.getMessage("ButtonClear")).getPreferredSize().width + 4;
+                    default:
+                        return super.getPreferredWidth(col);
+                }
+            }
+
+            @Override
+            public void configValueColumn(JTable table) {
+                // value column isn't button, so config is null
+            }
+
+            @Override
+            protected boolean matchPropertyName(java.beans.PropertyChangeEvent e) {
+                return true;
+                // return (e.getPropertyName().indexOf("alue")>=0);
+            }
+
+            @Override
+            public JButton configureButton() {
+                log.error("configureButton should not have been called");
+                return null;
+            }
+
+            @Override
+            protected String getMasterClassName() {
+                return getClassName();
+            }
+
+            @Override
+            protected String getBeanType() {
+                return "ID Tag";
+            }
+        };
     }
 
     @Override
@@ -108,7 +262,6 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> implements Prop
             ActionListener cancelListener = (ActionEvent ev) -> {
                 cancelPressed(ev);
             };
-            addFrame.setEscapeKeyClosesWindow(true);
             addFrame.add(new AddNewDevicePanel(sysName, userName, "ButtonOK", okListener, cancelListener));
         }
         addFrame.pack();
@@ -123,7 +276,7 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> implements Prop
 
     void okPressed(ActionEvent e) {
         String user = userName.getText();
-        if (user.isEmpty()) {
+        if (user.equals("")) {
             user = null;
         }
         String sName = sysName.getText();
@@ -131,15 +284,14 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> implements Prop
             tagManager.newIdTag(sName, user);
         } catch (IllegalArgumentException ex) {
             // user input no good
-            handleCreateException(sName, ex);
+            handleCreateException(sName);
         }
     }
     //private boolean noWarn = false;
 
-    void handleCreateException(String sysName, IllegalArgumentException ex) {
+    void handleCreateException(String sysName) {
         JOptionPane.showMessageDialog(addFrame,
-                Bundle.getMessage("ErrorIdTagAddFailed", sysName) + "\n" + Bundle.getMessage("ErrorAddFailedCheck")
-                + "\n" + ex.getLocalizedMessage() ,
+                Bundle.getMessage("ErrorIdTagAddFailed", sysName) + "\n" + Bundle.getMessage("ErrorAddFailedCheck"),
                 Bundle.getMessage("ErrorTitle"),
                 JOptionPane.ERROR_MESSAGE);
     }
@@ -150,7 +302,7 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> implements Prop
     }
 
     @Override
-    public void addToFrame(BeanTableFrame<IdTag> f) {
+    public void addToFrame(BeanTableFrame f) {
         f.addToBottomBox(isStateStored, this.getClass().getName());
         isStateStored.setSelected(tagManager.isStateStored());
         isStateStored.addActionListener((ActionEvent e) -> {
@@ -166,48 +318,29 @@ public class IdTagTableAction extends AbstractTableAction<IdTag> implements Prop
 
     @Override
     public void addToPanel(AbstractTableTabAction<IdTag> f) {
-        String connectionName = tagManager.getMemo().getUserName();
-        if (tagManager instanceof ProxyIdTagManager) {
-            connectionName = "All";
-        } else if (connectionName == null && (tagManager instanceof DefaultRailComManager)) {
-            connectionName = "RailCom"; // NOI18N (proper name).
-        }
-        f.addToBottomBox(isStateStored, connectionName);
-        isStateStored.setSelected(tagManager.isStateStored());
-        isStateStored.addActionListener((ActionEvent e) -> {
-            tagManager.setStateStored(isStateStored.isSelected());
-        });
-        f.addToBottomBox(isFastClockUsed, connectionName);
-        isFastClockUsed.setSelected(tagManager.isFastClockUsed());
-        isFastClockUsed.addActionListener((ActionEvent e) -> {
-            tagManager.setFastClockUsed(isFastClockUsed.isSelected());
-        });
-        log.debug("Added CheckBox in addToPanel method for system {}", connectionName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void propertyChange(PropertyChangeEvent e) {
-        if (e.getPropertyName().equals("StateStored")) {
-           isStateStored.setSelected(tagManager.isStateStored());
-        } else if (e.getPropertyName().equals("UseFastClock")) {
-           isFastClockUsed.setSelected(tagManager.isFastClockUsed()); 
-        }
+        String systemPrefix = ConnectionNameFromSystemName.getConnectionName(tagManager.getSystemPrefix());
+        if (tagManager instanceof jmri.managers.ProxyIdTagManager ) {
+            systemPrefix = "All";
+        } else if (systemPrefix == null && (tagManager instanceof jmri.managers.DefaultRailComManager )) {
+                systemPrefix = "RailCom"; // NOI18N (proper name).
+       }
+       f.addToBottomBox(isStateStored, systemPrefix );
+       isStateStored.setSelected(tagManager.isStateStored());
+       isStateStored.addActionListener((ActionEvent e) -> {
+           tagManager.setStateStored(isStateStored.isSelected());
+       });
+       f.addToBottomBox(isFastClockUsed, systemPrefix );
+       isFastClockUsed.setSelected(tagManager.isFastClockUsed());
+       isFastClockUsed.addActionListener((ActionEvent e) -> {
+           tagManager.setFastClockUsed(isFastClockUsed.isSelected());
+       });
+       log.debug("Added CheckBox in addToPanel method for system {}",systemPrefix);
     }
 
     @Override
     protected String getClassName() {
         return IdTagTableAction.class.getName();
     }
-    
-    @Override
-    public void dispose(){
-        tagManager.removePropertyChangeListener(this);
-        super.dispose();
-    }
-    
     private static final Logger log = LoggerFactory.getLogger(IdTagTableAction.class);
 
 }

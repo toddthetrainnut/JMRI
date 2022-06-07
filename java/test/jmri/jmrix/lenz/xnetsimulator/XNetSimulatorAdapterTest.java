@@ -3,17 +3,18 @@ package jmri.jmrix.lenz.xnetsimulator;
 import jmri.jmrix.lenz.XNetMessage;
 import jmri.jmrix.lenz.XNetReply;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * XNetSimulatorAdapterTest.java
  *
- * Test for the jmri.jmrix.lenz.xnetsimulator.XNetSimulatorAdapter
+ * Description:	tests for the jmri.jmrix.lenz.xnetsimulator.XNetSimulatorAdapter
  * class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class XNetSimulatorAdapterTest {
 
@@ -191,8 +192,7 @@ public class XNetSimulatorAdapterTest {
     @Test
     public void testGenerateAccOperRequestReply(){
         XNetReply r = getReplyForMessage(new XNetMessage("52 01 80 D3"));
-        // this is an OFF message, which is responded to by OK.
-        Assert.assertEquals("Accessory Decoder Info Reply",new XNetReply("01 04 05"),r);
+        Assert.assertEquals("Accessory Decoder Info Reply",new XNetReply("42 01 10 53"),r);
     }
 
     @Test
@@ -410,13 +410,14 @@ public class XNetSimulatorAdapterTest {
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         a = new XNetSimulatorAdapter();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         a.dispose();
         a = null;

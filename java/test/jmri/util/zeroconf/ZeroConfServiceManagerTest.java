@@ -1,17 +1,17 @@
 package jmri.util.zeroconf;
 
 import java.util.HashMap;
-
 import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
 import jmri.util.node.NodeIdentity;
 import jmri.web.server.WebServerPreferences;
-
-import org.junit.jupiter.api.AfterAll;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests for the ZeroConfService class
@@ -24,15 +24,15 @@ public class ZeroConfServiceManagerTest {
     private static final String HTTP = "_http._tcp.local.";
     private ZeroConfServiceManager manager;
 
-    @BeforeAll
+    @BeforeClass
     public static void setUpClass() throws Exception {
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDownClass() throws Exception {
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         JUnitUtil.resetZeroConfServiceManager();
@@ -42,28 +42,13 @@ public class ZeroConfServiceManagerTest {
         manager = InstanceManager.setDefault(ZeroConfServiceManager.class, new ZeroConfServiceManager());
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         JUnitUtil.resetZeroConfServiceManager();
         manager = null;
-        
-        // wait for dns threads to end
-        Thread.getAllStackTraces().keySet().forEach((t) -> 
-            {
-                String name = t.getName();
-                if (! name.equals("dns.close in ZerConfServiceManager#stopAll")) return; // skip
-                
-                try {
-                    t.join(5000); // wait up to 35 seconds for that thread to end; 
-                } catch (InterruptedException e) {
-                    // nothing, just means that thread was terminated externally
-                }
-            }
-        );        
-        
         JUnitUtil.tearDown();
     }
-    
+
     /**
      * Test of create method, of class ZeroConfServiceManager.
      */

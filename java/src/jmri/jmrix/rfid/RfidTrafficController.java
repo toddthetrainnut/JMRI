@@ -57,8 +57,6 @@ abstract public class RfidTrafficController extends AbstractMRTrafficController 
      * <p>
      * This is a default, null implementation, which must be overridden in an
      * adapter-specific subclass.
-     * @param length message length.
-     * @return the RfidMessage.
      */
     public RfidMessage getRfidMessage(int length) {
         return null;
@@ -139,7 +137,7 @@ abstract public class RfidTrafficController extends AbstractMRTrafficController 
     @Override
     protected void forwardToPort(AbstractMRMessage m, AbstractMRListener reply) {
         if (logDebug) {
-            log.debug("forward {}", m);
+            log.debug("forward " + m);
         }
         sendInterlock = ((RfidMessage) m).getInterlocked();
         super.forwardToPort(m, reply);

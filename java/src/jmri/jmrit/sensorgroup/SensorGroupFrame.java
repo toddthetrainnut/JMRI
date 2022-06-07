@@ -5,14 +5,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableRowSorter;
-import jmri.*;
+import jmri.Conditional;
+import jmri.ConditionalAction;
+import jmri.ConditionalVariable;
+import jmri.InstanceManager;
+import jmri.Logix;
+import jmri.Route;
+import jmri.RouteManager;
+import jmri.Sensor;
 import jmri.implementation.DefaultConditionalAction;
 import jmri.implementation.SensorGroupConditional;
-import jmri.swing.RowSorterUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,17 +47,11 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
 
     private final static String namePrefix = "SENSOR GROUP:";  // should be upper case
     private final static String nameDivider = ":";
-    public final static String logixSysName;
+    public final static String logixSysName = "SYS";
     public final static String logixUserName = "System Logix";
-    public final static String ConditionalSystemPrefix;
+    public final static String ConditionalSystemPrefix = logixSysName + "_SGC_";
     private final static String ConditionalUserPrefix = "Sensor Group ";
     private int rowHeight;
-
-    static {
-        String logixPrefix = InstanceManager.getDefault(jmri.LogixManager.class).getSystemNamePrefix();
-        logixSysName = logixPrefix + ":SYS";
-        ConditionalSystemPrefix = logixSysName + "_SGC_";
-    }
 
     SensorTableModel _sensorModel;
     JScrollPane _sensorScrollPane;
@@ -50,6 +59,7 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
     JList<String> _sensorGroupList;
 
     @Override
+    @SuppressWarnings("deprecation") // needs careful unwinding for Set operations
     public void initComponents() {
         addHelpMenu("package.jmri.jmrit.sensorgroup.SensorGroupFrame", true);
 
@@ -68,12 +78,6 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
         p2xs.add(p21s);
         _sensorModel = new SensorTableModel();
         JTable sensorTable = new JTable(_sensorModel);
-
-        TableRowSorter<SensorTableModel> sorter = new TableRowSorter<>(_sensorModel);
-        sorter.setComparator(SensorTableModel.SNAME_COLUMN, new jmri.util.AlphanumComparator());
-        sorter.setComparator(SensorTableModel.UNAME_COLUMN, new jmri.util.AlphanumComparator());
-        RowSorterUtil.setSortOrder(sorter, SensorTableModel.SNAME_COLUMN, SortOrder.ASCENDING);
-        sensorTable.setRowSorter(sorter);
 
         sensorTable.setRowSelectionAllowed(false);
         sensorTable.setPreferredScrollableViewportSize(new java.awt.Dimension(450, 200));
@@ -137,23 +141,23 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
 
         JPanel p5 = new JPanel();
 
-        DefaultListModel<String> groupModel = new DefaultListModel<>();
+        DefaultListModel<String> groupModel = new DefaultListModel<String>();
         // Look for Sensor group in Route table
         RouteManager rm = InstanceManager.getDefault(jmri.RouteManager.class);
-        // List<String> routeList = rm.getSystemNameList();
+        List<String> routeList = rm.getSystemNameList();
         int i = 0;
-        for (NamedBean obj : rm.getNamedBeanSet()) {
-            String name = obj.getSystemName();
+        while (i < routeList.size()) {
+            String name = routeList.get(i);
             if (name.startsWith(namePrefix)) {
                 name = name.substring(namePrefix.length());
                 String group = name.substring(0, name.indexOf(nameDivider));
                 String prefix = namePrefix + group + nameDivider;
                 do {
                     i++;
-                    if (i >= rm.getNamedBeanSet().size()) {
+                    if (i >= routeList.size()) {
                         break;
                     }
-                    name = obj.getSystemName();
+                    name = routeList.get(i);
                 } while (name.startsWith(prefix));
                 groupModel.addElement(group);
             }
@@ -164,15 +168,12 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
         for (i = 0; i < logix.getNumConditionals(); i++) {
             String name = logix.getConditionalByNumberOrder(i);
             Conditional c = InstanceManager.getDefault(jmri.ConditionalManager.class).getBySystemName(name);
-            String uname = null;
-            if (c !=null) {
-                uname = c.getUserName();
-            }            
+            String uname = c.getUserName();
             if (uname != null) {
                 groupModel.addElement(uname.substring(ConditionalUserPrefix.length()));
             }
         }
-        _sensorGroupList = new JList<>(groupModel);
+        _sensorGroupList = new JList<String>(groupModel);
         _sensorGroupList.setPrototypeCellValue(ConditionalUserPrefix + "XXXXXXXXXX");
         _sensorGroupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _sensorGroupList.setVisibleRowCount(5);
@@ -279,10 +280,10 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
             String cUserName = ConditionalUserPrefix + group;
             for (int i = 0; i < logix.getNumConditionals(); i++) {
                 String name = logix.getConditionalByNumberOrder(i);
-                if (cSystemName.equalsIgnoreCase(name) || cUserName.equals(name)) {     // Ignore case for compatibility
+                if (cSystemName.equals(name) || cUserName.equals(name)) {
                     Conditional c = InstanceManager.getDefault(jmri.ConditionalManager.class).getBySystemName(name);
                     if (c == null) {
-                        log.error("Conditional \"{}\" expected but NOT found in Logix {}", name, logix.getSystemName());
+                        log.error("Conditional \"" + name + "\" expected but NOT found in Logix " + logix.getSystemName());
                     } else {
                         List<ConditionalVariable> variableList = c.getCopyOfStateVariables();
                         for (int k = 0; k < variableList.size(); k++) {
@@ -362,7 +363,7 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
             if (cSystemName.equals(name) || cUserName.equals(name)) {
                 Conditional c = InstanceManager.getDefault(jmri.ConditionalManager.class).getBySystemName(name);
                 if (c == null) {
-                    log.error("Conditional \"{}\" expected but NOT found in Logix {}", name, logix.getSystemName());
+                    log.error("Conditional \"" + name + "\" expected but NOT found in Logix " + logix.getSystemName());
                 } else {
                     logix.deleteConditional(cSystemName);
                     break;
@@ -381,7 +382,7 @@ public class SensorGroupFrame extends jmri.util.JmriJFrame {
             String[] msgs = logix.deleteConditional(sysName);
             if (msgs != null) {
                 if (showMsg) {
-                    javax.swing.JOptionPane.showMessageDialog(this,
+                    javax.swing.JOptionPane.showMessageDialog(this, 
                             Bundle.getMessage("MessageError41") + " " + msgs[0] + " (" + msgs[1] + ") "
                             + Bundle.getMessage("MessageError42") + " " + msgs[2] + " (" + msgs[3] + "), "
                             + Bundle.getMessage("MessageError43") + " " + msgs[4] + " (" + msgs[5] + "). "

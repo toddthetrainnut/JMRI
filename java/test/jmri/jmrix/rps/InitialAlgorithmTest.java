@@ -1,18 +1,18 @@
 package jmri.jmrix.rps;
 
 import javax.vecmath.Point3d;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the rps.Measurement class.
  *
  * The default transmitter location for the 7, 13, 13, 13 readings is (0,0,12)
  *
- * @author Bob Jacobsen Copyright 2006
+ * @author	Bob Jacobsen Copyright 2006
  */
 public class InitialAlgorithmTest {
 
@@ -104,12 +104,12 @@ public class InitialAlgorithmTest {
         Assert.assertEquals("z close", true, Math.abs(m.z - 12.) < 0.001);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

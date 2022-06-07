@@ -3,11 +3,10 @@ package jmri.jmrix.pi;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioProvider;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for RaspberryPiAdapter
@@ -19,10 +18,11 @@ public class RaspberryPiAdapterTest {
    @Test
    public void ConstructorTest(){
        RaspberryPiAdapter a = new RaspberryPiAdapter();
-       assertThat(a).isNotNull();
+       Assert.assertNotNull(a);
    }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
        JUnitUtil.setUp();
        GpioProvider myprovider = new PiGpioProviderScaffold();
@@ -30,7 +30,7 @@ public class RaspberryPiAdapterTest {
        jmri.util.JUnitUtil.resetInstanceManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

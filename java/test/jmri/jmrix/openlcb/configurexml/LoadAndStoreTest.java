@@ -2,15 +2,12 @@ package jmri.jmrix.openlcb.configurexml;
 
 import jmri.configurexml.LoadAndStoreTestBase;
 import jmri.jmrix.openlcb.*;
+import jmri.util.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.stream.Stream;
-
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.openlcb.*;
 
 /**
@@ -27,34 +24,29 @@ import org.openlcb.*;
  * @author Bob Jacobsen Copyright 2009, 2014
  * @since 2.5.5 (renamed & reworked in 3.9 series)
  */
+@RunWith(Parameterized.class)
 public class LoadAndStoreTest extends LoadAndStoreTestBase {
 
-    public static Stream<Arguments> data() {
+    @Parameterized.Parameters(name = "{0} (pass={1})")
+    public static Iterable<Object[]> data() {
         return getFiles(new File("java/test/jmri/jmrix/openlcb/configurexml"), false, true);
     }
 
-    @ParameterizedTest(name = "{index}: {0} (pass={1})")
-    @MethodSource("data")
-    public void loadAndStoreTest(File file, boolean pass) throws Exception {
-        super.loadLoadStoreFileCheck(file);
-    }
-
-    public LoadAndStoreTest() {
-        super(SaveType.Config, false);
+    public LoadAndStoreTest(File file, boolean pass) {
+        super(file, pass, SaveType.Config, false);
     }
 
     // from here down is testing infrastructure
-    private OlcbSystemConnectionMemo memo;
-    private Connection connection;
-    private NodeID nodeID;
-    private ArrayList<Message> messages;
+    private static OlcbSystemConnectionMemo memo;
+    static Connection connection;
+    static NodeID nodeID = new NodeID(new byte[]{1, 0, 0, 0, 0, 0});
+    static java.util.ArrayList<Message> messages;
 
-    @BeforeEach
-    @SuppressWarnings("deprecated") // OlcbInterface(NodeID, Connection)
+    @Before
     public void localSetUp() {
         nodeID = new NodeID(new byte[]{1, 0, 0, 0, 0, 0});
-
-        messages = new ArrayList<>();
+        
+        messages = new java.util.ArrayList<>();
         connection = new AbstractConnection() {
             @Override
             public void put(Message msg, Connection sender) {
@@ -65,23 +57,21 @@ public class LoadAndStoreTest extends LoadAndStoreTestBase {
         memo = new OlcbSystemConnectionMemo(); // this self-registers as 'M'
         memo.setProtocol(jmri.jmrix.can.ConfigurationManager.OPENLCB);
         memo.setInterface(new OlcbInterface(nodeID, connection) {
-            @Override
             public Connection getOutputConnection() {
                 return connection;
             }
         });
-
-        jmri.util.JUnitUtil.waitFor(() -> (!messages.isEmpty()), "Initialization Complete message");
+        
+        jmri.util.JUnitUtil.waitFor(()->{return (messages.size()>0);},"Initialization Complete message");
     }
 
-    @AfterEach
-    public void localTearDown() {
-        if (memo != null && memo.getInterface() != null) {
-            memo.getInterface().dispose();
+    @After
+    public void localTearDown() throws Exception {
+        if(memo != null && memo.getInterface() !=null ) {
+           memo.getInterface().dispose();
         }
         memo = null;
         connection = null;
         nodeID = null;
     }
-
 }

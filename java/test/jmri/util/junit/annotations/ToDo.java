@@ -1,10 +1,11 @@
 package jmri.util.junit.annotations;
 
 import java.lang.annotation.*;
+import org.junit.Ignore;
 
 /**
  * Annotation for test denoting work that needs to be done to a specific test.  
- * to be fully functional.  This annotation may be used with {@link org.junit.jupiter.api.Disabled}.
+ * to be fully functional.  This annotation may be used with {@link Ignore}.
  * <p>
  *
  * @author Paul Bender Copyright 2018

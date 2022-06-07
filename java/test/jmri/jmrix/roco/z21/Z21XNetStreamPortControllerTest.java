@@ -4,16 +4,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.roco.z21.z21XNetStreamPortController class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class Z21XNetStreamPortControllerTest extends jmri.jmrix.AbstractStreamPortControllerTestBase {
 
@@ -22,8 +22,9 @@ public class Z21XNetStreamPortControllerTest extends jmri.jmrix.AbstractStreamPo
         Assert.assertNotNull("exists", apc);
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         try {
@@ -39,7 +40,7 @@ public class Z21XNetStreamPortControllerTest extends jmri.jmrix.AbstractStreamPo
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

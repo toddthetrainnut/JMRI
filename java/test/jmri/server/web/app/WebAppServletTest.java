@@ -6,31 +6,27 @@ import static jmri.web.servlet.ServletUtil.UTF8_TEXT_HTML;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
-
 import jmri.InstanceManager;
 import jmri.Version;
 import jmri.profile.ProfileManager;
-
 import org.springframework.mock.web.MockHttpSession;
-
 import jmri.util.JUnitUtil;
 import jmri.util.prefs.InitializationException;
 import jmri.web.servlet.ServletUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class WebAppServletTest {
 
@@ -40,7 +36,8 @@ public class WebAppServletTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() throws InitializationException {
         JUnitUtil.setUp();
         JUnitUtil.initConnectionConfigManager();
@@ -50,7 +47,7 @@ public class WebAppServletTest {
         InstanceManager.setDefault(WebAppManager.class, wam);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -12,12 +12,10 @@ import jmri.DccLocoAddress;
  * numeric data is sent in little endian format.
  * <p>
  *
- * @author Bob Jacobsen Copyright (C) 2003
- * @author Paul Bender Copyright (C) 2014
+ * @author	Bob Jacobsen Copyright (C) 2003
+ * @author	Paul Bender Copyright (C) 2014
  */
 public class Z21Reply extends AbstractMRReply {
-
-    private static final String WRONG_REPLY_TYPE = "Wrong Reply Type";
 
     /**
      *  Create a new one.
@@ -30,8 +28,7 @@ public class Z21Reply extends AbstractMRReply {
     /**
      * This ctor interprets the byte array as a sequence of characters to send.
      *
-     * @param a Array of bytes to send.
-     * @param l length of reply.
+     * @param a Array of bytes to send
      */
     public Z21Reply(byte[] a, int l) {
         super();
@@ -87,7 +84,6 @@ public class Z21Reply extends AbstractMRReply {
     }
 
     @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH")
-    @Override
     public String toMonitorString() {
         switch(getOpCode()){
            case 0x0010:
@@ -104,12 +100,10 @@ public class Z21Reply extends AbstractMRReply {
                return Bundle.getMessage("Z21ReplyStringVersion",java.lang.Integer.toHexString(hwversion), swversion);
            case 0x0040:
                return Bundle.getMessage("Z21XpressNetTunnelReply", getXNetReply().toMonitorString());
-           case 0x0051:
-                return Bundle.getMessage("Z21ReplyBroadcastFlags",Z21MessageUtils.interpretBroadcastFlags(_dataChars));
            case 0x0080:
                int groupIndex = getElement(4) & 0xff;
                int offset = (groupIndex * 10) + 1;
-               String[] moduleStatus = new String[10];
+               String moduleStatus[]= new String[10];
                for(int i=0;i<10;i++){
                   moduleStatus[i]= Bundle.getMessage("RMModuleFeedbackStatus",offset + i,
                       Bundle.getMessage("RMModuleContactStatus",1, ((getElement(i+5)&0x01)==0x01)? Bundle.getMessage("PowerStateOn") : Bundle.getMessage("PowerStateOff")),
@@ -147,7 +141,7 @@ public class Z21Reply extends AbstractMRReply {
                return Bundle.getMessage("Z21LocoNetLanReply", getLocoNetMessage().toMonitorString());
            case 0x0088:
                int entries = getNumRailComDataEntries();
-               StringBuilder datastring = new StringBuilder();
+               StringBuffer datastring = new StringBuffer();
                for(int i = 0; i < entries ; i++) {
                    DccLocoAddress address = getRailComLocoAddress(i);
                    int rcvCount = getRailComRcvCount(i);
@@ -167,7 +161,7 @@ public class Z21Reply extends AbstractMRReply {
                int value1 = (getElement(10)&0xFF) + ((getElement(11)&0xFF) << 8);
                int value2 = (getElement(12)&0xFF) + ((getElement(13)&0xFF) << 8);
                String typeString = "";
-               String value1String;
+               String value1String = "";
                String value2String = "";
                switch(type){
                     case 0x01:
@@ -193,6 +187,7 @@ public class Z21Reply extends AbstractMRReply {
                                 break;
                            case 0x1203:
                                 value1String = Bundle.getMessage("Z21_CAN_INPUT_STATUS_OVERLOAD_3");
+                                value1String = "Busy, Overload 3";
                                 break;
                            default:
                                 value1String = "<unknown>";
@@ -271,7 +266,7 @@ public class Z21Reply extends AbstractMRReply {
         // if this is a RailCom message, the length field is
         // then the entries are n=(len-4)/13, per the Z21 protocol 
         // manual, section 8.1.  Also, 0<=n<=19
-        return ((getLength() - 4)/13);
+        return (((getLength() - 4)/13));
     } 
 
     /**
@@ -282,7 +277,7 @@ public class Z21Reply extends AbstractMRReply {
      */
     DccLocoAddress getRailComLocoAddress(int n){
          int offset = 4+(n*13);  // +4 to get past header
-         int address = Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int address = ((0xff&getElement(offset+1))<<8)+(0xff&(getElement(offset)));
          return new DccLocoAddress(address,address>=100);
     }
 
@@ -294,10 +289,11 @@ public class Z21Reply extends AbstractMRReply {
      */
     int getRailComRcvCount(int n){
          int offset = 6+(n*13); // +6 to get header and address.
-         return ((0xff&getElement(offset+3))<<24) +
+         int rcvcount = ((0xff&getElement(offset+3))<<24) +
                        ((0xff&(getElement(offset+2))<<16) + 
                        ((0xff&getElement(offset+1))<<8) + 
                        (0xff&(getElement(offset))));
+         return rcvcount;
     }
 
     /**
@@ -308,7 +304,9 @@ public class Z21Reply extends AbstractMRReply {
      */
     int getRailComErrCount(int n){
          int offset = 10+(n*13); // +10 to get past header, address,and rcv count.
-         return Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int errorcount = ((0xff&getElement(offset+1))<<8) + 
+                       (0xff&(getElement(offset)));
+         return errorcount;
     }
 
     /**
@@ -361,12 +359,6 @@ public class Z21Reply extends AbstractMRReply {
         return (getOpCode() == 0x0084);
     }
 
-    private void checkSystemDataChangeReply(){
-        if(!isSystemDataChangedReply()){
-            throw new IllegalArgumentException(WRONG_REPLY_TYPE);
-        }
-    }
-
     /**
      * Get the Main Track Current from the SystemStateDataChanged 
      * message.
@@ -374,9 +366,13 @@ public class Z21Reply extends AbstractMRReply {
      * @return the current in mA.
      */
     int getSystemDataMainCurrent(){
-         checkSystemDataChangeReply();
+         if(!isSystemDataChangedReply()){
+            throw new IllegalArgumentException("Wrong Reply Type");
+         }
          int offset = 4; //skip the headers
-         return Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int current = ((0xff&getElement(offset+1))<<8) +
+                       (0xff&(getElement(offset)));
+         return current;
     }
 
     /**
@@ -386,9 +382,13 @@ public class Z21Reply extends AbstractMRReply {
      * @return the current in mA.
      */
     int getSystemDataProgCurrent(){
-         checkSystemDataChangeReply();
+         if(!isSystemDataChangedReply()){
+            throw new IllegalArgumentException("Wrong Reply Type");
+         }
          int offset = 6; //skip the headers
-         return Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int current = ((0xff&getElement(offset+1))<<8) +
+                       (0xff&(getElement(offset)));
+         return current;
     }
 
     /**
@@ -398,9 +398,13 @@ public class Z21Reply extends AbstractMRReply {
      * @return the current in mA.
      */
     int getSystemDataFilteredMainCurrent(){
-         checkSystemDataChangeReply();
+         if(!isSystemDataChangedReply()){
+            throw new IllegalArgumentException("Wrong Reply Type");
+         }
          int offset = 8; //skip the headers
-         return Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int current = ((0xff&getElement(offset+1))<<8) +
+                       (0xff&(getElement(offset)));
+         return current;
     }
 
     /**
@@ -410,9 +414,13 @@ public class Z21Reply extends AbstractMRReply {
      * @return the current in degrees C.
      */
     int getSystemDataTemperature(){
-         checkSystemDataChangeReply();
+         if(!isSystemDataChangedReply()){
+            throw new IllegalArgumentException("Wrong Reply Type");
+         }
          int offset = 10; //skip the headers
-         return Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int current = ((0xff&getElement(offset+1))<<8) +
+                       (0xff&(getElement(offset)));
+         return current;
     }
 
     /**
@@ -422,9 +430,13 @@ public class Z21Reply extends AbstractMRReply {
      * @return the current in mV.
      */
     int getSystemDataSupplyVoltage(){
-         checkSystemDataChangeReply();
+         if(!isSystemDataChangedReply()){
+            throw new IllegalArgumentException("Wrong Reply Type");
+         }
          int offset = 12; //skip the headers
-         return Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int current = ((0xff&getElement(offset+1))<<8) +
+                       (0xff&(getElement(offset)));
+         return current;
     }
 
     /**
@@ -434,9 +446,13 @@ public class Z21Reply extends AbstractMRReply {
      * @return the current in mV.
      */
     int getSystemDataVCCVoltage(){
-         checkSystemDataChangeReply();
+         if(!isSystemDataChangedReply()){
+            throw new IllegalArgumentException("Wrong Reply Type");
+         }
          int offset = 14; //skip the headers
-         return Z21MessageUtils.integer16BitFromOffeset(_dataChars,offset);
+         int current = ((0xff&getElement(offset+1))<<8) +
+                       (0xff&(getElement(offset)));
+         return current;
     }
 
     // handle LocoNet replies tunneled in Z21 messages
@@ -508,7 +524,7 @@ public class Z21Reply extends AbstractMRReply {
    }
 
     // address value is the 16 bits of the two bytes containing the
-    // address.  The most significant two bits represent the direction.
+    // address.  The most significan two bits represent the direction.
     DccLocoAddress getCanDetectorLocoAddress(int addressValue) {
         if(!isCanDetectorMessage()) {
            return null;
@@ -520,30 +536,5 @@ public class Z21Reply extends AbstractMRReply {
            return new DccLocoAddress(locoAddress,locoAddress>=100);
         }
    }
-
-    /**
-     * @return the can Detector Message type or -1 if not a can detector message.
-     */
-   public int canDetectorMessageType() {
-        if(isCanDetectorMessage()){
-            return getElement(9) & 0xFF;
-        }
-        return -1;
-   }
-
-    /**
-      * @return true if the reply is for a CAN detector and the type is 0x01
-     */
-   public boolean isCanSensorMessage(){
-        return isCanDetectorMessage() && canDetectorMessageType() == 0x01;
-   }
-
-    /**
-     * @return true if the reply is for a CAN detector and the type is 0x01
-     */
-    public boolean isCanReporterMessage(){
-        int type = canDetectorMessageType();
-        return isCanDetectorMessage() && type >= 0x11 && type<= 0x1f;
-    }
 
 }

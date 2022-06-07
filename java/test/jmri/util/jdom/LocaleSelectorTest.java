@@ -1,16 +1,17 @@
 package jmri.util.jdom;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.Test;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * Tests for the jmri.util.LocaleSelector class.
  *
- * @author Bob Jacobsen Copyright 2010
+ * @author	Bob Jacobsen Copyright 2010
  */
 public class LocaleSelectorTest {
 
@@ -183,12 +184,12 @@ public class LocaleSelectorTest {
         Assert.assertEquals("find default", "c", result);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

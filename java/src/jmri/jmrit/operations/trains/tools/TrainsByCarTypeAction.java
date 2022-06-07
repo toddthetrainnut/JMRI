@@ -2,7 +2,6 @@ package jmri.jmrit.operations.trains.tools;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 
 /**
@@ -11,6 +10,10 @@ import javax.swing.AbstractAction;
  * @author Daniel Boudreau Copyright (C) 2009
  */
 public class TrainsByCarTypeAction extends AbstractAction {
+
+    public TrainsByCarTypeAction(String s) {
+        super(s);
+    }
 
     public TrainsByCarTypeAction() {
         super(Bundle.getMessage("TitleModifyTrains"));

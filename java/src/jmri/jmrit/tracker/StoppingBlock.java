@@ -56,7 +56,7 @@ public class StoppingBlock {
             }
             int val = fastestAppearance();
             if (log.isDebugEnabled()) {
-                log.debug("Block {} occupied with {}", block.getSystemName(), val);
+                log.debug("Block " + block.getSystemName() + " occupied with " + val);
             }
 
             if (val == SignalHead.RED) {
@@ -82,7 +82,7 @@ public class StoppingBlock {
             }
             int val = fastestAppearance();
             if (log.isDebugEnabled()) {
-                log.debug("Block {} signal change to {}", block.getSystemName(), val);
+                log.debug("Block " + block.getSystemName() + " signal change to " + val);
             }
 
             if (val == SignalHead.YELLOW) {
@@ -134,21 +134,21 @@ public class StoppingBlock {
      */
     void doStop() {
         if (log.isDebugEnabled()) {
-            log.debug("Block {} speed being set to stop", block.getSystemName());
+            log.debug("Block " + block.getSystemName() + " speed being set to stop");
         }
         setSpeed(0.0f, false, false, false);  // bell on
     }
 
     void doSlow() {
         if (log.isDebugEnabled()) {
-            log.debug("Block {} speed being set to slow", block.getSystemName());
+            log.debug("Block " + block.getSystemName() + " speed being set to slow");
         }
         setSpeed(slow, false, false, false);  // bell off
     }
 
     void doRestart() {
         if (log.isDebugEnabled()) {
-            log.debug("Block {} speed being set to run", block.getSystemName());
+            log.debug("Block " + block.getSystemName() + " speed being set to run");
         }
         setSpeed(fast, false, false, false);  // bell off
     }
@@ -156,7 +156,7 @@ public class StoppingBlock {
     void setSpeed(float speed, boolean f1, boolean f2, boolean f3) {
         Object o = block.getValue();
         if (o == null) {
-            log.error("Block {} contained no Throttle object", block.getSystemName());
+            log.error("Block " + block.getSystemName() + " contained no Throttle object");
             return;
         }
         try {
@@ -165,7 +165,7 @@ public class StoppingBlock {
             t.setF1(f1);
             t.setF2(f2);
         } catch (ClassCastException e) {
-            log.error("Block {} did not contain object of Throttle type", block.getSystemName(), e);
+            log.error("Block " + block.getSystemName() + " did not contain object of Throttle type: " + e);
         }
     }
 

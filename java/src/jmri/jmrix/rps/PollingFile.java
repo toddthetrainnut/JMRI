@@ -68,10 +68,7 @@ public class PollingFile extends XmlFile {
     }
 
     /**
-     * Read in the file, and make available for examination.
-     * @param f the file to load.
-     * @throws org.jdom2.JDOMException other errors.
-     * @throws java.io.IOException error accessing file.
+     * Read in the file, and make available for examination
      */
     public void loadFile(File f)
             throws org.jdom2.JDOMException, java.io.IOException {
@@ -122,8 +119,7 @@ public class PollingFile extends XmlFile {
     }
 
     /**
-     * Get the transmitters from the file.
-     * @param engine a single engine.
+     * Get the transmitters from the file
      */
     public void getTransmitters(Engine engine) {
         List<Element> l = root.getChildren("transmitter");

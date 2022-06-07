@@ -24,7 +24,6 @@ public class LoopbackTrafficController extends jmri.jmrix.can.TrafficController 
 
     /**
      * Forward a CanMessage to all registered CanInterface listeners.
-     * {@inheritDoc}
      */
     @Override
     protected void forwardMessage(AbstractMRListener client, AbstractMRMessage m) {
@@ -33,7 +32,6 @@ public class LoopbackTrafficController extends jmri.jmrix.can.TrafficController 
 
     /**
      * Forward a CanReply to all registered CanInterface listeners.
-     * {@inheritDoc}
      */
     @Override
     protected void forwardReply(AbstractMRListener client, AbstractMRReply r) {
@@ -46,21 +44,19 @@ public class LoopbackTrafficController extends jmri.jmrix.can.TrafficController 
 
     /**
      * Forward a preformatted message to the actual interface.
-     * {@inheritDoc}
      */
     @Override
     public void sendCanMessage(CanMessage m, CanListener reply) {
-        log.debug("TrafficController sendCanMessage() {}", m.toString());
+        log.debug("TrafficController sendCanMessage() " + m.toString());
         notifyMessage(m, reply);
     }
 
     /**
      * Forward a preformatted reply to the actual interface.
-     * {@inheritDoc}
      */
     @Override
     public void sendCanReply(CanReply r, CanListener reply) {
-        log.debug("TrafficController sendCanReply() {}", r.toString());
+        log.debug("TrafficController sendCanReply() " + r.toString());
         notifyReply(r, reply);
     }
 
@@ -72,6 +68,7 @@ public class LoopbackTrafficController extends jmri.jmrix.can.TrafficController 
      */
     @Override
     protected void addTrailerToOutput(byte[] msg, int offset, AbstractMRMessage m) {
+        return;
     }
 
     /**
@@ -90,24 +87,37 @@ public class LoopbackTrafficController extends jmri.jmrix.can.TrafficController 
     @Override
     protected AbstractMRMessage newMessage() {
         log.debug("New CanMessage created");
-        return new CanMessage(getCanid());
+        CanMessage msg = new CanMessage(getCanid());
+        return msg;
     }
 
     /**
-     * Make a CanReply from a system-specific reply.
-     * loop back returns null.
-     * {@inheritDoc}
+     * Make a CanReply from a system-specific reply
      */
     @Override
     public CanReply decodeFromHardware(AbstractMRReply m) {
         log.error("decodeFromHardware unexpected");
         return null;
+
+        /*         if (log.isDebugEnabled()) log.debug("Decoding from hardware: '"+m+"'\n"); */
+        /*      CanReply gc = (CanReply)m; */
+        /*         CanReply ret = new CanReply(); */
+        /*  */
+        /*      // Get the ID */
+        /*         ret.setId(gc.getID()); */
+        /*          */
+        /*         // Get the data */
+        /*         for (int i = 0; i < gc.getNumBytes(); i++) { */
+        /*             ret.setElement(i, gc.getByte(i)); */
+        /*         } */
+        /*         ret.setNumDataElements(gc.getNumBytes()); */
+        /*         if (log.isDebugEnabled()) log.debug("Decoded as "+ret); */
+        /*          */
+        /*         return ret; */
     }
 
     /**
-     * Encode a CanMessage for the hardware.
-     * loop back returns null.
-     * {@inheritDoc}
+     * Encode a CanMessage for the hardware
      */
     @Override
     public AbstractMRMessage encodeForHardware(CanMessage m) {
@@ -119,16 +129,24 @@ public class LoopbackTrafficController extends jmri.jmrix.can.TrafficController 
     @Override
     protected AbstractMRReply newReply() {
         log.debug("New CanReply created");
-        return new CanReply();
+        CanReply reply = new CanReply();
+        return reply;
     }
 
-    /**
-     * Dummy; loopback doesn't parse serial messages.
-     * {@inheritDoc}
+    /*
+     * Dummy; loopback doesn't parse serial messages
      */
     @Override
     protected boolean endOfMessage(AbstractMRReply r) {
-        log.error("endOfMessage unexpected");
+        log.error("endNormalReply unexpected");
+        return true;
+    }
+
+    /*
+     * Dummy; loopback doesn't parse serial messages
+     */
+    boolean endNormalReply(AbstractMRReply r) {
+        log.error("endNormalReply unexpected");
         return true;
     }
 

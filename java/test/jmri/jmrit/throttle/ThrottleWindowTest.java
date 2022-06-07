@@ -1,10 +1,8 @@
 package jmri.jmrit.throttle;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of ThrottleWindow
@@ -13,22 +11,19 @@ import org.junit.jupiter.api.*;
  */
 public class ThrottleWindowTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDebugThrottleManager();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new ThrottleWindow();
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new ThrottleWindow();
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
         super.tearDown();
     }
 }

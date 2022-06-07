@@ -1,9 +1,10 @@
 package jmri.jmrit.throttle;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of AddressPanel
@@ -14,19 +15,19 @@ public class AddressPanelTest {
 
     @Test
     public void testCtor() {
-        AddressPanel panel = new AddressPanel(null);
+        AddressPanel panel = new AddressPanel();
         Assert.assertNotNull("exists", panel);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
-        JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp();
+
         JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
-        JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.tearDown();
     }
 }

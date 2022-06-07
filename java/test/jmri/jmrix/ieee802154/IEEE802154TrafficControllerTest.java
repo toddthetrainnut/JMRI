@@ -4,17 +4,18 @@ import jmri.jmrix.AbstractMRListener;
 import jmri.jmrix.AbstractMRMessage;
 import jmri.jmrix.AbstractMRReply;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * IEEE802154TrafficControllerTest.java
  *
- * Test for the jmri.jmrix.ieee802154.IEEE802154TrafficController
+ * Description:	tests for the jmri.jmrix.ieee802154.IEEE802154TrafficController
  * class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class IEEE802154TrafficControllerTest extends jmri.jmrix.AbstractMRNodeTrafficControllerTest {
 
@@ -150,7 +151,8 @@ public class IEEE802154TrafficControllerTest extends jmri.jmrix.AbstractMRNodeTr
         Assert.assertNotNull("node not found", n);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
@@ -186,12 +188,10 @@ public class IEEE802154TrafficControllerTest extends jmri.jmrix.AbstractMRNodeTr
         };
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

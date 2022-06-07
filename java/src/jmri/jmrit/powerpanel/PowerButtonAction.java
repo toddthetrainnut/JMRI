@@ -1,7 +1,6 @@
 package jmri.jmrit.powerpanel;
 
 import javax.swing.Action;
-import jmri.InstanceManager;
 import jmri.PowerManager;
 
 /**
@@ -23,21 +22,25 @@ public class PowerButtonAction extends javax.swing.AbstractAction implements jav
 
     void checkManager() {
         // disable ourself if there is no power Manager
-        if (InstanceManager.getNullableDefault(PowerManager.class) == null) {
+        if (jmri.InstanceManager.getNullableDefault(jmri.PowerManager.class) == null) {
             setEnabled(false);
         } else {
-            InstanceManager.getDefault(PowerManager.class).addPropertyChangeListener(this);
+            jmri.InstanceManager.getDefault(jmri.PowerManager.class).addPropertyChangeListener(this);
         }
     }
 
     void updateLabel() {
-        PowerManager p = InstanceManager.getDefault(PowerManager.class);
-        if (p.getPower() != PowerManager.ON) {
-            putValue(Action.NAME, Bundle.getMessage("ButtonSetOn"));
-        } else {
-            putValue(Action.NAME, Bundle.getMessage("ButtonSetOff"));
+        try {
+            PowerManager p = jmri.InstanceManager.getDefault(jmri.PowerManager.class);
+            if (p.getPower() != PowerManager.ON) {
+                putValue(Action.NAME, Bundle.getMessage("ButtonSetOn"));
+            } else {
+                putValue(Action.NAME, Bundle.getMessage("ButtonSetOff"));
+            }
+            firePropertyChange(Action.NAME, "", getValue(Action.NAME));
+        } catch (jmri.JmriException ex) {
+            return;
         }
-        firePropertyChange(Action.NAME, "", getValue(Action.NAME));
     }
 
     @Override
@@ -49,7 +52,7 @@ public class PowerButtonAction extends javax.swing.AbstractAction implements jav
     public void actionPerformed(java.awt.event.ActionEvent e) {
         try {
             // alternate power state, updating name
-            PowerManager p = InstanceManager.getNullableDefault(PowerManager.class);
+            PowerManager p = jmri.InstanceManager.getNullableDefault(jmri.PowerManager.class);
             if (p == null) {
                 return;
             }

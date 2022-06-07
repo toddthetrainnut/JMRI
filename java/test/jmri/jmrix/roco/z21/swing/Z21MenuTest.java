@@ -3,9 +3,10 @@ package jmri.jmrix.roco.z21.swing;
 import jmri.jmrix.roco.z21.Z21InterfaceScaffold;
 import jmri.jmrix.roco.z21.Z21SystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for Z21Menu class.
@@ -28,7 +29,7 @@ public class Z21MenuTest {
       Assert.assertNotNull("Z21Menu constructor",new Z21Menu(memo));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
@@ -38,7 +39,7 @@ public class Z21MenuTest {
         memo.setTrafficController(tc);
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         memo=null;
         tc.terminateThreads();

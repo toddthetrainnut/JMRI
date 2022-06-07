@@ -1,5 +1,9 @@
 package jmri.jmrix.direct.simulator;
 
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import jmri.jmrix.direct.DirectSystemConnectionMemo;
+
 /**
  * Handle configuring an Direct layout connection via a Simulator
  * adapter.
@@ -19,7 +23,6 @@ public class ConnectionConfig extends jmri.jmrix.AbstractSimulatorConnectionConf
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p serial port adapter.
      */
     public ConnectionConfig(jmri.jmrix.SerialPortAdapter p) {
         super(p);

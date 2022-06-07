@@ -1,11 +1,6 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.locations.Location;
@@ -14,10 +9,13 @@ import jmri.jmrit.operations.locations.Track;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class TrackLoadEditFrameTest extends OperationsTestCase {
 
@@ -37,7 +35,6 @@ public class TrackLoadEditFrameTest extends OperationsTestCase {
         Assert.assertTrue(t.isVisible());
         
         JUnitUtil.dispose(t);
-
     }
     
     @Test
@@ -59,23 +56,22 @@ public class TrackLoadEditFrameTest extends OperationsTestCase {
         
         JemmyUtil.enterClickAndLeave(tlef.loadNameInclude);
         JemmyUtil.enterClickAndLeave(tlef.loadAndTypeCheckBox);
-        JemmyUtil.enterClickAndLeaveThreadSafe(tlef.saveTrackButton);
+        JemmyUtil.enterClickAndLeave(tlef.saveTrackButton);
+        
         // error dialog window show appear
         JemmyUtil.pressDialogButton(tlef, Bundle.getMessage("ErrorNoLoads"), Bundle.getMessage("ButtonOK"));
-        JemmyUtil.waitFor(tlef);
         
-        // now add a load "Boxcar & E"
+        // now add a load "Flat & E"
         JemmyUtil.enterClickAndLeave(tlef.addLoadButton);
         JemmyUtil.enterClickAndLeave(tlef.saveTrackButton);
         
-        Assert.assertTrue(track.isLoadNameAndCarTypeAccepted("E", "Boxcar"));
-        Assert.assertFalse(track.isLoadNameAndCarTypeAccepted("L", "Boxcar"));
+        Assert.assertTrue(track.acceptsLoad("E", "Flat"));
+        Assert.assertFalse(track.acceptsLoad("L", "Flat"));
         
-        Assert.assertFalse(track.isLoadNameAccepted("L"));
-        Assert.assertFalse(track.isLoadNameAccepted("E"));
+        Assert.assertFalse(track.acceptsLoadName("L"));
+        Assert.assertFalse(track.acceptsLoadName("E"));
         
         JUnitUtil.dispose(tlef);
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(TrackLoadEditFrameTest.class);

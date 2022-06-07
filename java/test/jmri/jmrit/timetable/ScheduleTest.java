@@ -1,9 +1,6 @@
 package jmri.jmrit.timetable;
 
-import jmri.InstanceManager;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the Schedule Class
@@ -49,13 +46,12 @@ public class ScheduleTest {
         Assert.assertEquals("New Schedule", schedule.toString());  // NOI18N
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
-        InstanceManager.setDefault(TimeTableDataManager.class,new TimeTableDataManager(false));
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

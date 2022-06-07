@@ -6,8 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
-import jmri.NamedBean;
-
 /**
  * Implements Tooltips for Positionable objects.
  *
@@ -15,12 +13,10 @@ import jmri.NamedBean;
  */
 public class ToolTip {
 
-    private Positionable _positionable;
     private Color _backgroundColor;
     private Color _fontColor;
     private Color _borderColor;
     private Font _tFont;
-    private boolean _showDisplayName;
     private String _tip;
     private int _tx, _ty;     // location of Positionable
 
@@ -28,10 +24,8 @@ public class ToolTip {
      * @param text tooltip text
      * @param x    x coord of Positionable's screen location
      * @param y    y coord of Positionable's screen location
-     * @param pos  Positionable of this Tooltip
      */
-    public ToolTip(String text, int x, int y, Positionable pos) {
-        _positionable = pos;
+    public ToolTip(String text, int x, int y) {
         _tip = text;
         _tx = x;
         _ty = y;
@@ -47,7 +41,6 @@ public class ToolTip {
      */
     public ToolTip(ToolTip tooltip, Positionable pos) {
         setLocation(pos);
-        _positionable = pos;
         _tFont = new Font(tooltip._tFont.getFamily(), tooltip._tFont.getStyle(), tooltip._tFont.getSize());
         _fontColor = tooltip._fontColor;
         _backgroundColor = tooltip._backgroundColor;
@@ -62,12 +55,9 @@ public class ToolTip {
      * @param fontColor       tooltip font color
      * @param backgroundColor tooltip background color
      * @param borderColor     tooltip border color
-     * @param pos             Positionable of this Tooltip
      */
     public ToolTip(String text, int x, int y, Font font,
-            Color fontColor, Color backgroundColor, Color borderColor,
-            Positionable pos) {
-        _positionable = pos;
+            Color fontColor, Color backgroundColor, Color borderColor) {
         _tip = text;
         _tx = x;
         _ty = y;
@@ -75,15 +65,6 @@ public class ToolTip {
         _fontColor = fontColor;
         _backgroundColor = backgroundColor;
         _borderColor = borderColor;
-    }
-
-    public final void setPositionable(Positionable pos) {
-        _positionable = pos;
-        setLocation(pos.getX() + pos.getWidth() / 2, pos.getY() + pos.getHeight() / 2);
-    }
-
-    public final Positionable getPositionable() {
-        return _positionable;
     }
 
     public final void setText(String text) {
@@ -94,20 +75,12 @@ public class ToolTip {
         return _tip;
     }
 
-    public final void setPrependToolTipWithDisplayName(boolean value) {
-        _showDisplayName = value;
-    }
-
-    public final boolean getPrependToolTipWithDisplayName() {
-        return _showDisplayName;
-    }
-
     public final void setLocation(int x, int y) {
         _tx = x;
         _ty = y;
     }
 
-    private final void setLocation(Positionable pos) {
+    public final void setLocation(Positionable pos) {
         setLocation(pos.getX() + pos.getWidth() / 2, pos.getY() + pos.getHeight() / 2);
     }
 
@@ -143,26 +116,13 @@ public class ToolTip {
         return _borderColor;
     }
 
-    public String getTextToDisplay() {
-        String tipText = _tip != null ? _tip.trim() : "";
-        String displayName = _positionable.getNameString();
-
-        if (tipText.isEmpty()) {
-            tipText = displayName;
-        } else if (_showDisplayName) {
-            tipText = displayName + ": " + tipText;
-        }
-
-        return tipText;
-    }
-
     public void paint(Graphics2D g2d, double scale) {
-        String tipText = getTextToDisplay();
-        if (tipText.isEmpty()) return;
-
+        if (_tip == null || _tip.trim().length() == 0) {
+            return;
+        }
         Color color = g2d.getColor();
         Font font = g2d.getFont();
-        TextLayout tl = new TextLayout(tipText, _tFont, g2d.getFontRenderContext());
+        TextLayout tl = new TextLayout(_tip, _tFont, g2d.getFontRenderContext());
         Rectangle2D bds = tl.getBounds();
         int x0 = Math.max((int) (bds.getX() + _tx - bds.getWidth() / 2 - 9), 0);
         bds.setRect(x0, _ty + (bds.getHeight() - 9) / scale,

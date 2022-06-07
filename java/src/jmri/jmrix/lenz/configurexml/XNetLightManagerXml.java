@@ -24,11 +24,16 @@ public class XNetLightManagerXml extends jmri.managers.configurexml.AbstractLigh
     }
 
     @Override
+    public void load(Element element, Object o) {
+        log.error("Invalid method called");
+    }
+
+    @Override
     public boolean load(Element shared, Element perNode) {
         // load individual lights
         return loadLights(shared);
     }
 
-//    private static final Logger log = LoggerFactory.getLogger(XNetLightManagerXml.class);
+    private final static Logger log = LoggerFactory.getLogger(XNetLightManagerXml.class);
 
 }

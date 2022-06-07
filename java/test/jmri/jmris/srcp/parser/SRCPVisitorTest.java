@@ -2,12 +2,10 @@ package jmri.jmris.srcp.parser;
 
 import java.io.StringReader;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -22,62 +20,72 @@ public class SRCPVisitorTest {
     public void testCTor() {
         // test the constructor.
         SRCPVisitor v = new SRCPVisitor();
-        assertThat(v).isNotNull();
+        Assert.assertNotNull(v);
     }
 
     @Test
     public void testGetServer() {
         // test that an inbound "GET 0 SERVER" returns the
         // expected response.
+        boolean exceptionOccured = false;
         String code = "GET 0 SERVER\n\r";
         SRCPParser p = new SRCPParser(new StringReader(code));
         SRCPVisitor v = new SRCPVisitor();
-        Throwable thrown = catchThrowable( () -> {
-                    SimpleNode e = p.command();
-                    e.jjtAccept(v, null);
-                });
-        assertThat("100 INFO 0 SERVER RUNNING").isEqualTo(v.getOutputString());
-        assertThat(thrown).isNull();
+        try {
+            SimpleNode e = p.command();
+            e.jjtAccept(v, null);
+            Assert.assertEquals(v.getOutputString(), "100 INFO 0 SERVER RUNNING");
+        } catch (ParseException pe) {
+            exceptionOccured = true;
+        }
+        Assert.assertFalse(exceptionOccured);
     }
 
     @Test
     public void testResetServer() {
         // test that an inbound "RESET 0 SERVER" returns the
         // expected response.
+        boolean exceptionOccured = false;
         String code = "RESET 0 SERVER\n\r";
         SRCPParser p = new SRCPParser(new StringReader(code));
         SRCPVisitor v = new SRCPVisitor();
-        Throwable thrown = catchThrowable( () -> {
+        try {
             SimpleNode e = p.command();
             e.jjtAccept(v, null);
-        });
-        assertThat(thrown).isNull();
-        assertThat("413 ERROR temporarily prohibited").isEqualTo(v.getOutputString());
+            Assert.assertEquals(v.getOutputString(), "413 ERROR temporarily prohibited");
+        } catch (ParseException pe) {
+            exceptionOccured = true;
+        }
+        Assert.assertFalse(exceptionOccured);
     }
 
     @Test
     public void testTERMServer() {
         // test that an inbound "TERM 0 SERVER" returns the
         // expected response.
+        boolean exceptionOccured = false;
         String code = "TERM 0 SERVER\n\r";
         SRCPParser p = new SRCPParser(new StringReader(code));
         SRCPVisitor v = new SRCPVisitor();
-        Throwable thrown = catchThrowable( () -> {
+        try {
             SimpleNode e = p.command();
             e.jjtAccept(v, null);
-        });
-        assertThat("200 OK").isEqualTo(v.getOutputString());
-        assertThat(thrown).isNull();
+            Assert.assertEquals(v.getOutputString(), "200 OK");
+        } catch (ParseException pe) {
+            exceptionOccured = true;
+        }
+        Assert.assertFalse(exceptionOccured);
     }
 
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

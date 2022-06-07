@@ -19,49 +19,27 @@ public interface Lock {
         MACHINE_TURNOUT,
         MACHINE_SIGNAL
     }
-
+    
     /**
      * Test the lock conditions
-     * @param lockLogger the logger on which to emit status messages
      * @return True if lock is clear and operation permitted
      */
-    public boolean isLockClear(LockLogger lockLogger);
-
+    public boolean isLockClear();  
+    
     /**
-     * Check a collection of Locks, handling the logging etc as needed.
-     * @param locks collection of locks.
-     * @param lockLogger the logger on which to emit status messages
-     * @return false if a lock is not clear, else true.
+     * Check a collection of Locks, handling the logging etc as needed
      */
-    static public boolean checkLocksClear(List<Lock> locks, LockLogger lockLogger) {
+    static public boolean checkLocksClear(List<Lock> locks) {
         lockLogger.clear();
+        boolean permitted = true;
         if (locks != null) {
             for (Lock lock : locks) {
-                if ( ! lock.isLockClear(lockLogger)) return false; // return immediately so that lockLogger isn't overwritten
+                if ( ! lock.isLockClear()) permitted = false;
             }
         }
-        return true;
+        return permitted;
     }
 
     // static while we decide whether to access via scripts
-    final static LockLogger signalLockLogger  = new LockLogger("IMUSS CTC:SIGNAL LOCK:1:LOG"){
-
-        @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification="Status provided by implementing class.")
-        @Override
-        void log(String message) {
-            log.info(message);
-        }
-    };
-    final static LockLogger turnoutLockLogger = new LockLogger("IMUSS CTC:TURNOUT LOCK:1:LOG"){
-
-        @edu.umd.cs.findbugs.annotations.SuppressFBWarnings( value="SLF4J_FORMAT_SHOULD_BE_CONST",
-        justification="Status provided by implementing class.")
-        @Override
-        void log(String message) {
-            log.info(message);
-        }
-    };
-
-    final static LockLogger debugLockLogger = new LockLogger("IMUSS CTC:DEBUG LOCK:1:LOG");
+    final static LockLogger lockLogger = new LockLogger();
 }

@@ -16,8 +16,10 @@ import jmri.util.JUnitUtil;
 import java.io.DataOutputStream;
 import java.util.Locale;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -202,16 +204,15 @@ public class JsonThrottleTest {
         Assert.assertTrue(throttle.getF28());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
         JUnitUtil.initDebugCommandStation();
         InstanceManager.store(new TestThrottleManager(), ThrottleManager.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

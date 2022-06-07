@@ -1,5 +1,8 @@
 package jmri.jmrix.secsi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Contains the data payload of a serial reply packet. Note that it's _only_ the
  * payload.
@@ -26,7 +29,6 @@ public class SerialReply extends jmri.jmrix.AbstractMRReply {
 
     /**
      * Is reply to poll message.
-     * @return element 0 of reply.
      * @see SerialSensorManager#reply(SerialReply)
      */
     public int getAddr() {

@@ -1,21 +1,19 @@
 package jmri.implementation;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
-
-import jmri.*;
-
+import jmri.Reporter;
+import jmri.Sensor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract class providing the basic logic of the Sensor interface.
+ * Abstract class providing the basic logic of the Sensor interface
  *
  * @author Bob Jacobsen Copyright (C) 2001, 2009
  */
 public abstract class AbstractSensor extends AbstractNamedBean implements Sensor {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractSensor.class);
+    private final static Logger log = LoggerFactory.getLogger(AbstractSensor.class);
 
     // ctor takes a system-name string for initialization
     public AbstractSensor(String systemName) {
@@ -27,7 +25,6 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
     }
 
     @Override
-    @Nonnull
     public String getBeanType() {
         return Bundle.getMessage("BeanNameSensor");
     }
@@ -47,9 +44,6 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
     protected long sensorDebounceGoingInActive = 0L;
     protected boolean useDefaultTimerSettings = false;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setSensorDebounceGoingActiveTimer(long time) {
         if (sensorDebounceGoingActive == time) {
@@ -58,19 +52,14 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
         long oldValue = sensorDebounceGoingActive;
         sensorDebounceGoingActive = time;
         firePropertyChange("ActiveTimer", oldValue, sensorDebounceGoingActive);
+
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public long getSensorDebounceGoingActiveTimer() {
         return sensorDebounceGoingActive;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setSensorDebounceGoingInActiveTimer(long time) {
         if (sensorDebounceGoingInActive == time) {
@@ -81,9 +70,6 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
         firePropertyChange("InActiveTimer", oldValue, sensorDebounceGoingInActive);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public long getSensorDebounceGoingInActiveTimer() {
         return sensorDebounceGoingInActive;
@@ -106,7 +92,7 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
     public boolean getUseDefaultTimerSettings() {
         return useDefaultTimerSettings;
     }
-
+    
     protected Thread thr;
     protected Runnable r;
 
@@ -116,34 +102,38 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
      */
     protected void sensorDebounce() {
         final int lastKnownState = _knownState;
-        r = () -> {
-            try {
-                long sensorDebounceTimer = sensorDebounceGoingInActive;
-                if (_rawState == ACTIVE) {
-                    sensorDebounceTimer = sensorDebounceGoingActive;
-                }
-                Thread.sleep(sensorDebounceTimer);
-                restartcount = 0;
-                _knownState = _rawState;
+        r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long sensorDebounceTimer = sensorDebounceGoingInActive;
+                    if (_rawState == ACTIVE) {
+                        sensorDebounceTimer = sensorDebounceGoingActive;
+                    }
+                    Thread.sleep(sensorDebounceTimer);
+                    restartcount = 0;
+                    _knownState = _rawState;
 
-                javax.swing.SwingUtilities.invokeAndWait(
-                        () -> firePropertyChange("KnownState", lastKnownState, _knownState)
-                );
-            } catch (InterruptedException ex) {
-                restartcount++;
-            } catch (java.lang.reflect.InvocationTargetException ex) {
-                log.error("failed to start debounced Sensor update for \"{}\" due to {}", getDisplayName(), ex.getCause().toString());
+                    javax.swing.SwingUtilities.invokeAndWait(
+                            () -> {
+                                firePropertyChange("KnownState", lastKnownState, _knownState);
+                            }
+                    );
+                } catch (InterruptedException ex) {
+                    restartcount++;
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    log.error("failed to start debounced Sensor update for \"{}\" due to {}", getDisplayName(), ex.getCause());
+                }
             }
         };
 
-        thr = jmri.util.ThreadingUtil.newThread(r);
+        thr = new Thread(r);
         thr.start();
     }
 
     int restartcount = 0;
 
     @Override
-    @Nonnull
     @CheckReturnValue
     public String describeState(int state) {
         switch (state) {
@@ -161,32 +151,8 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
      * do it on the layout. Not intended for use by implementations that can.
      */
     @Override
-    public void setKnownState(int newState) throws jmri.JmriException {
-        setOwnState(newState);
-    }
-
-    /**
-     * Preprocess a Sensor state change request for specific implementations
-     * of {@link #setKnownState(int)}
-     *
-     * @param newState the Sensor state command value passed
-     * @return true if a Sensor.ACTIVE was requested and Sensor is not set to _inverted
-     */
-    protected boolean stateChangeCheck(int newState) throws IllegalArgumentException {
-        // sort out states
-        if ((newState & Sensor.ACTIVE) != 0) {
-            // first look for the double case, which we can't handle
-            if ((newState & Sensor.INACTIVE) != 0) {
-                // this is the disaster case!
-                throw new IllegalArgumentException("Can't set state for Sensor " + newState);
-            } else {
-                // send an ACTIVE command (or INACTIVE if inverted)
-                return(!getInverted());
-            }
-        } else {
-            // send a INACTIVE command (or ACTIVE if inverted)
-            return(getInverted());
-        }
+    public void setKnownState(int s) throws jmri.JmriException {
+        setOwnState(s);
     }
 
     /**
@@ -282,7 +248,7 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
      * optimization.
      */
     @Override
-    public final boolean getInverted() {
+    final public boolean getInverted() {
         return _inverted;
     }
 
@@ -332,12 +298,13 @@ public abstract class AbstractSensor extends AbstractNamedBean implements Sensor
     /**
      * Get the pull resistance.
      *
-     * @return the currently set PullResistance value.  In this default
+     * @return the currently set PullResistance value.  In this default 
      * implementation, PullResistance.PULL_OFF is always returned.
      */
     @Override
     public PullResistance getPullResistance(){
        return PullResistance.PULL_OFF;
     }
+
 
 }

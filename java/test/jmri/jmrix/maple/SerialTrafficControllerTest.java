@@ -5,18 +5,18 @@ import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Vector;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * JUnit tests for the SerialTrafficController class
  *
- * @author Bob Jacobsen Copyright 2006
+ * @author	Bob Jacobsen Copyright 2006
  */
 public class SerialTrafficControllerTest extends jmri.jmrix.AbstractMRNodeTrafficControllerTest {
 
@@ -44,11 +44,31 @@ public class SerialTrafficControllerTest extends jmri.jmrix.AbstractMRNodeTraffi
         Assert.assertEquals("no more Nodes after del", null, c.getNode(3));
     }
 
+    @SuppressWarnings("unused")
+    private boolean waitForReply() {
+        // wait for reply (normally, done by callback; will check that later)
+        int i = 0;
+        while (rcvdReply == null && i++ < 100) {
+            try {
+                Thread.sleep(10);
+            } catch (Exception e) {
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("past loop, i=" + i
+                    + " reply=" + rcvdReply);
+        }
+        if (i == 0) {
+            log.warn("waitForReply saw an immediate return; is threading right?");
+        }
+        return i < 100;
+    }
 
     // internal class to simulate a Listener
     class SerialListenerScaffold implements jmri.jmrix.maple.SerialListener {
 
         public SerialListenerScaffold() {
+            rcvdReply = null;
         }
 
         @Override
@@ -57,9 +77,10 @@ public class SerialTrafficControllerTest extends jmri.jmrix.AbstractMRNodeTraffi
 
         @Override
         public void reply(SerialReply r) {
+            rcvdReply = r;
         }
     }
-
+    private SerialReply rcvdReply;
     // internal class to simulate a PortController
     class SerialPortControllerScaffold extends SerialPortController {
 
@@ -123,20 +144,19 @@ public class SerialTrafficControllerTest extends jmri.jmrix.AbstractMRNodeTraffi
     static DataInputStream istream;  // so the traffic controller can read from this
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         tc = new SerialTrafficController();
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+        rcvdReply = null;
         JUnitUtil.tearDown();
-
     }
 
-    // private final static Logger log = LoggerFactory.getLogger(SerialTrafficControllerTest.class);
+    private final static Logger log = LoggerFactory.getLogger(SerialTrafficControllerTest.class);
 
 }

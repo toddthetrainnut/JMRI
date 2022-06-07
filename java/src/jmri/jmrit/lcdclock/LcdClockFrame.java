@@ -1,6 +1,5 @@
 package jmri.jmrit.lcdclock;
 
-import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -95,18 +94,20 @@ public class LcdClockFrame extends JmriJFrame implements java.beans.PropertyChan
         getContentPane().add(colon);
         getContentPane().add(m1);
         getContentPane().add(m2);
-        this.getContentPane().setBackground(new Color(0xFFFFFF)); // set background to white to match lcd
+
         getContentPane().add(b = new JButton(Bundle.getMessage("ButtonPauseClock")));
         b.addActionListener(new ButtonListener());
         // since Run/Stop button looks crummy, user may turn it on in clock prefs
         b.setVisible(clock.getShowStopButton()); // pick up clock prefs choice
-        updateButtonText();
         update();
         pack();
 
         // request callback to update time
-        clock.addMinuteChangeListener((java.beans.PropertyChangeEvent e) -> {
-            update();
+        clock.addMinuteChangeListener(new java.beans.PropertyChangeListener() {
+            @Override
+            public void propertyChange(java.beans.PropertyChangeEvent e) {
+                update();
+            }
         });
 
         // Add component listener to handle frame resizing event
@@ -144,9 +145,10 @@ public class LcdClockFrame extends JmriJFrame implements java.beans.PropertyChan
         colonIcon.setImage(scaledImage);
         // update the images on screen
         this.getContentPane().revalidate();
+        return;
     }
 
-    @SuppressWarnings("deprecation") // Date.getHours, getMinutes, getSeconds
+    @SuppressWarnings("deprecation")
     void update() {
         Date now = clock.getTime();
         int hours = now.getHours();
@@ -158,29 +160,37 @@ public class LcdClockFrame extends JmriJFrame implements java.beans.PropertyChan
         m2.setIcon(tubes[minutes - (minutes / 10) * 10]);
     }
 
-    /**
-     * Handle a change to clock properties.
-     * @param e unused.
-     */
     @Override
-    public void propertyChange(java.beans.PropertyChangeEvent e) {
-        updateButtonText();
+    public void dispose() {
+        super.dispose();
     }
 
     /**
-     * Update clock button text.
+     * Handle a change to clock properties
      */
-    private void updateButtonText(){
-        b.setText( Bundle.getMessage( clock.getRun() ? "ButtonPauseClock" : "ButtonRunClock") );
+    @Override
+    public void propertyChange(java.beans.PropertyChangeEvent e) {
+        boolean now = clock.getRun();
+        if (now) {
+            b.setText(Bundle.getMessage("ButtonPauseClock"));
+        } else {
+            b.setText(Bundle.getMessage("ButtonRunClock"));
+        }
     }
 
     JButton b;
 
     private class ButtonListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent a) {
-            clock.setRun(!clock.getRun());
-            updateButtonText();
+            boolean next = !clock.getRun();
+            clock.setRun(next);
+            if (next) {
+                b.setText(Bundle.getMessage("ButtonPauseClock"));
+            } else {
+                b.setText(Bundle.getMessage("ButtonRunClock"));
+            }
         }
     }
 }

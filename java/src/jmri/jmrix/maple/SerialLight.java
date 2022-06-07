@@ -21,7 +21,6 @@ public class SerialLight extends AbstractLight {
      * 'systemName' has already been validated in SerialLightManager
      *
      * @param systemName the system name for this Light
-     * @param memo system connection.
      */
     public SerialLight(String systemName, MapleSystemConnectionMemo memo) {
         super(systemName);
@@ -37,7 +36,6 @@ public class SerialLight extends AbstractLight {
      *
      * @param systemName the system name for this Light
      * @param userName   the user name for this Light
-     * @param memo system connection.
      */
     public SerialLight(String systemName, String userName, MapleSystemConnectionMemo memo) {
         super(systemName, userName);

@@ -1,16 +1,19 @@
 package jmri.util;
 
 import org.apache.log4j.Level;
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Tests for the jmri.util.JUnitAppender class.
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class JUnitAppenderTest {
 
@@ -68,7 +71,7 @@ public class JUnitAppenderTest {
         String msg = "Message for testing to find";
         log.error("Dummy");
         Assert.assertNull(JUnitAppender.checkForMessageStartingWith(msg));
-        log.error("{} foo", msg);
+        log.error(msg+" foo");
         Assert.assertNotNull(JUnitAppender.checkForMessageStartingWith(msg));
         // second not match
         Assert.assertNull(JUnitAppender.checkForMessageStartingWith(msg));
@@ -83,7 +86,7 @@ public class JUnitAppenderTest {
         String msg = "Message for testing to find";
         log.error("Dummy");
         Assert.assertNull(JUnitAppender.checkForMessageStartingWith(msg));
-        log.warn("{} foo", msg);
+        log.warn(msg+" foo");
         Assert.assertNotNull(JUnitAppender.checkForMessageStartingWith(msg));
         Assert.assertNull(JUnitAppender.checkForMessageStartingWith(msg));
         log.warn(msg);
@@ -96,7 +99,7 @@ public class JUnitAppenderTest {
         String msg = "Message for testing to find";
         log.error("Dummy");
         Assert.assertNull(JUnitAppender.checkForMessageStartingWith(msg));
-        log.info("{} foo", msg);
+        log.info(msg+" foo");
         Assert.assertNotNull(JUnitAppender.checkForMessageStartingWith(msg));
         Assert.assertNull(JUnitAppender.checkForMessageStartingWith(msg));
         log.info(msg);
@@ -161,7 +164,7 @@ public class JUnitAppenderTest {
     }
 
     @Test
-    @Disabled("last line was commented out under JUnit 3, ignoring under JUnit 4")
+    @Ignore("last line was commented out under JUnit 3, ignoring under JUnit 4")
     public void testExpectedMessageAsInfo() {
         // info is usually turned off, so this doesn't pass in most cases
         Assume.assumeTrue(log.isInfoEnabled());
@@ -171,7 +174,7 @@ public class JUnitAppenderTest {
     }
 
     @Test
-    @Disabled("last line was commented out under JUnit 3, ignoring under JUnit 4")
+    @Ignore("last line was commented out under JUnit 3, ignoring under JUnit 4")
     public void testExpectedMessageAsDebug() {
         // debug is usually turned off, so this doesn't pass in most cases
         Assume.assumeTrue(log.isDebugEnabled());
@@ -280,12 +283,12 @@ public class JUnitAppenderTest {
         Assert.assertFalse(JUnitAppender.verifyNoBacklog());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
 
         jmri.util.JUnitUtil.tearDown();     

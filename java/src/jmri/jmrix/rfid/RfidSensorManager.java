@@ -1,6 +1,5 @@
 package jmri.jmrix.rfid;
 
-import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,17 +14,16 @@ import org.slf4j.LoggerFactory;
  */
 abstract public class RfidSensorManager extends jmri.managers.AbstractSensorManager implements RfidListener {
 
-    public RfidSensorManager(RfidSystemConnectionMemo memo) {
-        super(memo);
+    private final String prefix;
+
+    public RfidSensorManager(String prefix) {
+        super();
+        this.prefix = prefix;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public RfidSystemConnectionMemo getMemo() {
-        return (RfidSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return prefix;
     }
 
     // to free resources when no longer used
@@ -34,18 +32,13 @@ abstract public class RfidSensorManager extends jmri.managers.AbstractSensorMana
         super.dispose();
     }
 
-//    /**
-//     * {@inheritDoc}
-//     */
-//        @Nonnull
-//        public Sensor createNewSensor(@Nonnull String systemName, String userName) {
+//    public Sensor createNewSensor(String systemName, String userName) {
 //        RfidSensor r = new RfidSensor(systemName, userName);
 //        return r;
 //    }
-
     @Override
     public void message(RfidMessage m) {
-        log.warn("Unexpected message received: {}", m);
+        log.warn("Unexpected message received: " + m);
     }
 
     private static final Logger log = LoggerFactory.getLogger(RfidSensorManager.class);

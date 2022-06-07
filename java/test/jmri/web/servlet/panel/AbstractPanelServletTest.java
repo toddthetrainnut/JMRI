@@ -3,7 +3,9 @@ package jmri.web.servlet.panel;
 import static org.junit.Assert.assertEquals;
 
 import org.jdom2.Element;
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import jmri.InstanceManager;
 import jmri.Sensor;
@@ -30,13 +32,13 @@ public class AbstractPanelServletTest {
         assertEquals(systemName, e.getChild("active").getAttribute("sensor").getValue());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

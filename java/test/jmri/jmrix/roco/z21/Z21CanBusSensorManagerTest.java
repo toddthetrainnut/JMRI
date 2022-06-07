@@ -3,14 +3,12 @@ package jmri.jmrix.roco.z21;
 import jmri.Sensor;
 import jmri.SensorManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmrix.roco.z21.Z21SensorManager class for CanBus sensors.
  *
- * @author Paul Bender Copyright (c) 2018,2019
+ * @author	Paul Bender Copyright (c) 2018,2019
  */
 public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrTestBase {
 
@@ -41,39 +39,6 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
         Assert.assertTrue("real object returned ", t != null);
         Assert.assertEquals("system name correct ", t,l.getBySystemName(getSystemName(5)));
     }
-
-    @Test
-    public void testDefaultSystemNameLowerCase() {
-        // create
-        Sensor t = l.provideSensor("ZSabcd:5");
-        // check
-        Assert.assertNotNull("real object returned ", t);
-        Assert.assertEquals("system name same input correct ", t,l.getBySystemName("ZSabcd:5"));
-        Assert.assertEquals("system name same value correct ", t,l.getBySystemName(getSystemName(5)));
-    }
-
-    @Test
-    public void testDefaultSystemMixedDigit() {
-        // create
-        Sensor t = l.provideSensor("ZSa1c3:5");
-        // check
-        Assert.assertNotNull("real object returned ", t);
-        Assert.assertEquals("system name same input correct ", t,l.getBySystemName("ZSa1c3:5"));
-        Assert.assertEquals("system name same value correct ", t,l.getBySystemName("ZSA1C3:5"));
-    }
-
-    @Test
-    public void testDefaultSystemMixedCase() {
-        // create
-        Sensor t = l.provideSensor("ZSaBcD:5");
-        // check
-        Assert.assertNotNull("real object returned ", t);
-        Assert.assertEquals("system name same input correct",t,l.getBySystemName("ZSaBcD:5"));
-        Assert.assertEquals("system name opposite input correct", t, l.getBySystemName("ZSAbCd:5"));
-        Assert.assertEquals("system name same all lower", t,l.getBySystemName("ZSabcd:5"));
-        Assert.assertEquals("system name same all upper", t,l.getBySystemName("ZSABCD:5"));
-    }
-
 
     @Test
     public void testZ21CanBusCTor() {
@@ -110,10 +75,10 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
         Z21Reply reply = new Z21Reply(msg,14);
         znis.sendTestMessage(reply);
 
-        // see if sensor exists note that the node value is numeric,
-        // but in hex format.
+        // see if sensor exists
+        // note that name matches case of name sent
         Assert.assertNotNull(l.getBySystemName("ZSabcd:1"));
-        Assert.assertNotNull(l.getBySystemName("ZSABCD:1"));
+        Assert.assertNull(l.getBySystemName("ZSABCD:1"));
     }
 
     @Test
@@ -142,12 +107,7 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
     }
 
     @Override
-    protected int getNumToTest1() {
-        return 6; // overriding 9 since outside valid range
-    }
-
-    @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
@@ -159,7 +119,7 @@ public class Z21CanBusSensorManagerTest extends jmri.managers.AbstractSensorMgrT
         l = new Z21SensorManager(memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         l.dispose();
         znis.terminateThreads();

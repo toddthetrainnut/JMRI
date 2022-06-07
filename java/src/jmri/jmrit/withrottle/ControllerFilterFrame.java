@@ -5,13 +5,26 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import jmri.*;
+import jmri.InstanceManager;
+import jmri.NamedBean;
+import jmri.Route;
+import jmri.RouteManager;
+import jmri.Turnout;
+import jmri.TurnoutManager;
 import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,7 +189,7 @@ public class ControllerFilterFrame extends JmriJFrame implements TableModelListe
     @Override
     public void tableChanged(TableModelEvent e) {
         if (log.isDebugEnabled()) {
-            log.debug("Set mod flag true for: {}", getTitle());
+            log.debug("Set mod flag true for: " + getTitle());
         }
         this.setModifiedFlag(true);
     }
@@ -240,11 +253,9 @@ public class ControllerFilterFrame extends JmriJFrame implements TableModelListe
 
         TurnoutManager mgr = InstanceManager.turnoutManagerInstance();
 
+        @SuppressWarnings("deprecation") // needs careful unwinding for Set operations
         TurnoutFilterModel() {
-            sysNameList = new java.util.ArrayList<>(mgr.getNamedBeanSet().size());
-            mgr.getNamedBeanSet().forEach(bean -> {
-                sysNameList.add(bean.getSystemName());
-            });
+            sysNameList = mgr.getSystemNameList();
             mgr.addPropertyChangeListener(this);
         }
 
@@ -326,11 +337,9 @@ public class ControllerFilterFrame extends JmriJFrame implements TableModelListe
 
         RouteManager mgr = InstanceManager.getDefault(jmri.RouteManager.class);
 
+        @SuppressWarnings("deprecation") // needs careful unwinding for Set operations
         RouteFilterModel() {
-            sysNameList = new java.util.ArrayList<>(mgr.getNamedBeanSet().size());
-            mgr.getNamedBeanSet().forEach(bean -> {
-                sysNameList.add(bean.getSystemName());
-            });
+            sysNameList = mgr.getSystemNameList();
             mgr.addPropertyChangeListener(this);
         }
 

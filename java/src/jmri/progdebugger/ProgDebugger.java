@@ -1,5 +1,7 @@
 package jmri.progdebugger;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -9,29 +11,21 @@ import jmri.ProgListener;
 import jmri.Programmer;
 import jmri.ProgrammerException;
 import jmri.ProgrammingMode;
-import jmri.beans.PropertyChangeSupport;
-import jmri.jmrix.loconet.hexfile.HexFileFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Debugging implementation of Programmer interface.
  * <p>
- * Note that running a simulated LocoNet connection, {@link HexFileFrame#configure()} will substitute the
- * {@link jmri.progdebugger.ProgDebugger} instead of the {@link jmri.jmrix.loconet.LnOpsModeProgrammer},
- * overriding {@link #readCV(String, ProgListener)} and {@link #writeCV(String, int, ProgListener)}.
- * <p>
  * Remembers writes, and returns the last written value when a read to the same
  * CV is made.
  * <p>
  * Only supports the DCC single-number address space, should be updated to handle
- * any string address. As a temporary fix we simply discard the first part of any CV name
- * containing "." and use the rest.
- * TODO Fully support numberformat "113.12" in ProgDebugger (used in LOCONETLNCVMODE and LOCONETBDOPSWMODE)
+ * any string address.
  *
- * @author Bob Jacobsen Copyright (C) 2001, 2007, 2013
+ * @author	Bob Jacobsen Copyright (C) 2001, 2007, 2013
  */
-public class ProgDebugger extends PropertyChangeSupport implements AddressedProgrammer {
+public class ProgDebugger implements AddressedProgrammer {
 
     public ProgDebugger() {
         mode = ProgrammingMode.PAGEMODE;
@@ -46,7 +40,6 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
     // write CV is recorded for later use
     private int _lastWriteVal = -1;
     private int _lastWriteCv = -1;
-    //private String cvNumPrefix; // TODO use part 0 of composite CVnames for simulated replies?
 
     public int lastWrite() {
         return _lastWriteVal;
@@ -85,7 +78,7 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
         if (saw != null) {
             return saw;
         }
-        log.warn("CV {} has no defined value", cv);
+        log.warn("CV " + cv + " has no defined value");
         return -1;
     }
 
@@ -116,9 +109,8 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
      * {@inheritDoc}
      */
     @Override
-    @Nonnull
     public String decodeErrorCode(int i) {
-        log.debug("decoderErrorCode {}", i);
+        log.debug("decoderErrorCode " + i);
         return "error " + i;
     }
 
@@ -127,21 +119,11 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
      */
     @Override
     public void writeCV(String CVname, int val, ProgListener p) throws ProgrammerException {
-        final int CV;
-        // Check CVname contents for int parsing
-        if (CVname.contains(".")) {
-            String[] parts = CVname.split("\\.");
-            //cvNumPrefix = parts[0];
-            CVname = parts[1];
-            // in LocoNet LOCONETLNCVMODE and LOCONETBDOPSWMODE the CV value (string) eg. "25.2"
-            // contains a first part for Article ID/Board typeword. cvNumPrefix is discarded during debug/simulation.
-            // See jmri.jmrix.loconet.LnOpsModeProgrammer.writeCV()
-        }
-        CV = Integer.parseInt(CVname);
+        final int CV = Integer.parseInt(CVname);
         nOperations++;
         final ProgListener m = p;
         // log out the request
-        log.info("write CV: {} to: {} mode: {}", CV, val, getMode());
+        log.info("write CV: " + CV + " to: " + val + " mode: " + getMode());
         _lastWriteVal = val;
         _lastWriteCv = CV;
         // save for later retrieval
@@ -193,11 +175,11 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
         if (saw != null) {
             result = saw;
             confirmOK = (result == val);
-            log.info("confirm CV: {} mode: {} will return {} pass: {}", CV, getMode(), result, confirmOK);
+            log.info("confirm CV: " + CV + " mode: " + getMode() + " will return " + result + " pass: " + confirmOK);
         } else {
             result = -1;
             confirmOK = false;
-            log.info("confirm CV: {} mode: {} will return -1 pass: false due to no previous value", CV, getMode());
+            log.info("confirm CV: " + CV + " mode: " + getMode() + " will return -1 pass: false due to no previous value");
         }
         _lastReadCv = CV;
         // return a notification via the queue to ensure end
@@ -225,17 +207,7 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
      */
     @Override
     public void readCV(String CVname, ProgListener p) throws ProgrammerException {
-        final int CV;
-        // Check CVname contents for int parsing
-        if (CVname.contains(".")) {
-            String[] parts = CVname.split("\\.");
-            //cvNumPrefix = parts[0];
-            CVname = parts[1];
-            // in LocoNet LOCONETLNCVMODE and LOCONETBDOPSWMODE the CV value (string) e.g. "113.12"
-            // contains a first part for Article ID/Board typeword. cvNumPrefix is discarded during debug/simulation.
-            // See jmri.jmrix.loconet.LnOpsModeProgrammer.writeCV()
-        }
-        CV = Integer.parseInt(CVname);
+        final int CV = Integer.parseInt(CVname);
         final ProgListener m = p;
         _lastReadCv = CV;
         nOperations++;
@@ -247,7 +219,7 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
             readValue = saw;
         }
 
-        log.info("read CV: {} mode: {} will read {}", CV, getMode(), readValue);
+        log.info("read CV: " + CV + " mode: " + getMode() + " will read " + readValue);
 
         final int returnValue = readValue;
         // return a notification via the queue to ensure end
@@ -277,7 +249,7 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
         if (getSupportedModes().contains(m)) {
             ProgrammingMode oldMode = mode;
             mode = m;
-            firePropertyChange("Mode", oldMode, m);
+            notifyPropertyChange("Mode", oldMode, m);
         } else {
             throw new IllegalArgumentException("Invalid requested mode: " + m);
         }
@@ -299,14 +271,22 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
     public List<ProgrammingMode> getSupportedModes() {
         if (address >= 0) {
             // addressed programmer
-            return Arrays.asList(ProgrammingMode.OPSBITMODE,
-                    ProgrammingMode.OPSBYTEMODE);
+            return Arrays.asList(
+                    new ProgrammingMode[]{
+                        ProgrammingMode.OPSBITMODE,
+                        ProgrammingMode.OPSBYTEMODE
+                    }
+            );
         } else {
             // global programmer
-            return Arrays.asList(ProgrammingMode.PAGEMODE,
-                    ProgrammingMode.DIRECTBITMODE,
-                    ProgrammingMode.DIRECTBYTEMODE,
-                    ProgrammingMode.DIRECTMODE);
+            return Arrays.asList(
+                    new ProgrammingMode[]{
+                        ProgrammingMode.PAGEMODE,
+                        ProgrammingMode.DIRECTBITMODE,
+                        ProgrammingMode.DIRECTBYTEMODE,
+                        ProgrammingMode.DIRECTMODE
+                    }
+            );
         }
     }
     /**
@@ -332,7 +312,7 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
 
     @Override
     public boolean getCanRead(String addr) {
-        log.debug("getCanRead({}) returns {}", addr, Integer.parseInt(addr) <= readLimit);
+        log.debug("getCanRead(" + addr + ") returns " + (Integer.parseInt(addr) <= readLimit));
         return Integer.parseInt(addr) <= readLimit;
     }
 
@@ -344,7 +324,7 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
 
     @Override
     public boolean getCanWrite(String addr) {
-        log.debug("getCanWrite({}) returns {}", addr, Integer.parseInt(addr) <= writeLimit);
+        log.debug("getCanWrite(" + addr + ") returns " + (Integer.parseInt(addr) <= writeLimit));
         return Integer.parseInt(addr) <= writeLimit;
     }
 
@@ -357,6 +337,30 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
     @Nonnull
     @Override
     public Programmer.WriteConfirmMode getWriteConfirmMode(String addr) { return WriteConfirmMode.NotVerified; }
+
+    /**
+     * Provide a {@link java.beans.PropertyChangeSupport} helper.
+     */
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add a PropertyChangeListener to the listener list.
+     *
+     * @param listener The PropertyChangeListener to be added
+     */
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    protected void notifyPropertyChange(String key, Object oldValue, Object value) {
+        propertyChangeSupport.firePropertyChange(key, oldValue, value);
+    }
 
     boolean longAddr = true;
 
@@ -412,5 +416,4 @@ public class ProgDebugger extends PropertyChangeSupport implements AddressedProg
     }
 
     private final static Logger log = LoggerFactory.getLogger(ProgDebugger.class);
-
 }

@@ -1,9 +1,8 @@
 package jmri.jmrit.ctc.editor;
 
 import java.awt.event.ActionEvent;
-import jmri.InstanceManager;
-import jmri.jmrit.ctc.editor.gui.FrmMainForm;
 import jmri.util.swing.JmriAbstractAction;
+import jmri.util.swing.WindowInterface;
 
 /**
  * Swing action to create and register a CtcEditor.
@@ -22,8 +21,12 @@ public class CtcEditorAction extends JmriAbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        InstanceManager.getOptionalDefault(FrmMainForm.class).orElseGet(() -> new FrmMainForm())
-                .setVisible(true);
+        if (jmri.InstanceManager.getNullableDefault(jmri.jmrit.ctc.editor.gui.FrmMainForm.class) != null) {
+            // Prevent duplicate copies
+            return;
+        }
+        jmri.jmrit.ctc.editor.gui.FrmMainForm f = new jmri.jmrit.ctc.editor.gui.FrmMainForm();
+        f.setVisible(true);
     }
 
     // never invoked, because we overrode actionPerformed above

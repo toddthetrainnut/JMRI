@@ -1,11 +1,7 @@
 package jmri.jmris.simpleserver;
 
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmris.simpleserver.SimplePowerServer class
@@ -24,7 +20,7 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
             // null output string drops characters
             // could be replaced by one that checks for specific outputs
             @Override
-            public void write(int b) {
+            public void write(int b) throws java.io.IOException {
             }
         });
         java.io.DataInputStream input = new java.io.DataInputStream(System.in);
@@ -32,7 +28,7 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
         SimplePowerServer a = new SimplePowerServer(input, output);
 
         jmri.util.JUnitAppender.assertErrorMessage("No power manager instance found");
-        assertThat(a).isNotNull();
+        Assert.assertNotNull(a);
     }
 
     @Test
@@ -42,19 +38,20 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
             // null output string drops characters
             // could be replaced by one that checks for specific outputs
             @Override
-            public void write(int b) {
+            public void write(int b) throws java.io.IOException {
             }
         });
         jmri.jmris.JmriConnectionScaffold jcs = new jmri.jmris.JmriConnectionScaffold(output);
         SimplePowerServer a = new SimplePowerServer(jcs);
-        assertThat(a).isNotNull();
+
+        Assert.assertNotNull(a);
     }
 
     // test sending a status string.
     @Test
     public void testSendStatusString() throws Exception {
-        ((SimplePowerServer) ps).sendStatus("Hello World\n");
-        assertThat(sb.toString()).withFailMessage("send status string").isEqualTo("Hello World\n");
+        ((SimplePowerServer)ps).sendStatus("Hello World\n");
+        Assert.assertEquals("send status string", "Hello World\n", sb.toString());
     }
 
     // test sending a status string.
@@ -63,32 +60,34 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
         java.io.DataOutputStream output = new java.io.DataOutputStream(
                 new java.io.OutputStream() {
             @Override
-            public void write(int b) {
+            public void write(int b) throws java.io.IOException {
                 sb.append((char) b);
             }
         });
         jmri.jmris.JmriConnectionScaffold jcs = new jmri.jmris.JmriConnectionScaffold(output);
         SimplePowerServer a = new SimplePowerServer(jcs);
         a.sendStatus("Hello World\n");
-        assertThat(jcs.getOutput()).withFailMessage("send status string").isEqualTo("Hello World\n");
+        Assert.assertEquals("send status string", "Hello World\n", jcs.getOutput());
     }
 
     // test parsing an ON status message.
     @Test
     public void testParseOnStatus() throws Exception {
-        ps.parseStatus("POWER ON\n");
-        assertThat(jmri.PowerManager.ON).withFailMessage("Parse On Status Check").isEqualTo(jmri.InstanceManager
-                .getDefault(jmri.PowerManager.class).getPower());
-        assertThat(sb.toString()).withFailMessage("status as a result of parsing on").isEqualTo("POWER ON\n");
+         ps.parseStatus("POWER ON\n");
+         Assert.assertEquals("Parse On Status Check", jmri.InstanceManager
+                        .getDefault(jmri.PowerManager.class).getPower(),
+                        jmri.PowerManager.ON);
+        Assert.assertEquals("status as a result of parsing on", "POWER ON\n", sb.toString());
     }
 
     // test parsing an OFF status message.
     @Test
     public void testParseOffStatus() throws Exception {
         ps.parseStatus("POWER OFF\n");
-        assertThat(jmri.PowerManager.OFF).withFailMessage("Parse OFF Status Check").isEqualTo(jmri.InstanceManager
-                .getDefault(jmri.PowerManager.class).getPower());
-        assertThat(sb.toString()).withFailMessage("status as a result of parsing off").isEqualTo("POWER OFF\n");
+        Assert.assertEquals("Parse OFF Status Check", jmri.InstanceManager
+                        .getDefault(jmri.PowerManager.class).getPower(),
+                        jmri.PowerManager.OFF);
+        Assert.assertEquals("status as a result of parsing off", "POWER OFF\n", sb.toString());
     }
 
     @Test
@@ -96,31 +95,32 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
     public void testParseBadStatus() throws Exception {
         // this should just trigger an error message sent to the client.
         ps.parseStatus("POWER FFO\n");
-        assertThat(sb.toString()).withFailMessage("error from bad parse").isEqualTo("POWER ERROR\n");
+        Assert.assertEquals("error from bad parse", "POWER ERROR\n", sb.toString());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void checkPowerOnSent() {
-        assertThat(sb.toString()).withFailMessage("status as a result of on property change").isEqualTo("POWER ON\n");
+    public void checkPowerOnSent(){
+             Assert.assertEquals("status as a result of on property change", "POWER ON\n", sb.toString());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void checkPowerOffSent() {
-        assertThat(sb.toString()).isEqualTo("POWER OFF\n");
+    public void checkPowerOffSent(){
+            Assert.assertEquals("status as a result of off property change", "POWER OFF\n", sb.toString());
     }
+
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void checkErrorStatusSent() {
-        assertThat(sb.toString()).withFailMessage("sendErrorStatus check").isEqualTo("POWER ERROR\n");
+        Assert.assertEquals("sendErrorStatus check", "POWER ERROR\n", sb.toString());
     }
 
     /**
@@ -128,10 +128,11 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
      */
     @Override
     public void checkUnknownStatusSent() {
-        assertThat(sb.toString()).withFailMessage("send UNKNOWN status check").isEqualTo("POWER UNKNOWN\n");
+        Assert.assertEquals("send UNKNOWN status check", "POWER UNKNOWN\n", sb.toString());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -144,7 +145,7 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
         java.io.DataOutputStream output = new java.io.DataOutputStream(
                 new java.io.OutputStream() {
             @Override
-            public void write(int b) {
+            public void write(int b) throws java.io.IOException {
                 sb.append((char) b);
             }
         });
@@ -152,8 +153,8 @@ public class SimplePowerServerTest extends jmri.jmris.AbstractPowerServerTestBas
         ps = new SimplePowerServer(input, output);
     }
 
-    @AfterEach
-    public void tearDown() {
+    @After
+    public void tearDown() throws Exception {
         ps.dispose();
         ps = null;
         sb = null;

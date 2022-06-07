@@ -1,12 +1,14 @@
 package jmri.jmrix.ecos;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class EcosSensorTest extends jmri.implementation.AbstractSensorTestBase {
 
@@ -14,23 +16,24 @@ public class EcosSensorTest extends jmri.implementation.AbstractSensorTestBase {
     public int numListeners() {return 0;}
 
     @Override
-    public void checkActiveMsgSent() {}
+    public void checkOnMsgSent() {}
 
     @Override
-    public void checkInactiveMsgSent() {}
+    public void checkOffMsgSent() {}
 
     @Override
     public void checkStatusRequestMsgSent() {}
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         t = new EcosSensor("US1","Test");
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         t.dispose();
         JUnitUtil.tearDown();

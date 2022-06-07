@@ -1,11 +1,11 @@
 package jmri.jmrix.loconet;
 
 import java.beans.PropertyChangeListener;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -238,7 +238,8 @@ public class SE8cSignalHeadTest {
     LocoNetSystemConnectionMemo memo;
     boolean propChangeFlag;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
@@ -250,15 +251,14 @@ public class SE8cSignalHeadTest {
         jmri.InstanceManager.store(lnis, jmri.jmrix.loconet.LnTrafficController.class);
         jmri.InstanceManager.setDefault(jmri.jmrix.loconet.LnTrafficController.class, lnis);
 
-        memo.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100,false,false,false,false);
+        memo.configureCommandStation(jmri.jmrix.loconet.LnCommandStationType.COMMAND_STATION_DCS100,false,false,false);
         // memo.configureManagers(); // Skip this step, else autonomous loconet traffic is generated!
         jmri.InstanceManager.store(memo,jmri.jmrix.loconet.LocoNetSystemConnectionMemo.class);
         propChangeFlag=false;
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
         JUnitUtil.tearDown();
     }
 

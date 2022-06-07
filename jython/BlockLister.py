@@ -1,9 +1,7 @@
-#
 # This script looks up a block and lists all related objects.
 #
 # Author: Ken Cameron, copyright 2010
 # Part of the JMRI distribution
-#
 
 import jmri
 
@@ -18,35 +16,82 @@ LowDebug = 1
 NoneDebug = 0
 
 # set up a swing window to pick and describe blocks
-class BlockLister():
-    def __init__(self):
-        self.currentBlock = None
+class BlockLister(jmri.jmrit.automat.AbstractAutomaton) :
+    # initialize variables
+    currentBlock = None
+    askFinishLookupButton = False
+    debugLevel = HighDebug
+    
+    def init(self):
+        #print("start begin:.\n")
+        self.setName("Block Lister")
         self.setup()
-
+        #print("start end:.\n")
+        return
+        
+    def handle(self):
+        #self.msgText("handle begin:.\n")
+        self.waitMsec(1000)
+        if (self.askFinishLookupButton) :
+            self.doFinishLookupButton()
+            self.askFinishLookupButton = False
+        #self.msgText("handle done\n")
+        return 1 #continue if 1, run once if 0
+            
     # show what level of signal appearance causes a halt on dropping signal
     def returnSignalAppearanceHalt(self) :
         return(str(self.haltOnSignalHeadAppearance))
-
-    # return block display name
+        
+    # return userName if available, else systemName
     def giveBlockName(self, block) :
-        return 'None' if block is None else block.getDisplayName()
+        if (block == None) :
+            return 'None'
+        else :
+            if ((block.getUserName() == None) or (block.getUserName() == '')) :
+                return block.getSystemName()
+            else :
+                return block.getUserName()
 
-    # return signal head display name
+    # return userName if available, else systemName
     def giveSignalName(self, sig) :
-        return 'None' if sig is None else sig.getDisplayName()
+        if (sig == None) :
+            return 'None'
+        else :
+            if ((sig.getUserName() == None) or (sig.getUserName() == '')) :
+                return sig.getSystemName()
+            else :
+                return sig.getUserName()
 
-    # return turnout display name
+    # return userName if available, else systemName
     def giveTurnoutName(self, to) :
-        return 'None' if to is None else to.getDisplayName()
+        if (to == None) :
+            return 'None'
+        else :
+            if ((to.getUserName() == None) or (to.getUserName() == '')) :
+                return to.getSystemName()
+            else :
+                return to.getUserName()
 
-    # return sensor display name
+    # return userName if available, else systemName
     def giveSensorName(self, sen) :
-        return 'None' if sen is None else sen.getDisplayName()
-
-    # return signal mast display name
+        if (sen == None) :
+            return 'None'
+        else :
+            if ((sen.getUserName() == None) or (sen.getUserName() == '')) :
+                return sen.getSystemName()
+            else :
+                return sen.getUserName()
+                
+    # return userName if available, else systemName
     def giveMastName(self, mast) :
-        return 'None' if mast is None else mast.getDisplayName()
-
+        if (mast == None) :
+            return 'None'
+        else :
+            if ((mast.getUserName() == None) or (mast.getUserName() == '')) :
+                return mast.getSystemName()
+            else :
+                return mast.getUserName()
+         
     # convert signal appearance to text
     def textSignalAspect(self, sigAspect) :
         ret = "???"
@@ -63,7 +108,7 @@ class BlockLister():
         elif (sigAspect & FLASHGREEN != 0) :
             ret = "FLASHGREEN"
         return ret
-
+        
     # convert block state to english
     def cvtBlockStateToText(self, state) :
         rep = ""
@@ -72,7 +117,7 @@ class BlockLister():
         if (state == jmri.Block.UNOCCUPIED) :
             rep = rep + "Unoccupied "
         return rep
-
+        
     # convert block curvature to english
     def cvtCurvatureToText(self, curve) :
         rep = ""
@@ -85,7 +130,7 @@ class BlockLister():
         if (curve == jmri.Block.SEVERE) :
             rep = rep + "Severe "
         return rep
-
+        
     # convert signal appearance to english
     def cvtSignalToText(self, sig) :
         rep = ""
@@ -112,7 +157,7 @@ class BlockLister():
             rep = rep + "Unknown "
         #self.msgText("cvtSignalToText: " + self.giveSignalName(sig) + " displaying: " + rep + "\n")
         return rep
-
+        
     # convert mast appearance to english
     def cvtMastToText(self, mast) :
         rep =  ""
@@ -131,23 +176,37 @@ class BlockLister():
             rep = rep + "No Valid Aspects! "
         rep = rep + "System: " + sys.getUserName()
         return rep
-
+        
+    # test for block name
+    def testIfBlockNameValid(self, userName) :
+        foundStart = False
+        b = blocks.getByUserName(userName)
+        if (b != None and self.giveBlockName(b) == userName) :
+            foundStart = True
+        return foundStart
+        
     # define what button does when clicked and attach that routine to the button
     def whenLookupButtonClicked(self, event) :
-        c = self.blockCombo.getSelectedItem()
-        if c is None:
-            self.msgText("Select a block, please try again\n")
-            return
-
-        self.currentBlock = c
-        self.msgText("Block Name: " + self.giveBlockName(self.currentBlock) + "\n")
+        if (self.testIfBlockNameValid(self.blockValue.text) == False) :
+            self.msgText("Invalid block name: " + self.blockValue.text + " please try again\n")
+        else :
+            c = blocks.getBlock(self.blockValue.text)
+            if (c == None) :
+                self.msgText("Invalid block name: " + self.blockValue.text + " please try again\n")
+            else :
+                self.currentBlock = c
+                self.askFinishLookupButton = True
+        #self.msgText("whenLookupButtonClicked, done\n")     # add text
+        return
+        
+    # split out so it can happen from the handle() routine
+    def doFinishLookupButton(self) :
         self.displayBlockData(self.currentBlock)
         self.displayPathData(self.currentBlock)
         self.displaySegmentData(self.currentBlock)
-        self.msgText("***********************************************************************\n")
         self.msgText("\n")
         return
-
+            
     def displayBlockData(self, b) :
         if (b.getValue() != None) :
             self.msgText("Block Value: " + b.getValue() + "\n")
@@ -194,55 +253,106 @@ class BlockLister():
             else :
                 self.msgText("Path from " + self.giveBlockName(block) + " to " + self.giveBlockName(blockTest) + " has no signal masts!\n")
         return
-
+        
     def displaySegmentData(self, b) :
-        panels = jmri.InstanceManager.getDefault(jmri.jmrit.display.EditorManager)
-        layouts = panels.getList(jmri.jmrit.display.layoutEditor.LayoutEditor)
-        for layout in layouts:
-            self.msgText('-- Panel: {} --\n'.format(layout.getTitle()))
-            for s in layout.getTrackSegmentViews():
-                #self.msgText("Segment: " + s.getID() + " block: " + s.getBlockName() + "\n")
-                if ((s.getBlockName() == b.getSystemName()) or (s.getBlockName() == b.getUserName())) :
-                    if (s.getLayoutBlock() != None) :
-                        self.msgText("Segment: " + s.getId() + " LayoutBlock: " + s.getLayoutBlock().getId() + "\n")
-                    if (s.isHidden()) :
-                        self.msgText("Segment: " + s.getId() + " is hidden.\n")
-                    if (s.getTrackSegment().isMainline()) :
-                        self.msgText("Segment: " + s.getId() + " is Mainline.\n")
-                    if (s.isDashed()) :
-                        self.msgText("Segment: " + s.getId() + " is dashed.\n")
+        PanelMenu = jmri.InstanceManager.getDefault(jmri.jmrit.display.PanelMenu)
+        layout = PanelMenu.getLayoutEditorPanelList()
+        for s in layout[0].getTrackSegments():
+            #self.msgText("Segment: " + s.getID() + " block: " + s.getBlockName() + "\n")
+            if ((s.getBlockName() == b.getSystemName()) or (s.getBlockName() == b.getUserName())) :
+                if (s.getLayoutBlock() != None) :
+                    self.msgText("Segment: " + s.getId() + " LayoutBlock: " + s.getLayoutBlock().getId() + "\n")
+                if (s.isHidden()) :
+                    self.msgText("Segment: " + s.getId() + " is hidden.\n")
+                if (s.isMainline()) :
+                    self.msgText("Segment: " + s.getId() + " is Mainline.\n")
+                if (s.isDashed()) :
+                    self.msgText("Segment: " + s.getId() + " is dashed.\n")
         return
+        
+    # WindowListener is a interface class and therefore all of it's
+    # methods should be implemented even if not used to avoid AttributeErrors
+    class WinListener(java.awt.event.WindowListener):
+        f = None
+        cleanUp = None
 
+        def setCallBack(self, fr, c):
+            self.f = fr
+            self.cleanUp = c
+            return
+        
+        def windowClosing(self, event):
+            if (self.cleanUp != None) :
+                self.cleanUp(event)
+            if (self.f != None) :
+                self.f.dispose()         # close the pane (window)
+            return
+            
+        def windowActivated(self,event):
+            return
+
+        def windowDeactivated(self,event):
+            return
+
+        def windowOpened(self,event):
+            return
+
+        def windowClosed(self,event):
+            return
+            
+        def windowIconified(self, event):
+            return
+            
+        def windowDeiconified(self, event):
+            return
+     
     # handle adding to message window
     def msgText(self, txt) :
         self.scrollArea.append(txt)
-
+        if (self.autoScroll.isSelected() == True) :
+            self.scrollArea.setCaretPosition(self.scrollArea.getDocument().getLength())
+        return
+    
     # setup the user interface
     def setup(self) :
+         
+        # get other setup things
+
+        # start to initialise the GUI
+        
         # create buttons and define action
         self.lookupButton = javax.swing.JButton("Lookup")
         self.lookupButton.setEnabled(True)
         self.lookupButton.actionPerformed = self.whenLookupButtonClicked
-
+        
         # create the starting block field
-        self.blockCombo = jmri.swing.NamedBeanComboBox(jmri.InstanceManager.getDefault(jmri.BlockManager))
-        jmri.util.swing.JComboBoxUtil.setupComboBoxMaxRows(self.blockCombo);
-
+        self.blockValue = javax.swing.JTextField(10)
+        self.blockValue.setToolTipText("Block Name")
+        self.blockValue.setName("Block")
+        
+        # auto-scroll message window flag
+        self.autoScroll = javax.swing.JCheckBox()
+        self.autoScroll.setToolTipText("Sets message window to auto-scroll")
+        self.autoScroll.setSelected(True)        
+        
         # create a text area
-        self.scrollArea = javax.swing.JTextArea(30, 75)    # define a text area with it's size
+        self.scrollArea = javax.swing.JTextArea(15, 70)    # define a text area with it's size
         srcollField = javax.swing.JScrollPane(self.scrollArea) # put text area in scroll field
-
+        
         # create a frame to hold the buttons and fields
+        # also create a window listener. This is used mainly to remove the property change listener
+        # when the window is closed by clicking on the window close button
+        w = self.WinListener()
         self.scriptFrame = javax.swing.JFrame("Block Lister")       # argument is the frames title
-        self.scriptFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE)
         self.scriptFrame.contentPane.setLayout(javax.swing.BoxLayout(self.scriptFrame.contentPane, javax.swing.BoxLayout.Y_AXIS))
+        self.scriptFrame.addWindowListener(w)
         # put the text field on a line preceded by a label
-
-        # build block selector
+        
+        # build block info
         temppanel3 = javax.swing.JPanel()
         temppanel3.add(javax.swing.JLabel("Block: "))
-        temppanel3.add(self.blockCombo)
-
+        temppanel3.add(self.blockValue)
+        
         butPanel = javax.swing.JPanel()
         butPanel.add(self.lookupButton)
 
@@ -254,21 +364,22 @@ class BlockLister():
         self.scriptFrame.show()
         self.isAborting = False
         return
-
+        
     def setDebugNone(self) :
         self.debugLevel = NoneDebug
         return()
-
+        
     def setDebugLow(self) :
         self.debugLevel = LowDebug
         return()
-
+        
     def setDebugMedium(self) :
         self.debugLevel = MediumDebug
         return()
-
+        
     def setDebugHigh(self) :
         self.debugLevel = HighDebug
         return()
-
-BlockLister()
+        
+bl = BlockLister()
+bl.start()

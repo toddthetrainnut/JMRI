@@ -19,15 +19,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Extends VariableValue to represent a variable split across multiple CVs.
- * <br>
+ * <br><br>
  * The {@code mask} attribute represents the part of the value that's present in
- * each CV; higher-order bits are loaded to subsequent CVs.<br>
- * It is possible to assign a specific mask for each CV by providing a space
- * separated list of masks, starting with the lowest, and matching the order of
- * CVs
+ * each CV; higher-order bits are loaded to subsequent CVs.
  * <br><br>
  * The original use was for addresses of stationary (accessory) decoders.
- * <br>
+ * <br><br>
  * The original version only allowed two CVs, with the second CV specified by
  * the attributes {@code highCV} and {@code upperMask}.
  * <br><br>
@@ -43,7 +40,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (C) 2002, 2003, 2004, 2013
  * @author Dave Heap Copyright (C) 2016, 2019
- * @author Egbert Broerse Copyright (C) 2020
+ *
  */
 public class SplitVariableValue extends VariableValue
         implements ActionListener, FocusListener {
@@ -56,24 +53,15 @@ public class SplitVariableValue extends VariableValue
             HashMap<String, CvValue> v, JLabel status, String stdname,
             String pSecondCV, int pFactor, int pOffset, String uppermask, String extra1, String extra2, String extra3, String extra4) {
         super(name, comment, cvName, readOnly, infoOnly, writeOnly, opsOnly, cvNum, mask, v, status, stdname);
-        _minVal = 0;
-        _maxVal = ~0;
         stepOneActions(name, comment, cvName, readOnly, infoOnly, writeOnly, opsOnly, cvNum, mask, minVal, maxVal, v, status, stdname, pSecondCV, pFactor, pOffset, uppermask, extra1, extra2, extra3, extra4);
         _name = name;
-        _mask = mask; // will be converted to MaskArray to apply separate mask for each CV
-        if (mask != null && mask.contains(" ")) {
-            _maskArray = mask.split(" "); // type accepts multiple masks for SplitVariableValue
-        } else {
-            _maskArray = new String[1];
-            _maskArray[0] = mask;
-        }
+        _mask = mask;
+        _maxVal = maxVal;
+        _minVal = minVal;
         _cvNum = cvNum;
         _textField = new JTextField("0");
         _defaultColor = _textField.getBackground();
-
         _textField.setBackground(COLOR_UNKNOWN);
-        _textField.getAccessibleContext().setAccessibleName(label());
-
         mFactor = pFactor;
         mOffset = pOffset;
         // legacy format variables
@@ -87,7 +75,9 @@ public class SplitVariableValue extends VariableValue
         log.debug("Variable={};comment={};cvName={};cvNum={};stdname={}", _name, comment, cvName, _cvNum, stdname);
 
         // upper bit offset includes lower bit offset, and MSB bits missing from upper part
-        log.debug("Variable={}; upper mask {} had offsetVal={} so upperbitoffset={}", _name, _uppermask, offsetVal(_uppermask), offsetVal(_uppermask));
+        if (log.isDebugEnabled()) {
+            log.debug("Variable={}; upper mask {} had offsetVal={} so upperbitoffset={}", _name, _uppermask, offsetVal(_uppermask), offsetVal(_uppermask));
+        }
 
         // set up array of used CVs
         cvList = new ArrayList<>();
@@ -95,23 +85,14 @@ public class SplitVariableValue extends VariableValue
         List<String> nameList = CvUtil.expandCvList(_cvNum); // see if cvName needs expanding
         if (nameList.isEmpty()) {
             // primary CV
-            String tMask;
-            if (_maskArray != null && _maskArray.length == 1) {
-                log.debug("PrimaryCV mask={}", _maskArray[0]);
-                tMask = _maskArray[0];
-            } else {
-                tMask = _mask; // mask supplied could be an empty string
-            }
-            cvList.add(new CvItem(_cvNum, tMask));
+            cvList.add(new CvItem(_cvNum, mask));
 
             if (pSecondCV != null && !pSecondCV.equals("")) {
                 cvList.add(new CvItem(pSecondCV, _uppermask));
             }
         } else {
-            for (int i = 0; i < nameList.size(); i++) {
-                cvList.add(new CvItem(nameList.get(i), _maskArray[Math.min(i, _maskArray.length - 1)]));
-                // use last mask for all following CVs if fewer masks than the number of CVs listed were provided
-                log.debug("Added mask #{}: {}", i, _maskArray[Math.min(i, _maskArray.length - 1)]);
+            for (String s : nameList) {
+                cvList.add(new CvItem(s, mask));
             }
         }
 
@@ -120,15 +101,18 @@ public class SplitVariableValue extends VariableValue
         for (int i = 0; i < cvCount; i++) {
             cvList.get(i).startOffset = currentOffset;
             String t = cvList.get(i).cvMask;
-            if (t.contains("V")) {
-                currentOffset = currentOffset + t.lastIndexOf("V") - t.indexOf("V") + 1;
-            } else {
-                log.error("Variable={};cvName={};cvMask={} is an invalid bitmask", _name, cvList.get(i).cvName, cvList.get(i).cvMask);
+            while (t.length() > 0) {
+                if (t.startsWith("V")) {
+                    currentOffset++;
+                }
+                t = t.substring(1);
             }
-            log.debug("Variable={};cvName={};cvMask={};startOffset={};currentOffset={}", _name, cvList.get(i).cvName, cvList.get(i).cvMask, cvList.get(i).startOffset, currentOffset);
+            if (log.isDebugEnabled()) {
+                log.debug("cvName={};cvMask={};startOffset={}", cvList.get(i).cvName, cvList.get(i).cvMask, cvList.get(i).startOffset);
+            }
 
             // connect CV for notification
-            CvValue cv = _cvMap.get(cvList.get(i).cvName);
+            CvValue cv = (_cvMap.get(cvList.get(i).cvName));
             cvList.get(i).thisCV = cv;
         }
 
@@ -146,46 +130,17 @@ public class SplitVariableValue extends VariableValue
     /**
      * Subclasses can override this to pick up constructor-specific attributes
      * and perform other actions before cvList has been built.
-     *
-     * @param name      name.
-     * @param comment   comment.
-     * @param cvName    cv name.
-     * @param readOnly  true for read only, else false.
-     * @param infoOnly  true for info only, else false.
-     * @param writeOnly true for write only, else false.
-     * @param opsOnly   true for ops only, else false.
-     * @param cvNum     cv number.
-     * @param mask      cv mask.
-     * @param minVal    minimum value.
-     * @param maxVal    maximum value.
-     * @param v         hashmap of string and cv value.
-     * @param status    status.
-     * @param stdname   std name.
-     * @param pSecondCV second cv (no longer preferred, specify in cv)
-     * @param pFactor   factor.
-     * @param pOffset   offset.
-     * @param uppermask upper mask (no longer preferred, specify in mask)
-     * @param extra1    extra 1.
-     * @param extra2    extra 2.
-     * @param extra3    extra 3.
-     * @param extra4    extra 4.
      */
     public void stepOneActions(String name, String comment, String cvName,
             boolean readOnly, boolean infoOnly, boolean writeOnly, boolean opsOnly,
             String cvNum, String mask, int minVal, int maxVal,
             HashMap<String, CvValue> v, JLabel status, String stdname,
             String pSecondCV, int pFactor, int pOffset, String uppermask, String extra1, String extra2, String extra3, String extra4) {
-        if (extra3 != null) {
-            _minVal = getValueFromText(extra3);
-        }
-        if (extra4 != null) {
-            _maxVal = getValueFromText(extra4);
-        }
     }
 
     /**
-     * Subclasses can override this to invoke further actions after cvList has
-     * been built.
+     * subclasses can override this to invoke further actions after cvList has
+     * been built
      */
     public void stepTwoActions() {
         if (currentOffset > bitCount) {
@@ -212,7 +167,7 @@ public class SplitVariableValue extends VariableValue
     }
 
     /**
-     * Multiple masks can be defined for the CVs accessed by this variable.
+     * There are multiple masks for the CVs accessed by this variable.
      * <br>
      * Actual individual masks are returned in
      * {@link #getCvDescription getCvDescription()}.
@@ -226,30 +181,16 @@ public class SplitVariableValue extends VariableValue
         if (mSecondCV != null && !mSecondCV.equals("")) {
             return _uppermask + _mask;
         } else {
-            return _mask; // a list of 1-n masks, separated by spaces
+            return _mask;
         }
-    }
-
-    /**
-     * Access a specific mask, used in tests
-     *
-     * @param i index of CV in variable
-     * @return a single mask as string in the form XXXXVVVV, or empty string if
-     *         index out of bounds
-     */
-    protected String getMask(int i) {
-        if (i < cvCount) {
-            return cvList.get(i).cvMask;
-        }
-        return "";
     }
 
     /**
      * Provide a user-readable description of the CVs accessed by this variable.
-     * <br>
-     * Actual individual masks are added to CVs if more are present.
+     * <br><br>
+     * Actual individual masks are added to CVs in this method.
      *
-     * @return A user-friendly CV(s) and bitmask(s) description
+     * @return A user-friendly CV(s) and bitmask(s) description.
      */
     @Override
     public String getCvDescription() {
@@ -266,7 +207,6 @@ public class SplitVariableValue extends VariableValue
                 buf.append(temp);
             }
         }
-        buf.append("."); // mark that mask descriptions are already inserted for CvUtil.addCvDescription
         return buf.toString();
     }
 
@@ -275,8 +215,7 @@ public class SplitVariableValue extends VariableValue
     int mFactor;
     int mOffset;
     String _name;
-    String _mask; // full string as provided, use _maskArray to access one of multiple masks
-    String[] _maskArray = new String[0];
+    String _mask;
     String _cvNum;
 
     List<CvItem> cvList;
@@ -293,22 +232,31 @@ public class SplitVariableValue extends VariableValue
         return retString;
     }
 
-   @Override
+    @Deprecated
+    public String getSecondCvNum() {
+        String retString = "";
+        if (cvCount > 1) {
+            retString = cvList.get(1).cvName;
+        }
+        return retString;
+    }
+
+    @Override
     public void setToolTipText(String t) {
         super.setToolTipText(t);   // do default stuff
         _textField.setToolTipText(t);  // set our value
     }
 
     // the connection is to cvNum and cvNum+1
-    long _minVal;
-    long _maxVal;
+    int _maxVal;
+    int _minVal;
 
     @Override
     public Object rangeVal() {
         return "Split value";
     }
 
-    String oldContents = "0";
+    String oldContents = "";
 
     long getValueFromText(String s) {
         return (Long.parseUnsignedLong(s));
@@ -344,8 +292,7 @@ public class SplitVariableValue extends VariableValue
      * Contains numeric-value specific code.
      * <br><br>
      * Calculates new value for _textField and invokes
-     * {@link #setLongValue(long) setLongValue(newVal)} to make and notify the
-     * change
+     * {@link #setValue(long) setValue(newVal)} to make and notify the change
      *
      * @param intVals array of new CV values
      */
@@ -357,7 +304,7 @@ public class SplitVariableValue extends VariableValue
             log.debug("Variable={}; i={}; newVal={}", _name, i, getTextFromValue(newVal));
         }
         log.debug("Variable={}; set value to {}", _name, newVal);
-        setLongValue(newVal);  // check for duplicate is done inside setLongValue
+        setValue(newVal);  // check for duplicate is done inside setValue
         log.debug("Variable={}; in property change after setValue call", _name);
     }
 
@@ -370,29 +317,24 @@ public class SplitVariableValue extends VariableValue
 
     /**
      * Contains numeric-value specific code.
-     * <br>
+     * <br><br>
      * firePropertyChange for "Value" with new and old contents of _textField
      */
     void exitField() {
         // there may be a lost focus event left in the queue when disposed so protect
         if (_textField != null && !oldContents.equals(_textField.getText())) {
-            long newFieldVal = 0;
-            try {
-                newFieldVal = getValueFromText(_textField.getText());
-            } catch (NumberFormatException e) {
-                _textField.setText(oldContents);
-            }
-            log.debug("_minVal={};_maxVal={};newFieldVal={}",
-                    Long.toUnsignedString(_minVal), Long.toUnsignedString(_maxVal), Long.toUnsignedString(newFieldVal));
-            if (Long.compareUnsigned(newFieldVal, _minVal) < 0 || Long.compareUnsigned(newFieldVal, _maxVal) > 0) {
-                _textField.setText(oldContents);
-            } else {
+            long newFieldVal = getValueFromText(_textField.getText());
+            log.debug("_minVal = {},_maxVal = {},newFieldVal = {}", _minVal, _maxVal, newFieldVal);
+//            disable recently-added _minVal, _maxVal checking for now
+//            if (newFieldVal < _minVal || newFieldVal > _maxVal) {
+//                _textField.setText(oldContents);
+//            } else {
                 long newVal = (newFieldVal - mOffset) / mFactor;
                 long oldVal = (getValueFromText(oldContents) - mOffset) / mFactor;
-                log.debug("Enter updatedTextField from exitField");
+//            log.debug("Enter updatedTextField from exitField");
                 updatedTextField();
                 prop.firePropertyChange("Value", oldVal, newVal);
-            }
+//            }
         }
     }
 
@@ -430,20 +372,28 @@ public class SplitVariableValue extends VariableValue
     }
 
     /**
-     * ActionListener implementation.
-     * <p>
-     * Invokes {@link #exitField exitField()}
+     * ActionListener implementations
+     */
+    /**
+     * Contains numeric-value specific code.
+     * <br><br>
+     * invokes {@link #updatedTextField updatedTextField()}
+     * <br><br>
+     * firePropertyChange for "Value" with new contents of _textField
      *
      * @param e the action event
      */
     @Override
     public void actionPerformed(ActionEvent e) {
         log.debug("Variable='{}'; actionPerformed", _name);
-        exitField();
+        long newVal = (getValueFromText(_textField.getText()) - mOffset) / mFactor;
+        log.debug("Enter updatedTextField from actionPerformed");
+        updatedTextField();
+        prop.firePropertyChange("Value", null, newVal);
     }
 
     /**
-     * FocusListener implementations.
+     * FocusListener implementations
      */
     @Override
     public void focusGained(FocusEvent e) {
@@ -467,47 +417,30 @@ public class SplitVariableValue extends VariableValue
 
     /**
      * Set value from a String value.
-     *
-     * @param value a string representing the Long value to be set
      */
     @Override
     public void setValue(String value) {
         try {
-            long val = Long.parseUnsignedLong(value);
-            setLongValue(val);
+            long val = Long.parseLong(value);
+            setValue(val);
         } catch (NumberFormatException e) {
-            log.warn("skipping set of non-long value \"{}\"", value);
+            log.debug("skipping set of non-long value \"{}\"", value);
         }
     }
 
     @Override
     public void setIntValue(int i) {
-        setLongValue(i);
+        setValue(i);
     }
 
     @Override
     public int getIntValue() {
-        long x = getLongValue();
-        long y = x & intMask;
-        if ((Long.compareUnsigned(x, y) != 0)) {
-            log.error("Value {} from textField {} cannot be converted to 'int'", x, _name);
-        }
         return (int) ((getValueFromText(_textField.getText()) - mOffset) / mFactor);
-    }
-
-    /**
-     * Get the value as an unsigned long.
-     *
-     * @return the value as a long
-     */
-    @Override
-    public long getLongValue() {
-        return ((getValueFromText(_textField.getText()) - mOffset) / mFactor);
     }
 
     @Override
     public Object getValueObject() {
-        return getLongValue();
+        return Integer.valueOf(_textField.getText());
     }
 
     @Override
@@ -521,8 +454,8 @@ public class SplitVariableValue extends VariableValue
         }
     }
 
-    public void setLongValue(long value) {
-        log.debug("Variable={}; enter setLongValue {}", _name, value);
+    public void setValue(long value) {
+        log.debug("Variable={}; enter setValue {}", _name, value);
         long oldVal;
         try {
             oldVal = (getValueFromText(_textField.getText()) - mOffset) / mFactor;
@@ -534,13 +467,8 @@ public class SplitVariableValue extends VariableValue
         if (oldVal != value || getState() == VariableValue.UNKNOWN) {
             actionPerformed(null);
         }
-        // TODO PENDING: the code used to fire value * mFactor + mOffset, which is a text representation;
-        // but 'oldValue' was converted back using mOffset / mFactor making those two (new / old)
-        // using different scales. Probably a bug, but it has been there from well before
-        // the extended splitVal. Because of the risk of breaking existing
-        // behaviour somewhere, deferring correction until at least the next test release.
         prop.firePropertyChange("Value", oldVal, value * mFactor + mOffset);
-        log.debug("Variable={}; exit setLongValue old={} new={}", _name, oldVal, value);
+        log.debug("Variable={}; exit setValue {}", _name, value);
     }
 
     Color _defaultColor;
@@ -550,9 +478,7 @@ public class SplitVariableValue extends VariableValue
     void setColor(Color c) {
         if (c != null) {
             _textField.setBackground(c);
-            log.debug("Variable={}; Set Color to {}", _name, c.toString());
         } else {
-            log.debug("Variable={}; Set Color to defaultColor {}", _name, _defaultColor.toString());
             _textField.setBackground(_defaultColor);
         }
         // prop.firePropertyChange("Value", null, null);
@@ -587,7 +513,6 @@ public class SplitVariableValue extends VariableValue
     private static final int READING_FIRST = 1;
     private static final int WRITING_FIRST = -1;
     private static final int bitCount = Long.bitCount(~0);
-    private static final long intMask = Integer.toUnsignedLong(~0);
 
     /**
      * Notify the connected CVs of a state change from above
@@ -663,8 +588,7 @@ public class SplitVariableValue extends VariableValue
         }
         _progState = READING_FIRST;
         retry = 0;
-        log.debug("Variable={}; Start CV read", _name);
-        log.debug("Reading CV={}", cvList.get(0).cvName);
+        log.debug("Variable={}; invoke CV read", _name);
         (cvList.get(0).thisCV).read(_status); // kick off the read sequence
     }
 
@@ -680,16 +604,12 @@ public class SplitVariableValue extends VariableValue
             log.warn("Variable={}; Programming state {}, not IDLE, in write()", _name, _progState);
         }
         _progState = WRITING_FIRST;
-        log.debug("Variable={}; Start CV write", _name);
-        log.debug("Writing CV={}", cvList.get(0).cvName);
+        log.debug("Variable={}; invoke CV write", _name);
         (cvList.get(0).thisCV).write(_status); // kick off the write sequence
     }
 
     /**
      * Assigns a priority value to a given state.
-     *
-     * @param state State to be converted to a priority value
-     * @return Priority value from state, with UNKNOWN numerically highest
      */
     @SuppressFBWarnings(value = {"SF_SWITCH_NO_DEFAULT", "SF_SWITCH_FALLTHROUGH"}, justification = "Intentional fallthrough to produce correct value")
     int priorityValue(int state) {
@@ -716,32 +636,32 @@ public class SplitVariableValue extends VariableValue
     // handle incoming parameter notification
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
-        log.debug("Variable={} source={}; property {} changed from {} to {}", _name, e.getSource().toString(), e.getPropertyName(), e.getOldValue(),e.getNewValue());
+        log.debug("Variable={}; property changed event - name: {}", _name, e.getPropertyName());
         // notification from CV; check for Value being changed
         if (e.getPropertyName().equals("Busy") && ((Boolean) e.getNewValue()).equals(Boolean.FALSE)) {
             // busy transitions drive the state
-            if (_progState != IDLE) {
-                log.debug("Variable={} source={}; getState() = {}", _name, e.getSource().toString(), (cvList.get(Math.abs(_progState) - 1).thisCV).getState());
+            if (log.isDebugEnabled() && _progState != IDLE) {
+                log.debug("getState() = {}", (cvList.get(Math.abs(_progState) - 1).thisCV).getState());
             }
 
-            if (_progState == IDLE) { // State machine is idle, so "Busy" transition is the result of a CV update by another source.
-                // The source would be a Read/Write from either the CVs pane or another Variable with one or more overlapping CV(s).
-                // It is definitely not an error condition, but needs to be ignored by this variable's state machine.
-                log.debug("Variable={}; Busy goes false with _progState IDLE, so ignore by state machine", _name);
+            if (_progState == IDLE) { // no, just a CV update
+                log.error("Variable={}; Busy goes false with state IDLE", _name);
             } else if (_progState >= READING_FIRST) {   // reading CVs
                 if ((cvList.get(Math.abs(_progState) - 1).thisCV).getState() == READ) {   // was the last read successful?
                     retry = 0;
                     if (Math.abs(_progState) < cvCount) {   // read next CV
                         _progState++;
-                        log.debug("Reading CV={}", cvList.get(Math.abs(_progState) - 1).cvName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Reading CV={}", cvList.get(Math.abs(_progState) - 1).cvName);
+                        }
                         (cvList.get(Math.abs(_progState) - 1).thisCV).read(_status);
                     } else {  // finally done, set not busy
-                        log.debug("Variable={}; Busy goes false with success READING _progState {}", _name, _progState);
+                        log.debug("Variable={}; Busy goes false with success READING state {}", _name, _progState);
                         _progState = IDLE;
                         setBusy(false);
                     }
                 } else {   // read failed
-                    log.debug("Variable={}; Busy goes false with failure READING _progState {}", _name, _progState);
+                    log.debug("Variable={}; Busy goes false with failure READING state {}", _name, _progState);
                     if (retry < RETRY_COUNT) { //have we exhausted retry count?
                         retry++;
                         (cvList.get(Math.abs(_progState) - 1).thisCV).read(_status);
@@ -753,43 +673,45 @@ public class SplitVariableValue extends VariableValue
                                 cvList.get(i).thisCV.setState(AbstractValue.UNKNOWN);
                             }
                         }
+
                     }
                 }
             } else {  // writing CVs
                 if ((cvList.get(Math.abs(_progState) - 1).thisCV).getState() == STORED) {   // was the last read successful?
                     if (Math.abs(_progState) < cvCount) {   // write next CV
                         _progState--;
-                        log.debug("Writing CV={}", cvList.get(Math.abs(_progState) - 1).cvName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Writing CV={}", cvList.get(Math.abs(_progState) - 1).cvName);
+                        }
                         (cvList.get(Math.abs(_progState) - 1).thisCV).write(_status);
                     } else {  // finally done, set not busy
-                        log.debug("Variable={}; Busy goes false with success WRITING _progState {}", _name, _progState);
+                        log.debug("Variable={}; Busy goes false with success WRITING state {}", _name, _progState);
                         _progState = IDLE;
                         setBusy(false);
                     }
                 } else {   // read failed we're done!
-                    log.debug("Variable={}; Busy goes false with failure WRITING _progState {}", _name, _progState);
+                    log.debug("Variable={}; Busy goes false with failure WRITING state {}", _name, _progState);
                     _progState = IDLE;
                     setBusy(false);
                 }
             }
         } else if (e.getPropertyName().equals("State")) {
-            log.debug("Possible {} variable state change due to CV state change, so propagate that", _name);
+            log.debug("state change due to CV state change, so propagate that");
             int varState = getState(); // AbstractValue.SAME;
-            log.debug("{} variable state was {}", _name, stateNameFromValue(varState));
+            log.debug("{} state was {}", _name, varState);
             for (int i = 0; i < cvCount; i++) {
                 int state = cvList.get(i).thisCV.getState();
                 if (i == 0) {
                     varState = state;
                 } else if (priorityValue(state) > priorityValue(varState)) {
                     varState = AbstractValue.UNKNOWN; // or should it be = state ?
-                    varState = state; // or should it be = state ?
                 }
             }
             setState(varState);
-            log.debug("{} variable state set to {}", _name, stateNameFromValue(varState));
+            log.debug("{} state set to {}", _name, varState);
         } else if (e.getPropertyName().equals("Value")) {
             // update value of Variable
-            log.debug("update value of Variable {}", _name);
+            log.debug("update value of Variable");
 
             int[] intVals = new int[cvCount];
 
@@ -892,7 +814,9 @@ public class SplitVariableValue extends VariableValue
     // clean up connections when done
     @Override
     public void dispose() {
-        log.debug("dispose");
+        if (log.isDebugEnabled()) {
+            log.debug("dispose");
+        }
         if (_textField != null) {
             _textField.removeActionListener(this);
         }
@@ -901,7 +825,6 @@ public class SplitVariableValue extends VariableValue
         }
 
         _textField = null;
-        _maskArray = null;
         // do something about the VarTextField
     }
 

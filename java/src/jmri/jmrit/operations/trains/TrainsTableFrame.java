@@ -1,15 +1,25 @@
 package jmri.jmrit.operations.trains;
 
 import java.awt.Color;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
-
-import javax.swing.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsXml;
@@ -18,21 +28,36 @@ import jmri.jmrit.operations.locations.Location;
 import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.operations.rollingstock.cars.CarManagerXml;
 import jmri.jmrit.operations.rollingstock.engines.EngineManagerXml;
-import jmri.jmrit.operations.setup.*;
+import jmri.jmrit.operations.setup.AutoSave;
+import jmri.jmrit.operations.setup.BuildReportOptionAction;
+import jmri.jmrit.operations.setup.Control;
+import jmri.jmrit.operations.setup.OptionAction;
+import jmri.jmrit.operations.setup.PrintOptionAction;
+import jmri.jmrit.operations.setup.Setup;
 import jmri.jmrit.operations.trains.excel.SetupExcelProgramFrameAction;
 import jmri.jmrit.operations.trains.excel.TrainCustomManifest;
 import jmri.jmrit.operations.trains.schedules.TrainSchedule;
 import jmri.jmrit.operations.trains.schedules.TrainScheduleManager;
 import jmri.jmrit.operations.trains.schedules.TrainsScheduleAction;
-import jmri.jmrit.operations.trains.tools.*;
+import jmri.jmrit.operations.trains.tools.ChangeDepartureTimesAction;
+import jmri.jmrit.operations.trains.tools.ExportTrainRosterAction;
+import jmri.jmrit.operations.trains.tools.PrintSavedTrainManifestAction;
+import jmri.jmrit.operations.trains.tools.PrintTrainsAction;
+import jmri.jmrit.operations.trains.tools.TrainByCarTypeAction;
+import jmri.jmrit.operations.trains.tools.TrainCopyAction;
+import jmri.jmrit.operations.trains.tools.TrainsByCarTypeAction;
+import jmri.jmrit.operations.trains.tools.TrainsScriptAction;
+import jmri.jmrit.operations.trains.tools.TrainsTableSetColorAction;
 import jmri.swing.JTablePersistenceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame for adding and editing the train roster for operations.
  *
  * @author Bob Jacobsen Copyright (C) 2001
  * @author Daniel Boudreau Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013,
- *         2014
+ * 2014
  */
 public class TrainsTableFrame extends OperationsFrame implements java.beans.PropertyChangeListener {
 
@@ -135,7 +160,7 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
         // tool tips, see setPrintButtonText() for more tool tips
         addButton.setToolTipText(Bundle.getMessage("AddTrain"));
         buildButton.setToolTipText(Bundle.getMessage("BuildSelectedTip"));
-        switchListsButton.setToolTipText(Bundle.getMessage("PreviewPrintSwitchListsTip"));
+        switchListsButton.setToolTipText(Bundle.getMessage("PreviewPrintSwitchLists"));
 
         terminateButton.setToolTipText(Bundle.getMessage("TerminateSelectedTip"));
         saveButton.setToolTipText(Bundle.getMessage("SaveBuildsTip"));
@@ -245,26 +270,24 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
         // build menu
         JMenuBar menuBar = new JMenuBar();
         JMenu toolMenu = new JMenu(Bundle.getMessage("MenuTools"));
-        toolMenu.add(new OptionAction());
+        toolMenu.add(new OptionAction(Bundle.getMessage("TitleOptions")));
         toolMenu.add(new PrintOptionAction());
         toolMenu.add(new BuildReportOptionAction());
-        toolMenu.add(new TrainsByCarTypeAction());
-        toolMenu.add(new TrainByCarTypeAction(null));
-        toolMenu.add(new ChangeDepartureTimesAction());
+        toolMenu.add(new TrainsByCarTypeAction(Bundle.getMessage("TitleModifyTrains")));
+        toolMenu.add(new TrainByCarTypeAction(Bundle.getMessage("MenuItemShowCarTypes"), null));
+        toolMenu.add(new ChangeDepartureTimesAction(Bundle.getMessage("TitleChangeDepartureTime")));
         toolMenu.add(new TrainsTableSetColorAction());
-        toolMenu.add(new TrainsScheduleAction());
+        toolMenu.add(new TrainsScheduleAction(Bundle.getMessage("TitleScheduleTrains")));
         toolMenu.add(new AutomationsTableFrameAction());
-        toolMenu.add(new TrainCopyAction());
-        toolMenu.add(new TrainsScriptAction(this));
-        toolMenu.add(new PrintSavedTrainManifestAction(false, null));
-        toolMenu.add(new PrintSavedTrainManifestAction(true, null));
-        toolMenu.add(new SetupExcelProgramFrameAction());
+        toolMenu.add(new TrainCopyAction(Bundle.getMessage("TitleTrainCopy")));
+        toolMenu.add(new TrainsScriptAction(Bundle.getMessage("MenuItemScripts"), this));
+        toolMenu.add(new PrintSavedTrainManifestAction(Bundle.getMessage("MenuItemPrintSavedManifest"), false, null));
+        toolMenu.add(new PrintSavedTrainManifestAction(Bundle.getMessage("MenuItemPreviewSavedManifest"), true, null));
+        toolMenu.add(new SetupExcelProgramFrameAction(Bundle.getMessage("MenuItemSetupExcelProgram")));
         toolMenu.add(new ExportTrainRosterAction());
-        toolMenu.add(new ExportTimetableAction());
-        toolMenu.add(new ExportTrainLineupsAction());
         toolMenu.addSeparator();
-        toolMenu.add(new PrintTrainsAction(false, this));
-        toolMenu.add(new PrintTrainsAction(true, this));
+        toolMenu.add(new PrintTrainsAction(Bundle.getMessage("MenuItemPrint"), false, this));
+        toolMenu.add(new PrintTrainsAction(Bundle.getMessage("MenuItemPreview"), true, this));
 
         menuBar.add(toolMenu);
         menuBar.add(new jmri.jmrit.operations.OperationsMenu());
@@ -281,12 +304,12 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
         InstanceManager.getDefault(TrainScheduleManager.class).addPropertyChangeListener(this);
         // listen for changes in the number of trains
         trainManager.addPropertyChangeListener(this);
-        Setup.getDefault().addPropertyChangeListener(this);
+        Setup.addPropertyChangeListener(this);
         // listen for location switch list changes
         addPropertyChangeLocations();
 
         // auto save
-        AutoSave.start();
+        new AutoSave().start();
     }
 
     @Override
@@ -337,13 +360,10 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
             for (Train train : trains) {
                 if (train.isBuildEnabled()) {
                     if (!train.isBuilt() && trainManager.isBuildMessagesEnabled()) {
-                        int response = JOptionPane.showConfirmDialog(this,
-                                MessageFormat.format(Bundle.getMessage("NeedToBuildBeforeOpenFile"),
-                                        new Object[] { train.getName() }),
-                                Bundle.getMessage("ErrorTitle"), JOptionPane.OK_CANCEL_OPTION);
-                        if (response == JOptionPane.CLOSED_OPTION || response == JOptionPane.CANCEL_OPTION) {
-                            break;
-                        }
+                        JOptionPane.showMessageDialog(this, MessageFormat.format(Bundle
+                                .getMessage("NeedToBuildBeforeOpenFile"), new Object[]{
+                            train.getName()}),
+                                Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
                     } else if (train.isBuilt()) {
                         train.openFile();
                     }
@@ -354,32 +374,39 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
             // Processes the CSV Manifest files using an external custom program.
             TrainCustomManifest tcm = InstanceManager.getDefault(TrainCustomManifest.class);
             if (!tcm.excelFileExists()) {
-                log.warn("Manifest creator file not found!, directory name: {}, file name: {}", tcm.getDirectoryName(),
-                        tcm.getFileName());
+                log.warn("Manifest creator file not found!, directory name: {}, file name: {}",
+                        tcm.getDirectoryName(), tcm.getFileName());
                 JOptionPane.showMessageDialog(this,
                         MessageFormat.format(Bundle.getMessage("LoadDirectoryNameFileName"),
-                                new Object[] { tcm.getDirectoryName(), tcm.getFileName() }),
-                        Bundle.getMessage("ManifestCreatorNotFound"), JOptionPane.ERROR_MESSAGE);
+                                new Object[]{
+                                    tcm.getDirectoryName(),
+                                    tcm.getFileName()
+                                }),
+                        Bundle.getMessage("ManifestCreatorNotFound"),
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
             List<Train> trains = getSortByList();
             for (Train train : trains) {
                 if (train.isBuildEnabled()) {
                     if (!train.isBuilt() && trainManager.isBuildMessagesEnabled()) {
-                        int response = JOptionPane.showConfirmDialog(this,
+                        JOptionPane.showMessageDialog(this,
                                 MessageFormat.format(Bundle.getMessage("NeedToBuildBeforeRunFile"),
-                                        new Object[] { train.getName() }),
-                                Bundle.getMessage("ErrorTitle"), JOptionPane.OK_CANCEL_OPTION);
-                        if (response == JOptionPane.CLOSED_OPTION || response == JOptionPane.CANCEL_OPTION) {
-                            break;
-                        }
+                                        new Object[]{
+                                            train.getName()
+                                        }),
+                                Bundle.getMessage("ErrorTitle"),
+                                JOptionPane.ERROR_MESSAGE);
                     } else if (train.isBuilt()) {
-                        // Add csv manifest file to our collection to be processed.
-                        tcm.addCsvFile(train.createCsvManifestFile());
+                        // Make sure our csv manifest file exists for this Train.
+                        File csvFile = train.createCSVManifestFile();
+                        // Add it to our collection to be processed.
+                        tcm.addCVSFile(csvFile);
                         train.setPrinted(true);
                     }
                 }
             }
+
             // Now run the user specified custom Manifest processor program
             tcm.process();
         }
@@ -498,6 +525,7 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
     }
 
     private void updateSwitchListButton() {
+        log.debug("update switch list button");
         List<Location> locations = locationManager.getList();
         for (Location location : locations) {
             if (location != null && location.isSwitchListEnabled() && location.getStatus().equals(Location.MODIFIED)) {
@@ -536,7 +564,7 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
         trainManager.runShutDownScripts();
         trainManager.removePropertyChangeListener(this);
         InstanceManager.getDefault(TrainScheduleManager.class).removePropertyChangeListener(this);
-        Setup.getDefault().removePropertyChangeListener(this);
+        Setup.removePropertyChangeListener(this);
         removePropertyChangeLocations();
         setModifiedFlag(false);
         InstanceManager.getOptionalDefault(JTablePersistenceManager.class).ifPresent(tpm -> {
@@ -555,16 +583,17 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
             return;
         }
         if (OperationsXml.areFilesDirty()) {
-            int result = javax.swing.JOptionPane.showOptionDialog(this, Bundle.getMessage("PromptQuitWindowNotWritten"),
-                    Bundle.getMessage("PromptSaveQuit"), javax.swing.JOptionPane.YES_NO_OPTION,
-                    javax.swing.JOptionPane.WARNING_MESSAGE, null, // icon
-                    new String[] { ResourceBundle.getBundle("jmri.util.UtilBundle").getString("WarnYesSave"), // NOI18N
-                            ResourceBundle.getBundle("jmri.util.UtilBundle").getString("WarnNoClose") }, // NOI18N
+            int result = javax.swing.JOptionPane.showOptionDialog(this,
+                    Bundle.getMessage("PromptQuitWindowNotWritten"), Bundle.getMessage("PromptSaveQuit"),
+                    javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.WARNING_MESSAGE, null, // icon
+                    new String[]{ResourceBundle.getBundle("jmri.util.UtilBundle").getString("WarnYesSave"), // NOI18N
+                        ResourceBundle.getBundle("jmri.util.UtilBundle").getString("WarnNoClose")}, // NOI18N
                     ResourceBundle.getBundle("jmri.util.UtilBundle").getString("WarnYesSave"));
-            if (result != javax.swing.JOptionPane.NO_OPTION) {
-                // user wants to save
-                storeValues();
+            if (result == javax.swing.JOptionPane.NO_OPTION) {
+                return;
             }
+            // user wants to save
+            storeValues();
         }
     }
 
@@ -576,15 +605,14 @@ public class TrainsTableFrame extends OperationsFrame implements java.beans.Prop
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
         if (Control.SHOW_PROPERTY) {
-            log.debug("Property change: ({}) old: ({}) new: ({})", e.getPropertyName(), e.getOldValue(),
-                    e.getNewValue());
+            log.debug("Property change: ({}) old: ({}) new: ({})", e.getPropertyName(), e.getOldValue(), e
+                    .getNewValue());
         }
         if (e.getPropertyName().equals(TrainScheduleManager.SCHEDULE_ID_CHANGED_PROPERTY)) {
             updateTitle();
         }
-        if (e.getPropertyName().equals(Location.STATUS_CHANGED_PROPERTY) ||
-                e.getPropertyName().equals(Location.SWITCHLIST_CHANGED_PROPERTY)) {
-            log.debug("update switch list button location ({})", e.getSource());
+        if (e.getPropertyName().equals(Location.STATUS_CHANGED_PROPERTY)
+                || e.getPropertyName().equals(Location.SWITCHLIST_CHANGED_PROPERTY)) {
             updateSwitchListButton();
         }
         if (e.getPropertyName().equals(Setup.MANIFEST_CSV_PROPERTY_CHANGE)) {

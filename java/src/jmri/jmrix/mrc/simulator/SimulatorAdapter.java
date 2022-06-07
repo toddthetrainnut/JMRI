@@ -10,7 +10,6 @@ import jmri.jmrix.mrc.MrcPacketizer;
 import jmri.jmrix.mrc.MrcPackets;
 import jmri.jmrix.mrc.MrcPortController;
 import jmri.jmrix.mrc.MrcSystemConnectionMemo;
-import jmri.util.ImmediatePipedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,10 +41,10 @@ public class SimulatorAdapter extends MrcPortController implements Runnable {
     @Override
     public String openPort(String portName, String appName) {
         try {
-            PipedOutputStream tempPipeI = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeI = new PipedOutputStream();
             pout = new DataOutputStream(tempPipeI);
             inpipe = new DataInputStream(new PipedInputStream(tempPipeI));
-            PipedOutputStream tempPipeO = new ImmediatePipedOutputStream();
+            PipedOutputStream tempPipeO = new PipedOutputStream();
             outpipe = new DataOutputStream(tempPipeO);
             pin = new DataInputStream(new PipedInputStream(tempPipeO));
         } catch (java.io.IOException e) {
@@ -147,14 +146,15 @@ public class SimulatorAdapter extends MrcPortController implements Runnable {
             MrcMessage m = readMessage();
             if (log.isDebugEnabled()) {
                 StringBuffer buf = new StringBuffer();
+                buf.append("Mrc Simulator Thread received message: "); // NOI18N
                 if (m != null) {
                     for (int i = 0; i < m.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & m.getElement(i))).append(" ");
+                        buf.append(Integer.toHexString(0xFF & m.getElement(i)) + " ");
                     }
                 } else {
                     buf.append("null message buffer"); // NOI18N
                 }
-                log.debug("Mrc Simulator Thread received message: {}", buf);
+                log.debug(buf.toString());
             }
             if (m != null && m.getNumDataElements() > 4) {
                 //Send a default good reply message
@@ -170,10 +170,11 @@ public class SimulatorAdapter extends MrcPortController implements Runnable {
                 }
                 if (log.isDebugEnabled()) {
                     StringBuffer buf = new StringBuffer();
+                    buf.append("Mrc Simulator Thread sent reply: "); // NOI18N
                     for (int i = 0; i < r.getNumDataElements(); i++) {
-                        buf.append(Integer.toHexString(0xFF & r.getElement(i))).append(" ");
+                        buf.append(Integer.toHexString(0xFF & r.getElement(i)) + " ");
                     }
-                    log.debug("Mrc Simulator Thread sent reply: {}", buf );
+                    log.debug(buf.toString());
                 }
             } else {
                 if (cab > 8) {

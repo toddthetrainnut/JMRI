@@ -5,30 +5,50 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class performs initialization for DCC++. It
- * adds the appropriate Managers via the Initialization Manager.
+ * This class performs Command Station dependant initialization for DCC++. It
+ * adds the appropriate Managers via the Initialization Manager based on the
+ * Command Station Type.
  *
  * @author Paul Bender Copyright (C) 2003-2010
  * @author Giorgio Terdina Copyright (C) 2007
  * @author Mark Underwood Copyright (C) 2015
- * @author Harald Barth Copyright (C) 2019
  *
  * Based on XNetInitializationManager by Paul Bender and Giorgio Terdina
  */
-public class DCCppInitializationManager {
+public class DCCppInitializationManager extends AbstractDCCppInitializationManager {
 
-    protected DCCppSystemConnectionMemo systemMemo = null;
-
-    DCCppPredefinedMeters predefinedMeters;
-    
     public DCCppInitializationManager(DCCppSystemConnectionMemo memo) {
+        super(memo);
+    }
 
-        systemMemo = memo;
+    @Override
+    protected void init() {
+        if (log.isDebugEnabled()) {
+            log.debug("Init called");
+        }
 
-        log.debug("Starting DCC++ Initialization Process");
+        String base_station = "Unknown";
+        String code_build = "Unknown";
 
-        DCCppCommandStation cs = systemMemo.getDCCppTrafficController().getCommandStation();
+        if (systemMemo.getDCCppTrafficController().getCommandStation() != null) {
+            base_station = systemMemo.getDCCppTrafficController().getCommandStation().getBaseStationType();
+        }
+        if (systemMemo.getDCCppTrafficController().getCommandStation() != null) {
+            code_build = systemMemo.getDCCppTrafficController().getCommandStation().getCodeBuildDate();
+        }
+
+        /* First, we load things that should work on all systems */
+        jmri.InstanceManager.store(systemMemo.getPowerManager(), jmri.PowerManager.class);
+        log.debug("PowerManager: {}", jmri.InstanceManager.getDefault(jmri.PowerManager.class));
+
         jmri.InstanceManager.setThrottleManager(systemMemo.getThrottleManager());
+
+        /* Next we check the command station type, and add the
+           apropriate managers */
+
+        /* If we still don't  know what we have, load everything */
+        log.debug("Command Station is type {} build {}", base_station, code_build);
+
         systemMemo.setProgrammerManager(new DCCppProgrammerManager(new DCCppProgrammer(systemMemo.getDCCppTrafficController()), systemMemo));
         if (systemMemo.getProgrammerManager().isAddressedModePossible()) {
             jmri.InstanceManager.store(systemMemo.getProgrammerManager(), jmri.AddressedProgrammerManager.class);
@@ -38,28 +58,16 @@ public class DCCppInitializationManager {
         }
         systemMemo.setCommandStation(systemMemo.getDCCppTrafficController().getCommandStation());
         jmri.InstanceManager.store(systemMemo.getCommandStation(), jmri.CommandStation.class);
-        systemMemo.setTurnoutManager(new jmri.jmrix.dccpp.DCCppTurnoutManager(systemMemo));
+        systemMemo.setTurnoutManager(new jmri.jmrix.dccpp.DCCppTurnoutManager(systemMemo.getDCCppTrafficController(), systemMemo.getSystemPrefix()));
         jmri.InstanceManager.setTurnoutManager(systemMemo.getTurnoutManager());
-        systemMemo.setLightManager(new jmri.jmrix.dccpp.DCCppLightManager(systemMemo));
+        systemMemo.setLightManager(new jmri.jmrix.dccpp.DCCppLightManager(systemMemo.getDCCppTrafficController(), systemMemo.getSystemPrefix()));
         jmri.InstanceManager.setLightManager(systemMemo.getLightManager());
-        systemMemo.setSensorManager(new jmri.jmrix.dccpp.DCCppSensorManager(systemMemo));
+        systemMemo.setSensorManager(new jmri.jmrix.dccpp.DCCppSensorManager(systemMemo.getDCCppTrafficController(), systemMemo.getSystemPrefix()));
         jmri.InstanceManager.setSensorManager(systemMemo.getSensorManager());
-        jmri.InstanceManager.store(systemMemo.getPowerManager(), jmri.PowerManager.class);
-        log.debug("PowerManager: {}", jmri.InstanceManager.getDefault(jmri.PowerManager.class));
-        predefinedMeters = new DCCppPredefinedMeters(systemMemo);
+        systemMemo.setMultiMeter(new DCCppMultiMeter(systemMemo));
+        jmri.InstanceManager.store(systemMemo.getMultiMeter(), jmri.MultiMeter.class);
 
-        systemMemo.register();
-
-        String base_station = "Unknown";
-        String code_build   = "Unknown";
-        String version      = "Unknown";
-        if (cs != null) {
-            base_station    = cs.getStationType();
-            code_build      = cs.getBuild();
-            version         = cs.getVersion();
-        }
-        
-        log.info("DCC++ Initialization Complete with station type '{}', version '{}' and build '{}'", base_station, version, code_build);
+        log.debug("DCC++ Initialization Complete");
     }
 
     private final static Logger log = LoggerFactory.getLogger(DCCppInitializationManager.class);

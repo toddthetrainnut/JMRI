@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jmri.InstanceManager;
 import jmri.JmriException;
+import jmri.implementation.QuietShutDownTask;
 import jmri.jmris.JmriConnection;
 import jmri.jmris.simpleserver.SimpleLightServer;
 import jmri.jmris.simpleserver.SimpleOperationsServer;
@@ -68,7 +69,7 @@ public class SimpleServlet extends WebSocketServlet {
     public static class SimpleWebSocket {
 
         private JmriConnection connection;
-        private Runnable shutDownTask;
+        private QuietShutDownTask shutDownTask;
         private SimpleLightServer lightServer;
         private SimpleOperationsServer operationsServer;
         private SimplePowerServer powerServer;
@@ -84,7 +85,13 @@ public class SimpleServlet extends WebSocketServlet {
         @OnWebSocketConnect
         public void onOpen(Session cnctn) {
             this.connection = new JmriConnection(cnctn);
-            this.shutDownTask = () -> SimpleWebSocket.this.connection.getSession().close();
+            this.shutDownTask = new QuietShutDownTask("Close simple web sockets") { // NOI18N
+                @Override
+                public boolean execute() {
+                    SimpleWebSocket.this.connection.getSession().close();
+                    return true;
+                }
+            };
             this.lightServer = new SimpleLightServer(this.connection);
             this.operationsServer = new SimpleOperationsServer(this.connection);
             this.powerServer = new SimplePowerServer(this.connection);
@@ -97,7 +104,7 @@ public class SimpleServlet extends WebSocketServlet {
                 this.connection.sendMessage("RAILROAD " + InstanceManager.getDefault(WebServerPreferences.class).getRailroadName() + " \n");
                 this.connection.sendMessage("NODE " + NodeIdentity.networkIdentity() + " \n");
             } catch (IOException e) {
-                log.warn("Closing Session due to ", e);
+                log.warn(e.getMessage(), e);
                 this.connection.getSession().close();
             }
             InstanceManager.getDefault(jmri.ShutDownManager.class).register(this.shutDownTask);
@@ -105,7 +112,7 @@ public class SimpleServlet extends WebSocketServlet {
 
         @OnWebSocketError
         public void onError(Throwable thrwbl) {
-            log.error("Socket Error: ", thrwbl);
+            log.error(thrwbl.getMessage(), thrwbl);
         }
 
         @OnWebSocketMessage
@@ -134,12 +141,12 @@ public class SimpleServlet extends WebSocketServlet {
                 try {
                     this.connection.sendMessage("not supported\n");
                 } catch (IOException ie) {
-                    log.warn("Closing Connection due to Exception", ie);
+                    log.warn(ie.getMessage(), ie);
                     this.connection.getSession().close();
                     InstanceManager.getDefault(jmri.ShutDownManager.class).deregister(this.shutDownTask);
                 }
             } catch (IOException ie) {
-                log.warn("Closing Connection due to Exception", ie);
+                log.warn(ie.getMessage(), ie);
                 this.connection.getSession().close();
                 InstanceManager.getDefault(jmri.ShutDownManager.class).deregister(this.shutDownTask);
             }

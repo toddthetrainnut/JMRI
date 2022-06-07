@@ -17,14 +17,15 @@ import org.slf4j.LoggerFactory;
 public class BlockContentsIcon extends jmri.jmrit.display.BlockContentsIcon {
 
     //TODO: unused - dead-code strip
-    //private final String defaultText = " ";
+    //@SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED")
+    //private final transient String defaultText = " ";
 
     public BlockContentsIcon(String s, LayoutEditor panel) {
         super(s, panel);
         log.debug("BlockContentsIcon ctor= {}", BlockContentsIcon.class.getName());
     }
 
-    private LayoutBlock lBlock = null;
+    private transient LayoutBlock lBlock = null;
 
     /**
      * {@inheritDoc}
@@ -98,5 +99,5 @@ public class BlockContentsIcon extends jmri.jmrit.display.BlockContentsIcon {
         }
     }
 
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BlockContentsIcon.class);
+    private transient final static Logger log = LoggerFactory.getLogger(BlockContentsIcon.class);
 }

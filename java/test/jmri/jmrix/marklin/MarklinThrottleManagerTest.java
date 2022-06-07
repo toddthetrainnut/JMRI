@@ -2,40 +2,32 @@ package jmri.jmrix.marklin;
 
 import jmri.util.JUnitUtil;
 import jmri.util.junit.annotations.*;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MarklinThrottleManagerTest extends jmri.managers.AbstractThrottleManagerTestBase {
 
-    private MarklinTrafficController tc;
-    private MarklinSystemConnectionMemo memo;
-
-    @BeforeEach
+    @Test
     @Override
-    public void setUp() {
-        JUnitUtil.setUp();
-        tc = new MarklinTrafficController(){
-            @Override
-            public void sendMarklinMessage(MarklinMessage m, MarklinListener reply) {
-            } // prevent requestThrottle to actually send a MarklinMessage
-        };
-        memo = new MarklinSystemConnectionMemo(tc);
-        memo.configureManagers();
-        tm = memo.getThrottleManager();
+    @Ignore("test requires further setup")
+    @ToDo("finish test setup, then remove overriden test so that test in parent class can run.")
+    public void testGetThrottleInfo() {
     }
 
-    @AfterEach
+    // The minimal setup for log4J
+    @Before
+    public void setUp() {
+        JUnitUtil.setUp();
+        MarklinTrafficController tc = new MarklinTrafficController();
+        MarklinSystemConnectionMemo c = new MarklinSystemConnectionMemo(tc);
+        tm = new MarklinThrottleManager(c);
+    }
+
+    @After
     public void tearDown() {
-        //if (tm != null) {
-        //    tm.dispose();
-        //}
-        tc.terminateThreads();
-        tc = null;
-        memo = null;
         JUnitUtil.tearDown();
     }
 

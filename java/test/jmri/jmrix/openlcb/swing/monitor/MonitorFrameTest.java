@@ -1,16 +1,14 @@
 package jmri.jmrix.openlcb.swing.monitor;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JUnitUtil;
-import jmri.util.ThreadingUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-import org.openlcb.can.AliasMap;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.jmrix.can.swing.monitor.MonitorFrame class
@@ -26,7 +24,7 @@ public class MonitorFrameTest {
     private CanSystemConnectionMemo memo = null;
 
     @Test
-    public void testFormatMsg() {
+    public void testFormatMsg() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         MonitorPane f = new MonitorPane() {
@@ -37,14 +35,14 @@ public class MonitorFrameTest {
                 testRaw = s2;
             }
         };
-        ThreadingUtil.runOnGUI( ()-> f.initComponents(memo));
+        f.initComponents(memo);
 
         jmri.jmrix.can.CanMessage msg
                 = new jmri.jmrix.can.CanMessage(
                         new int[]{1, 2}, 0x12345678);
         msg.setExtended(true);
 
-        ThreadingUtil.runOnGUI( () -> f.message(msg));
+        f.message(msg);
 
         Assert.assertEquals("formatted", "S: Alias 0x678 CID 2 frame\n", testFormatted);
         Assert.assertEquals("raw", "[12345678] 01 02                  ", testRaw);
@@ -52,7 +50,7 @@ public class MonitorFrameTest {
     }
 
     @Test
-    public void testFormatReply() {
+    public void testFormatReply() throws Exception {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         MonitorPane f = new MonitorPane() {
@@ -77,7 +75,8 @@ public class MonitorFrameTest {
         f.dispose();
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -86,18 +85,12 @@ public class MonitorFrameTest {
         tcs = new TrafficControllerScaffold();
         memo = new CanSystemConnectionMemo();
         memo.setTrafficController(tcs);
-        memo.store(new AliasMap(), org.openlcb.can.AliasMap.class);
         jmri.InstanceManager.setDefault(CanSystemConnectionMemo.class, memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        memo.dispose();
-        memo = null;
-        tcs.terminateThreads();
-        tcs = null;
         jmri.util.JUnitUtil.resetWindows(false, false);
         JUnitUtil.tearDown();
-
     }
 }

@@ -1,19 +1,18 @@
 package jmri.jmrit.operations.setup;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
 import jmri.jmrit.operations.OperationsTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class OptionActionTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
-        OptionAction t = new OptionAction();
+        OptionAction t = new OptionAction("Test");
         Assert.assertNotNull("exists",t);
     }
 

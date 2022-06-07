@@ -3,7 +3,6 @@ package jmri.jmrix.marklin.swing.packetgen;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.util.Objects;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -76,7 +75,12 @@ public class PacketGenPanel extends jmri.jmrix.marklin.swing.MarklinPanel implem
         add(packetReplyField);
         add(Box.createVerticalGlue());
 
-        sendButton.addActionListener(this::sendButtonActionPerformed);
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                sendButtonActionPerformed(e);
+            }
+        });
     }
 
     /** 
@@ -101,13 +105,11 @@ public class PacketGenPanel extends jmri.jmrix.marklin.swing.MarklinPanel implem
     @Override
     public void initComponents(MarklinSystemConnectionMemo memo) {
         super.initComponents(memo);
-        memo.getTrafficController().addMarklinListener(this);
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String text = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        if (text != null && !Objects.equals(text, "")) {
+        if (packetTextField.getText() != null || !packetTextField.getText().equals("")) {
+            String text = packetTextField.getText();
             if (text.length() == 0) {
                 return; // no work
             }
@@ -124,15 +126,14 @@ public class PacketGenPanel extends jmri.jmrix.marklin.swing.MarklinPanel implem
                 }
 
                 MarklinMessage m = new MarklinMessage(msgArray);
-                if ( memo != null ) {
-                    memo.getTrafficController().sendMarklinMessage(m, this);
-                }
+                memo.getTrafficController().sendMarklinMessage(m, this);
             } else {
                 log.error("Only hex commands are supported");
                 JOptionPane.showMessageDialog(null, Bundle.getMessage("HexOnlyDialog"),
                         Bundle.getMessage("WarningTitle"), JOptionPane.ERROR_MESSAGE);
             }
         }
+
     }
 
     /** 
@@ -145,18 +146,11 @@ public class PacketGenPanel extends jmri.jmrix.marklin.swing.MarklinPanel implem
 
     /** 
      * {@inheritDoc}
+     * Ignore replies
      */
     @Override
     public void reply(MarklinReply r) {
         packetReplyField.setText(r.toString());
-    }
-    
-    @Override
-    public void dispose() {
-        if ( memo != null ) {
-            memo.getTrafficController().removeMarklinListener(this);
-        }
-        super.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(PacketGenPanel.class);

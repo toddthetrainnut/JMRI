@@ -1,11 +1,11 @@
 package jmri.util.swing;
 
 import javax.swing.*;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -20,12 +20,13 @@ public class JComboBoxUtilTest {
         Assert.assertTrue("Max Row Count", c.getMaximumRowCount() > 7);  // NOI18N
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

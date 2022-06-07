@@ -1,9 +1,10 @@
 package jmri.jmrix.sprog;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for SprogProgrammerManager.
@@ -26,7 +27,8 @@ public class SprogProgrammerManagerTest {
        Assert.assertNotNull("exists",new SprogProgrammerManager(op,SprogConstants.SprogMode.SERVICE,m));
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         // prepare an interface
@@ -39,7 +41,7 @@ public class SprogProgrammerManagerTest {
         op = new SprogProgrammer(m);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         stcs.dispose();
         op = null;

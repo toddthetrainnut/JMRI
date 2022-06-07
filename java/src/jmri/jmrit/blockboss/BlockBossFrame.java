@@ -5,10 +5,20 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.annotation.Nonnull;
-import javax.swing.*;
-
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
 import jmri.InstanceManager;
 import jmri.Sensor;
 import jmri.SensorManager;
@@ -46,167 +56,156 @@ import org.slf4j.LoggerFactory;
  */
 public class BlockBossFrame extends jmri.util.JmriJFrame {
 
-    private static final String SIMPLE_SIGNAL_LOGIC = "Simple_Signal_Logic";
-    private static final String LIMITED_SPEED = "Limited_Speed";
-    private static final String RESTRICTING_SPEED = "Restricting_Speed";
-    private static final String WITH_FLASHING_YELLOW = "With_Flashing_Yellow";
-    private static final String PROTECTS_SENSOR = "ProtectsSensor";
-    private static final String IS_DISTANT_SIGNAL = "Is_Distant_Signal";
-    private static final String PROTECTS_SIGNAL = "Protects_Signal";
-    private final JPanel modeSingle = new JPanel();
-    private final JRadioButton buttonSingle;
-    private final transient NamedBeanComboBox<Sensor> sSensorComboBox1 = new NamedBeanComboBox<>(
+    JPanel modeSingle = new JPanel();
+    JRadioButton buttonSingle;
+    private transient NamedBeanComboBox<Sensor> sSensorComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> sSensorComboBox2 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> sSensorComboBox2 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> sSensorComboBox3 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> sSensorComboBox3 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> sSensorComboBox4 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> sSensorComboBox4 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> sSensorComboBox5 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> sSensorComboBox5 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> sNextSignalComboBox1 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> sNextSignalComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> sNextSignalComboBox1Alt = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> sNextSignalComboBox1Alt = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final JCheckBox sLimitBox;
-    private final JCheckBox sRestrictingBox;
-    private final JCheckBox sFlashBox;
-    private final JCheckBox sDistantBox;
+    JCheckBox sLimitBox;
+    JCheckBox sRestrictingBox;
+    JCheckBox sFlashBox;
+    JCheckBox sDistantBox;
 
-    private final JPanel modeTrailMain = new JPanel();
-    private final JRadioButton buttonTrailMain;
-    private final transient NamedBeanComboBox<Sensor> tmSensorComboBox1 = new NamedBeanComboBox<>(
+    JPanel modeTrailMain = new JPanel();
+    JRadioButton buttonTrailMain;
+    private transient NamedBeanComboBox<Sensor> tmSensorComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tmSensorComboBox2 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tmSensorComboBox2 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tmSensorComboBox3 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tmSensorComboBox3 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tmSensorComboBox4 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tmSensorComboBox4 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tmSensorComboBox5 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tmSensorComboBox5 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
     private final NamedBeanComboBox<Turnout> tmProtectTurnoutComboBox = new NamedBeanComboBox<>(
             InstanceManager.turnoutManagerInstance(),
             null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> tmNextSignalComboBox1 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> tmNextSignalComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> tmNextSignalComboBox1Alt = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> tmNextSignalComboBox1Alt = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final JCheckBox tmLimitBox;
-    private final JCheckBox tmRestrictingBox;
-    private final JCheckBox tmFlashBox;
-    private final JCheckBox tmDistantBox;
+    JCheckBox tmLimitBox;
+    JCheckBox tmRestrictingBox;
+    JCheckBox tmFlashBox;
+    JCheckBox tmDistantBox;
 
-    private final JPanel modeTrailDiv = new JPanel();
-    private final JRadioButton buttonTrailDiv;
-    private final transient NamedBeanComboBox<Sensor> tdSensorComboBox1 = new NamedBeanComboBox<>(
+    JPanel modeTrailDiv = new JPanel();
+    JRadioButton buttonTrailDiv;
+    private transient NamedBeanComboBox<Sensor> tdSensorComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tdSensorComboBox2 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tdSensorComboBox2 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tdSensorComboBox3 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tdSensorComboBox3 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tdSensorComboBox4 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tdSensorComboBox4 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> tdSensorComboBox5 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> tdSensorComboBox5 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
     private final NamedBeanComboBox<Turnout> tdProtectTurnoutComboBox = new NamedBeanComboBox<>(
             InstanceManager.turnoutManagerInstance(),
             null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> tdNextSignalComboBox1 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> tdNextSignalComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> tdNextSignalComboBox1Alt = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> tdNextSignalComboBox1Alt = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final JCheckBox tdLimitBox;
-    private final JCheckBox tdRestrictingBox;
-    private final JCheckBox tdFlashBox;
-    private final JCheckBox tdDistantBox;
+    JCheckBox tdLimitBox;
+    JCheckBox tdRestrictingBox;
+    JCheckBox tdFlashBox;
+    JCheckBox tdDistantBox;
 
-    private final JPanel modeFacing = new JPanel();
-    private final JRadioButton buttonFacing;
+    JPanel modeFacing = new JPanel();
+    JRadioButton buttonFacing;
 
-    private final transient NamedBeanComboBox<Sensor> fSensorComboBox1 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fSensorComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fSensorComboBox2 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fSensorComboBox2 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fSensorComboBox3 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fSensorComboBox3 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fSensorComboBox4 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fSensorComboBox4 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fSensorComboBox5 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fSensorComboBox5 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
     private final NamedBeanComboBox<Turnout> fProtectTurnoutComboBox = new NamedBeanComboBox<>(
             InstanceManager.turnoutManagerInstance(),
             null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> fNextSignalComboBox1 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> fNextSignalComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> fNextSignalComboBox1Alt = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> fNextSignalComboBox1Alt = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> fNextSignalComboBox2 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> fNextSignalComboBox2 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> fNextSignalComboBox2Alt = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> fNextSignalComboBox2Alt = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fNextSensorComboBox1 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fNextSensorComboBox1 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fNextSensorComboBox1Alt = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fNextSensorComboBox1Alt = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fNextSensorComboBox2 = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fNextSensorComboBox2 = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<Sensor> fNextSensorComboBox2Alt = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> fNextSensorComboBox2Alt = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final JCheckBox fmLimitBox;
-    private final JCheckBox fmRestrictingBox;
-    private final JCheckBox fdLimitBox;
-    private final JCheckBox fdRestrictingBox;
-    private final JCheckBox fFlashBox;
-    private final JCheckBox fDistantBox;
+    JCheckBox fmLimitBox;
+    JCheckBox fmRestrictingBox;
+    JCheckBox fdLimitBox;
+    JCheckBox fdRestrictingBox;
+    JCheckBox fFlashBox;
+    JCheckBox fDistantBox;
 
-    private final transient NamedBeanComboBox<Sensor> approachSensor1ComboBox = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<Sensor> approachSensor1ComboBox = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SensorManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final transient NamedBeanComboBox<SignalHead> outSignalHeadComboBox = new NamedBeanComboBox<>(
+    private transient NamedBeanComboBox<SignalHead> outSignalHeadComboBox = new NamedBeanComboBox<>(
             InstanceManager.getDefault(SignalHeadManager.class), null, DisplayOptions.DISPLAYNAME);
-    private final JLabel statusBar;
-    private final JTextField commentField;
-    private final JButton cancel;
-    private final JButton delete;
-    private final JButton apply;
+    JLabel statusBar;
+    JTextField commentField;
+    JButton cancel;
 
     // ToolTip strings
-    private final String buttonSingleTooltip = Bundle.getMessage("In_direction_of_traffic");
-    private final String buttonTrailMainTooltip = Bundle.getMessage("Signal_head_for_main_track")
+    String buttonSingleTooltip = Bundle.getMessage("In_direction_of_traffic");
+    String buttonTrailMainTooltip = Bundle.getMessage("Signal_head_for_main_track")
             + " " + Bundle.getMessage("through_turnout_in_either_direction");
-    private final String buttonTrailDivTooltip = Bundle.getMessage("Signal_head_for_branching_track")
+    String buttonTrailDivTooltip = Bundle.getMessage("Signal_head_for_branching_track")
             + " " + Bundle.getMessage("through_turnout_in_either_direction");
-    private final String buttonFacingTooltip = Bundle.getMessage("Single_signal_head_on_single");
-    private final String outSignalHeadTooltip = "<html>"
+    String buttonFacingTooltip = Bundle.getMessage("Single_signal_head_on_single");
+    String outSignalHeadTooltip = "<html>"
             + Bundle.getMessage("Enter_a_new_signal_head_number_or")
             + "<br>" + Bundle.getMessage("then_hit_return_to_load_its_information.")
             + "</html>";
-    private final String approachSensor1Tooltip = "<html>"
+    String approachSensor1Tooltip = "<html>"
             + Bundle.getMessage("Enter_sensor_that_lights_this_signal_or")
             + "</html>";
-    private final String sensorFieldTooltip = Bundle.getMessage("Sensor_active_sets_this_signal_to_Red.");
-    private final String turnoutFieldTooltip = Bundle.getMessage("Enter_protected_turnout_number_here.");
-    private final String flashBoxTooltip = Bundle.getMessage("One_aspect_faster_than_yellow_displays")
+    String sensorFieldTooltip = Bundle.getMessage("Sensor_active_sets_this_signal_to_Red.");
+    String turnoutFieldTooltip = Bundle.getMessage("Enter_protected_turnout_number_here.");
+    String flashBoxTooltip = Bundle.getMessage("One_aspect_faster_than_yellow_displays")
             + " " + Bundle.getMessage("flashing_yellow_rather_than_green");
-    private final String limitBoxTooltip = Bundle.getMessage("Limits_the_fastest_aspect_displayed")
+    String limitBoxTooltip = Bundle.getMessage("Limits_the_fastest_aspect_displayed")
             + " " + Bundle.getMessage("to_yellow_rather_than_green");
-    private final String restrictingBoxTooltip = Bundle.getMessage("Limits_the_fastest_aspect_displayed")
+    String restrictingBoxTooltip = Bundle.getMessage("Limits_the_fastest_aspect_displayed")
             + " " + Bundle.getMessage("to_flashingred_rather_than_green");
-    private final String nextSignalFieldTooltip = Bundle.getMessage("Enter_the_low_speed_signal_head_for_this_track.")
+    String nextSignalFieldTooltip = Bundle.getMessage("Enter_the_low_speed_signal_head_for_this_track.")
             + " " + Bundle.getMessage("For_dual_head_signals_the_fastest_aspect_is_protected.");
-    private final String highSignalFieldTooltip = Bundle.getMessage("Enter_the_high_speed_signal_head_for_this_track.")
+    String highSignalFieldTooltip = Bundle.getMessage("Enter_the_high_speed_signal_head_for_this_track.")
             + " " + Bundle.getMessage("For_dual_head_signals_the_fastest_aspect_is_protected.");
-    private final String distantBoxTooltip = Bundle.getMessage("Mirrors_the_protected_(following)_signals_status")
+    String distantBoxTooltip = Bundle.getMessage("Mirrors_the_protected_(following)_signals_status")
             + " " + Bundle.getMessage("unless_over_ridden_by_an_intermediate_stop_sensor.");
-
-    private final transient BlockBossLogicProvider blockBossLogicProvider;
 
     /**
      * Ctor for default SSL edit frame.
      */
     public BlockBossFrame() {
-        this(Bundle.getMessage(SIMPLE_SIGNAL_LOGIC));
+        this(Bundle.getMessage("Simple_Signal_Logic"));
     }
 
     /**
@@ -214,12 +213,10 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
      *
      * @param frameName the name to use for this frame
      */
-    private BlockBossFrame(String frameName) {
+    public BlockBossFrame(String frameName) {
 
         // create the frame
         super(frameName, false, true);
-
-        blockBossLogicProvider = InstanceManager.getDefault(BlockBossLogicProvider.class);
 
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
@@ -227,43 +224,43 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu(Bundle.getMessage("MenuFile"));
         menuBar.add(fileMenu);
-        fileMenu.add(new jmri.configurexml.StoreMenu());
+        fileMenu.add(new jmri.configurexml.SaveMenu());
         setJMenuBar(menuBar);
         addHelpMenu("package.jmri.jmrit.blockboss.BlockBossFrame", true);
 
         // create GUI items
-        sLimitBox = new JCheckBox(Bundle.getMessage(LIMITED_SPEED));
-        sRestrictingBox = new JCheckBox(Bundle.getMessage(RESTRICTING_SPEED));
-        tmLimitBox = new JCheckBox(Bundle.getMessage(LIMITED_SPEED));
+        sLimitBox = new JCheckBox(Bundle.getMessage("Limited_Speed"));
+        sRestrictingBox = new JCheckBox(Bundle.getMessage("Restricting_Speed"));
+        tmLimitBox = new JCheckBox(Bundle.getMessage("Limited_Speed"));
         tmLimitBox.setModel(sLimitBox.getModel());
-        tmRestrictingBox = new JCheckBox(Bundle.getMessage(RESTRICTING_SPEED));
+        tmRestrictingBox = new JCheckBox(Bundle.getMessage("Restricting_Speed"));
         tmRestrictingBox.setModel(sRestrictingBox.getModel());
-        fmLimitBox = new JCheckBox(Bundle.getMessage(LIMITED_SPEED));
+        fmLimitBox = new JCheckBox(Bundle.getMessage("Limited_Speed"));
         fmLimitBox.setModel(sLimitBox.getModel());
-        fmRestrictingBox = new JCheckBox(Bundle.getMessage(RESTRICTING_SPEED));
+        fmRestrictingBox = new JCheckBox(Bundle.getMessage("Restricting_Speed"));
         fmRestrictingBox.setModel(sRestrictingBox.getModel());
 
-        tdLimitBox = new JCheckBox(Bundle.getMessage(LIMITED_SPEED));
-        tdRestrictingBox = new JCheckBox(Bundle.getMessage(RESTRICTING_SPEED));
-        fdLimitBox = new JCheckBox(Bundle.getMessage(LIMITED_SPEED));
+        tdLimitBox = new JCheckBox(Bundle.getMessage("Limited_Speed"));
+        tdRestrictingBox = new JCheckBox(Bundle.getMessage("Restricting_Speed"));
+        fdLimitBox = new JCheckBox(Bundle.getMessage("Limited_Speed"));
         fdLimitBox.setModel(tdLimitBox.getModel());
-        fdRestrictingBox = new JCheckBox(Bundle.getMessage(RESTRICTING_SPEED));
+        fdRestrictingBox = new JCheckBox(Bundle.getMessage("Restricting_Speed"));
         fdRestrictingBox.setModel(tdRestrictingBox.getModel());
 
-        sFlashBox = new JCheckBox(Bundle.getMessage(WITH_FLASHING_YELLOW));
-        tmFlashBox = new JCheckBox(Bundle.getMessage(WITH_FLASHING_YELLOW));
+        sFlashBox = new JCheckBox(Bundle.getMessage("With_Flashing_Yellow"));
+        tmFlashBox = new JCheckBox(Bundle.getMessage("With_Flashing_Yellow"));
         tmFlashBox.setModel(sFlashBox.getModel());
-        tdFlashBox = new JCheckBox(Bundle.getMessage(WITH_FLASHING_YELLOW));
+        tdFlashBox = new JCheckBox(Bundle.getMessage("With_Flashing_Yellow"));
         tdFlashBox.setModel(sFlashBox.getModel());
-        fFlashBox = new JCheckBox(Bundle.getMessage(WITH_FLASHING_YELLOW));
+        fFlashBox = new JCheckBox(Bundle.getMessage("With_Flashing_Yellow"));
         fFlashBox.setModel(sFlashBox.getModel());
 
-        sDistantBox = new JCheckBox(Bundle.getMessage(IS_DISTANT_SIGNAL));
-        tmDistantBox = new JCheckBox(Bundle.getMessage(IS_DISTANT_SIGNAL));
+        sDistantBox = new JCheckBox(Bundle.getMessage("Is_Distant_Signal"));
+        tmDistantBox = new JCheckBox(Bundle.getMessage("Is_Distant_Signal"));
         tmDistantBox.setModel(sDistantBox.getModel());
-        tdDistantBox = new JCheckBox(Bundle.getMessage(IS_DISTANT_SIGNAL));
+        tdDistantBox = new JCheckBox(Bundle.getMessage("Is_Distant_Signal"));
         tdDistantBox.setModel(sDistantBox.getModel());
-        fDistantBox = new JCheckBox(Bundle.getMessage(IS_DISTANT_SIGNAL));
+        fDistantBox = new JCheckBox(Bundle.getMessage("Is_Distant_Signal"));
         fDistantBox.setModel(sDistantBox.getModel());
 
         buttonSingle = new JRadioButton(Bundle.getMessage("On_Single_Block"));
@@ -275,7 +272,12 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         g.add(buttonTrailMain);
         g.add(buttonTrailDiv);
         g.add(buttonFacing);
-        ActionListener a = e -> buttonClicked();
+        ActionListener a = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buttonClicked();
+            }
+        };
 
         buttonSingle.addActionListener(a);
         buttonTrailMain.addActionListener(a);
@@ -361,9 +363,13 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         setupComboBox(outSignalHeadComboBox, true, true, true);
         line.add(outSignalHeadComboBox);
         outSignalHeadComboBox.setToolTipText(outSignalHeadTooltip);
-        outSignalHeadComboBox.addActionListener(e ->
-            // user hit enter, use this name to fill in the rest of the fields
-            activate());
+        outSignalHeadComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // user hit enter, use this name to fill in the rest of the fields
+                activate();
+            }
+        });
 
         getContentPane().add(line);
 
@@ -380,7 +386,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         line.setAlignmentX(0.5f);
         getContentPane().add(line);
 
-        getContentPane().add(new JSeparator(SwingConstants.HORIZONTAL));
+        getContentPane().add(new JSeparator(JSeparator.HORIZONTAL));
 
         // fill in the specific panels for the modes
         getContentPane().add(fillModeSingle());
@@ -413,27 +419,28 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         line.add(statusBar);
         getContentPane().add(line);
 
-        getContentPane().add(new JSeparator(SwingConstants.HORIZONTAL));
+        getContentPane().add(new JSeparator(JSeparator.HORIZONTAL));
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new FlowLayout());
         // add OK button at bottom
-
-        delete = new JButton(Bundle.getMessage("ButtonDelete"));
-        buttons.add(delete);
-        delete.addActionListener(e -> deletePressed());
-        delete.setEnabled(false);
-
         cancel = new JButton(Bundle.getMessage("ButtonCancel"));
         buttons.add(cancel);
-        cancel.addActionListener(e -> cancelPressed());
-
-        apply = new JButton(Bundle.getMessage("ButtonApply"));
+        cancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cancelPressed();
+            }
+        });
+        JButton apply = new JButton(Bundle.getMessage("ButtonApply"));
         apply.setToolTipText(Bundle.getMessage("ApplyToolTip"));
         buttons.add(apply);
-        apply.setEnabled(false);
-
-        apply.addActionListener(e -> applyPressed());
+        apply.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                applyPressed();
+            }
+        });
         getContentPane().add(buttons);
 
         pack();
@@ -444,7 +451,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
 
     // Panel arrangements all changed to use GridBagLayout format.
 
-    private JPanel fillModeSingle() {
+    JPanel fillModeSingle() {
         modeSingle.setLayout(new GridBagLayout());
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -464,7 +471,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         insets.top = 9;
         insets.bottom = 9;
 
-        modeSingle.add(new JLabel(Bundle.getMessage(PROTECTS_SENSOR)), constraints);
+        modeSingle.add(new JLabel(Bundle.getMessage("ProtectsSensor")), constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 1;
         sSensorComboBox1.setToolTipText(sensorFieldTooltip);
@@ -487,7 +494,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         constraints.gridy = 1;
         constraints.fill = GridBagConstraints.NONE;
 
-        modeSingle.add(new JLabel(Bundle.getMessage(PROTECTS_SIGNAL)), constraints);
+        modeSingle.add(new JLabel(Bundle.getMessage("Protects_Signal")), constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 1;
         sNextSignalComboBox1.setToolTipText(highSignalFieldTooltip);
@@ -520,7 +527,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         return modeSingle;
     }
 
-    private JPanel fillModeTrailMain() {
+    JPanel fillModeTrailMain() {
         modeTrailMain.setLayout(new GridBagLayout());
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -539,7 +546,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         constraints.gridy = 0;
         insets.top = 9;
         insets.bottom = 9;
-        modeTrailMain.add(new JLabel(Bundle.getMessage(PROTECTS_SENSOR)), constraints);
+        modeTrailMain.add(new JLabel(Bundle.getMessage("ProtectsSensor")), constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 1;
         tmSensorComboBox1.setToolTipText(sensorFieldTooltip);
@@ -576,7 +583,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         constraints.gridx = 0;
         constraints.gridy = 4;
         insets.bottom = 2;
-        modeTrailMain.add(new JLabel(Bundle.getMessage(PROTECTS_SIGNAL)), constraints);
+        modeTrailMain.add(new JLabel(Bundle.getMessage("Protects_Signal")), constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 1;
         tmNextSignalComboBox1.setToolTipText(highSignalFieldTooltip);
@@ -609,7 +616,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         return modeTrailMain;
     }
 
-    private JPanel fillModeTrailDiv() {
+    JPanel fillModeTrailDiv() {
         modeTrailDiv.setLayout(new GridBagLayout());
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -628,7 +635,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         constraints.gridy = 0;
         insets.top = 9;
         insets.bottom = 9;
-        modeTrailDiv.add(new JLabel(Bundle.getMessage(PROTECTS_SENSOR)), constraints);
+        modeTrailDiv.add(new JLabel(Bundle.getMessage("ProtectsSensor")), constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 1;
         tdSensorComboBox1.setToolTipText(sensorFieldTooltip);
@@ -665,7 +672,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         constraints.gridx = 0;
         constraints.gridy = 4;
         insets.bottom = 2;
-        modeTrailDiv.add(new JLabel(Bundle.getMessage(PROTECTS_SIGNAL)), constraints);
+        modeTrailDiv.add(new JLabel(Bundle.getMessage("Protects_Signal")), constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 1;
         tdNextSignalComboBox1.setToolTipText(highSignalFieldTooltip);
@@ -699,7 +706,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         return modeTrailDiv;
     }
 
-    private JPanel fillModeFacing() {
+    JPanel fillModeFacing() {
         modeFacing.setLayout(new GridBagLayout());
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -718,7 +725,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         constraints.gridy = 0;
         insets.top = 9;
         insets.bottom = 9;
-        modeFacing.add(new JLabel(Bundle.getMessage(PROTECTS_SENSOR)), constraints);
+        modeFacing.add(new JLabel(Bundle.getMessage("ProtectsSensor")), constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 1;
         fSensorComboBox1.setToolTipText(sensorFieldTooltip);
@@ -844,17 +851,31 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         return modeFacing;
     }
 
-    private void applyPressed() {
+    void applyPressed() {
         SignalHead head = sh; // temp used here for SignalHead being operated on
 
-        // check signal head selected
+        // check signal head exists
         if (head == null) {
-            head = outSignalHeadComboBox.getSelectedItem();
-            statusBar.setText(Bundle.getMessage("StatusSslCreated", outSignalHeadComboBox.getSelectedItemDisplayName()));
+            if (outSignalHeadComboBox.getSelectedItem() == null) {
+                setTitle(Bundle.getMessage("Simple_Signal_Logic"));
+                statusBar.setText(Bundle.getMessage("HeadXNotDefined", outSignalHeadComboBox.getSelectedItemDisplayName()));
+                // JOptionPane.showMessageDialog(this, Bundle.getMessage("HeadXNotDefined", outSignalHeadComboBox.getDisplayName()));
+                return;
+            } else {
+                head = outSignalHeadComboBox.getSelectedItem();
+                if (head == null) {
+                    // getting selected signal head failed for some reason
+                    log.error("Could not create the Simple Signal Logic for {} because SignalHead could not be found", outSignalHeadComboBox.getSelectedItemDisplayName());
+                    statusBar.setText(Bundle.getMessage("ApplyErrorDialog"));
+                    return;
+                }
+                statusBar.setText(Bundle.getMessage("StatusSslCreated", outSignalHeadComboBox.getSelectedItemDisplayName()));
+            }
         } else {
             statusBar.setText(Bundle.getMessage("StatusSslUpdated", outSignalHeadComboBox.getSelectedItemDisplayName()));
         }
 
+        // it does
         try {
             BlockBossLogic b = BlockBossLogic.getStoppedObject(head);
             b.setApproachSensor1(approachSensor1ComboBox.getSelectedItemDisplayName());
@@ -871,31 +892,21 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
                 return;
             }
             cancel.setText(Bundle.getMessage("ButtonClose")); // when Apply has been clicked at least once, this is not Cancel
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            log.error("An error occurred creating the Simple Signal Logic for" + e.toString());
             statusBar.setText(Bundle.getMessage("ApplyErrorDialog"));
-            JOptionPane.showMessageDialog(this,
-                    Bundle.getMessage("ApplyErrorDialog"),
-                    Bundle.getMessage("ErrorTitle"),
-                    JOptionPane.ERROR_MESSAGE);
+            // JOptionPane.showMessageDialog(this, Bundle.getMessage("ApplyErrorDialog"));
         }
     }
 
-    private void cancelPressed() {
+    void cancelPressed() {
         // close pane
         this.setVisible(false);
         statusBar.setText("");
         super.dispose();
     }
 
-    private void deletePressed() {
-        BlockBossLogic b = BlockBossLogic.getStoppedObject(outSignalHeadComboBox.getSelectedItemDisplayName());
-        blockBossLogicProvider.remove(b);
-        statusBar.setText(Bundle.getMessage("StatusSslDeleted", outSignalHeadComboBox.getSelectedItemDisplayName()));
-        outSignalHeadComboBox.setSelectedIndex(-1);
-        clearFields();
-    }
-
-    private void loadSingle(BlockBossLogic b) {
+    void loadSingle(BlockBossLogic b) {
         b.setSensor1(sSensorComboBox1.getSelectedItemDisplayName());
         b.setSensor2(sSensorComboBox2.getSelectedItemDisplayName());
         b.setSensor3(sSensorComboBox3.getSelectedItemDisplayName());
@@ -911,11 +922,11 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
 
         b.setComment(commentField.getText());
 
-        blockBossLogicProvider.register(b);
+        b.retain();
         b.start();
     }
 
-    private void loadTrailMain(BlockBossLogic b) {
+    void loadTrailMain(BlockBossLogic b) {
         b.setSensor1(tmSensorComboBox1.getSelectedItemDisplayName());
         b.setSensor2(tmSensorComboBox2.getSelectedItemDisplayName());
         b.setSensor3(tmSensorComboBox3.getSelectedItemDisplayName());
@@ -933,11 +944,11 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
 
         b.setComment(commentField.getText());
 
-        blockBossLogicProvider.register(b);
+        b.retain();
         b.start();
     }
 
-    private void loadTrailDiv(BlockBossLogic b) {
+    void loadTrailDiv(BlockBossLogic b) {
         b.setSensor1(tdSensorComboBox1.getSelectedItemDisplayName());
         b.setSensor2(tdSensorComboBox2.getSelectedItemDisplayName());
         b.setSensor3(tdSensorComboBox3.getSelectedItemDisplayName());
@@ -955,11 +966,11 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
 
         b.setComment(commentField.getText());
 
-        blockBossLogicProvider.register(b);
+        b.retain();
         b.start();
     }
 
-    private void loadFacing(BlockBossLogic b) {
+    void loadFacing(BlockBossLogic b) {
         b.setSensor1(fSensorComboBox1.getSelectedItemDisplayName());
         b.setSensor2(fSensorComboBox2.getSelectedItemDisplayName());
         b.setSensor3(fSensorComboBox3.getSelectedItemDisplayName());
@@ -986,63 +997,25 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
 
         b.setComment(commentField.getText());
 
-        blockBossLogicProvider.register(b);
+        b.retain();
         b.start();
     }
 
-    private void clearFields() {
-        approachSensor1ComboBox.setSelectedIndex(-1);
-
-        sSensorComboBox1.setSelectedIndex(-1);
-        sSensorComboBox2.setSelectedIndex(-1);
-        sSensorComboBox3.setSelectedIndex(-1);
-        sSensorComboBox4.setSelectedIndex(-1);
-        sSensorComboBox5.setSelectedIndex(-1);
-
-        tmProtectTurnoutComboBox.setSelectedIndex(-1);
-
-        sNextSignalComboBox1.setSelectedIndex(-1);
-        sNextSignalComboBox1Alt.setSelectedIndex(-1);
-
-        fNextSignalComboBox2.setSelectedIndex(-1);
-        fNextSignalComboBox2Alt.setSelectedIndex(-1);
-
-        fNextSensorComboBox1.setSelectedIndex(-1);
-        fNextSensorComboBox1Alt.setSelectedIndex(-1);
-        fNextSensorComboBox2.setSelectedIndex(-1);
-        fNextSensorComboBox2Alt.setSelectedIndex(-1);
-
-        sLimitBox.setSelected(false);
-        sRestrictingBox.setSelected(false);
-        tdLimitBox.setSelected(false);
-        tdRestrictingBox.setSelected(false);
-        sFlashBox.setSelected(false);
-        sDistantBox.setSelected(false);
-
-        commentField.setText("");
-
-        buttonClicked();
-    }
-
-    private void activate() {
+    void activate() {
         // check signal head exists
         if (sh == null && outSignalHeadComboBox.getSelectedItem() == null) {
             // head not exist, just title the window and leave
-            setTitle(Bundle.getMessage(SIMPLE_SIGNAL_LOGIC));
-            apply.setEnabled(false);
-            delete.setEnabled(false);
+            setTitle(Bundle.getMessage("Simple_Signal_Logic"));
             return;
         }
 
         // find existing logic
         BlockBossLogic b;
         if (sh != null) {
-            b = blockBossLogicProvider.provide(sh);
+            b = BlockBossLogic.getExisting(sh);
         } else {
-            b = blockBossLogicProvider.provide(outSignalHeadComboBox.getSelectedItem());
+            b = BlockBossLogic.getExisting(outSignalHeadComboBox.getSelectedItem());
         }
-        apply.setEnabled(true);
-        delete.setEnabled(true);
 
         setTitle(Bundle.getMessage("SignalLogicForX", outSignalHeadComboBox.getSelectedItemDisplayName()));
 
@@ -1092,7 +1065,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         buttonClicked();
     }
 
-    private void buttonClicked() {
+    void buttonClicked() {
         modeSingle.setVisible(false);
         modeTrailMain.setVisible(false);
         modeTrailDiv.setVisible(false);
@@ -1119,7 +1092,7 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
         modeFacing.repaint();
     }
 
-    private SignalHead sh = null;
+    SignalHead sh = null;
 
     /**
      * Programmatically open the frame to edit a specific SSL by signal head.
@@ -1158,17 +1131,17 @@ public class BlockBossFrame extends jmri.util.JmriJFrame {
      * @param inFirstBlank   boolean to enable / disable the first item being
      *                       blank
      */
-    private static void setupComboBox(@Nonnull NamedBeanComboBox<?> inComboBox, boolean inValidateMode, boolean inEnable, boolean inFirstBlank) {
-        log.debug("SSL setupComboBox called");
+    public static void setupComboBox(@Nonnull NamedBeanComboBox<?> inComboBox, boolean inValidateMode, boolean inEnable, boolean inFirstBlank) {
         inComboBox.setEnabled(inEnable);
         inComboBox.setEditable(false);
         inComboBox.setValidatingInput(inValidateMode);
         inComboBox.setSelectedItem(null);
+        log.debug("SSL setupComboBox called");
+        inComboBox.setMaximumRowCount(15); // no context sensitive calculation
         inComboBox.setAllowNull(inFirstBlank);
-        jmri.util.swing.JComboBoxUtil.setupComboBoxMaxRows(inComboBox);
         inComboBox.setSelectedIndex(-1);
     }
 
-    private static final Logger log = LoggerFactory.getLogger(BlockBossFrame.class);
+    private final static Logger log = LoggerFactory.getLogger(BlockBossLogic.class);
 
 }

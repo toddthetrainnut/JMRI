@@ -4,7 +4,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Scanner;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
  */
 public class SimpleServer extends JmriServer {
 
-    private static final String NOT_SUPPORTED = "not supported\n";
     static ResourceBundle rb = ResourceBundle.getBundle("jmri.jmris.simpleserver.SimpleServerBundle");
 
     // Create a new server using the default port
@@ -36,7 +34,7 @@ public class SimpleServer extends JmriServer {
     public SimpleServer(int port) {
         super(port);
         InstanceManager.setDefault(SimpleServer.class,this);
-        log.info("JMRI SimpleServer started on port {}",port);
+        log.info("JMRI SimpleServer started on port " + port);
     }
 
     @Override
@@ -47,7 +45,7 @@ public class SimpleServer extends JmriServer {
     // Handle communication to a client through inStream and outStream
     @Override
     public void handleClient(DataInputStream inStream, DataOutputStream outStream) throws IOException {
-        Scanner inputScanner = new Scanner(new InputStreamReader(inStream, StandardCharsets.UTF_8));
+        Scanner inputScanner = new Scanner(new InputStreamReader(inStream, "UTF-8"));
         // Listen for commands from the client until the connection closes
         String cmd;
 
@@ -76,49 +74,51 @@ public class SimpleServer extends JmriServer {
                 break;
             }
 
-            log.debug("Received from client: {}",cmd);
+            if (log.isDebugEnabled()) {
+                log.debug("Received from client: " + cmd);
+            }
             if (cmd.startsWith("POWER")) {
                 try {
                     powerServer.parseStatus(cmd);
                     powerServer.sendStatus(InstanceManager.getDefault(jmri.PowerManager.class).getPower());
                 } catch (JmriException je) {
-                    outStream.writeBytes(NOT_SUPPORTED);
+                    outStream.writeBytes("not supported\n");
                 }
             } else if (cmd.startsWith("TURNOUT")) {
                 try {
                     turnoutServer.parseStatus(cmd);
                 } catch (JmriException je) {
-                    outStream.writeBytes(NOT_SUPPORTED);
+                    outStream.writeBytes("not supported\n");
                 }
             } else if (cmd.startsWith("LIGHT")) {
                 try {
                     lightServer.parseStatus(cmd);
                 } catch (JmriException je) {
-                    outStream.writeBytes(NOT_SUPPORTED);
+                    outStream.writeBytes("not supported\n");
                 }
             } else if (cmd.startsWith("SENSOR")) {
                 try {
                     sensorServer.parseStatus(cmd);
                 } catch (JmriException je) {
-                    outStream.writeBytes(NOT_SUPPORTED);
+                    outStream.writeBytes("not supported\n");
                 }
             } else if (cmd.startsWith("SIGNALHEAD")) {
                 try {
                     signalHeadServer.parseStatus(cmd);
                 } catch (JmriException je) {
-                    outStream.writeBytes(NOT_SUPPORTED);
+                    outStream.writeBytes("not supported\n");
                 }
             } else if (cmd.startsWith("REPORTER")) {
                 try {
                     reporterServer.parseStatus(cmd);
                 } catch (JmriException je) {
-                    outStream.writeBytes(NOT_SUPPORTED);
+                    outStream.writeBytes("not supported\n");
                 }
             } else if (cmd.startsWith(SimpleOperationsServer.OPERATIONS)) {
                 try {
                     operationsServer.parseStatus(cmd);
                 } catch (JmriException je) {
-                    outStream.writeBytes(NOT_SUPPORTED);
+                    outStream.writeBytes("not supported\n");
                 }
             } else {
                 outStream.writeBytes("Unknown Command " + cmd + "\n");
@@ -126,5 +126,5 @@ public class SimpleServer extends JmriServer {
         }
         inputScanner.close();
     }
-    private static final Logger log = LoggerFactory.getLogger(SimpleServer.class);
+    private final static Logger log = LoggerFactory.getLogger(SimpleServer.class);
 }

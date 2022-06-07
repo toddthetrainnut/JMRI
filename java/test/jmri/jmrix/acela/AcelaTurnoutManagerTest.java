@@ -3,16 +3,17 @@ package jmri.jmrix.acela;
 import jmri.Turnout;
 import jmri.TurnoutManager;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Tests for the jmri.jmrix.acela.AcelaTurnoutManager class.
  *
- * @author Bob Coleman Copyright 2008
+ * @author	Bob Coleman Copyright 2008
  */
 public class AcelaTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTestBase {
 
@@ -40,7 +41,7 @@ public class AcelaTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTes
         Turnout o = t.newTurnout("AT11", "my name");
 
         log.debug("received turnout value {}", o);
-        Assert.assertNotNull(o);
+        Assert.assertTrue(null != (AcelaTurnout) o);
 
         // make sure loaded into tables
         if (log.isDebugEnabled()) {
@@ -50,14 +51,16 @@ public class AcelaTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTes
             log.debug("by user name:   {}", t.getByUserName("my name"));
         }
 
-        Assert.assertNotNull(t.getBySystemName("AT11"));
-        Assert.assertNotNull(t.getByUserName("my name"));
+        Assert.assertTrue(null != t.getBySystemName("AT11"));
+        Assert.assertTrue(null != t.getByUserName("my name"));
+
     }
 
     AcelaNode a0, a1, a2, a3;
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
@@ -100,11 +103,9 @@ public class AcelaTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTes
         jmri.InstanceManager.setTurnoutManager(l);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
     private final static Logger log = LoggerFactory.getLogger(AcelaTurnoutManagerTest.class);

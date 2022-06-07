@@ -5,14 +5,12 @@ import jmri.InstanceManager;
 import jmri.NamedBeanHandleManager;
 import jmri.jmrit.consisttool.TestConsistManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of ConsistController
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class ConsistControllerTest {
 
@@ -22,18 +20,18 @@ public class ConsistControllerTest {
         Assert.assertNotNull("exists", panel );
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp();
 
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        JUnitUtil.initDebugCommandStation();
+        jmri.util.JUnitUtil.resetProfileManager();
+
+        jmri.util.JUnitUtil.initDebugCommandStation();
         InstanceManager.setDefault(ConsistManager.class, new TestConsistManager());
         InstanceManager.setDefault(NamedBeanHandleManager.class, new NamedBeanHandleManager());
     }
     
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         JUnitUtil.tearDown();
     }

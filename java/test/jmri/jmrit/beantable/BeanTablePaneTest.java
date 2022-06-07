@@ -1,17 +1,19 @@
 package jmri.jmrit.beantable;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class BeanTablePaneTest extends jmri.util.swing.JmriPanelTest {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetInstanceManager();
@@ -21,8 +23,7 @@ public class BeanTablePaneTest extends jmri.util.swing.JmriPanelTest {
         helpTarget="package.jmri.jmrit.beantable.BeanTablePane";
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         panel = null;
         title = null;

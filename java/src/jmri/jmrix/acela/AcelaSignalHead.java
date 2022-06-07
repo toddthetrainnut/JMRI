@@ -17,8 +17,7 @@ public class AcelaSignalHead extends DefaultSignalHead {
     /**
      * Create a SignalHead object, with only a system name.
      * <p>
-     * @param systemName should have been previously validated.
-     * @param memo system connection.
+     * 'systemName' should have been previously validated
      */
     public AcelaSignalHead(String systemName, AcelaSystemConnectionMemo memo) {
         super(systemName);
@@ -43,9 +42,7 @@ public class AcelaSignalHead extends DefaultSignalHead {
     /**
      * Create a SignalHead object, with both system and user names.
      * <p>
-     * @param systemName should have been previously validated.
-     * @param userName user name.
-     * @param memo system connection.
+     * 'systemName' should have been previously validated
      */
     public AcelaSignalHead(String systemName, String userName, AcelaSystemConnectionMemo memo) {
         super(systemName, userName);
@@ -75,7 +72,7 @@ public class AcelaSignalHead extends DefaultSignalHead {
         AcelaNode tNode = AcelaAddress.getNodeFromSystemName(tSystemName,_memo);
         if (tNode == null) {
             // node does not exist, ignore call
-            log.error("Can't resolve Acela Signal with name '{}'. command ignored", tSystemName);
+            log.error("Can't resolve Acela Signal with name '{}'. command ingnored", tSystemName);
             return;
         }
 

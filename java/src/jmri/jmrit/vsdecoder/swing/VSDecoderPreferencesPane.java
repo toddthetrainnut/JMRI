@@ -16,36 +16,32 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import jmri.jmrit.vsdecoder.VSDecoderManager;
 import jmri.jmrit.vsdecoder.VSDecoderPreferences;
 import jmri.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Pane to show VSDecoder Preferences.
- *
+/*
  * <hr>
  * This file is part of JMRI.
  * <p>
- * JMRI is free software; you can redistribute it and/or modify it under
- * the terms of version 2 of the GNU General Public License as published
+ * JMRI is free software; you can redistribute it and/or modify it under 
+ * the terms of version 2 of the GNU General Public License as published 
  * by the Free Software Foundation. See the "COPYING" file for a copy
  * of this license.
  * <p>
- * JMRI is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * JMRI is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
  * for more details.
  *
- * @author Mark Underwood Copyright (C) 2011
+ * @author   Mark Underwood Copyright (C) 2011
  */
 class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyChangeListener {
 
     private javax.swing.JCheckBox cbAutoStartEngine;
     private javax.swing.JCheckBox cbAutoLoadVSDFile;
-    private javax.swing.JCheckBox cbUseBlocks;
     private javax.swing.JTextField tfDefaultVSDFilePath;
     private javax.swing.JTextField tfDefaultVSDFileName;
     private javax.swing.JLabel labelDefaultVSDFilePath;
@@ -62,7 +58,6 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
 
     /**
      * Creates new form VSDecoderPreferencesPane
-     * @param tp Preferences information
      */
     public VSDecoderPreferencesPane(VSDecoderPreferences tp) {
         initComponents();
@@ -72,7 +67,7 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
     }
 
     public VSDecoderPreferencesPane() {
-        this(VSDecoderManager.instance().getVSDecoderPreferences());
+        this(jmri.jmrit.vsdecoder.VSDecoderManager.instance().getVSDecoderPreferences());
     }
 
     private GridBagConstraints setConstraints(Insets i, int x, int y, int width, int fill) {
@@ -83,7 +78,7 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         gbc.gridwidth = width;
         gbc.anchor = GridBagConstraints.LINE_START;
         gbc.fill = fill;
-        return gbc;
+        return (gbc);
     }
 
     private void initComponents() {
@@ -104,7 +99,6 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
 
         cbAutoStartEngine = new javax.swing.JCheckBox();
         cbAutoLoadVSDFile = new javax.swing.JCheckBox();
-        cbUseBlocks       = new javax.swing.JCheckBox();
         tfDefaultVSDFilePath = new javax.swing.JTextField(40);
         tfDefaultVSDFileName = new javax.swing.JTextField(40);
         JButton jbPathBrowse = new javax.swing.JButton(Bundle.getMessage("Browse"));
@@ -137,7 +131,6 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         // Get label strings from the resource bundle and assign it.
         cbAutoStartEngine.setText(Bundle.getMessage("AutoStartEngine"));
         cbAutoLoadVSDFile.setText(Bundle.getMessage("AutoLoadVSDFile"));
-        cbUseBlocks.setText(Bundle.getMessage("UseBlocks"));
         tfDefaultVSDFilePath.setColumns(30);
         tfDefaultVSDFilePath.setColumns(30);
         labelDefaultVSDFilePath.setText(Bundle.getMessage("DefaultVSDFilePath"));
@@ -153,7 +146,6 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         };
         cbAutoStartEngine.addActionListener(al);
         cbAutoLoadVSDFile.addActionListener(al);
-        cbUseBlocks.addActionListener(al);
         tfDefaultVSDFilePath.addActionListener(al);
         tfDefaultVSDFileName.addActionListener(al);
 
@@ -167,7 +159,7 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         });
         jbSave.setVisible(false);
 
-        jbCancel.setText(Bundle.getMessage("ButtonCancel"));
+        jbCancel.setText(Bundle.getMessage("VSDecoderPrefsReset"));
         jbCancel.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,17 +182,16 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
 
         prefsPane.add(cbAutoStartEngine, setConstraints(new Insets(2, 10, 2, 2), 0, 0, 2, GridBagConstraints.NONE)); //1
         prefsPane.add(cbAutoLoadVSDFile, setConstraints(new Insets(2, 10, 2, 2), 0, 1, 2, GridBagConstraints.NONE)); //2
-        prefsPane.add(cbUseBlocks, setConstraints(new Insets(2, 10, 2, 2), 0, 2, 2, GridBagConstraints.NONE)); //3
 
-        prefsPane.add(labelDefaultVSDFilePath, setConstraints(new Insets(2, 10, 2, 2), 0, 3, 1, GridBagConstraints.NONE)); //4
-        prefsPane.add(tfDefaultVSDFilePath, setConstraints(new Insets(2, 10, 2, 2), 1, 3, 3, GridBagConstraints.HORIZONTAL)); //4
-        prefsPane.add(jbPathBrowse, setConstraints(new Insets(2, 2, 2, 2), 5, 3, 1, GridBagConstraints.NONE)); //4
+        prefsPane.add(labelDefaultVSDFilePath, setConstraints(new Insets(2, 10, 2, 2), 0, 2, 1, GridBagConstraints.NONE)); //5
+        prefsPane.add(tfDefaultVSDFilePath, setConstraints(new Insets(2, 10, 2, 2), 1, 2, 3, GridBagConstraints.HORIZONTAL)); //3
+        prefsPane.add(jbPathBrowse, setConstraints(new Insets(2, 2, 2, 2), 5, 2, 1, GridBagConstraints.NONE)); //3
 
-        prefsPane.add(labelDefaultVSDFileName, setConstraints(new Insets(2, 10, 2, 2), 0, 4, 1, GridBagConstraints.NONE)); //5
-        prefsPane.add(tfDefaultVSDFileName, setConstraints(new Insets(2, 10, 2, 2), 1, 4, 2, GridBagConstraints.HORIZONTAL)); //5
-        prefsPane.add(jbFileBrowse, setConstraints(new Insets(2, 2, 2, 2), 5, 4, 1, GridBagConstraints.NONE)); //5
+        prefsPane.add(labelDefaultVSDFileName, setConstraints(new Insets(2, 10, 2, 2), 0, 3, 1, GridBagConstraints.NONE)); //6
+        prefsPane.add(tfDefaultVSDFileName, setConstraints(new Insets(2, 10, 2, 2), 1, 3, 2, GridBagConstraints.HORIZONTAL)); //4
+        prefsPane.add(jbFileBrowse, setConstraints(new Insets(2, 2, 2, 2), 5, 3, 1, GridBagConstraints.NONE)); //3
 
-        prefsPane.add(amPanel, setConstraints(new Insets(2, 10, 2, 2), 0, 5, 2, GridBagConstraints.HORIZONTAL)); //6
+        prefsPane.add(amPanel, setConstraints(new Insets(2, 10, 2, 2), 0, 6, 2, GridBagConstraints.HORIZONTAL));
 
         controlPane.add(jbSave, setConstraints(new Insets(5, 3, 5, 2), 2, 100, 1, GridBagConstraints.NONE)); //7
         controlPane.add(jbCancel, setConstraints(new Insets(5, 3, 5, 2), 0, 100, 1, GridBagConstraints.NONE)); //8
@@ -218,7 +209,6 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         }
         cbAutoStartEngine.setSelected(tp.isAutoStartingEngine());
         cbAutoLoadVSDFile.setSelected(tp.isAutoLoadingDefaultVSDFile());
-        cbUseBlocks.setSelected(tp.getUseBlocksSetting());
         tfDefaultVSDFilePath.setText(tp.getDefaultVSDFilePath());
         tfDefaultVSDFileName.setText(tp.getDefaultVSDFileName());
         switch (tp.getAudioMode()) {
@@ -236,7 +226,6 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         VSDecoderPreferences tp = new VSDecoderPreferences();
         tp.setAutoStartEngine(cbAutoStartEngine.isSelected());
         tp.setAutoLoadDefaultVSDFile(cbAutoLoadVSDFile.isSelected());
-        tp.setUseBlocksSetting(cbUseBlocks.isSelected());
         tp.setDefaultVSDFilePath(tfDefaultVSDFilePath.getText());
         tp.setDefaultVSDFileName(tfDefaultVSDFileName.getText());
         tp.setListenerPosition(VSDecoderManager.instance().getVSDecoderPreferences().getListenerPosition());
@@ -245,7 +234,7 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         } else if (audioModeHeadphoneButton.isSelected()) {
             tp.setAudioMode(VSDecoderPreferences.AudioMode.HEADPHONES);
         }
-        tp.setMasterVolume(VSDecoderManager.instance().getVSDecoderPreferences().getMasterVolume());
+
         return tp;
     }
 
@@ -300,7 +289,6 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
             path = VSDecoderManager.instance().getVSDecoderPreferences().getDefaultVSDFilePath();
         }
         final JFileChooser fc = new JFileChooser(path);
-        fc.setFileFilter(new FileNameExtensionFilter(Bundle.getMessage("LoadVSDFileChooserFilterLabel"), "vsd", "zip")); // NOI18N
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int rv = fc.showOpenDialog(this);
         if (rv == JFileChooser.APPROVE_OPTION) {
@@ -323,24 +311,24 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
     }
 
     private void jbApplyActionPerformed(java.awt.event.ActionEvent evt) {
-        VSDecoderManager.instance().getVSDecoderPreferences().set(getVSDecoderPreferences());
+        jmri.jmrit.vsdecoder.VSDecoderManager.instance().getVSDecoderPreferences().set(getVSDecoderPreferences());
     }
 
     public void jbSaveActionPerformed(java.awt.event.ActionEvent evt) {
-        VSDecoderManager.instance().getVSDecoderPreferences().set(getVSDecoderPreferences());
-        VSDecoderManager.instance().getVSDecoderPreferences().save();
+        jmri.jmrit.vsdecoder.VSDecoderManager.instance().getVSDecoderPreferences().set(getVSDecoderPreferences());
+        jmri.jmrit.vsdecoder.VSDecoderManager.instance().getVSDecoderPreferences().save();
         if (m_container != null) {
-            VSDecoderManager.instance().getVSDecoderPreferences().removePropertyChangeListener(this);
+            jmri.jmrit.vsdecoder.VSDecoderManager.instance().getVSDecoderPreferences().removePropertyChangeListener(this);
             m_container.setVisible(false); // should do with events...
             m_container.dispose();
         }
     }
 
     private void jbCancelActionPerformed(java.awt.event.ActionEvent evt) {
-        setComponents(VSDecoderManager.instance().getVSDecoderPreferences());
+        setComponents(jmri.jmrit.vsdecoder.VSDecoderManager.instance().getVSDecoderPreferences());
         checkConsistency();
         if (m_container != null) {
-            VSDecoderManager.instance().getVSDecoderPreferences().removePropertyChangeListener(this);
+            jmri.jmrit.vsdecoder.VSDecoderManager.instance().getVSDecoderPreferences().removePropertyChangeListener(this);
             m_container.setVisible(false); // should do with events...
             m_container.dispose();
         }
@@ -357,14 +345,14 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         if ((evt == null) || (evt.getPropertyName() == null)) {
             return;
         }
-        if (evt.getPropertyName().equals("VSDecoderPreferences")) {
-            if ((evt.getNewValue() != null) && (evt.getNewValue() instanceof VSDecoderPreferences)) {
-                setComponents((VSDecoderPreferences) evt.getNewValue());
-                checkConsistency();
+        if (evt.getPropertyName().compareTo("VSDecoderPreferences") == 0) {
+            if ((evt.getNewValue() == null) || (!(evt.getNewValue() instanceof VSDecoderPreferences))) {
+                return;
             }
+            setComponents((VSDecoderPreferences) evt.getNewValue());
+            checkConsistency();
         }
     }
 
     private static final Logger log = LoggerFactory.getLogger(VSDecoderPreferencesPane.class);
-
 }

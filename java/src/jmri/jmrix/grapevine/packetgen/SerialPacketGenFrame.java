@@ -123,15 +123,11 @@ public class SerialPacketGenFrame extends jmri.util.JmriJFrame implements jmri.j
     }
 
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        memo.getTrafficController().sendSerialMessage(createPacket(input), this);
+        memo.getTrafficController().sendSerialMessage(createPacket(packetTextField.getText()), this);
     }
 
     public void parityButtonActionPerformed(java.awt.event.ActionEvent e) {
-        String input = packetTextField.getText();
-        // TODO check input + feedback on error. Too easy to cause NPE
-        SerialMessage m = createPacket(input);
+        SerialMessage m = createPacket(packetTextField.getText());
         if (m == null) {
             return;
         }
@@ -171,6 +167,6 @@ public class SerialPacketGenFrame extends jmri.util.JmriJFrame implements jmri.j
     public void reply(SerialReply r) {
     } // ignore replies
 
-    private final static Logger log = LoggerFactory.getLogger(SerialPacketGenFrame.class);
+    private final static Logger log = LoggerFactory.getLogger(SerialPacketGenAction.class);
 
 }

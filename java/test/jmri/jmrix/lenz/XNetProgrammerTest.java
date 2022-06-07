@@ -1,18 +1,16 @@
 /**
  * XNetProgrammerTest.java
  *
- * JUnit tests for the XNetProgrammer class
+ * Description:	JUnit tests for the XNetProgrammer class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 package jmri.jmrix.lenz;
 
 import jmri.JmriException;
 import jmri.util.JUnitUtil;
 import jmri.ProgrammingMode;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
 
@@ -77,7 +75,7 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         // registered earlier received the values we expected.
 
         // failure in this test occurs with the next line.
-        JUnitUtil.waitFor(()-> l.getRcvdInvoked() != 0, "Receive Called by Programmer");
+        JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;}, "Receive Called by Programmer");
         Assert.assertEquals("Direct mode received value", 34, l.getRcvdValue());
     }
 
@@ -119,7 +117,7 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         // registered earlier received the values we expected.
 
         // failure in this test occurs with the next line.
-        JUnitUtil.waitFor(()-> l.getRcvdInvoked() != 0, "Receive Called by Programmer");
+        JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;}, "Receive Called by Programmer");
         Assert.assertEquals("Register mode received value", 12, l.getRcvdValue());
     }
 
@@ -158,7 +156,7 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         // registered earlier received the values we expected.
 
         // failure in this test occurs with the next line.
-        JUnitUtil.waitFor(()-> l.getRcvdInvoked() != 0, "Receive Called by Programmer");
+        JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;}, "Receive Called by Programmer");
         Assert.assertEquals("Register mode received value", 34, l.getRcvdValue());
     }
 
@@ -179,7 +177,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         mr1.setElement(2, 0x63);
         t.sendTestMessage(mr1);
 
-        JUnitUtil.waitFor(()-> t.outbound.size() > 1, "2 messages outbound");
         Assert.assertEquals("inquire message sent", 2, t.outbound.size());
         Assert.assertEquals("inquire message contents", "21 10 31", t.outbound.elementAt(1).toString());
 
@@ -200,7 +197,7 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         // registered earlier received the values we expected.
 
         // failure in this test occurs with the next line.
-        JUnitUtil.waitFor(()-> l.getRcvdInvoked() != 0, "Receive Called by Programmer");
+        JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;}, "Receive Called by Programmer");
         Assert.assertEquals("Register mode received value", 34, l.getRcvdValue());
     }
 
@@ -241,7 +238,7 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         // registered earlier received the values we expected.
 
         //failure in this test occurs with the next line.
-        JUnitUtil.waitFor(()-> l.getRcvdInvoked() != 0, "Receive Called by Programmer");
+        JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;}, "Receive Called by Programmer");
         Assert.assertEquals("Direct mode received value", 34, l.getRcvdValue());
     }
 
@@ -283,15 +280,13 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
         // registered earlier received the values we expected.
 
         //failure in this test occurs with the next line.
-        JUnitUtil.waitFor(()-> l.getRcvdInvoked() != 0, "Receive Called by Programmer");
+        JUnitUtil.waitFor(()->{return l.getRcvdInvoked() != 0;}, "Receive Called by Programmer");
         Assert.assertEquals("Direct mode received value", 34, l.getRcvdValue());
     }
 
     // Test to make sure the getCanWrite(int,string) function works correctly
     @Test
     public void testGetCanWriteV35LZ100() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -329,8 +324,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     // Test to make sure the getCanWrite(int,string) function works correctly
     @Test
     public void testGetCanWriteV36LZ100() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -368,8 +361,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     // Test to make sure the getCanWrite(int,string) function works correctly
     @Test
     public void testGetCanWriteV30LH200() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -407,8 +398,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     // Test to make sure the getCanWrite(int,string) function works correctly
     @Test
     public void testGetCanWriteV40MultiMaus() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -446,8 +435,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     // Test to make sure the getCanRead(int,string) function works correctly
     @Test
     public void testGetCanReadV35LZ100() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -486,8 +473,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     // Test to make sure the getCanRead(int,string) function works correctly
     @Test
     public void testGetCanReadV36LZ100() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -519,8 +504,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     // Test to make sure the getCanRead(int,string) function works correctly
     @Test
     public void testGetCanReadV30LH200() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -552,8 +535,6 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     // Test to make sure the getCanRead(int,string) function works correctly
     @Test
     public void testGetCanReadV40MultiMaus() {
-        // clean up from setup before overwriting
-        t.terminateThreads();
         // infrastructure objects
         LenzCommandStation cs = new LenzCommandStation();
         t = new XNetInterfaceScaffold(cs);
@@ -584,7 +565,7 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
     }
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // infrastructure objects
@@ -596,16 +577,15 @@ public class XNetProgrammerTest extends jmri.jmrix.AbstractProgrammerTest {
                 super.restartTimer(RESTART_TIME);
             }
         };
-        programmer = p;
+	programmer=p;
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        t.terminateThreads();
-        t = null;
-        l = null;
-        programmer = p = null;
+	t = null;
+	l = null;
+	programmer=p=null;
         JUnitUtil.tearDown();
     }
 

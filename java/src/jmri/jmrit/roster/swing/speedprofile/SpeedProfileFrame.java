@@ -12,7 +12,6 @@ public class SpeedProfileFrame extends jmri.util.JmriJFrame {
 
     public SpeedProfileFrame() {
         super(false, true);
-        spPanel = new SpeedProfilePanel();
     }
 
     SpeedProfilePanel spPanel;
@@ -20,6 +19,8 @@ public class SpeedProfileFrame extends jmri.util.JmriJFrame {
     @Override
     public void initComponents() {
         // the following code sets the frame's initial state
+
+        spPanel = new SpeedProfilePanel();
 
         setTitle(Bundle.getMessage("SpeedProfile"));
         getContentPane().setLayout(new BorderLayout(15,15));
@@ -47,7 +48,7 @@ public class SpeedProfileFrame extends jmri.util.JmriJFrame {
                 spPanel.updateSpeedProfileWithResults();            
             }
         }
-        if (spPanel.table !=null) {
+        if (spPanel != null && spPanel.table !=null) {
             spPanel.table.dispose();
         }
     }

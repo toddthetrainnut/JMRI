@@ -1,9 +1,9 @@
 package jmri.jmrix.lenz;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
 import jmri.Light;
 import jmri.managers.AbstractLightManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implement LightManager for XpressNet systems.
@@ -18,20 +18,20 @@ import jmri.managers.AbstractLightManager;
  */
 public class XNetLightManager extends AbstractLightManager {
 
-    private XNetTrafficController tc;
+    private XNetTrafficController tc = null;
+    private String prefix = null;
 
-    public XNetLightManager(XNetSystemConnectionMemo memo) {
-        super(memo);
-        this.tc = memo.getXNetTrafficController();
+    public XNetLightManager(XNetTrafficController tc, String prefix) {
+        this.prefix = prefix;
+        this.tc = tc;
     }
 
     /**
-     * {@inheritDoc}
+     * Return the system letter for XpressNet.
      */
     @Override
-    @Nonnull
-    public XNetSystemConnectionMemo getMemo() {
-        return (XNetSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return prefix;
     }
 
     // XNet-specific methods
@@ -44,17 +44,18 @@ public class XNetLightManager extends AbstractLightManager {
      * @return null if the system name is not in a valid format
      */
     @Override
-    @Nonnull
-    protected Light createNewLight(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Light createNewLight(String systemName, String userName) {
         // check if the output bit is available
-        int bitNum = XNetAddress.getBitFromSystemName(systemName, getSystemPrefix());
+        int bitNum = XNetAddress.getBitFromSystemName(systemName, prefix);
         if (bitNum == -1) {
-            throw new IllegalArgumentException("Invalid Bit from System Name: " + systemName);
+            return (null);
         }
+        Light lgt = null;
         // Normalize the System Name
-        String sName = getSystemNamePrefix() + bitNum; // removes any leading zeros
+        String sName = prefix + typeLetter() + bitNum; // removes any leading zeros
         // create the new Light object
-        return new XNetLight(tc, this, sName, userName);
+        lgt = new XNetLight(tc, this, sName, userName);
+        return lgt;
     }
 
     /**
@@ -63,26 +64,18 @@ public class XNetLightManager extends AbstractLightManager {
      * @param systemName system name for turnout
      * @return index value for light, -1 if an error occurred
      */
-    public int getBitFromSystemName(@Nonnull String systemName) {
-        return XNetAddress.getBitFromSystemName(systemName, getSystemPrefix());
+    public int getBitFromSystemName(String systemName) {
+        return XNetAddress.getBitFromSystemName(systemName, prefix);
     }
 
     /**
-     * {@inheritDoc}
+     * Validate Light system name format.
+     * Logging of handled cases no higher than WARN.
+     *
+     * @return 'true' if system name has a valid format, else return 'false'
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull Locale locale) {
-        return validateIntegerSystemNameFormat(name,
-                XNetAddress.MINSENSORADDRESS,
-                XNetAddress.MAXSENSORADDRESS,
-                locale);
-    }
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
+    public NameValidity validSystemNameFormat(String systemName) {
         return (getBitFromSystemName(systemName) != 0) ? NameValidity.VALID : NameValidity.INVALID;
     }
 
@@ -94,7 +87,7 @@ public class XNetLightManager extends AbstractLightManager {
      * Abstract Light class.
      */
     @Override
-    public boolean validSystemNameConfig(@Nonnull String systemName) {
+    public boolean validSystemNameConfig(String systemName) {
         return (true);
     }
 
@@ -104,7 +97,7 @@ public class XNetLightManager extends AbstractLightManager {
      * range checkbox in the Add Light pane.
      */
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return true;
     }
 
@@ -116,6 +109,14 @@ public class XNetLightManager extends AbstractLightManager {
         return Bundle.getMessage("AddOutputEntryToolTip");
     }
 
-    // private static final Logger log = LoggerFactory.getLogger(XNetLightManager.class);
+    /**
+     * Allow access to XNetLightManager.
+     */
+    @Deprecated
+    static public XNetLightManager instance() {
+        return null;
+    }
+
+    // private final static Logger log = LoggerFactory.getLogger(XNetLightManager.class);
 
 }

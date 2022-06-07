@@ -14,22 +14,30 @@ import jmri.jmrix.AbstractThrottle;
  */
 public class Throttle extends AbstractThrottle {
 
-    private CommandStation tcl;
+    private CommandStation tcl = null;
 
     /**
      * Constructor.
-     * @param address loco address.
-     * @param tc system connection traffic controller.
      */
     public Throttle(DccLocoAddress address, CommandStation tc) {
         super(null);
         tcl = tc;
 
         // cache settings.
-        synchronized(this) {
-            this.speedSetting = 0;
-        }
-        // Functions default to false
+        this.speedSetting = 0;
+        this.f0 = false;
+        this.f1 = false;
+        this.f2 = false;
+        this.f3 = false;
+        this.f4 = false;
+        this.f5 = false;
+        this.f6 = false;
+        this.f7 = false;
+        this.f8 = false;
+        this.f9 = false;
+        this.f10 = false;
+        this.f11 = false;
+        this.f12 = false;
         this.address = address;
         this.isForward = true;
     }
@@ -77,7 +85,7 @@ public class Throttle extends AbstractThrottle {
     }
 
     /**
-     * Set the speed and direction.
+     * Set the speed {@literal &} direction.
      * <p>
      * This intentionally skips the emergency stop value of 1.
      *
@@ -85,7 +93,7 @@ public class Throttle extends AbstractThrottle {
      */
     @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY") // OK to compare floating point
     @Override
-    public synchronized void setSpeedSetting(float speed) {
+    public void setSpeedSetting(float speed) {
         float oldSpeed = this.speedSetting;
         this.speedSetting = speed;
         int value = (int) ((127 - 1) * speed); // -1 for rescale to avoid estop
@@ -111,7 +119,9 @@ public class Throttle extends AbstractThrottle {
         for (int j = 0; j < step.length(); j++) {
             m.setElement(i++, step.charAt(j));
         }
-        firePropertyChange(SPEEDSETTING, oldSpeed, this.speedSetting);
+        if (oldSpeed != this.speedSetting) {
+            notifyPropertyChangeListener("SpeedSetting", oldSpeed, this.speedSetting);
+        }
         record(speed);
         // tcl.sendMessage(m, null);
     }
@@ -120,14 +130,14 @@ public class Throttle extends AbstractThrottle {
     public void setIsForward(boolean forward) {
         boolean old = isForward;
         isForward = forward;
-        synchronized(this) {
-            setSpeedSetting(speedSetting);  // send the command
+        setSpeedSetting(speedSetting);  // send the command
+        if (old != isForward) {
+            notifyPropertyChangeListener("IsForward", old, isForward);
         }
-        firePropertyChange(ISFORWARD, old, isForward);
     }
 
     @Override
-    public void throttleDispose() {
+    protected void throttleDispose() {
         finishRecord();
     }
 

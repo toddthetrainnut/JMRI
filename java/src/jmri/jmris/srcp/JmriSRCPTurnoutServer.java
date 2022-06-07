@@ -2,13 +2,12 @@ package jmri.jmris.srcp;
 
 import java.beans.PropertyChangeEvent;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-
 import jmri.InstanceManager;
 import jmri.Turnout;
 import jmri.jmris.AbstractTurnoutServer;
-import jmri.SystemConnectionMemo;
+import jmri.jmrix.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +19,10 @@ import org.slf4j.LoggerFactory;
  */
 public class JmriSRCPTurnoutServer extends AbstractTurnoutServer {
 
-    private OutputStream output;
+    private DataOutputStream output;
 
-    public JmriSRCPTurnoutServer(DataInputStream inStream, OutputStream outStream) {
+    public JmriSRCPTurnoutServer(DataInputStream inStream, DataOutputStream outStream) {
+
         output = outStream;
     }
 
@@ -31,17 +31,17 @@ public class JmriSRCPTurnoutServer extends AbstractTurnoutServer {
      */
     @Override
     public void sendStatus(String turnoutName, int Status) throws IOException {
-        output.write("499 ERROR unspecified error\n\r".getBytes());
+        TimeStampedOutput.writeTimestamp(output, "499 ERROR unspecified error\n\r");
     }
 
     public void sendStatus(int bus, int address) throws IOException {
         log.debug("send Status called with bus {} and address {}", bus, address);
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo = null;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
-            output.write("412 ERROR wrong value\n\r".getBytes());
+            TimeStampedOutput.writeTimestamp(output, "412 ERROR wrong value\n\r");
             return;
         }
         String turnoutName = memo.getSystemPrefix()
@@ -52,12 +52,12 @@ public class JmriSRCPTurnoutServer extends AbstractTurnoutServer {
             }
             int Status = InstanceManager.turnoutManagerInstance().provideTurnout(turnoutName).getKnownState();
             if (Status == Turnout.THROWN) {
-                output.write(("100 INFO " + bus + " GA " + address + " 1 0\n\r").getBytes());
+                TimeStampedOutput.writeTimestamp(output, "100 INFO " + bus + " GA " + address + " 1 0\n\r");
             } else if (Status == Turnout.CLOSED) {
-                output.write(("100 INFO " + bus + " GA " + address + " 0 0\n\r").getBytes());
+                TimeStampedOutput.writeTimestamp(output, "100 INFO " + bus + " GA " + address + " 0 0\n\r");
             } else {
                 //  unknown state
-                output.write("411 ERROR unknown value\n\r".getBytes());
+                TimeStampedOutput.writeTimestamp(output, "411 ERROR unknown value\n\r");
             }
         } catch (IllegalArgumentException ex) {
             log.warn("Failed to provide Turnout \"{}\" in sendStatus", turnoutName);
@@ -66,12 +66,12 @@ public class JmriSRCPTurnoutServer extends AbstractTurnoutServer {
 
     @Override
     public void sendErrorStatus(String turnoutName) throws IOException {
-        output.write("499 ERROR unspecified error\n\r".getBytes());
+        TimeStampedOutput.writeTimestamp(output, "499 ERROR unspecified error\n\r");
     }
 
     @Override
     public void parseStatus(String statusString) throws jmri.JmriException, java.io.IOException {
-        output.write("499 ERROR unspecified error\n\r".getBytes());
+        TimeStampedOutput.writeTimestamp(output, "499 ERROR unspecified error\n\r");
     }
 
     /*
@@ -81,19 +81,19 @@ public class JmriSRCPTurnoutServer extends AbstractTurnoutServer {
     public void initTurnout(int bus, int address, String protocol) throws jmri.JmriException, java.io.IOException {
 
         log.debug("init Turnout called with bus {} address {} and protocol {}", bus, address, protocol);
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
-            output.write("412 ERROR wrong value\n\r".getBytes());
+            TimeStampedOutput.writeTimestamp(output, "412 ERROR wrong value\n\r");
             return;
         }
         String turnoutName = memo.getSystemPrefix()
                 + "T" + address;
         // create turnout if it does not exist.
         this.initTurnout(turnoutName);
-        output.write(("101 INFO " + bus + " GA " + address + " " + protocol + "\n\r").getBytes());
+        TimeStampedOutput.writeTimestamp(output, "101 INFO " + bus + " GA " + address + " " + protocol + "\n\r");
     }
 
     /*
@@ -103,16 +103,18 @@ public class JmriSRCPTurnoutServer extends AbstractTurnoutServer {
     public void parseStatus(int bus, int address, int value) throws jmri.JmriException, java.io.IOException {
 
         log.debug("parse Status called with bus {} address {} and value {}", bus, address, value);
-        java.util.List<SystemConnectionMemo> list = InstanceManager.getList(SystemConnectionMemo.class);
+        java.util.List<SystemConnectionMemo> list = jmri.InstanceManager.getList(SystemConnectionMemo.class);
         SystemConnectionMemo memo;
         try {
             memo = list.get(bus - 1);
         } catch (java.lang.IndexOutOfBoundsException obe) {
-            output.write("412 ERROR wrong value\n\r".getBytes());
+            TimeStampedOutput.writeTimestamp(output, "412 ERROR wrong value\n\r");
             return;
         }
         String turnoutName = memo.getSystemPrefix()
                 + "T" + address;
+        // create turnout if it does not exist since closeTurnout() and throwTurnout() no longer do so
+        //this.initTurnout(turnoutName);
         if (value == 1) {
             log.debug("Setting Turnout THROWN");
             throwTurnout(turnoutName);
@@ -141,7 +143,7 @@ public class JmriSRCPTurnoutServer extends AbstractTurnoutServer {
             if (e.getPropertyName().equals("KnownState")) {
                 try {
                     String Name = ((jmri.Turnout) e.getSource()).getSystemName();
-                    java.util.List<SystemConnectionMemo> List = InstanceManager.getList(SystemConnectionMemo.class);
+                    java.util.List<SystemConnectionMemo> List = jmri.InstanceManager.getList(SystemConnectionMemo.class);
                     int i = 0;
                     int address;
                     for (Object memo : List) {

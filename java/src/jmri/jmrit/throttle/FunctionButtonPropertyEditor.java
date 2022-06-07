@@ -1,18 +1,31 @@
 package jmri.jmrit.throttle;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import javax.swing.*;
-import jmri.Throttle;
+import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import jmri.util.FileUtil;
 import jmri.util.swing.EditableResizableImagePanel;
 
 /**
  * A very specific dialog for editing the properties of a FunctionButton object.
  */
-public final class FunctionButtonPropertyEditor extends JDialog {
+public class FunctionButtonPropertyEditor extends JDialog {
 
-    private final FunctionButton button;
+    private FunctionButton button;
 
     private JTextField textField;
     private JCheckBox lockableCheckBox;
@@ -21,21 +34,18 @@ public final class FunctionButtonPropertyEditor extends JDialog {
     private JCheckBox visibleCheckBox;
     private EditableResizableImagePanel _imageFilePath;
     private EditableResizableImagePanel _imagePressedFilePath;
-    private JTextField imageSize;
     final static int BUT_IMG_SIZE = 45;
 
     /**
      * Constructor. Create it and pack it.
-     * @param btn the functionButton
      */
-    public FunctionButtonPropertyEditor(FunctionButton btn) {
-        button = btn;
+    public FunctionButtonPropertyEditor() {
         initGUI();
-        resetProperties();
+        pack();
     }
 
     /**
-     * Create, initialise, and place the GUI objects.
+     * Create, initilize, and place the GUI objects.
      */
     private void initGUI() {
         this.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
@@ -43,7 +53,7 @@ public final class FunctionButtonPropertyEditor extends JDialog {
         JPanel mainPanel = new JPanel();
         this.setContentPane(mainPanel);
         mainPanel.setLayout(new BorderLayout());
-        
+
         JPanel propertyPanel = new JPanel();
         propertyPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -70,7 +80,7 @@ public final class FunctionButtonPropertyEditor extends JDialog {
 
         constraints.anchor = GridBagConstraints.WEST;
         constraints.gridx = 0;
-        constraints.gridy ++;
+        constraints.gridy = 1;
         textField = new JTextField();
         textField.setColumns(10);
         propertyPanel.add(new JLabel(Bundle.getMessage("LabelText")), constraints);
@@ -81,7 +91,7 @@ public final class FunctionButtonPropertyEditor extends JDialog {
 
         constraints.anchor = GridBagConstraints.WEST;
         constraints.gridx = 0;
-        constraints.gridy ++;
+        constraints.gridy = 2;
         fontField = new JTextField();
         fontField.setColumns(10);
         propertyPanel.add(new JLabel(Bundle.getMessage("LabelFontSize")), constraints);
@@ -89,100 +99,80 @@ public final class FunctionButtonPropertyEditor extends JDialog {
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.gridx = 1;
         propertyPanel.add(fontField, constraints);
-        
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.gridx = 0;
-        constraints.gridy ++;
-        imageSize = new JTextField();
-        imageSize.setColumns(10);
-        propertyPanel.add(new JLabel(Bundle.getMessage("LabelFunctionImageSize")), constraints);
-
-        constraints.anchor = GridBagConstraints.CENTER;
-        constraints.gridx = 1;
-        propertyPanel.add(imageSize, constraints);
 
         lockableCheckBox = new JCheckBox(Bundle.getMessage("CheckBoxLockable"));
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.gridx = 0;
-        constraints.gridy ++;
+        constraints.gridy = 3;
         propertyPanel.add(lockableCheckBox, constraints);
 
         visibleCheckBox = new JCheckBox(Bundle.getMessage("CheckBoxVisible"));
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.gridx = 0;
-        constraints.gridy ++;
+        constraints.gridy = 4;
         propertyPanel.add(visibleCheckBox, constraints);
 
-        constraints.gridy ++;
+        constraints.gridy = 5;
         constraints.gridx = 0;
         propertyPanel.add(new JLabel(Bundle.getMessage("OffIcon")), constraints);
 
         constraints.gridx = 1;
         propertyPanel.add(new JLabel(Bundle.getMessage("OnIcon")), constraints);
 
-        constraints.gridy ++;
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.weighty = 100;
-        constraints.gridx = 0;        
+        constraints.gridy = 6;
+        constraints.gridx = 0;
         _imageFilePath = new EditableResizableImagePanel("", BUT_IMG_SIZE, BUT_IMG_SIZE);
-        _imageFilePath.setDropFolder(FileUtil.getUserResourcePath()); // will be updated later on if curent throttle is in roster db
+        _imageFilePath.setDropFolder(FileUtil.getUserResourcePath());
         _imageFilePath.setBackground(new Color(0, 0, 0, 0));
         _imageFilePath.setBorder(BorderFactory.createLineBorder(java.awt.Color.blue));
-        _imageFilePath.addMenuItemBrowseFolder(Bundle.getMessage("OpenSystemFileBrowserOnJMRIfnButtonsRessources"), FileUtil.getExternalFilename("resources/icons/functionicons"));
-        _imageFilePath.addComponentListener(_imageFilePath); // listen to itself, will rescale image when need
         propertyPanel.add(_imageFilePath, constraints);
 
         constraints.gridx = 1;
         _imagePressedFilePath = new EditableResizableImagePanel("", BUT_IMG_SIZE, BUT_IMG_SIZE);
-        _imagePressedFilePath.setDropFolder(FileUtil.getUserResourcePath()); // will be updated later on if curent throttle is in roster db
+        _imagePressedFilePath.setDropFolder(FileUtil.getUserResourcePath());
         _imagePressedFilePath.setBackground(new Color(0, 0, 0, 0));
         _imagePressedFilePath.setBorder(BorderFactory.createLineBorder(java.awt.Color.blue));
-        _imagePressedFilePath.addMenuItemBrowseFolder(Bundle.getMessage("OpenSystemFileBrowserOnJMRIfnButtonsRessources"), FileUtil.getExternalFilename("resources/icons/functionicons"));
-        _imagePressedFilePath.addComponentListener(_imagePressedFilePath);  // listen to itself, will rescale image when needed
         propertyPanel.add(_imagePressedFilePath, constraints);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 2, 4, 4));
 
-        JButton applyButton = new JButton(Bundle.getMessage("ButtonApply"));
-        applyButton.addActionListener((ActionEvent e) -> {
-            saveProperties();
-        });
-                
-        JButton resetButton = new JButton(Bundle.getMessage("ButtonReset"));
-        resetButton.addActionListener((ActionEvent e) -> {
-            resetProperties();           
-        });        
-        
-        JButton closeButton = new JButton(Bundle.getMessage("ButtonClose"));
-        closeButton.addActionListener((ActionEvent e) -> {
-            finishEdit();
+        JButton saveButton = new JButton(Bundle.getMessage("ButtonOK"));
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveProperties();
+            }
         });
 
-        buttonPanel.add(resetButton);
-        buttonPanel.add(closeButton);        
-        buttonPanel.add(applyButton);
+        JButton cancelButton = new JButton(Bundle.getMessage("ButtonCancel"));
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                finishEdit();
+            }
+        });
+
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
 
         mainPanel.add(propertyPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        pack();
     }
 
     /**
-     * Initialize GUI from button properties.
+     * Set the FunctionButton this dialog will edit. Method will initialize GUI
+     * from button properties.
      *
+     * @param button The FunctionButton to edit.
      */
-    public void resetProperties() {
+    public void setFunctionButton(FunctionButton button) {
+        this.button = button;
         textField.setText(button.getButtonLabel());
         lockableCheckBox.setSelected(button.getIsLockable());
         idField.setText(String.valueOf(button.getIdentity()));
-        Throttle mThrottle = button.getThrottle();
-        if (mThrottle!=null) {
-            idField.setToolTipText(Bundle.getMessage("MaxFunction",mThrottle.getFunctions().length -1));
-        }
         fontField.setText(String.valueOf(button.getFont().getSize()));
-        imageSize.setText(String.valueOf(button.getButtonImageSize()));
         visibleCheckBox.setSelected(button.getDisplay());
         _imageFilePath.setImagePath(button.getIconPath());
         _imagePressedFilePath.setImagePath(button.getSelectedIconPath());
@@ -201,12 +191,13 @@ public final class FunctionButtonPropertyEditor extends JDialog {
             button.setFont(new Font(name,
                     button.getFont().getStyle(),
                     Integer.parseInt(fontField.getText())));
-            button.setButtonImageSize( Integer.parseInt(imageSize.getText()) );
+            button.setVisible(visibleCheckBox.isSelected());
             button.setDisplay(visibleCheckBox.isSelected());
             button.setIconPath(_imageFilePath.getImagePath());
             button.setSelectedIconPath(_imagePressedFilePath.getImagePath());
             button.setDirty(true);
             button.updateLnF();
+            finishEdit();
         }
     }
 
@@ -219,27 +210,19 @@ public final class FunctionButtonPropertyEditor extends JDialog {
 
     /**
      * Verify the data on the dialog. If invalid, notify user of errors.
-     * @return true if valid, else false.
      */
     private boolean isDataValid() {
         StringBuffer errors = new StringBuffer();
         int errorNumber = 0;
         /* ID >=0 && ID <= 28 */
-        
-        Throttle mThrottle = button.getThrottle();
-        if (mThrottle==null) {
-            return false;
-        }
-        
         try {
             int id = Integer.parseInt(idField.getText());
-            if ((id < 0) || id >= mThrottle.getFunctions().length) {
+            if ((id < 0) || id > 28) {
                 throw new NumberFormatException("");
             }
         } catch (NumberFormatException ex) {
-            errors.append(String.valueOf(++errorNumber)).append(". ");
-            errors.append(Bundle.getMessage("ErrorFunctionKeyRange",
-                mThrottle.getFunctions().length-1)).append("\n");
+            errors.append(String.valueOf(++errorNumber));
+            errors.append(". " + Bundle.getMessage("ErrorFunctionKeyRange") + "\n");
         }
 
         /* font > 0 */
@@ -249,37 +232,15 @@ public final class FunctionButtonPropertyEditor extends JDialog {
                 throw new NumberFormatException("");
             }
         } catch (NumberFormatException ex) {
-            errors.append(String.valueOf(++errorNumber)).append(". ");
-            errors.append( Bundle.getMessage("ErrorFontSize"));
+            errors.append(String.valueOf(++errorNumber));
+            errors.append(". " + Bundle.getMessage("ErrorFontSize"));
         }
-
-        /* image size > 0 */
-        try {
-            int size = Integer.parseInt(imageSize.getText());
-            if (size < 1) {
-                throw new NumberFormatException("");
-            }
-        } catch (NumberFormatException ex) {
-            errors.append(String.valueOf(++errorNumber)).append(". ");
-            errors.append( Bundle.getMessage("ErrorImageSize"));
-        }        
 
         if (errorNumber > 0) {
             JOptionPane.showMessageDialog(this, errors,
-                Bundle.getMessage("ErrorOnPage"), JOptionPane.ERROR_MESSAGE);
+                    "Errors on page", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
-    }
-
-    /**
-     * Set the folder where droped images in Property panel will be stored
-     * 
-     * @param dropFolder the folder path
-     * 
-     */
-    void setDropFolder(String dropFolder) {
-        _imageFilePath.setDropFolder(dropFolder);
-        _imagePressedFilePath.setDropFolder(dropFolder);
     }
 }

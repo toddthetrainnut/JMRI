@@ -1,15 +1,13 @@
 package apps.gui3;
 
 import apps.gui3.dp3.DecoderPro3;
-
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.netbeans.jemmy.operators.JFrameOperator;
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -50,31 +48,33 @@ public class FirstTimeStartUpWizardTest {
             }
 
             @Override
+            protected void installShutDownManager() {
+                JUnitUtil.initShutDownManager();
+            }
+
+            @Override
             public void createAndDisplayFrame() {
                 // called when wizard is disposed, but do nothing in tests
             }
         };
-        jmri.util.JmriJFrame jf = new jmri.util.JmriJFrame("DecoderPro Wizard", false, false);
+        jmri.util.JmriJFrame jf = new jmri.util.JmriJFrame("Decoder Pro Wizard", false, false);
         FirstTimeStartUpWizard t = new FirstTimeStartUpWizard(jf, a);
         Assert.assertNotNull("exists", t);
-
-        new JFrameOperator("DecoderPro Wizard").requestClose();
         t.dispose();
         JUnitUtil.dispose(jf);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetApplication();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();  // eventually want to test ShutDownTasks?
         JUnitUtil.resetApplication();
-        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
     }
 

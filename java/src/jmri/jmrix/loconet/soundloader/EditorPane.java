@@ -3,6 +3,7 @@ package jmri.jmrix.loconet.soundloader;
 import java.awt.FlowLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -121,10 +122,7 @@ public class EditorPane extends jmri.jmrix.loconet.swing.LnPanel {
         save.setEnabled(true);
         revalidate();
         // major resize, repack
-        java.awt.Container co = getTopLevelAncestor();
-        if ( co instanceof JFrame ) {
-            ((JFrame) co).pack();
-        }
+        ((JFrame) getTopLevelAncestor()).pack();
     }
 
     void saveFile(String name) throws IOException {

@@ -2,7 +2,6 @@ package jmri.implementation;
 
 import java.util.HashSet;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import jmri.InstanceInitializer;
 
 public class AbstractInstanceInitializer implements InstanceInitializer {
@@ -15,8 +14,7 @@ public class AbstractInstanceInitializer implements InstanceInitializer {
      * {@inheritDoc }
      */
     @Override
-    @Nonnull
-    public <T> Object getDefault(@Nonnull Class<T> type) {
+    public <T> Object getDefault(Class<T> type) throws IllegalArgumentException {
         throw new IllegalArgumentException();
     }
 
@@ -26,7 +24,6 @@ public class AbstractInstanceInitializer implements InstanceInitializer {
      * {@inheritDoc }
      */
     @Override
-    @Nonnull
     public Set<Class<?>> getInitalizes() {
         return new HashSet<>();
     }

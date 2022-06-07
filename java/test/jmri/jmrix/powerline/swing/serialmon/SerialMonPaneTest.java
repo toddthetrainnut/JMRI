@@ -1,20 +1,21 @@
 package jmri.jmrix.powerline.swing.serialmon;
 
+import jmri.jmrix.powerline.SerialTrafficControlScaffold;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Test simple functioning of SerialMonPane
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class SerialMonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
 
     // private SerialTrafficControlScaffold tc = null;
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // tc = new SerialTrafficControlScaffold();
@@ -25,9 +26,8 @@ public class SerialMonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        panel = pane = null;
         JUnitUtil.tearDown();
         // tc = null;
     }

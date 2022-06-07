@@ -26,20 +26,6 @@ public class SerialDriverAdapter extends GcSerialDriverAdapter {
         mBaudRate = Bundle.getMessage("Baud230400");
     }
 
-    @Override
-    public String openPort(String portName, String appName) {
-        try {
-            String retval = super.openPort(portName, appName);
-            activeSerialPort.setSerialPortParams(activeSerialPort.getBaudRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_2, SerialPort.PARITY_NONE);
-            activeSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_XONXOFF_OUT);
-            activeSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_XONXOFF_IN);
-            return retval;
-        } catch (UnsupportedCommOperationException e) {
-            log.error("error configuring port", e);
-            return null;
-        }
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -55,13 +41,32 @@ public class SerialDriverAdapter extends GcSerialDriverAdapter {
      * And the corresponding values.
      */
     @Override
-    public int[] validBaudNumbers() {
+    public int[] validBaudValues() {
         return new int[]{57600, 115200, 230400, 250000, 288000, 333333, 460800};
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Migration method
+     */
     @Override
-    public int defaultBaudIndex() {
-        return 2;
+    public int[] validBaudNumbers() {
+        return validBaudValues();
+    }
+
+    @Override
+    public String openPort(String portName, String appName) {
+        try {
+            String retval = super.openPort(portName, appName);
+            activeSerialPort.setSerialPortParams(activeSerialPort.getBaudRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_2, SerialPort.PARITY_NONE);
+            activeSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_XONXOFF_OUT);
+            activeSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_XONXOFF_IN);
+            return retval;
+        } catch (UnsupportedCommOperationException e) {
+            log.error("error configuring port", e);
+            return null;
+        }
     }
 
     @Override

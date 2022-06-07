@@ -1,3 +1,6 @@
+/**
+ * LIUSBXNetPacketizer.java
+ */
 package jmri.jmrix.lenz.liusb;
 
 import jmri.jmrix.lenz.XNetPacketizer;
@@ -22,7 +25,10 @@ public class LIUSBXNetPacketizer extends XNetPacketizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Add header to the outgoing byte stream.
+     *
+     * @param msg The output byte stream
+     * @return next location in the stream to fill
      */
     @Override
     protected int addHeaderToOutput(byte[] msg, jmri.jmrix.AbstractMRMessage m) {
@@ -33,11 +39,20 @@ public class LIUSBXNetPacketizer extends XNetPacketizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Determine how much many bytes the entire message will take, including
+     * space for header and trailer.
+     *
+     * @param m The message to be sent
+     * @return Number of bytes
      */
     @Override
     protected int lengthOfByteStream(jmri.jmrix.AbstractMRMessage m) {
-        return m.getNumDataElements() + 2;
+        int len = m.getNumDataElements() + 2;
+        int cr = 0;
+        if (!m.isBinary()) {
+            cr = 1;  // space for return
+        }
+        return len + cr;
     }
 
     /**
@@ -82,6 +97,6 @@ public class LIUSBXNetPacketizer extends XNetPacketizer {
         }
     }
 
-    private static final Logger log = LoggerFactory.getLogger(LIUSBXNetPacketizer.class);
+    private final static Logger log = LoggerFactory.getLogger(LIUSBXNetPacketizer.class);
 
 }

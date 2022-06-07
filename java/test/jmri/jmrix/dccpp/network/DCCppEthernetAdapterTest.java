@@ -1,14 +1,15 @@
 package jmri.jmrix.dccpp.network;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * DCCppEthernetAdapterTest.java
  *
- * Test for the jmri.jmrix.dccpp.network.DCCppEthernetAdapter
+ * Description: tests for the jmri.jmrix.dccpp.network.DCCppEthernetAdapter
  * class
  *
  * @author Paul Bender
@@ -22,12 +23,12 @@ public class DCCppEthernetAdapterTest {
         Assert.assertNotNull(a);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

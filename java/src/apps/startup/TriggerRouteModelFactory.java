@@ -1,12 +1,11 @@
 package apps.startup;
 
-import jmri.util.startup.StartupModelFactory;
-import jmri.util.startup.StartupModel;
-import jmri.util.startup.StartupActionsManager;
+import apps.StartupActionsManager;
 import java.awt.Component;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import jmri.InstanceManager;
+import jmri.Route;
 import jmri.RouteManager;
 import org.openide.util.lookup.ServiceProvider;
 

@@ -1,8 +1,8 @@
 package jmri.jmrix.marklin;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the MarklinPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class MarklinPortControllerTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        MarklinSystemConnectionMemo memo = new MarklinSystemConnectionMemo();
@@ -24,7 +24,7 @@ public class MarklinPortControllerTest extends jmri.jmrix.AbstractNetworkPortCon
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
        JUnitUtil.tearDown();
     }

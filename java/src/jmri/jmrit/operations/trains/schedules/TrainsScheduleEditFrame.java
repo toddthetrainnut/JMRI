@@ -2,17 +2,14 @@ package jmri.jmrit.operations.trains.schedules;
 
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.setup.Control;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Used to edit train schedules.
@@ -95,7 +92,7 @@ public class TrainsScheduleEditFrame extends OperationsFrame implements java.bea
         // check for valid name
         String s = addTextBox.getText();
         s = s.trim();
-        if (s.isEmpty()) {
+        if (s.equals("")) {
             return; // done
         }
         if (ae.getSource() == addButton) {

@@ -2,9 +2,7 @@ package jmri.jmrit.operations.rollingstock.engines;
 
 import java.util.List;
 import java.util.ResourceBundle;
-
 import javax.swing.JOptionPane;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsXml;
 import jmri.jmrit.operations.rollingstock.RollingStockSetFrame;
@@ -69,7 +67,7 @@ public class EngineSetFrame extends RollingStockSetFrame<Engine> {
             if (JOptionPane.showConfirmDialog(this, Bundle.getMessage("engineInConsist"),
                     Bundle.getMessage("enginePartConsist"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 // convert cars list to rolling stock list
-                List<Engine> list = _engine.getConsist().getEngines();
+                List<Engine> list = _engine.getConsist().getGroup();
                 if (!updateGroup(list)) {
                     return false;
                 }

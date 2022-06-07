@@ -1,30 +1,29 @@
 package jmri.jmrix.xpa;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
 import jmri.InstanceManager;
-import jmri.NamedBean;
 import jmri.PowerManager;
 import jmri.ThrottleManager;
 import jmri.TurnoutManager;
-import jmri.jmrix.DefaultSystemConnectionMemo;
-import jmri.util.NamedBeanComparator;
+import jmri.jmrix.SystemConnectionMemo;
 
 /**
  * Provide the required SystemConnectionMemo for the XPA+Modem adapters.
  *
  * @author Randall Wood randall.h.wood@alexandriasoftware.com
- * @author Paul Bender Copyright (C) 2016,2020
+ * @author Paul Bender Copyright (C) 2016
  */
-public class XpaSystemConnectionMemo extends DefaultSystemConnectionMemo {
+public class XpaSystemConnectionMemo extends SystemConnectionMemo {
 
     public XpaSystemConnectionMemo() {
         this("P", "XPA"); // Prefix from XpaTurnoutManager, UserName from XpaThrottleManager
     }
 
     public XpaSystemConnectionMemo(String prefix, String userName){
-        super(prefix, userName);
-        InstanceManager.store(this,XpaSystemConnectionMemo.class);
+        super(prefix, userName); 
+        register(); // registers general type
+        InstanceManager.store(this,XpaSystemConnectionMemo.class); // also register as specific type
+
         // create and register the XNetComponentFactory
         InstanceManager.store(cf = new jmri.jmrix.xpa.swing.XpaComponentFactory(this),
                 jmri.jmrix.swing.ComponentFactory.class);
@@ -36,16 +35,12 @@ public class XpaSystemConnectionMemo extends DefaultSystemConnectionMemo {
         return null;
     }
 
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
-    }
+    jmri.jmrix.swing.ComponentFactory cf = null;
 
-    final jmri.jmrix.swing.ComponentFactory cf;
 
     /* manage the associated traffic controller */
     private XpaTrafficController tc = null;
-
+    
     /**
      * Set the XpaTrafficController associated with this memo.
      *
@@ -69,35 +64,84 @@ public class XpaSystemConnectionMemo extends DefaultSystemConnectionMemo {
      * Provide access to the Throttle Manager for this particular connection.
      */
     public ThrottleManager getThrottleManager() {
-        return (ThrottleManager)classObjectMap.computeIfAbsent(ThrottleManager.class, (Class<?> c) -> { return new XpaThrottleManager(this);});
+        if (throttleManager == null) {
+            throttleManager = new XpaThrottleManager(this);
+        }
+        return throttleManager;
     }
 
 
     public void setThrottleManager(ThrottleManager t) {
-        store(t,ThrottleManager.class);
+        throttleManager = t;
     }
+
+    private ThrottleManager throttleManager;
 
     /*
      * Provide access to the PowerManager for this particular connection.
      */
     public PowerManager getPowerManager() {
-        return (PowerManager) classObjectMap.computeIfAbsent(PowerManager.class,(Class<?> c) -> { return new XpaPowerManager(this); });
+        if (powerManager == null) {
+            powerManager = new XpaPowerManager(getXpaTrafficController());
+        }
+        return powerManager;
+
     }
 
     public void setPowerManager(PowerManager p) {
-        store(p,PowerManager.class);
+        powerManager = p;
     }
+
+    private PowerManager powerManager;
 
     /*
      * Provide access to the TurnoutManager for this particular connection.
      */
     public TurnoutManager getTurnoutManager() {
-        return (TurnoutManager) classObjectMap.computeIfAbsent(TurnoutManager.class,(Class<?> c) -> { return  new XpaTurnoutManager(this); });
+        if (turnoutManager == null) {
+            turnoutManager = new XpaTurnoutManager(this);
+        }
+        return turnoutManager;
     }
 
     public void setTurnoutManager(TurnoutManager t) {
-        store(t,TurnoutManager.class);
+        turnoutManager = t;
     }
+
+    private TurnoutManager turnoutManager = null;
+
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        } else if (type.equals(jmri.ThrottleManager.class)) {
+            return true;
+        } else if (type.equals(jmri.PowerManager.class)) {
+            return true;
+        } else if (type.equals(jmri.TurnoutManager.class)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.ThrottleManager.class)) {
+            return (T) getThrottleManager();
+        }
+        if (T.equals(jmri.PowerManager.class)) {
+            return (T) getPowerManager();
+        }
+        if (T.equals(jmri.TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        return null; // nothing, by default
+   }
 
     @Override
     public void dispose() {

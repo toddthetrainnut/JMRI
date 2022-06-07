@@ -1,15 +1,14 @@
 package jmri.util.swing;
 
 import java.util.Enumeration;
-
 import javax.swing.table.TableColumn;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.AfterAll;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -22,20 +21,20 @@ public class XTableColumnModelTest {
     private static final String COLUMN2 = "column2";
     private static final String COLUMN3 = "column3";
 
-    @BeforeAll
+    @BeforeClass
     public static void setUpClass() throws Exception {
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDownClass() throws Exception {
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -19,12 +19,9 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      * Interval to check the status of the throttle
      */
     protected static final int statTimeoutValue = 5000;
-    private static final String MOMENTARY_FUNCTION_REQUEST_NOT_SUPPORTED_BY_ELITE = "Momentary function request not supported by Elite.";
 
     /**
-     * Constructor.
-     * @param memo system connection.
-     * @param tc traffic controller.
+     * Constructor
      */
     public EliteXNetThrottle(XNetSystemConnectionMemo memo, XNetTrafficController tc) {
         super(memo, tc);
@@ -32,14 +29,11 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
     }
 
     /**
-     * Constructor by address.
-     * @param memo system connection.
-     * @param address loco address.
-     * @param tc system connection traffic controller.
+     * Constructor by address
      */
     public EliteXNetThrottle(XNetSystemConnectionMemo memo, LocoAddress address, XNetTrafficController tc) {
         super(memo, address, tc);
-        log.debug("Elite XNetThrottle constructor called for address {}",address);
+        log.debug("Elite XNetThrottle constructor called for address " + address);
     }
 
     /**
@@ -48,7 +42,8 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      */
     @Override
     protected void sendMomentaryFunctionGroup1() {
-        log.debug(MOMENTARY_FUNCTION_REQUEST_NOT_SUPPORTED_BY_ELITE);
+        log.debug("Momentary function request not supported by Elite.");
+        return;
     }
 
     /**
@@ -57,7 +52,8 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      */
     @Override
     protected void sendMomentaryFunctionGroup2() {
-        log.debug(MOMENTARY_FUNCTION_REQUEST_NOT_SUPPORTED_BY_ELITE);
+        log.debug("Momentary function request not supported by Elite.");
+        return;
     }
 
     /**
@@ -66,7 +62,8 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      */
     @Override
     protected void sendMomentaryFunctionGroup3() {
-        log.debug(MOMENTARY_FUNCTION_REQUEST_NOT_SUPPORTED_BY_ELITE);
+        log.debug("Momentary function request not supported by Elite.");
+        return;
     }
 
     /**
@@ -75,7 +72,8 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      */
     @Override
     protected void sendMomentaryFunctionGroup4() {
-        log.debug(MOMENTARY_FUNCTION_REQUEST_NOT_SUPPORTED_BY_ELITE);
+        log.debug("Momentary function request not supported by Elite.");
+        return;
     }
 
     /**
@@ -84,15 +82,17 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      */
     @Override
     protected void sendMomentaryFunctionGroup5() {
-        log.debug(MOMENTARY_FUNCTION_REQUEST_NOT_SUPPORTED_BY_ELITE);
+        log.debug("Momentary function request not supported by Elite.");
+        return;
     }
 
     /**
      * Send a request to get the status of functions from the command station.
      */
     @Override
-    protected synchronized void sendFunctionStatusInformationRequest() {
-        log.debug(MOMENTARY_FUNCTION_REQUEST_NOT_SUPPORTED_BY_ELITE);
+    synchronized protected void sendFunctionStatusInformationRequest() {
+        log.debug("Momentary function request not supported by Elite.");
+        return;
     }
 
     /**
@@ -154,15 +154,13 @@ public class EliteXNetThrottle extends jmri.jmrix.lenz.XNetThrottle {
      */
     @Override
     protected void startStatusTimer() {
-        // override default behavior
     }
 
     @Override
     protected void stopStatusTimer() {
-        // override default behavior
     }
 
     // register for notification
-    private static final Logger log = LoggerFactory.getLogger(EliteXNetThrottle.class);
+    private final static Logger log = LoggerFactory.getLogger(EliteXNetThrottle.class);
 
 }

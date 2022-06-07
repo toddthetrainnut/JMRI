@@ -3,13 +3,15 @@ package jmri;
 import jmri.implementation.AbstractTurnout;
 import jmri.util.JUnitUtil;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the TurnoutOperation class
  *
- * @author Bob Jacobsen Copyright (C) 2016
+ * @author	Bob Jacobsen Copyright (C) 2016
  */
 public class TurnoutOperationTest {
 
@@ -51,14 +53,14 @@ public class TurnoutOperationTest {
         
     }
     
-    @BeforeEach
+    @Before
     public void setUp() throws Exception { 
         jmri.util.JUnitUtil.setUp(); 
         jmri.util.JUnitUtil.resetInstanceManager();
         JUnitUtil.initInternalTurnoutManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception { 
         jmri.util.JUnitUtil.tearDown(); 
     }

@@ -8,15 +8,17 @@ import jmri.util.JUnitUtil;
 
 import java.beans.PropertyVetoException;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * SerialTurnoutManagerTest.java
  *
- * Test for the SerialTurnoutManager class
+ * Description: tests for the SerialTurnoutManager class
  *
  * @author Bob Jacobsen Copyright 2004, 2008 Converted to multiple connection
  * @author kcameron Copyright (C) 2011
@@ -26,7 +28,7 @@ public class SerialTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTe
     private SerialTrafficControlScaffold nis = null;
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         SpecificSystemConnectionMemo memo = new SpecificSystemConnectionMemo();
@@ -44,11 +46,6 @@ public class SerialTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTe
     public String getSystemName(int n) {
         return "PTB" + n;
     }
-    
-    @Override
-    protected String getASystemNameWithNoPrefix() {
-        return "B2";
-    }
 
     @Test
     public void testAsAbstractFactory() {
@@ -56,16 +53,16 @@ public class SerialTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTe
         Turnout o = l.newTurnout("PTB1", "my name");
 
         if (log.isDebugEnabled()) {
-            log.debug("received turnout value {}", o);
+            log.debug("received turnout value " + o);
         }
         Assert.assertTrue(null != (SerialTurnout) o);
 
         // make sure loaded into tables
         if (log.isDebugEnabled()) {
-            log.debug("by system name: {}", l.getBySystemName("PTB1"));
+            log.debug("by system name: " + l.getBySystemName("PTB1"));
         }
         if (log.isDebugEnabled()) {
-            log.debug("by user name:   {}", l.getByUserName("my name"));
+            log.debug("by user name:   " + l.getByUserName("my name"));
         }
 
         Assert.assertTrue(null != l.getBySystemName("PTB1"));
@@ -117,19 +114,17 @@ public class SerialTurnoutManagerTest extends jmri.managers.AbstractTurnoutMgrTe
             l.makeSystemName("1");
             Assert.fail("Expected exception not thrown");
         } catch (NamedBean.BadSystemNameException ex) {
-            Assert.assertEquals("\"PT1\" is not a recognized format.", ex.getMessage());
+            Assert.assertEquals("Invalid system name for Turnout: name \"PT1\" has incorrect format", ex.getMessage());
         }
-        JUnitAppender.assertErrorMessage("Invalid system name for Turnout: \"PT1\" is not a recognized format.");
+        JUnitAppender.assertWarnMessage("address did not match any valid forms: PT1");
         String s = l.makeSystemName("B1");
         Assert.assertNotNull(s);
         Assert.assertFalse(s.isEmpty());
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
     private final static Logger log = LoggerFactory.getLogger(SerialTurnoutManagerTest.class);

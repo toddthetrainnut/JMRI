@@ -2,9 +2,9 @@ package jmri.jmrix.anyma;
 
 import jmri.implementation.AbstractLightTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * Tests for AnymaDMX_UsbLight class.
@@ -16,27 +16,22 @@ public class AnymaDMX_UsbLightTest extends AbstractLightTestBase {
 
     private AnymaDMX_SystemConnectionMemo _memo = null;
 
-    @Override
     public void testCreate() {
         t = new AnymaDMX_UsbLight("DL1", "Test Light", _memo);
         Assert.assertNotNull("testCreate", t);
     }
 
-    @Override
     public int numListeners() {
         return 0;
     }
 
-    @Override
     public void checkOnMsgSent() {
     }
 
-    @Override
     public void checkOffMsgSent() {
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
@@ -44,7 +39,7 @@ public class AnymaDMX_UsbLightTest extends AbstractLightTestBase {
         t = new AnymaDMX_UsbLight("DL1", "Test Light", _memo);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

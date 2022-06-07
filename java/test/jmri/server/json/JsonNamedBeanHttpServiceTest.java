@@ -1,19 +1,16 @@
 package jmri.server.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-
 import jmri.InstanceManager;
 import jmri.Turnout;
 import jmri.TurnoutManager;
-import jmri.server.json.turnout.JsonTurnout;
 import jmri.server.json.turnout.JsonTurnoutHttpService;
+import jmri.server.json.turnout.JsonTurnoutServiceFactory;
 import jmri.util.JUnitUtil;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test handling of null, or non-existent Named Beans. Testing of existent, or
@@ -26,7 +23,7 @@ public class JsonNamedBeanHttpServiceTest extends JsonNamedBeanHttpServiceTestBa
     public JsonNamedBeanHttpServiceTest() {
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -34,7 +31,7 @@ public class JsonNamedBeanHttpServiceTest extends JsonNamedBeanHttpServiceTestBa
         JUnitUtil.initInternalTurnoutManager();
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -49,12 +46,11 @@ public class JsonNamedBeanHttpServiceTest extends JsonNamedBeanHttpServiceTestBa
      * @throws java.lang.Exception on unexpected exceptions
      */
     @Test
-    @Override
     public void testDoGet() throws Exception {
         String name = "non-existant";
         String type = "non-existant";
         try {
-            service.doGet(type, name, service.getObjectMapper().createObjectNode(), new JsonRequest(locale, JSON.V5, JSON.GET, 42));
+            service.doGet(type, name, service.getObjectMapper().createObjectNode(), locale, 42);
             Assert.fail("Expected JsonException not thrown.");
         } catch (JsonException ex) {
             this.validate(ex.getJsonMessage());
@@ -72,12 +68,11 @@ public class JsonNamedBeanHttpServiceTest extends JsonNamedBeanHttpServiceTestBa
      * @throws java.lang.Exception on unexpected exceptions
      */
     @Test
-    @Override
     public void testGetNamedBean() throws Exception {
         String name = "non-existant";
         String type = "non-existant";
         try {
-            service.getNamedBean(bean, name, type, new JsonRequest(locale, JSON.V5, JSON.GET, 0));
+            service.getNamedBean(bean, name, type, locale, 0);
             Assert.fail("Expected JsonException not thrown.");
         } catch (JsonException ex) {
             this.validate(ex.getJsonMessage());
@@ -104,7 +99,7 @@ public class JsonNamedBeanHttpServiceTest extends JsonNamedBeanHttpServiceTestBa
         bean.setComment("Turnout Comment");
         bean.setProperty("foo", "bar");
         bean.setProperty("bar", null);
-        JsonNode root = service.getNamedBean(bean, name, JsonTurnout.TURNOUT, new JsonRequest(locale, JSON.V5, JSON.GET, 42));
+        JsonNode root = service.getNamedBean(bean, name, JsonTurnoutServiceFactory.TURNOUT, locale, 42);
         JsonNode data = root.path(JSON.DATA);
         Assert.assertEquals("Correct system name", bean.getSystemName(), data.path(JSON.NAME).asText());
         Assert.assertEquals("Correct user name", bean.getUserName(), data.path(JSON.USERNAME).asText());
@@ -113,6 +108,7 @@ public class JsonNamedBeanHttpServiceTest extends JsonNamedBeanHttpServiceTestBa
         Assert.assertEquals("Has 2 properties", 2, data.path(JSON.PROPERTIES).size());
         Assert.assertEquals("Message ID", 42, root.path(JSON.ID).asInt());
         data.path(JSON.PROPERTIES).fields().forEachRemaining((property) ->{
+            System.err.println(property.getKey());
             switch (property.getKey()) {
                 case "foo":
                     Assert.assertEquals("Foo value", "bar", property.getValue().asText());
@@ -134,31 +130,17 @@ public class JsonNamedBeanHttpServiceTest extends JsonNamedBeanHttpServiceTestBa
      * @throws java.lang.Exception on unexpected exceptions
      */
     @Test
-    @Override
     public void testPostNamedBean() throws Exception {
         String name = "non-existant";
         String type = "non-existant";
         try {
-            service.postNamedBean(bean, this.mapper.createObjectNode(), name, type, new JsonRequest(locale, JSON.V5, JSON.POST, 42));
+            service.postNamedBean(bean, this.mapper.createObjectNode(), name, type, locale, 42);
             Assert.fail("Expected JsonException not thrown.");
         } catch (JsonException ex) {
             this.validate(ex.getJsonMessage());
             Assert.assertEquals("Error code is HTTP \"not found\"", 404, ex.getCode());
             Assert.assertEquals("Error message is HTTP \"not found\"", "Object type non-existant named \"non-existant\" not found.", ex.getLocalizedMessage());
             Assert.assertEquals("Message Id", 42, ex.getId());
-        }
-    }
-    
-    @Test
-    @Override
-    public void testDoDelete() {
-        try {
-            service.doDelete(service.getType(), "non-existant", NullNode.getInstance(), new JsonRequest(locale, JSON.V5, JSON.DELETE, 42));
-            fail("Expected exception not thrown.");
-        } catch (JsonException ex) {
-            assertEquals("Code is HTTP NOT FOUND", 404, ex.getCode());
-            assertEquals("Error message is HTTP \"not found\"", "Object type turnout named \"non-existant\" not found.", ex.getLocalizedMessage());
-            assertEquals("ID is 42", 42, ex.getId());
         }
     }
 }

@@ -15,8 +15,6 @@ public class MemoryTracker {
 
     /**
      * Create a Tracker object, providing a list of blocks to watch
-     * @param b block to track.
-     * @param namePrefix system name prefix.
      */
     public MemoryTracker(Block b, String namePrefix) throws IllegalArgumentException {
         block = b;
@@ -39,7 +37,7 @@ public class MemoryTracker {
 
     void handleChange() {
         if (log.isDebugEnabled() && (block.getValue() != null)) {
-            log.debug("set value {} in block {}", block.getValue(), block.getSystemName());
+            log.debug("set value " + block.getValue() + " in block " + block.getSystemName());
         }
         Object o = block.getValue();
         if (o != null) {

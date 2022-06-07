@@ -93,7 +93,7 @@ public class XBeeTurnout extends AbstractTurnout {
                         pin2 = Integer.parseInt(systemName.substring(seperator2 + 1));
                     }
                 } catch (NumberFormatException ex) {
-                    log.debug("Unable to convert {} into the cab and input format of nn:xx", systemName);
+                    log.debug("Unable to convert " + systemName + " into the cab and input format of nn:xx");
                     throw new IllegalArgumentException("Unable to convert " + systemName + " into the cab and input format of nn:xx");
                 }
             } else {
@@ -104,19 +104,26 @@ public class XBeeTurnout extends AbstractTurnout {
                     // calculate the pin to use.
                     pin = ((address) % 10);
                 } catch (NumberFormatException ex) {
-                    log.debug("Unable to convert {} Hardware Address to a number", systemName);
+                    log.debug("Unable to convert " + systemName + " Hardware Address to a number");
                     throw new IllegalArgumentException("Unable to convert " + systemName + " Hardware Address to a number");
                 }
             }
             if (log.isDebugEnabled()) {
-                log.debug("Created Turnout {} (NodeIdentifier {} D{}{})", systemName, nodeIdentifier, pin, pin2 > 0 ? " D" + pin2 : "");
+                log.debug("Created Turnout " + systemName
+                        + " (NodeIdentifier " + nodeIdentifier
+                        + " D" + pin
+                        + (pin2 > 0 ? " D" + pin2 : "")
+                        + ")");
             }
         }
     }
 
     /**
-     * {@inheritDoc}
-     * Sets the XBee node DIO pin value.
+     * Handle a request to change state, typically by sending a message to the
+     * layout in some child class. Public version (used by TurnoutOperator)
+     * sends the current commanded state without changing it.
+     *
+     * @param s new state value
      */
     @Override
     protected void forwardCommandChangeToLayout(int s) {
@@ -142,6 +149,7 @@ public class XBeeTurnout extends AbstractTurnout {
         } catch (XBeeException xbe) {
             log.error("Error setting IO line value for turout {} on {}", getUserName(), node.getXBee());
         }
+
     }
 
     /**

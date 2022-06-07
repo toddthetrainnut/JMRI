@@ -1,18 +1,16 @@
 package jmri.jmrit.operations.automation.actions;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.automation.AutomationItem;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MessageYesNoActionTest extends OperationsTestCase {
 
@@ -81,7 +79,7 @@ public class MessageYesNoActionTest extends OperationsTestCase {
         
         automationItem.setMessage("TEST_MESSAGE");
 
-        // Yes or No dialog should appear
+        // Yes or No dialogue should appear
         Thread doAction = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -122,7 +120,7 @@ public class MessageYesNoActionTest extends OperationsTestCase {
         
         automationItem.setMessage("TEST_MESSAGE");
 
-        // Yes or No dialog should appear
+        // Yes or No dialogue should appear
         Thread doAction = new Thread(new Runnable() {
             @Override
             public void run() {

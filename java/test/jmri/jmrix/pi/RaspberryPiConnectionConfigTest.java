@@ -2,10 +2,11 @@ package jmri.jmrix.pi;
 
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioProvider;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for RaspberryPiConnectionConfig class.
@@ -14,19 +15,19 @@ import org.junit.jupiter.api.*;
  */
 public class RaspberryPiConnectionConfigTest extends jmri.jmrix.AbstractConnectionConfigTestBase {
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         GpioProvider myprovider = new PiGpioProviderScaffold();
         GpioFactory.setDefaultProvider(myprovider);
+
+        JUnitUtil.setUp();
         cc = new RaspberryPiConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
-        cc = null;
+        cc=null;
         JUnitUtil.tearDown();
     }
 

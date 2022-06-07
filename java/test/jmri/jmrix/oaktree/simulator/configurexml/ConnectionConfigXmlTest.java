@@ -1,9 +1,7 @@
 package jmri.jmrix.oaktree.simulator.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.*;
 import jmri.jmrix.oaktree.simulator.ConnectionConfig;
 
 /**
@@ -13,21 +11,19 @@ import jmri.jmrix.oaktree.simulator.ConnectionConfig;
  */
 public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractSimulatorConnectionConfigXmlTestBase {
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new ConnectionConfigXml();
         cc = new ConnectionConfig();
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
+        JUnitUtil.tearDown();
         xmlAdapter = null;
         cc = null;
-        JUnitUtil.clearShutDownManager(); // remove shutdown tasks left behind.
-        JUnitUtil.tearDown();
     }
 }
 

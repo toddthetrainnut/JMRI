@@ -1,7 +1,5 @@
 package jmri.jmrix.secsi;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
 import jmri.Turnout;
 import jmri.managers.AbstractTurnoutManager;
 import org.slf4j.Logger;
@@ -13,51 +11,45 @@ import org.slf4j.LoggerFactory;
  * System names are "VTnnn", where V is the user configurable system prefix,
  * nnn is the turnout number without padding.
  *
- * @author Bob Jacobsen Copyright (C) 2003, 2006, 2007
+ * @author	Bob Jacobsen Copyright (C) 2003, 2006, 2007
  */
 public class SerialTurnoutManager extends AbstractTurnoutManager {
 
-    public SerialTurnoutManager(SecsiSystemConnectionMemo memo) {
-        super(memo);
+    private SecsiSystemConnectionMemo memo = null;
+
+    public SerialTurnoutManager(SecsiSystemConnectionMemo _memo) {
+        memo = _memo;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public SecsiSystemConnectionMemo getMemo() {
-        return (SecsiSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return memo.getSystemPrefix();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Turnout createNewTurnout(String systemName, String userName) {
         // validate the system name, and normalize it
         String sName = SerialAddress.normalizeSystemName(systemName, getSystemPrefix());
-        if (sName.isEmpty()) {
+        if (sName.equals("")) {
             // system name is not valid
-            throw new IllegalArgumentException("Cannot create System Name from " + systemName);
+            return null;
         }
         // does this turnout already exist
         Turnout t = getBySystemName(sName);
         if (t != null) {
-            return t;
+            return null;
         }
         // check under alternate name
         String altName = SerialAddress.convertSystemNameToAlternate(sName, getSystemPrefix());
         t = getBySystemName(altName);
         if (t != null) {
-            return t;
+            return null;
         }
         // create the turnout
-        t = new SerialTurnout(sName, userName, getMemo());
+        t = new SerialTurnout(sName, userName, memo);
 
         // does system name correspond to configured hardware
-        if (!SerialAddress.validSystemNameConfig(sName, 'T', getMemo().getTrafficController())) {
+        if (!SerialAddress.validSystemNameConfig(sName, 'T', memo.getTrafficController())) {
             // system name does not correspond to configured hardware
             log.warn("Turnout '{}' refers to an undefined Serial Node.", sName);
         }
@@ -65,20 +57,12 @@ public class SerialTurnoutManager extends AbstractTurnoutManager {
     }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format.
+     * @return 'true' if system name has a valid format, else returns 'false'
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String systemName, @Nonnull Locale locale) {
-        return SerialAddress.validateSystemNameFormat(systemName, getSystemNamePrefix(), locale);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
-        return (SerialAddress.validSystemNameFormat(systemName, typeLetter(), this.getSystemPrefix()));
+    public NameValidity validSystemNameFormat(String systemName) {
+        return (SerialAddress.validSystemNameFormat(systemName, 'T', getSystemPrefix()));
     }
 
     /**
@@ -87,6 +71,11 @@ public class SerialTurnoutManager extends AbstractTurnoutManager {
     @Override
     public String getEntryToolTip() {
         return Bundle.getMessage("AddOutputEntryToolTip");
+    }
+
+    @Deprecated
+    static public SerialTurnoutManager instance() {
+        return null;
     }
 
     private final static Logger log = LoggerFactory.getLogger(SerialTurnoutManager.class);

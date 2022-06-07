@@ -2,7 +2,7 @@ package jmri.jmrix.easydcc;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import jmri.SystemConnectionMemo;
+import jmri.jmrix.SystemConnectionMemo;
 
 /**
  * Abstract base for classes representing an EasyDCC communications port.

@@ -1,5 +1,6 @@
 package jmri.jmrix.srcp.swing;
 
+import java.util.ResourceBundle;
 import javax.swing.JMenu;
 import jmri.jmrix.srcp.SRCPSystemConnectionMemo;
 import jmri.jmrix.srcp.swing.packetgen.PacketGenAction;
@@ -8,7 +9,7 @@ import jmri.jmrix.srcp.swing.srcpmon.SRCPMonAction;
 /**
  * Create a "Systems" menu containing the system-specific SRCP tools.
  *
- * @author Bob Jacobsen Copyright 2008
+ * @author	Bob Jacobsen Copyright 2008
  */
 public class SystemMenu extends JMenu {
 

@@ -2,7 +2,7 @@ package jmri.configurexml;
 
 import java.awt.GraphicsEnvironment;
 import javax.annotation.Nonnull;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import jmri.configurexml.swing.DialogErrorHandler;
 import org.jdom2.Element;
 
@@ -118,10 +118,10 @@ public interface XmlAdapter {
      */
     public void handleException(
             @Nonnull String description,
-            @CheckForNull String operation,
-            @CheckForNull String systemName,
-            @CheckForNull String userName,
-            @CheckForNull Exception exception) throws JmriConfigureXmlException;
+            @Nullable String operation,
+            @Nullable String systemName,
+            @Nullable String userName,
+            @Nullable Exception exception) throws JmriConfigureXmlException;
 
     /**
      * Set the error handler that will handle any errors encountered while

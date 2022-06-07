@@ -1,8 +1,8 @@
 package jmri.jmrix.nce;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JUnit tests for the NceNetworkPortController class.
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 public class NceNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPortControllerTestBase {
 
     @Override
-    @BeforeEach
+    @Before
     public void setUp(){
        JUnitUtil.setUp();
        NceSystemConnectionMemo memo = new NceSystemConnectionMemo();
@@ -25,9 +25,8 @@ public class NceNetworkPortControllerTest extends jmri.jmrix.AbstractNetworkPort
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
        JUnitUtil.tearDown();
     }
 }

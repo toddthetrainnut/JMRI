@@ -1,8 +1,7 @@
 package jmri.jmrit.withrottle;
 
-import jmri.util.startup.PerformActionModel;
-import jmri.util.startup.StartupActionsManager;
-
+import apps.PerformActionModel;
+import apps.StartupActionsManager;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
@@ -11,7 +10,7 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.Arrays;
-
+import java.util.ResourceBundle;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -22,14 +21,12 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-
 import jmri.InstanceManager;
 import jmri.swing.JTitledSeparator;
 import jmri.swing.PreferencesPanel;
 import jmri.util.FileUtil;
 import jmri.util.zeroconf.ZeroConfPreferences;
 import jmri.util.zeroconf.ZeroConfServiceManager;
-
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -58,12 +55,6 @@ public class WiThrottlePrefsPanel extends JPanel implements PreferencesPanel {
     int startupActionPosition = -1;
     JRadioButton wifiRB;
     JRadioButton dccRB;
-
-    //early defaults while creating panel
-    int eStopInitialValue = 10;
-    int eStopMinValue = 4;
-    int eStopMaxValue = 180;
-    int eStopStepSize = 2;
 
     WiThrottlePreferences localPrefs;
 
@@ -158,7 +149,7 @@ public class WiThrottlePrefsPanel extends JPanel implements PreferencesPanel {
 
         eStopCB = new JCheckBox(Bundle.getMessage("LabelUseEStop"));
         eStopCB.setToolTipText(Bundle.getMessage("ToolTipUseEStop"));
-        SpinnerNumberModel spinMod = new SpinnerNumberModel(eStopInitialValue, eStopMinValue, eStopMaxValue, eStopStepSize);
+        SpinnerNumberModel spinMod = new SpinnerNumberModel(10, 4, 60, 2);
         delaySpinner = new JSpinner(spinMod);
         ((JSpinner.DefaultEditor) delaySpinner.getEditor()).getTextField().setEditable(false);
         panel.add(eStopCB);
@@ -287,7 +278,8 @@ public class WiThrottlePrefsPanel extends JPanel implements PreferencesPanel {
 
     @Override
     public String getPreferencesItemText() {
-        return Bundle.getMessage("MenuMenu"); // NOI18N
+        // TODO: migrate to local resource bundle
+        return ResourceBundle.getBundle("apps.AppsConfigBundle").getString("MenuWiThrottle"); // NOI18N
     }
 
     @Override

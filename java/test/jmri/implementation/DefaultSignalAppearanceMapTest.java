@@ -2,21 +2,21 @@ package jmri.implementation;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import jmri.InstanceManager;
 import jmri.NamedBean;
 import jmri.NamedBeanHandle;
 import jmri.SignalHead;
 import jmri.SignalMast;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Tests for the SignalAppearanceMap interface.
+ * Tests for the SignalAppearanceMap interface
  *
- * @author Bob Jacobsen Copyright (C) 2009
+ * @author	Bob Jacobsen Copyright (C) 2009
  */
 public class DefaultSignalAppearanceMapTest {
 
@@ -79,7 +79,7 @@ public class DefaultSignalAppearanceMapTest {
         Assert.assertEquals("Approach", e.nextElement());
         Assert.assertEquals("Clear", e.nextElement());
 
-        Assert.assertFalse(e.hasMoreElements());
+        Assert.assertTrue(!e.hasMoreElements());
     }
 
     @Test
@@ -126,10 +126,9 @@ public class DefaultSignalAppearanceMapTest {
         Assert.assertEquals(NamedBean.INCONSISTENT, map.getState());
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();        
-        JUnitUtil.initInternalSignalHeadManager();
         h1 = new DefaultSignalHead("IH1", "head1") {
             @Override
             protected void updateOutput() {
@@ -149,7 +148,7 @@ public class DefaultSignalAppearanceMapTest {
         InstanceManager.getDefault(jmri.SignalHeadManager.class).register(h2);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         InstanceManager.getDefault(jmri.SignalHeadManager.class).deregister(h1);
         h1.dispose();
@@ -161,5 +160,4 @@ public class DefaultSignalAppearanceMapTest {
         l2 = null;
         JUnitUtil.tearDown();
     }
-    
 }

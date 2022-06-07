@@ -3,16 +3,13 @@ package jmri.util;
 import java.beans.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
 import jmri.*;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.util.PropertyChangeEventQueue class.
  *
- * @author Bob Jacobsen Copyright 2017
+ * @author	Bob Jacobsen Copyright 2017
  */
 public class PropertyChangeEventQueueTest {
 
@@ -77,7 +74,8 @@ public class PropertyChangeEventQueueTest {
     Sensor is2;
     volatile boolean flag1;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         JUnitUtil.initInternalSensorManager();
@@ -86,7 +84,7 @@ public class PropertyChangeEventQueueTest {
         flag1 = false;
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
     }

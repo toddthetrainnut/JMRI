@@ -63,7 +63,7 @@ public abstract class AbstractIdentify implements jmri.ProgListener {
         }
         // must be idle, or something quite bad has happened
         if (state != 0) {
-            log.error("start with state {}, should have been zero", state);
+            log.error("start with state " + state + ", should have been zero");
         }
 
         if (programmer != null) {
@@ -85,7 +85,7 @@ public abstract class AbstractIdentify implements jmri.ProgListener {
      */
     protected void identifyDone() {
         if (log.isDebugEnabled()) {
-            log.debug("identifyDone ends in state {}", state);
+            log.debug("identifyDone ends in state " + state);
         }
         statusUpdate("Done");
         state = 0;
@@ -122,9 +122,9 @@ public abstract class AbstractIdentify implements jmri.ProgListener {
                 state--;
                 retry++;
                 value = lastValue;  // Restore the last good value. Needed for retries.
-            } else if (state == 1 && programmer.getMode() != ProgrammingMode.PAGEMODE
+            } else if (programmer.getMode() != ProgrammingMode.PAGEMODE
                     && programmer.getSupportedModes().contains(ProgrammingMode.PAGEMODE)) {
-                programmer.setMode(ProgrammingMode.PAGEMODE); // Try paged mode only if test1 (CV8)
+                programmer.setMode(ProgrammingMode.PAGEMODE);
                 retry = 0;
                 state--;
                 value = lastValue;  // Restore the last good value. Needed for retries.
@@ -133,14 +133,15 @@ public abstract class AbstractIdentify implements jmri.ProgListener {
             } else {
                 retry = 0;
                 if (programmer.getMode() != savedMode) {  // restore original mode
-                    log.warn("Restoring {} mode", savedMode.toString());
+                    log.warn("Restoring " + savedMode.toString() + " mode");
                     programmer.setMode(savedMode);
                 }
                 if (isOptionalCv()) {
                     log.warn("CV {} is optional. Will assume not present...", cvToRead);
                     statusUpdate("CV " + cvToRead + " is optional. Will assume not present...");
                 } else {
-                    log.warn("Stopping due to error: {}", programmer.decodeErrorCode(status));
+                    log.warn("Stopping due to error: "
+                            + programmer.decodeErrorCode(status));
                     statusUpdate("Stopping due to error: "
                             + programmer.decodeErrorCode(status));
                     state = 0;
@@ -212,12 +213,12 @@ public abstract class AbstractIdentify implements jmri.ProgListener {
                 if (test9(value)) {
                     identifyDone();
                 } else {
-                    log.error("test9 with value = {} returned false, but there is no next step", value);
+                    log.error("test9 with value = " + value + " returned false, but there is no next step");
                 }
                 return;
             default:
                 // this is an error
-                log.error("unexpected state in normal operation: {} value: {}, ending identification", state, value);
+                log.error("unexpected state in normal operation: " + state + " value: " + value + ", ending identification");
                 identifyDone();
         }
     }

@@ -1,18 +1,19 @@
 package jmri.jmrix.loconet.pr4.swing;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class Pr4SelectPaneTest extends jmri.util.swing.JmriPanelTest {
 
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         panel = new Pr4SelectPane();
@@ -21,7 +22,7 @@ public class Pr4SelectPaneTest extends jmri.util.swing.JmriPanelTest {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

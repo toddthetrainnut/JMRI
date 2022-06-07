@@ -1,9 +1,11 @@
 package jmri.util;
 
 import java.util.Calendar;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * Some have been commented out so they don't run during normal production
  * testing.
  *
- * @author Bob Jacobsen Copyright 2003, 2009, 2010
+ * @author	Bob Jacobsen Copyright 2003, 2009, 2010
  */
 public class WaitHandlerTest {
 
@@ -142,7 +144,7 @@ public class WaitHandlerTest {
     }
 
     @Test
-    @Disabled("disabled in JUnit 3 testing paradigm")
+    @Ignore("disabled in JUnit 3 testing paradigm")
     public void testCheckMethod() {
         flag1 = false;
         flag2 = false;
@@ -178,17 +180,17 @@ public class WaitHandlerTest {
         Assert.assertTrue("ended", flag2);
 
         if (THREAD_DELAY <= endTime - startTime) {
-            log.error("run time not shortened: {}", endTime - startTime);
+            log.error("run time not shortened: " + (endTime - startTime));
         }
         Assert.assertTrue("run time shortened", THREAD_DELAY > endTime - startTime);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
     }

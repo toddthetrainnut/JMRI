@@ -1,16 +1,15 @@
 package jmri.jmrix.openlcb.configurexml;
 
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * OlcbTurnoutManagerXmlTest.java
  *
- * Test for the OlcbTurnoutManagerXml class
+ * Description: tests for the OlcbTurnoutManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -18,16 +17,16 @@ public class OlcbTurnoutManagerXmlTest {
 
     @Test
     public void testCtor(){
-        assertThat(new OlcbTurnoutManagerXml()).withFailMessage("OlcbTurnoutManagerXml constructor").isNotNull();
+      Assert.assertNotNull("OlcbTurnoutManagerXml constructor",new OlcbTurnoutManagerXml());
     }
 
     // The minimal setup for log4J
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

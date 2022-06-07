@@ -1,21 +1,14 @@
 package jmri.jmrit.dispatcher;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import jmri.Block;
 import jmri.InstanceManager;
 import jmri.NamedBeanHandle;
 import jmri.Path;
 import jmri.Section;
 import jmri.Transit;
-import jmri.beans.PropertyChangeProvider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,9 +102,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Dave Duchamp Copyright (C) 2008-2011
  */
-public class ActiveTrain implements PropertyChangeProvider {
-
-    private static final jmri.NamedBean.DisplayOptions USERSYS = jmri.NamedBean.DisplayOptions.USERNAME_SYSTEMNAME;
+public class ActiveTrain {
 
     /**
      * Create an ActiveTrain.
@@ -158,7 +149,6 @@ public class ActiveTrain implements PropertyChangeProvider {
     public static final int AUTOMATIC = 0x02;   // requires mAutoRun to be "true" (auto trains only)
     public static final int MANUAL = 0x04;    // requires mAutoRun to be "true" (auto trains only)
     public static final int DISPATCHED = 0x08;
-    public static final int TERMINATED = 0x10; //terminated
 
     /**
      * Constants representing the source of the train information
@@ -245,12 +235,16 @@ public class ActiveTrain implements PropertyChangeProvider {
     }
 
     public String getTransitName() {
-        String s = mTransit.getDisplayName();
+        String s = mTransit.getSystemName();
+        String u = mTransit.getUserName();
+        if ((u != null) && (!u.equals("") && (!u.equals(s)))) {
+            return (s + "(" + u + ")");
+        }
         return s;
     }
 
     public String getActiveTrainName() {
-        return (mTrainName + " / " + getTransitName());
+        return (mTrainName + "/" + getTransitName());
     }
 
     // Note: Transit and Train may not be changed once an ActiveTrain is created.
@@ -295,9 +289,10 @@ public class ActiveTrain implements PropertyChangeProvider {
                 InstanceManager.getDefault(DispatcherFrame.class).terminateActiveTrain(this);
             }
         } else {
-            log.error("Invalid ActiveTrain status - {}", status);
+            log.error("Invalid ActiveTrain status - " + status);
         }
     }
+
     public String getStatusText() {
         if (mStatus == RUNNING) {
             return Bundle.getMessage("RUNNING");
@@ -473,13 +468,13 @@ public class ActiveTrain implements PropertyChangeProvider {
                             getDelaySensor().removePropertyChangeListener(delaySensorListener);
                             InstanceManager.getDefault(DispatcherFrame.class).removeDelayedTrain(at);
                             setStarted();
-                            InstanceManager.getDefault(DispatcherFrame.class).queueScanOfAllocationRequests();
+                            InstanceManager.getDefault(DispatcherFrame.class).forceScanOfAllocation();
                             if (resetStartSensor) {
                                 try {
                                     getDelaySensor().setKnownState(jmri.Sensor.INACTIVE);
-                                    log.debug("Start sensor {} set back to inActive", getDelaySensor().getDisplayName(USERSYS));
+                                    log.debug("Start sensor {} set back to inActive", getDelaySensorName());                                    
                                 } catch (jmri.JmriException ex) {
-                                    log.error("Error resetting start sensor {} back to inActive", getDelaySensor().getDisplayName(USERSYS));
+                                    log.error("Error resetting start sensor {} back to inActive", getDelaySensorName());
                                 }
                             }
                         }
@@ -506,11 +501,11 @@ public class ActiveTrain implements PropertyChangeProvider {
                             restartSensorListener = null;
                             InstanceManager.getDefault(DispatcherFrame.class).removeDelayedTrain(at);
                             restart();
-                            InstanceManager.getDefault(DispatcherFrame.class).queueScanOfAllocationRequests();
+                            InstanceManager.getDefault(DispatcherFrame.class).forceScanOfAllocation();
                             if (resetRestartSensor) {
                                 try {
                                     getRestartSensor().setKnownState(jmri.Sensor.INACTIVE);
-                                    log.debug("Restart sensor {} set back to inActive", getRestartSensor().getDisplayName(USERSYS));
+                                    log.debug("Restart sensor {} set back to inActive", getRestartSensorName());
                                 } catch (jmri.JmriException ex) {
                                     log.error("Error resetting restart sensor back to inActive");
                                 }
@@ -536,7 +531,7 @@ public class ActiveTrain implements PropertyChangeProvider {
                         if (((Integer) e.getNewValue()).intValue() == jmri.Sensor.INACTIVE) {
                             restartAllocationSensor.getBean().removePropertyChangeListener(restartAllocationSensorListener);
                             restartAllocationSensorListener = null;
-                            InstanceManager.getDefault(DispatcherFrame.class).queueScanOfAllocationRequests();
+                            InstanceManager.getDefault(DispatcherFrame.class).forceScanOfAllocation();
                         }
                     }
                 }
@@ -601,12 +596,12 @@ public class ActiveTrain implements PropertyChangeProvider {
 
     public void setMode(int mode) {
         if ((mode == AUTOMATIC) || (mode == MANUAL)
-                || (mode == DISPATCHED || mode == TERMINATED)) {
+                || (mode == DISPATCHED)) {
             int old = mMode;
             mMode = mode;
             firePropertyChange("mode", Integer.valueOf(old), Integer.valueOf(mMode));
         } else {
-            log.error("Attempt to set ActiveTrain mode to illegal value - {}", mode);
+            log.error("Attempt to set ActiveTrain mode to illegal value - " + mode);
         }
     }
 
@@ -617,8 +612,6 @@ public class ActiveTrain implements PropertyChangeProvider {
             return Bundle.getMessage("MANUAL");
         } else if (mMode == DISPATCHED) {
             return Bundle.getMessage("DISPATCHED");
-        } else if (mMode == TERMINATED) {
-            return Bundle.getMessage("TERMINATED");
         }
         return ("");
     }
@@ -689,8 +682,6 @@ public class ActiveTrain implements PropertyChangeProvider {
             if (InstanceManager.getDefault(DispatcherFrame.class).getExtraColorForAllocated()) {
                 as.getSection().setAlternateColorFromActiveBlock(true);
             }
-            // notify anyone interested
-            pcs.firePropertyChange("sectionallocated",as , null);
             refreshPanel();
         } else {
             log.error("Null Allocated Section reference in addAllocatedSection of ActiveTrain");
@@ -715,10 +706,13 @@ public class ActiveTrain implements PropertyChangeProvider {
             }
         }
         if (index < 0) {
-            log.error("Attempt to remove an unallocated Section {}", as.getSection().getDisplayName(USERSYS));
+            log.error("Attempt to remove an unallocated Section " + as.getSectionName());
             return;
         }
         mAllocatedSections.remove(index);
+        if (mAutoRun) {
+            mAutoActiveTrain.removeAllocatedSection(as);
+        }
         if (InstanceManager.getDefault(DispatcherFrame.class).getNameInAllocatedBlock()) {
             as.getSection().clearNameInUnoccupiedBlocks();
             as.getSection().suppressNameUpdate(false);
@@ -749,7 +743,6 @@ public class ActiveTrain implements PropertyChangeProvider {
         }
         for (AllocatedSection as : sectionsToRelease) {
             InstanceManager.getDefault(DispatcherFrame.class).releaseAllocatedSection(as, true); // need to find Allocated Section
-            InstanceManager.getDefault(DispatcherFrame.class).queueWaitForEmpty(); //ensure release processed before proceding.
             as.getSection().setState(jmri.Section.FREE);
         }
         if (mLastAllocatedSection != null) {
@@ -757,8 +750,6 @@ public class ActiveTrain implements PropertyChangeProvider {
         }
         resetAllAllocatedSections();
         clearAllocations();
-        // wait for autoallocate to do its stuffbefore continuing
-        InstanceManager.getDefault(DispatcherFrame.class).queueWaitForEmpty();
         if (mAutoRun) {
             mAutoActiveTrain.allocateAFresh();
         }
@@ -813,26 +804,26 @@ public class ActiveTrain implements PropertyChangeProvider {
                     for (int j = 0; j < bl.size(); j++) {
                         Block b = bl.get(j);
                         list.add(b);
-                        log.trace("block {} ({}) added to list for Section {} (fwd)", b.getDisplayName(USERSYS),
+                        log.trace("block {} ({}) added to list for Section {} (fwd)", b.getDisplayName(),
                                 (b.getState() == Block.OCCUPIED ? "OCCUPIED" : "UNOCCUPIED"),
-                                s.getDisplayName(USERSYS));
+                                s.getDisplayName());
                     }
                 } else { //not connected, add in reverse order
                     for (int j = bl.size() - 1; j >= 0; j--) {
                         Block b = bl.get(j);
                         list.add(b);
-                        log.trace("block {} ({}) added to list for Section {} (rev)", b.getDisplayName(USERSYS),
+                        log.trace("block {} ({}) added to list for Section {} (rev)", b.getDisplayName(),
                                 (b.getState() == Block.OCCUPIED ? "OCCUPIED" : "UNOCCUPIED"),
-                                s.getDisplayName(USERSYS));
+                                s.getDisplayName());
                     }
                 }
 
             } else { //single block sections are simply added to the outgoing list
                 Block b = bl.get(0);
                 list.add(b);
-                log.trace("block {} ({}) added to list for Section {} (one)", b.getDisplayName(USERSYS),
+                log.trace("block {} ({}) added to list for Section {} (one)", b.getDisplayName(),
                         (b.getState() == Block.OCCUPIED ? "OCCUPIED" : "UNOCCUPIED"),
-                        s.getDisplayName(USERSYS));
+                        s.getDisplayName());
             }
         }
         return list;
@@ -882,7 +873,11 @@ public class ActiveTrain implements PropertyChangeProvider {
     }
 
     private String getSectionName(jmri.Section sc) {
-        String s = sc.getDisplayName();
+        String s = sc.getSystemName();
+        String u = sc.getUserName();
+        if ((u != null) && (!u.equals("") && (!u.equals(s)))) {
+            return (s + "(" + u + ")");
+        }
         return s;
     }
 
@@ -1004,7 +999,8 @@ public class ActiveTrain implements PropertyChangeProvider {
                 mNextSectionToAllocate = mTransit.getSectionFromConnectedBlockAndSeq(mStartBlock,
                         mStartBlockSectionSequenceNumber);
                 if (mNextSectionToAllocate == null) {
-                    log.error("ERROR - Cannot find Section for first allocation of ActiveTrain{}", getActiveTrainName());
+                    log.error("ERROR - Cannot find Section for first allocation of ActiveTrain"
+                            + getActiveTrainName());
                     return null;
                 }
             }
@@ -1016,8 +1012,8 @@ public class ActiveTrain implements PropertyChangeProvider {
             return null;
         }
         if (!InstanceManager.getDefault(DispatcherFrame.class).requestAllocation(this,
-                mNextSectionToAllocate, mNextSectionDirection, mNextSectionSeqNumber, true, null, true)) {
-            log.error("Allocation request failed for first allocation of {}", getActiveTrainName());
+                mNextSectionToAllocate, mNextSectionDirection, mNextSectionSeqNumber, true, null)) {
+            log.error("Allocation request failed for first allocation of " + getActiveTrainName());
         }
         if (InstanceManager.getDefault(DispatcherFrame.class).getRosterEntryInBlock() && getRosterEntry() != null) {
             mStartBlock.setValue(getRosterEntry());
@@ -1092,9 +1088,9 @@ public class ActiveTrain implements PropertyChangeProvider {
         restartPoint = true;
         if (getDelayedRestart() == TIMEDDELAY) {
             Date now = jmri.InstanceManager.getDefault(jmri.Timebase.class).getTime();
-            @SuppressWarnings("deprecation") // Date.getHours
+            @SuppressWarnings("deprecation")
             int nowHours = now.getHours();
-            @SuppressWarnings("deprecation") // Date.getMinutes
+            @SuppressWarnings("deprecation")
             int nowMinutes = now.getMinutes();
             int hours = getRestartDelay() / 60;
             int minutes = getRestartDelay() % 60;
@@ -1107,28 +1103,9 @@ public class ActiveTrain implements PropertyChangeProvider {
         InstanceManager.getDefault(DispatcherFrame.class).addDelayedTrain(this);
     }
 
-    protected boolean isInAllocatedList(AllocatedSection as) {
-        for (int i = 0; i < mAllocatedSections.size(); i++) {
-            if (mAllocatedSections.get(i) == as) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected boolean isInAllocatedList(Section s) {
-        for (int i = 0; i < mAllocatedSections.size(); i++) {
-            if ((mAllocatedSections.get(i)).getSection() == s) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
     boolean restartPoint = false;
 
-    private boolean holdAllocation = false;
+    boolean holdAllocation = false;
 
     protected void holdAllocation(boolean boo) {
         holdAllocation = boo;
@@ -1143,7 +1120,6 @@ public class ActiveTrain implements PropertyChangeProvider {
     }
 
     protected void restart() {
-        log.debug("{}: restarting", getTrainName());
         restartPoint = false;
         holdAllocation = false;
         setStatus(WAITING);
@@ -1160,7 +1136,6 @@ public class ActiveTrain implements PropertyChangeProvider {
         if (getRestartSensor() != null && restartSensorListener != null) {
             getRestartSensor().removePropertyChangeListener(restartSensorListener);
         }
-        setMode(TERMINATED);
         mTransit.setState(Transit.IDLE);
     }
 
@@ -1169,41 +1144,18 @@ public class ActiveTrain implements PropertyChangeProvider {
     }
 
     // Property Change Support
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
 
-    @OverridingMethodsMustInvokeSuper
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
     protected void firePropertyChange(String p, Object old, Object n) {
         pcs.firePropertyChange(p, old, n);
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(propertyName, listener);
-    }
-
-    @Override
-    public PropertyChangeListener[] getPropertyChangeListeners() {
-        return pcs.getPropertyChangeListeners();
-    }
-
-    @Override
-    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
-        return pcs.getPropertyChangeListeners(propertyName);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(propertyName, listener);
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
     }
 
     private final static Logger log = LoggerFactory.getLogger(ActiveTrain.class);

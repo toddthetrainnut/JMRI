@@ -2,8 +2,10 @@ package jmri.util;
 
 import java.util.TimerTask;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -49,7 +51,8 @@ public class TimerUtilTest {
             taskRan = true;
         }
     };
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         taskRan = false;
@@ -57,7 +60,7 @@ public class TimerUtilTest {
         taskRanOnLayout = false;        
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

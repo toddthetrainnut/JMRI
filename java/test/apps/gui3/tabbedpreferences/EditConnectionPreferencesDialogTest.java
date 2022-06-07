@@ -1,12 +1,13 @@
 package apps.gui3.tabbedpreferences;
 
+import apps.gui3.tabbedpreferences.EditConnectionPreferencesDialog;
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -20,20 +21,19 @@ public class EditConnectionPreferencesDialogTest {
         Assert.assertNotNull("exists",d);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetInstanceManager();
         JUnitUtil.initConfigureManager();
         JUnitUtil.resetPreferencesProviders();
-
+        
         jmri.InstanceManager.setDefault(TabbedPreferences.class, new TabbedPreferences());
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

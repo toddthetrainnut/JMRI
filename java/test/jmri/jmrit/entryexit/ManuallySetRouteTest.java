@@ -2,12 +2,9 @@ package jmri.jmrit.entryexit;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
@@ -30,15 +27,15 @@ public class ManuallySetRouteTest {
         Assert.assertNotNull("exists",t);  // NOI18N
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

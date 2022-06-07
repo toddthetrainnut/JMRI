@@ -1,6 +1,5 @@
 package jmri.jmrix.pi;
 
-import javax.annotation.Nonnull;
 import jmri.Turnout;
 
 /**
@@ -13,39 +12,27 @@ import jmri.Turnout;
  */
 public class RaspberryPiTurnoutManager extends jmri.managers.AbstractTurnoutManager {
 
+    private String prefix = null;
+
     // ctor has to register for RaspberryPi events
-    public RaspberryPiTurnoutManager(RaspberryPiSystemConnectionMemo memo) {
-        super(memo);
+    public RaspberryPiTurnoutManager(String prefix) {
+        super();
+        this.prefix = prefix;
     }
 
     /**
-     * {@inheritDoc}
+     * Provides access to the system prefix string.
+     * This was previously called the "System letter".
      */
     @Override
-    @Nonnull
-    public RaspberryPiSystemConnectionMemo getMemo() {
-        return (RaspberryPiSystemConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return prefix;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
     @Override
-    protected Turnout createNewTurnout(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public Turnout createNewTurnout(String systemName, String userName) {
         Turnout t = new RaspberryPiTurnout(systemName, userName);
         return t;
-    }
-    
-    /**
-     * Validates to Integer Format 0-999 with valid prefix.
-     * eg. PT0 to PT999
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull java.util.Locale locale) throws jmri.NamedBean.BadSystemNameException {
-        return this.validateIntegerSystemNameFormat(name, 0, 999, locale);
     }
 
 }

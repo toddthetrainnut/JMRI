@@ -1,13 +1,14 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class LNCPSignalMastTest {
 
@@ -17,17 +18,16 @@ public class LNCPSignalMastTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         LnTrafficController lnis = new LocoNetInterfaceScaffold();
         jmri.InstanceManager.store(lnis, jmri.jmrix.loconet.LnTrafficController.class);
         SlotManager s = new SlotManager(lnis);
         jmri.InstanceManager.store(s, jmri.CommandStation.class);
-        s.dispose();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

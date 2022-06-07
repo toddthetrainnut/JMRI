@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.ResourceBundle;
-import javax.annotation.Nonnull;
 
 /**
  * A Conditional is layout control logic, consisting of a logical expression and
@@ -893,11 +892,10 @@ public interface Conditional extends NamedBean {
     public void setAction(List<ConditionalAction> arrayList);
 
     /**
-     * Make deep clone of actions.
+     * Make deep clone of actions
      *
-     * @return a list of copies of actions
+     * @return a list of copies of actionss
      */
-    @Nonnull
     public List<ConditionalAction> getCopyOfActions();
 
     /**
@@ -911,11 +909,10 @@ public interface Conditional extends NamedBean {
     public void setStateVariables(List<ConditionalVariable> arrayList);
 
     /**
-     * Make deep clone of variables.
+     * Make deep clone of variables
      *
      * @return a list containing copies of variables
      */
-    @Nonnull
     public List<ConditionalVariable> getCopyOfStateVariables();
 
     /**

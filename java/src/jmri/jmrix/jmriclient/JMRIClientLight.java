@@ -20,8 +20,6 @@ public class JMRIClientLight extends AbstractLight implements JMRIClientListener
 
     /**
      * JMRIClient lights use the light number on the remote host.
-     * @param number light number.
-     * @param memo system connection.
      */
     public JMRIClientLight(int number, JMRIClientSystemConnectionMemo memo) {
         super(memo.getSystemPrefix() + "l" + number);
@@ -58,7 +56,7 @@ public class JMRIClientLight extends AbstractLight implements JMRIClientListener
             // first look for the double case, which we can't handle
             if ((s & Light.OFF) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both ON and OFF {}", s);
+                log.error("Cannot command both ON and OFF " + s);
                 return;
             } else {
                 // send a ON command

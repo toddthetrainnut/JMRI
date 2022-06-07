@@ -171,7 +171,6 @@
         </label>
         <label>
           <text>  FO 1 </text>
-          <text xml:lang="cs">  FV 1 </text>
         </label>
         <label>
           <text> </text>
@@ -225,7 +224,6 @@
         </label>
         <label>
           <text> FO 2 </text>
-          <text xml:lang="cs">  FV 2 </text>
         </label>
         <label>
           <text> </text>
@@ -279,7 +277,6 @@
         </label>
         <label>
           <text> FO 3 </text>
-          <text xml:lang="cs">  FV 3 </text>
         </label>
         <label>
           <text> </text>
@@ -333,7 +330,6 @@
         </label>
         <label>
           <text> FO 4</text>
-          <text xml:lang="cs">  FV 4 </text>
         </label>
         <label>
           <text> </text>
@@ -387,11 +383,9 @@
         </label>
         <label>
           <text>  FO 5</text>
-          <text xml:lang="cs">  FV 5 </text>
         </label>
         <label>
           <text>  (+5v)</text>
-          <text xml:lang="cs">  (+5 V)</text>
         </label>
         <display item="FL(f) controls output 7" format="checkbox" label="">
           <label/>
@@ -442,11 +436,9 @@
         </label>
         <label>
           <text>  FO 6</text>
-          <text xml:lang="cs">  FV 6 </text>
         </label>
         <label>
           <text>  (+5v)</text>
-          <text xml:lang="cs">  (+5 V)</text>
         </label>
         <display item="FL(f) controls output 8" format="checkbox" label="">
           <label/>

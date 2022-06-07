@@ -1,9 +1,7 @@
 package jmri;
 
 import java.util.List;
-
 import javax.annotation.Nonnull;
-
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 
 /**
@@ -89,7 +87,7 @@ public interface SignalMastLogicManager extends Manager<SignalMastLogic> {
      * @return source The new SML instance
      */
     @Nonnull
-    public SignalMastLogic newSignalMastLogic(SignalMast source) throws IllegalArgumentException;
+    public SignalMastLogic newSignalMastLogic(SignalMast source);
 
     /**
      * Remove a destination Signal Mast and its settings from a Signal Mast
@@ -151,16 +149,5 @@ public interface SignalMastLogicManager extends Manager<SignalMastLogic> {
      *          when signal system computations are done. (Some are half this, some twice)
      */
     public void setSignalLogicDelay(int l);
-
-    /**
-     * Iterate over the signal masts setting up direction Section sensors.
-     * @return error count
-     */
-    public int setupSignalMastsDirectionSensors();
-
-    /**
-     * Iterate over the signal masts setting up direction Section sensors.
-     */
-    public void removeSignalMastsDirectionSensors();
 
 }

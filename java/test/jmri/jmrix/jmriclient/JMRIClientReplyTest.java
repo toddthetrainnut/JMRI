@@ -1,28 +1,29 @@
 package jmri.jmrix.jmriclient;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * JMRIClientReplyTest.java
  *
- * Test for the jmri.jmrix.jmriclient.JMRIClientReply class
+ * Description:	tests for the jmri.jmrix.jmriclient.JMRIClientReply class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class JMRIClientReplyTest extends jmri.jmrix.AbstractMessageTestBase {
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         m = new JMRIClientReply();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        m = null;
+	m = null;
         JUnitUtil.tearDown();
     }
 

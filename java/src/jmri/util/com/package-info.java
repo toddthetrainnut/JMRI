@@ -5,6 +5,4 @@
  * repositories, etc.  Large bodies of code should be brought
  * in as libraries i.e. jar files.
  */
-// include empty DefaultAnnotation to avoid excessive recompilation
-@edu.umd.cs.findbugs.annotations.DefaultAnnotation(value={})
 package jmri.util.com;

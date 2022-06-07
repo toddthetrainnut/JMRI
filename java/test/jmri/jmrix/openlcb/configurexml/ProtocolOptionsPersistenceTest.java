@@ -1,10 +1,12 @@
 package jmri.jmrix.openlcb.configurexml;
 
 import org.hamcrest.core.IsCollectionContaining;
-
+import org.junit.After;
 import static org.junit.Assert.*;
-
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,14 +36,8 @@ public class ProtocolOptionsPersistenceTest {
     private String profileId;
     private PortAdapter adapter;
 
-    @BeforeAll
-    static public void checkSeparate() {
-       // this test is run separately because it leaves a lot of threads behind
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
-    }
-
-    @BeforeEach
-    public void setUp() {
+    @Before
+    public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
         this.workspace = FileSystems.getDefault().getPath("/tmp/testprofile");
         //this.workspace = Files.createTempDirectory(this.getClass().getSimpleName());
@@ -49,14 +45,13 @@ public class ProtocolOptionsPersistenceTest {
         JUnitUtil.initConfigureManager();
     }
 
-    @AfterEach
-    public void tearDown() {
-        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-
+    @After
+    public void tearDown() throws Exception {
+        jmri.util.JUnitUtil.tearDown();
+        JUnitUtil.resetInstanceManager();
         JUnitUtil.resetProfileManager();
         JUnitUtil.resetFileUtilSupport();
         //FileUtil.delete(this.workspace.toFile());
-        jmri.util.JUnitUtil.tearDown();
     }
 
     private void resetSystem() {

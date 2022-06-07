@@ -1,14 +1,15 @@
 package jmri.jmrix.ecos.utilities;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * RemoveObjectFromEcosTest.java
  *
- * Test for the RemoveObjectFromEcos class
+ * Description: tests for the RemoveObjectFromEcos class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class RemoveObjectFromEcosTest {
       Assert.assertNotNull("RemoveObjectFromEcos constructor",new RemoveObjectFromEcos());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

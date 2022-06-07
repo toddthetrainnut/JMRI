@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (C) 2001
  */
-public class LnSensor extends AbstractSensor  {
+public class LnSensor extends AbstractSensor implements LocoNetListener {
 
     private LnSensorAddress a;
 
@@ -43,6 +43,9 @@ public class LnSensor extends AbstractSensor  {
         if (log.isDebugEnabled()) {
             log.debug("create address {}", a);
         }
+
+        // At construction, register for messages
+        tc.addLocoNetListener(~0, this);
     }
 
     /**
@@ -58,9 +61,10 @@ public class LnSensor extends AbstractSensor  {
     }
 
     /**
-     * User request to set the state, which means that we need to broadcast the
-     * new state over the loconet so that other attached devices. The incoming message
-     * will in turn, be processed by the SensorManager.
+     * User request to set the state, which means that we broadcast that to all
+     * listeners by putting it out on LocoNet. In turn, the code in this class
+     * should use setOwnState to handle internal sets and bean notifies.
+     *
      */
     @Override
     public void setKnownState(int s) throws jmri.JmriException {
@@ -84,9 +88,9 @@ public class LnSensor extends AbstractSensor  {
      * _once_ if anything has changed state (or set the commanded state
      * directly)
      *
-     * @param l LocoNet message from manager.
      */
-    public void messageFromManager(LocoNetMessage l) {
+    @Override
+    public void message(LocoNetMessage l) {
         // parse message type
         switch (l.getOpCode()) {
             case LnConstants.OPC_INPUT_REP: {               /* page 9 of LocoNet PE */
@@ -97,7 +101,8 @@ public class LnSensor extends AbstractSensor  {
                     // save the state
                     boolean state = ((sw2 & 0x10) != 0) ^ _inverted;
                     if (log.isDebugEnabled()) {
-                        log.debug("INPUT_REP received with valid address, old state {} new packet {}", getRawState(), state); // NOI18N
+                        log.debug("INPUT_REP received with valid address, old state "
+                                + getRawState() + " new packet " + state); // NOI18N
                     }
                     if (state && getRawState() != Sensor.ACTIVE) {
                         if (log.isDebugEnabled()) {
@@ -117,6 +122,12 @@ public class LnSensor extends AbstractSensor  {
                 return;
         }
         // reach here only in error
+    }
+
+    @Override
+    public void dispose() {
+        tc.removeLocoNetListener(~0, this);
+        super.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(LnSensor.class);

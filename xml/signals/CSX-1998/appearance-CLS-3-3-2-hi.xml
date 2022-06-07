@@ -28,12 +28,6 @@
         <authorinitials>DB</authorinitials>
         <revremark>Initial Version</revremark>
     </revision>    
-    <revision>
-        <revnumber>1.1</revnumber>
-        <date>2019-12-30</date>
-        <authorinitials>BM</authorinitials>
-        <revremark>Remove ourAspect values which cannot be displayed by this mast type</revremark>
-     </revision>    
   </revhistory>
 
   <aspecttable>CSX</aspecttable>
@@ -156,6 +150,7 @@
       <ourAspect>Clear</ourAspect>
       <ourAspect>Limited Clear</ourAspect>
       <ourAspect>Medium Clear</ourAspect>
+      <ourAspect>Slow Clear</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
@@ -163,6 +158,7 @@
       <ourAspect>Clear</ourAspect>
       <ourAspect>Limited Clear</ourAspect>
       <ourAspect>Medium Clear</ourAspect>
+      <ourAspect>Slow Clear</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
@@ -178,6 +174,7 @@
     <aspectMapping>
       <advancedAspect>Approach Medium</advancedAspect>
       <ourAspect>Approach Limited</ourAspect>
+      <ourAspect>Limited</ourAspect>
       <ourAspect>Limited Clear</ourAspect>
       <ourAspect>Medium Clear</ourAspect>
       <ourAspect>Approach Medium</ourAspect>

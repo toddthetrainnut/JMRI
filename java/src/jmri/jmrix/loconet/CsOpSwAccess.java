@@ -374,7 +374,7 @@ public class CsOpSwAccess implements LocoNetListener {
         }
     }
     private void updateStoredOpSwsFromRead(LocoNetMessage m) {
-        if ((m.getOpCode() == LnConstants.OPC_SL_RD_DATA) &&
+        if ((m.getOpCode() == 0xE7) &&
                 (m.getElement(1) == 0x0e) &&
                 (m.getElement(2) == 0x7f)) {
             opSwBytes[0] = m.getElement(3);
@@ -394,7 +394,7 @@ public class CsOpSwAccess implements LocoNetListener {
             opSwBytes[15] = 0;
             haveValidLowBytes = true;
             haveValidHighBytes = false;
-        } else if ((m.getOpCode() == LnConstants.OPC_SL_RD_DATA) &&
+        } else if ((m.getOpCode() == 0xE7) &&
                 (m.getElement(1) == 0x0e) &&
                 (m.getElement(2) == 0x7e)) {
             opSwBytes[8] = m.getElement(3);
@@ -420,21 +420,6 @@ public class CsOpSwAccess implements LocoNetListener {
     // accessor
     public CmdStnOpSwStateType getState() {
         return cmdStnOpSwState;
-    }
-    
-    /**
-     * Dispose of object's helper objects
-     * 
-     * Stops the timers
-     * 
-     */
-    public void dispose() {
-        if (csOpSwAccessTimer != null) {
-            csOpSwAccessTimer.stop();
-        }
-        if (csOpSwValidTimer != null) {
-            csOpSwValidTimer.stop();
-        }
     }
 
     // initialize logging

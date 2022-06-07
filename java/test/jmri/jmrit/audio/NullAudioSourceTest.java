@@ -1,16 +1,15 @@
 package jmri.jmrit.audio;
 
-import jmri.InstanceManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of NullAudioSource
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author	Paul Bender Copyright (C) 2017
  */
 public class NullAudioSourceTest {
 
@@ -26,20 +25,17 @@ public class NullAudioSourceTest {
         Assert.assertNotNull("exists", l);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        jmri.AudioManager am = new DefaultAudioManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
+        jmri.AudioManager am = new DefaultAudioManager();
         jmri.InstanceManager.setDefault(jmri.AudioManager.class,am);
         am.init();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        // this created an audio manager, clean that up
-        InstanceManager.getDefault(jmri.AudioManager.class).cleanup();
-
-        jmri.util.JUnitAppender.suppressErrorMessage("Unhandled audio format type 0");
+        jmri.util.JUnitAppender.suppressWarnMessage("Initialised Null audio system - no sounds will be available.");
         JUnitUtil.tearDown();
     }
 }

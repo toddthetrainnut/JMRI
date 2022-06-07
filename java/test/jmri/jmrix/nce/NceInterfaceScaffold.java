@@ -7,14 +7,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Stands in for the NceTrafficController class
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class NceInterfaceScaffold extends NceTrafficController {
 
     public NceInterfaceScaffold() {
-        NceSystemConnectionMemo memo = new NceSystemConnectionMemo();
-        super.setAdapterMemo(memo);
-        memo.setNceTrafficController(this);
     }
 
     // override some NceInterfaceController methods for test purposes
@@ -31,7 +28,7 @@ public class NceInterfaceScaffold extends NceTrafficController {
     @Override
     public void sendNceMessage(NceMessage m, jmri.jmrix.nce.NceListener l) {
         if (log.isDebugEnabled()) {
-            log.debug("sendNceMessage [{}]", m);
+            log.debug("sendNceMessage [" + m + "]");
         }
         // save a copy
         outbound.addElement(m);
@@ -45,7 +42,7 @@ public class NceInterfaceScaffold extends NceTrafficController {
     public void sendTestMessage(NceMessage m) {
         // forward a test message to Listeners
         if (log.isDebugEnabled()) {
-            log.debug("sendTestMessage    [{}]", m);
+            log.debug("sendTestMessage    [" + m + "]");
         }
         notifyMessage(m, null);
         return;
@@ -54,7 +51,7 @@ public class NceInterfaceScaffold extends NceTrafficController {
     public void sendTestReply(NceReply m, NceListener p) {
         // forward a test message to Listeners
         if (log.isDebugEnabled()) {
-            log.debug("sendTestReply    [{}]", m);
+            log.debug("sendTestReply    [" + m + "]");
         }
         notifyReply(m, p);
         return;

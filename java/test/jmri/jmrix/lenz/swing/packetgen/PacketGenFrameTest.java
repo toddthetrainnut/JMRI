@@ -1,15 +1,14 @@
 package jmri.jmrix.lenz.swing.packetgen;
 
 import java.awt.GraphicsEnvironment;
+import jmri.jmrix.AbstractMRMessage;
 import jmri.jmrix.lenz.XNetMessage;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmrix.lenz.packetgen.PacketGenFrame class
  *
- * @author Bob Jacobsen Copyright (c) 2001, 2002
+ * @author	Bob Jacobsen Copyright (c) 2001, 2002
  */
 public class PacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
 
@@ -17,7 +16,7 @@ public class PacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
     public void testPacketNull() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         XNetMessage m = ((PacketGenFrame)frame).createPacket("");
-        Assert.assertNull("null pointer", m);
+        Assert.assertEquals("null pointer", null, m);
     }
 
     @Test
@@ -35,7 +34,7 @@ public class PacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
         Assert.assertEquals("7th byte", 0xB1, m.getElement(7) & 0xFF);
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
@@ -44,10 +43,9 @@ public class PacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         super.tearDown();
     }
 }

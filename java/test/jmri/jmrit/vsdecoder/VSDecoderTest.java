@@ -1,38 +1,31 @@
 package jmri.jmrit.vsdecoder;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class VSDecoderTest {
 
     @Test
-    public void testCTor() throws java.util.zip.ZipException, java.io.IOException {
-        VSDecoder t = new VSDecoder("Test", "steam1min8","java/test/jmri/jmrit/vsdecoder/steam1min8.zip");
+    public void testCTor() {
+        VSDecoder t = new VSDecoder("Test","Test");
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        jmri.util.JUnitAppender.suppressErrorMessage("Unhandled audio format type 0");
-
-        // this created an an audio manager, clean that up
-        JUnitUtil.removeMatchingThreads("VSDecoderManagerThread");
-        jmri.InstanceManager.getDefault(jmri.AudioManager.class).cleanup();
-
-        JUnitUtil.removeMatchingThreads("Steam1Sound.S1LoopThread");
-
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

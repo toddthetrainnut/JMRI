@@ -1,40 +1,30 @@
 package jmri.jmrit.beantable.oblock;
 
-import jmri.jmrit.logix.OBlock;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
-import java.awt.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
- * @author Egbert Broerse Copyright (C) 2020
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class BlockPathTableModelTest {
 
     @Test
     public void testCTor() {
-        BlockPathTableModel bptm = new BlockPathTableModel();
-        Assertions.assertNotNull(bptm, "BP model exists");
+        BlockPathTableModel t = new BlockPathTableModel();
+        Assert.assertNotNull("exists",t);
     }
 
-    @Test
-    public void testTfCTor() {
-        Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
-        OBlock ob = new OBlock("OB1");
-        TableFrames tf = new TableFrames();
-        BlockPathTableModel bptm = new BlockPathTableModel(ob, tf);
-        Assertions.assertNotNull(bptm, "TF BP model exists");
-    }
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -4,19 +4,19 @@ import jmri.jmrix.AbstractMRListener;
 import jmri.jmrix.AbstractMRMessage;
 import jmri.jmrix.AbstractMRReply;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Tests for AbstractCanTrafficController.
  * @author Paul Bender Copyright (C) 2016
  */
 public class AbstractCanTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficControllerTest {
-
+    
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
-        jmri.util.JUnitUtil.setUp();
+        jmri.util.JUnitUtil.setUp(); 
         JUnitUtil.resetInstanceManager();
         tc = new AbstractCanTrafficController(){
            @Override
@@ -48,19 +48,18 @@ public class AbstractCanTrafficControllerTest extends jmri.jmrix.AbstractMRTraff
            @Override
            public void sendCanMessage(CanMessage m, CanListener l) {}
            @Override
-           public synchronized void addCanListener(CanListener l) {}
+           public void addCanListener(CanListener l) {}
            @Override
-           public synchronized void removeCanListener(CanListener l) {}
+           public void removeCanListener(CanListener l) {}
 
         };
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown(){
-        tc.terminateThreads();
-        tc = null;
-        JUnitUtil.tearDown();
+       tc = null;
+        JUnitUtil.tearDown(); 
     }
 
 }

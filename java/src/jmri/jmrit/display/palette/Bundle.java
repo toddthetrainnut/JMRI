@@ -3,7 +3,7 @@ package jmri.jmrit.display.palette;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Locale;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -23,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 public class Bundle extends jmri.jmrit.display.Bundle {
 
-    @CheckForNull
+    @Nullable
     private static final String name = "jmri.jmrit.display.palette.PaletteBundle"; // NOI18N
 
     //
@@ -38,7 +38,7 @@ public class Bundle extends jmri.jmrit.display.Bundle {
      * @param key Bundle key to be translated
      * @return Internationalized text
      */
-    static public String getMessage(String key) {
+    static String getMessage(String key) {
         return getBundle().handleGetMessage(key);
     }
 
@@ -80,7 +80,7 @@ public class Bundle extends jmri.jmrit.display.Bundle {
     private final static Bundle b = new Bundle();
 
     @Override
-    @CheckForNull
+    @Nullable
     protected String bundleName() {
         return name;
     }

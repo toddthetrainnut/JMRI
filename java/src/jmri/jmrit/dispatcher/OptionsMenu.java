@@ -6,8 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
-
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -27,8 +25,7 @@ import jmri.InstanceManager;
 import jmri.Scale;
 import jmri.ScaleManager;
 import jmri.implementation.SignalSpeedMap;
-import jmri.jmrit.dispatcher.DispatcherFrame.TrainsFrom;
-import jmri.jmrit.display.EditorManager;
+import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
@@ -114,7 +111,6 @@ public class OptionsMenu extends JMenu {
     JRadioButton trainsFromUser = new JRadioButton(Bundle.getMessage("TrainsFromUser"));
     JComboBox<String> signalTypeBox;
     JCheckBox detectionCheckBox = new JCheckBox(Bundle.getMessage("DetectionBox"));
-    JCheckBox setSSLDirectionalSensorsCheckBox = new JCheckBox(Bundle.getMessage("SetSSLDirectionSensorsBox"));
     JCheckBox shortNameCheckBox = new JCheckBox(Bundle.getMessage("ShortNameBox"));
     JCheckBox nameInBlockCheckBox = new JCheckBox(Bundle.getMessage("NameInBlockBox"));
     JCheckBox rosterInBlockCheckBox = new JCheckBox(Bundle.getMessage("RosterInBlockBox"));
@@ -130,7 +126,7 @@ public class OptionsMenu extends JMenu {
     JCheckBox trustKnownTurnoutsCheckBox = new JCheckBox(Bundle.getMessage("trustKnownTurnouts"));
     JComboBox<String> stoppingSpeedBox = new JComboBox<>();
 
-    String[] signalTypes = {Bundle.getMessage("SignalType1"), Bundle.getMessage("SignalType2"), Bundle.getMessage("SignalType3")};
+    String[] signalTypes = {Bundle.getMessage("SignalType1"), Bundle.getMessage("SignalType2")};
 
     private void optionWindowRequested(ActionEvent e) {
         if (optionsFrame == null) {
@@ -149,7 +145,6 @@ public class OptionsMenu extends JMenu {
             signalTypeBox.setToolTipText(Bundle.getMessage("SignalTypeHint"));
             optionsPane.add(p1);
             JPanel p2 = new JPanel();
-            p2.setBorder(BorderFactory.createTitledBorder(Bundle.getMessage("TrainsFrom")));
             p2.setLayout(new FlowLayout());
             ButtonGroup trainsGroup = new ButtonGroup();
             p2.add(trainsFromRoster);
@@ -188,11 +183,6 @@ public class OptionsMenu extends JMenu {
             p3.add(detectionCheckBox);
             detectionCheckBox.setToolTipText(Bundle.getMessage("DetectionBoxHint"));
             optionsPane.add(p3);
-            JPanel p3A = new JPanel();
-            p3A.setLayout(new FlowLayout());
-            p3A.add(setSSLDirectionalSensorsCheckBox);
-            setSSLDirectionalSensorsCheckBox.setToolTipText(Bundle.getMessage("SetSSLDirectionSensorsBoxHint"));
-            optionsPane.add(p3A);
             JPanel p4 = new JPanel();
             p4.setLayout(new FlowLayout());
             p4.add(autoAllocateCheckBox);
@@ -322,19 +312,10 @@ public class OptionsMenu extends JMenu {
         }
         useConnectivityCheckBox.setSelected(dispatcher.getUseConnectivity());
         signalTypeBox.setSelectedIndex(dispatcher.getSignalType());
-        switch (dispatcher.getTrainsFrom()) {
-            case TRAINSFROMROSTER:
-                trainsFromRoster.setSelected(true);
-                break;
-            case TRAINSFROMOPS:
-                trainsFromTrains.setSelected(true);
-                break;
-            case TRAINSFROMUSER:
-            default:
-                trainsFromUser.setSelected(true);
-        }
+        trainsFromRoster.setSelected(dispatcher.getTrainsFromRoster());
+        trainsFromTrains.setSelected(dispatcher.getTrainsFromTrains());
+        trainsFromUser.setSelected(dispatcher.getTrainsFromUser());
         detectionCheckBox.setSelected(dispatcher.getHasOccupancyDetection());
-        setSSLDirectionalSensorsCheckBox.setSelected(dispatcher.getSetSSLDirectionalSensors());
         autoAllocateCheckBox.setSelected(dispatcher.getAutoAllocate());
         autoTurnoutsCheckBox.setSelected(dispatcher.getAutoTurnouts());
         trustKnownTurnoutsCheckBox.setSelected(dispatcher.getTrustKnownTurnouts());
@@ -362,14 +343,9 @@ public class OptionsMenu extends JMenu {
             dispatcher.setLayoutEditor(layoutEditorList.get(index));
             dispatcher.setUseConnectivity(useConnectivityCheckBox.isSelected());
         }
-        dispatcher.setSetSSLDirectionalSensors(setSSLDirectionalSensorsCheckBox.isSelected());
-        if (trainsFromRoster.isSelected()) {
-            dispatcher.setTrainsFrom(TrainsFrom.TRAINSFROMROSTER);
-        } else if (trainsFromTrains.isSelected()) {
-            dispatcher.setTrainsFrom(TrainsFrom.TRAINSFROMOPS);
-        } else {
-            dispatcher.setTrainsFrom(TrainsFrom.TRAINSFROMUSER);
-        }
+        dispatcher.setTrainsFromRoster(trainsFromRoster.isSelected());
+        dispatcher.setTrainsFromTrains(trainsFromTrains.isSelected());
+        dispatcher.setTrainsFromUser(trainsFromUser.isSelected());
         dispatcher.setHasOccupancyDetection(detectionCheckBox.isSelected());
         dispatcher.setAutoAllocate(autoAllocateCheckBox.isSelected());
         autoDispatchItem.setSelected(autoAllocateCheckBox.isSelected());
@@ -420,14 +396,14 @@ public class OptionsMenu extends JMenu {
         try {
             InstanceManager.getDefault(OptionsFile.class).writeDispatcherOptions(dispatcher);
         } catch (java.io.IOException ioe) {
-            log.error("Exception writing Dispatcher options", ioe);
+            log.error("Exception writing Dispatcher options: " + ioe);
         }
     }
 
     private boolean initializeLayoutEditorCombo() {
         // get list of Layout Editor panels
-        layoutEditorList = new ArrayList<>(InstanceManager.getDefault(EditorManager.class).getAll(LayoutEditor.class));
-        if (layoutEditorList.isEmpty()) {
+        layoutEditorList = InstanceManager.getDefault(PanelMenu.class).getLayoutEditorPanelList();
+        if (layoutEditorList.size() == 0) {
             return false;
         }
         layoutEditorBox.removeAllItems();

@@ -1,14 +1,15 @@
 package jmri.jmrit.display.controlPanelEditor.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * ControlPanelEditorXmlTest.java
  *
- * Test for the ControlPanelEditorXml class
+ * Description: tests for the ControlPanelEditorXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class ControlPanelEditorXmlTest {
       Assert.assertNotNull("ControlPanelEditorXml constructor",new ControlPanelEditorXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

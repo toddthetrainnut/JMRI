@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../XSLT/decoder.xsl"?>
 <!-- Copyright (C) JMRI 2001, 2005, 2007, 2-009, 2010 All rights reserved -->
+<!-- $Id: BLI_Blueline_Paragon2_Steam.xml 29062 2015-04-11 03:53:07Z jacobsen $ -->
 <!--                                                                        -->
 <!-- JMRI is free software; you can redistribute it and/or modify it under  -->
 <!-- the terms of version 2 of the GNU General Public License as published  -->
@@ -18,8 +19,6 @@
   <!-- General cleanup, more use of external files to go along with P3 file -->
   <version author="Michael Mosher" version="3" lastUpdated="20170216"/>
   <!-- Add model Steam w/depleting coal, whistle smoke and CV182,183,215  -->
-  <version author="Michael Mosher" version="4" lastUpdated="20210630"/>
-  <!-- few minor updates  -->
   <decoder>
     <family name="Paragon 3" mfg="Broadway Limited Imports, LLC">
       <model model="Steam" numOuts="3" numFns="30" connector="other">
@@ -222,12 +221,6 @@
           <label>L5 Parameter One</label>
         </variable>
       </variables>
-      <variable CV="176" default="114" item="Fatal OverCurrent Config" readOnly="yes" tooltip="This value determines the internal references, multiplies and comparator selection. DO NOT CHANGE.">
-        <decVal/>
-      </variable>
-      <variable CV="177" default="120" item="Fatal OverCurrent Sensitivity" tooltip="This value determines how sensitive or not the over current circuit is. Increasing this value decreases the sensitivity.">
-        <decVal/>
-      </variable>
       <variable CV="182" default="110" item="Whistle Smoke Unit Heater Power" include="Steam w/depleting coal, whistle smoke">
         <decVal max="110"/>
         <label>Whistle Smoke Unit Heater Power</label>

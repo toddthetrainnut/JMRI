@@ -28,5 +28,4 @@ public class WebAppConfiguration extends AbstractWebServerConfiguration {
         map.put("/app/short-detector", "program:web/app/short-detector"); // NOI18N
         return map;
     }
-
 }

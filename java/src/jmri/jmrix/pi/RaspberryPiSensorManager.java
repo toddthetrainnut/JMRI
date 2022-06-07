@@ -1,6 +1,5 @@
 package jmri.jmrix.pi;
 
-import javax.annotation.Nonnull;
 import jmri.Sensor;
 
 /**
@@ -14,25 +13,30 @@ import jmri.Sensor;
 public class RaspberryPiSensorManager extends jmri.managers.AbstractSensorManager {
 
     // ctor has to register for RaspberryPi events
-    public RaspberryPiSensorManager(RaspberryPiSystemConnectionMemo memo) {
-        super(memo);
+    public RaspberryPiSensorManager(String prefix) {
+        super();
+        this.prefix = prefix;
     }
 
     /**
-     * {@inheritDoc}
+     * Provides access to the system prefix string.
+     * This was previously called the "System letter"
      */
     @Override
-    @Nonnull
-    public RaspberryPiSystemConnectionMemo getMemo() {
-        return (RaspberryPiSystemConnectionMemo) memo;
+    public String getSystemPrefix(){
+        return prefix;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private String prefix = null;
+
+    // to free resources when no longer used
     @Override
-    @Nonnull
-    protected Sensor createNewSensor(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public void dispose() {
+        super.dispose();
+    }
+
+    @Override
+    public Sensor createNewSensor(String systemName, String userName) {
         return new RaspberryPiSensor(systemName, userName);
     }
 
@@ -48,17 +52,6 @@ public class RaspberryPiSensorManager extends jmri.managers.AbstractSensorManage
     @Override
     public boolean isPullResistanceConfigurable(){
        return true;
-    }
-    
-    /**
-     * Validates to Integer Format 0-999 with valid prefix.
-     * eg. PS0 to PS999
-     * {@inheritDoc}
-     */
-    @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull java.util.Locale locale) throws jmri.NamedBean.BadSystemNameException {
-        return this.validateIntegerSystemNameFormat(name, 0, 999, locale);
     }
 
 }

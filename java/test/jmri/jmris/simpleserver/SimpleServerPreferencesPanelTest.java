@@ -1,12 +1,10 @@
 package jmri.jmris.simpleserver;
 
-import jmri.swing.PreferencesPanelTestBase;
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -14,14 +12,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Paul Bender Copyright (C) 2016
  */
-public class SimpleServerPreferencesPanelTest extends PreferencesPanelTestBase<SimpleServerPreferencesPanel> {
+public class SimpleServerPreferencesPanelTest {
 
-    @Override
-    @BeforeEach
-    public void setUp() {
+    @Test public void testCtor() {
+        SimpleServerPreferencesPanel a = new SimpleServerPreferencesPanel();
+        Assert.assertNotNull(a);
+    }
+
+    @Before public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
-        prefsPanel = new SimpleServerPreferencesPanel();
+    }
+
+    @After public void tearDown() throws Exception {
+        JUnitUtil.tearDown();
     }
 
 }

@@ -10,20 +10,27 @@ import jmri.jmrix.openlcb.OlcbUtils;
 import jmri.util.JUnitUtil;
 
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * OlcbSensorManagerXmlTest.java
  *
- * Test for the OlcbSensorManagerXml class
+ * Description: tests for the OlcbSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  *           Balazs Racz    (C) 2018
  */
 public class OlcbSensorManagerXmlTest {
+
+    @Test
+    public void testCtor(){
+      Assert.assertNotNull("OlcbSensorManagerXml constructor",new OlcbSensorManagerXml());
+    }
 
     @Test
     public void testSaveAndRestoreWithProperties() throws Exception {
@@ -54,7 +61,7 @@ public class OlcbSensorManagerXmlTest {
 
         s.setProperty(OlcbUtils.PROPERTY_QUERY_AT_STARTUP, false);
         s.setAuthoritative(false);
-        Assert.assertEquals(1, mgr.getNamedBeanSet().size());
+        Assert.assertEquals(1, mgr.getSystemNameList().size());
 
         Element stored = xmlmgr.store(mgr);
         Assert.assertNotNull(stored);
@@ -101,22 +108,15 @@ public class OlcbSensorManagerXmlTest {
     OlcbTestInterface t;
     private final static Logger log = LoggerFactory.getLogger(OlcbSensorManagerXmlTest.class);
 
-    @BeforeAll
-    static public void checkSeparate() {
-       // this test is run separately because it leaves a lot of threads behind
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
-    }
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

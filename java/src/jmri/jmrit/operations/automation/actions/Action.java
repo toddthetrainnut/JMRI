@@ -3,14 +3,13 @@ package jmri.jmrit.operations.automation.actions;
 import java.text.MessageFormat;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
-import jmri.beans.PropertyChangeSupport;
 import jmri.jmrit.operations.automation.Automation;
 import jmri.jmrit.operations.automation.AutomationItem;
 import jmri.jmrit.operations.routes.RouteLocation;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.schedules.TrainSchedule;
 
-public abstract class Action extends PropertyChangeSupport {
+public abstract class Action {
 
     public static final String ACTION_COMPLETE_CHANGED_PROPERTY = "actionComplete"; // NOI18N
     public static final String ACTION_HALT_CHANGED_PROPERTY = "actionHalt"; // NOI18N
@@ -48,7 +47,7 @@ public abstract class Action extends PropertyChangeSupport {
      *
      * @param code the integer to be modified by masking off menu bits.
      *
-     * @return code and ActionCodes.CODE_MASK
+     * @return code {@literal &} ActionCodes.CODE_MASK
      */
     protected int getCode(int code) {
         return code & ActionCodes.CODE_MASK;
@@ -235,6 +234,20 @@ public abstract class Action extends PropertyChangeSupport {
         JComboBox<?> cb = new JComboBox<>();
         cb.setEnabled(false);
         return cb;
+    }
+
+    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
+
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    protected void firePropertyChange(String p, Object old, Object n) {
+        pcs.firePropertyChange(p, old, n);
     }
 
 }

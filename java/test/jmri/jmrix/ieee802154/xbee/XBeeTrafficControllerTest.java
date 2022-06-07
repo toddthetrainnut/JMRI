@@ -1,17 +1,18 @@
 package jmri.jmrix.ieee802154.xbee;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * XBeeTrafficControllerTest.java
  *
- * Test for the jmri.jmrix.ieee802154.xbee.XBeeTrafficController
+ * Description:	tests for the jmri.jmrix.ieee802154.xbee.XBeeTrafficController
  * class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class XBeeTrafficControllerTest extends jmri.jmrix.ieee802154.IEEE802154TrafficControllerTest {
 
@@ -69,9 +70,9 @@ public class XBeeTrafficControllerTest extends jmri.jmrix.ieee802154.IEEE802154T
     }
 
 
-    @Test
+    @Test(expected=java.lang.IllegalArgumentException.class)
     public void registerNonXBeeNode(){
-        Assert.assertThrows(IllegalArgumentException.class, () -> ((XBeeTrafficController)tc).registerNode(new jmri.jmrix.ieee802154.serialdriver.SerialNode()));
+        ((XBeeTrafficController)tc).registerNode(new jmri.jmrix.ieee802154.serialdriver.SerialNode());
     }
 
     @Test
@@ -194,21 +195,20 @@ public class XBeeTrafficControllerTest extends jmri.jmrix.ieee802154.IEEE802154T
         Assert.assertNotNull("node not found", n);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
         tc = new XBeeTrafficController();
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         ((XBeeTrafficController)tc).terminate();
         tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

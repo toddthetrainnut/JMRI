@@ -1,6 +1,8 @@
 package jmri.jmrix.lenz.swing.li101;
 
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -25,7 +27,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LI101Frame extends jmri.util.JmriJFrame implements XNetListener {
 
-    protected XNetTrafficController tc;
+    protected XNetTrafficController tc = null;
 
     public LI101Frame(jmri.jmrix.lenz.XNetSystemConnectionMemo memo) {
         super(Bundle.getMessage("MenuItemLI101ConfigurationManager"));
@@ -56,15 +58,15 @@ public class LI101Frame extends jmri.util.JmriJFrame implements XNetListener {
         // Initialize the comboBoxes
         addrBox.setVisible(true);
         addrBox.setToolTipText(Bundle.getMessage("XNetAddressToolTip"));
-        for (String validXNetAddress : validXNetAddresses) {
-            addrBox.addItem(validXNetAddress);
+        for (int i = 0; i < validXNetAddresses.length; i++) {
+            addrBox.addItem(validXNetAddresses[i]);
         }
         addrBox.setSelectedIndex(32);
 
         speedBox.setVisible(true);
         speedBox.setToolTipText(Bundle.getMessage("LI101SpeedSettingToolTip"));
-        for (String validSpeed : validSpeeds) {
-            speedBox.addItem(validSpeed);
+        for (int i = 0; i < validSpeeds.length; i++) {
+            speedBox.addItem(validSpeeds[i]);
         }
         speedBox.setSelectedIndex(4);
 
@@ -75,18 +77,41 @@ public class LI101Frame extends jmri.util.JmriJFrame implements XNetListener {
         getContentPane().add(status);
 
         // install read settings, write settings button handlers
-        readSettingsButton.addActionListener(a -> readLI101Settings());
+        readSettingsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                readLI101Settings();
+            }
+        }
+        );
 
-        writeSettingsButton.addActionListener(a -> writeLI101Settings());
+        writeSettingsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                writeLI101Settings();
+            }
+        }
+        );
 
         // install close button handler
-        closeButton.addActionListener(a -> {
-            setVisible(false);
-            dispose();
-        });
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                setVisible(false);
+                dispose();
+            }
+        }
+        );
 
         // install reset button handler
-        resetButton.addActionListener(a -> resetLI101Settings());
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                resetLI101Settings();
+
+            }
+        }
+        );
 
         // add status
         getContentPane().add(status);
@@ -101,21 +126,21 @@ public class LI101Frame extends jmri.util.JmriJFrame implements XNetListener {
 
     boolean read = false;
 
-    final JComboBox<String> addrBox = new javax.swing.JComboBox<>();
-    final JComboBox<String> speedBox = new javax.swing.JComboBox<>();
+    JComboBox<String> addrBox = new javax.swing.JComboBox<String>();
+    JComboBox<String> speedBox = new javax.swing.JComboBox<String>();
 
-    final JLabel status = new JLabel("");
+    JLabel status = new JLabel("");
 
-    final JToggleButton readSettingsButton = new JToggleButton(Bundle.getMessage("LI101ReadButton"));
-    final JToggleButton writeSettingsButton = new JToggleButton(Bundle.getMessage("LI101WriteButton"));
-    final JButton closeButton = new JButton(Bundle.getMessage("ButtonClose"));
-    final JButton resetButton = new JButton(Bundle.getMessage("ButtonResetDefaults"));
+    JToggleButton readSettingsButton = new JToggleButton(Bundle.getMessage("LI101ReadButton"));
+    JToggleButton writeSettingsButton = new JToggleButton(Bundle.getMessage("LI101WriteButton"));
+    JButton closeButton = new JButton(Bundle.getMessage("ButtonClose"));
+    JButton resetButton = new JButton(Bundle.getMessage("ButtonResetDefaults"));
 
-    protected final String[] validXNetAddresses = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+    protected String[] validXNetAddresses = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
             "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27",
             "28", "29", "30", "31", ""};
 
-    protected final String[] validSpeeds = new String[]{Bundle.getMessage("LIBaud19200"), Bundle.getMessage("Baud38400"),
+    protected String[] validSpeeds = new String[]{Bundle.getMessage("LIBaud19200"), Bundle.getMessage("Baud38400"),
             Bundle.getMessage("Baud57600"), Bundle.getMessage("Baud115200"), ""};
     protected int[] validSpeedValues = new int[]{19200, 38400, 57600, 115200};
 
@@ -123,16 +148,16 @@ public class LI101Frame extends jmri.util.JmriJFrame implements XNetListener {
      * Send new address/baud rate to LI101.
      */
     void writeLI101Settings() {
-        if (!(addrBox.getSelectedItem().equals(""))
-                && addrBox.getSelectedItem() != null) {
+        if (!(((String) addrBox.getSelectedItem()).equals(""))
+                && (String) addrBox.getSelectedItem() != null) {
             /* First, we take care of generating an address request */
             XNetMessage msg = XNetMessage.getLIAddressRequestMsg(
                     addrBox.getSelectedIndex());
             //Then send to the controller
             tc.sendXNetMessage(msg, this);
         }
-        if (!(speedBox.getSelectedItem().equals(""))
-                && speedBox.getSelectedItem() != null) {
+        if (!(((String) speedBox.getSelectedItem()).equals(""))
+                && (String) speedBox.getSelectedItem() != null) {
             /* Now, we can send a baud rate request */
             XNetMessage msg = XNetMessage.getLISpeedRequestMsg(speedBox.getSelectedIndex() + 1);
             //Then send to the controller
@@ -191,7 +216,7 @@ public class LI101Frame extends jmri.util.JmriJFrame implements XNetListener {
     @Override
     public void notifyTimeout(XNetMessage msg) {
         if (log.isDebugEnabled()) {
-            log.debug("Notified of timeout on message{}", msg.toString());
+            log.debug("Notified of timeout on message" + msg.toString());
         }
     }
 
@@ -209,6 +234,12 @@ public class LI101Frame extends jmri.util.JmriJFrame implements XNetListener {
         speedBox.setSelectedIndex(0);
     }
 
-    private static final Logger log = LoggerFactory.getLogger(LI101Frame.class);
+    @Override
+    public void dispose() {
+        // take apart the JFrame
+        super.dispose();
+    }
+
+    private final static Logger log = LoggerFactory.getLogger(LI101Frame.class);
 
 }

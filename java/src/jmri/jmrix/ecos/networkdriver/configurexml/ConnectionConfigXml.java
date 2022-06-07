@@ -6,8 +6,6 @@ import jmri.jmrix.ecos.EcosPreferences;
 import jmri.jmrix.ecos.networkdriver.ConnectionConfig;
 import jmri.jmrix.ecos.networkdriver.NetworkDriverAdapter;
 import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handle XML persistance of layout connections by persistening the
@@ -20,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * is the one actually registered. Reads are brought here directly via the class
  * attribute in the XML.
  *
- * @author Bob Jacobsen Copyright (c) 2003, 2008
+ * @author Bob Jacobsen Copyright (c) 2003, 208
  */
 public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
 
@@ -38,10 +36,7 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
     protected void extendElement(Element e) {
         Element ecosPrefElem = new Element("commandStationPreferences");
         EcosPreferences p = ((jmri.jmrix.ecos.EcosSystemConnectionMemo) adapter.getSystemConnectionMemo()).getPreferenceManager();
-        if (p == null) {
-            log.warn("Null EcosPrefManager");
-            return;
-        }
+
         if (p.getAddTurnoutsToEcos() == 0x01) {
             ecosPrefElem.setAttribute("addTurnoutToCS", "no");
         } else if (p.getAddTurnoutsToEcos() == 0x02) {
@@ -91,7 +86,7 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
 
         if (p.getRemoveLocoFromJMRI() == 0x01) {
             ecosPrefElem.setAttribute("removeLocoFromJMRI", "no");
-        } else if (p.getRemoveLocoFromJMRI() == 0x01) { // was 0x02 intended here?
+        } else if (p.getRemoveLocoFromJMRI() == 0x01) {
             ecosPrefElem.setAttribute("removeLocoFromJMRI", "yes");
         }
 
@@ -126,13 +121,9 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
     protected void unpackElement(Element shared, Element perNode) {
         List<Element> ecosPref = shared.getChildren("commandStationPreferences");
         EcosPreferences p = ((jmri.jmrix.ecos.EcosSystemConnectionMemo) adapter.getSystemConnectionMemo()).getPreferenceManager();
-        if (p == null) {
-            log.warn("Null EcosPrefManager");
-            return;
-        }
-        for (Element element : ecosPref) {
-            if (element.getAttribute("addTurnoutToCS") != null) {
-                String yesno = element.getAttribute("addTurnoutToCS").getValue();
+        for (int i = 0; i < ecosPref.size(); i++) {
+            if (ecosPref.get(i).getAttribute("addTurnoutToCS") != null) {
+                String yesno = ecosPref.get(i).getAttribute("addTurnoutToCS").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setAddTurnoutsToEcos(0x02);
@@ -141,8 +132,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                     }
                 }
             }
-            if (element.getAttribute("removeTurnoutFromCS") != null) {
-                String yesno = element.getAttribute("removeTurnoutFromCS").getValue();
+            if (ecosPref.get(i).getAttribute("removeTurnoutFromCS") != null) {
+                String yesno = ecosPref.get(i).getAttribute("removeTurnoutFromCS").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setRemoveTurnoutsFromEcos(0x02);
@@ -152,8 +143,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("addTurnoutToJMRI") != null) {
-                String yesno = element.getAttribute("addTurnoutToJMRI").getValue();
+            if (ecosPref.get(i).getAttribute("addTurnoutToJMRI") != null) {
+                String yesno = ecosPref.get(i).getAttribute("addTurnoutToJMRI").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setAddTurnoutsToJMRI(0x02);
@@ -163,8 +154,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("removeTurnoutFromJMRI") != null) {
-                String yesno = element.getAttribute("removeTurnoutFromJMRI").getValue();
+            if (ecosPref.get(i).getAttribute("removeTurnoutFromJMRI") != null) {
+                String yesno = ecosPref.get(i).getAttribute("removeTurnoutFromJMRI").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setRemoveTurnoutsFromJMRI(0x02);
@@ -174,8 +165,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("addLocoToCS") != null) {
-                String yesno = element.getAttribute("addLocoToCS").getValue();
+            if (ecosPref.get(i).getAttribute("addLocoToCS") != null) {
+                String yesno = ecosPref.get(i).getAttribute("addLocoToCS").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setAddLocoToEcos(0x02);
@@ -185,8 +176,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("removeLocoFromCS") != null) {
-                String yesno = element.getAttribute("removeLocoFromCS").getValue();
+            if (ecosPref.get(i).getAttribute("removeLocoFromCS") != null) {
+                String yesno = ecosPref.get(i).getAttribute("removeLocoFromCS").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setRemoveLocoFromEcos(0x02);
@@ -196,8 +187,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("addLocoToJMRI") != null) {
-                String yesno = element.getAttribute("addLocoToJMRI").getValue();
+            if (ecosPref.get(i).getAttribute("addLocoToJMRI") != null) {
+                String yesno = ecosPref.get(i).getAttribute("addLocoToJMRI").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setAddLocoToJMRI(0x02);
@@ -207,8 +198,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("removeLocoFromJMRI") != null) {
-                String yesno = element.getAttribute("removeLocoFromJMRI").getValue();
+            if (ecosPref.get(i).getAttribute("removeLocoFromJMRI") != null) {
+                String yesno = ecosPref.get(i).getAttribute("removeLocoFromJMRI").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setRemoveLocoFromJMRI(0x02);
@@ -218,8 +209,8 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("removeLocoFromJMRI") != null) {
-                String yesno = element.getAttribute("removeLocoFromJMRI").getValue();
+            if (ecosPref.get(i).getAttribute("removeLocoFromJMRI") != null) {
+                String yesno = ecosPref.get(i).getAttribute("removeLocoFromJMRI").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setRemoveLocoFromJMRI(0x02);
@@ -229,12 +220,12 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
                 }
             }
 
-            if (element.getAttribute("locoMaster") != null) {
-                p.setLocoMaster(element.getAttribute("locoMaster").getValue());
+            if (ecosPref.get(i).getAttribute("locoMaster") != null) {
+                p.setLocoMaster(ecosPref.get(i).getAttribute("locoMaster").getValue());
             }
 
-            if (element.getAttribute("removeAdhocLocoFromCS") != null) {
-                String yesno = element.getAttribute("removeAdhocLocoFromCS").getValue();
+            if (ecosPref.get(i).getAttribute("removeAdhocLocoFromCS") != null) {
+                String yesno = ecosPref.get(i).getAttribute("removeAdhocLocoFromCS").getValue();
                 if ((yesno != null) && (!yesno.equals(""))) {
                     if (yesno.equals("yes")) {
                         p.setAdhocLocoFromEcos(0x02);
@@ -246,14 +237,14 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
             /*if (ecosPref.get(i).getAttribute("defaultCSProtocol") != null){
              p.setDefaultEcosProtocol(ecosPref.get(i).getAttribute("defaultCSProtocol").getValue());
              }*/
-            if (element.getAttribute("defaultCSLocoDescription") != null) {
-                p.setEcosLocoDescription(element.getAttribute("defaultCSLocoDescription").getValue());
+            if (ecosPref.get(i).getAttribute("defaultCSLocoDescription") != null) {
+                p.setEcosLocoDescription(ecosPref.get(i).getAttribute("defaultCSLocoDescription").getValue());
             }
 
-            if (element.getAttribute("ecosRosterAttribute") != null) {
-                p.setRosterAttribute(element.getAttribute("ecosRosterAttribute").getValue());
+            if (ecosPref.get(i).getAttribute("ecosRosterAttribute") != null) {
+                p.setRosterAttribute(ecosPref.get(i).getAttribute("ecosRosterAttribute").getValue());
             }
-            if (element.getAttribute("locoControl") != null) {
+            if (ecosPref.get(i).getAttribute("locoControl") != null) {
                 p.setLocoControl(true);
             }
 
@@ -266,7 +257,5 @@ public class ConnectionConfigXml extends AbstractNetworkConnectionConfigXml {
     protected void register() {
         this.register(new ConnectionConfig(adapter));
     }
-
-    private final static Logger log = LoggerFactory.getLogger(ConnectionConfigXml.class);
 
 }

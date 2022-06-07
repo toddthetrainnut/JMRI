@@ -1,11 +1,9 @@
 package jmri.jmrit.operations.locations;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Swing action to create and register a LocationTableFrame object.
@@ -15,8 +13,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public class LocationsTableAction extends AbstractAction {
 
+    public LocationsTableAction(String s) {
+        super(s);
+    }
+
     public LocationsTableAction() {
-        super(Bundle.getMessage("MenuLocations")); // NOI18N
+        this(Bundle.getMessage("MenuLocations")); // NOI18N
     }
 
     private static LocationsTableFrame locationTableFrame = null;

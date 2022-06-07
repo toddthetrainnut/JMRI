@@ -4,8 +4,10 @@ import jmri.Manager.NameValidity;
 import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JUnit tests for the serial address functions in memo.
@@ -13,7 +15,7 @@ import org.junit.jupiter.api.*;
  * These used to be in a separate SerialAddress class, with its own test class.
  * This structure is a vestige of that.
  *
- * @author Dave Duchamp Copyright 2004
+ * @author	Dave Duchamp Copyright 2004
  * @author Bob Jacobsen Copyright 2017
  */
 public class SerialAddressTest {
@@ -24,7 +26,7 @@ public class SerialAddressTest {
     SerialNode n10;
     SerialNode n18;
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
 
@@ -37,10 +39,18 @@ public class SerialAddressTest {
         n18 = new SerialNode(18, SerialNode.SMINI, stcs);
 
         // create and register the manager objects
-        jmri.TurnoutManager l = new SerialTurnoutManager(memo);
+        jmri.TurnoutManager l = new SerialTurnoutManager(memo) {
+            @Override
+            public void notifyTurnoutCreationError(String conflict, int bitNum) {
+            }
+        };
         jmri.InstanceManager.setTurnoutManager(l);
 
-        jmri.LightManager lgt = new SerialLightManager(memo);
+        jmri.LightManager lgt = new SerialLightManager(memo) {
+            @Override
+            public void notifyLightCreationError(String conflict, int bitNum) {
+            }
+        };
         jmri.InstanceManager.setLightManager(lgt);
 
         jmri.SensorManager s = new SerialSensorManager(memo);
@@ -48,19 +58,18 @@ public class SerialAddressTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
+        JUnitUtil.tearDown();
         if (stcs != null) stcs.terminateThreads();
         stcs = null;
         memo = null;
         n10 = null;
         n18 = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
     }
 
     @Test
-    public void testValidSystemNameFormat() {
+    public void testValidateSystemNameFormat() {
         Assert.assertTrue("valid format - CL2", NameValidity.VALID == memo.validSystemNameFormat("CL2", 'L'));
         Assert.assertTrue("valid format - CL0B2", NameValidity.VALID == memo.validSystemNameFormat("CL0B2", 'L'));
 
@@ -78,10 +87,10 @@ public class SerialAddressTest {
         Assert.assertTrue("valid format - CS2B5", NameValidity.VALID == memo.validSystemNameFormat("CS2B5", 'S'));
 
         Assert.assertTrue("invalid format - CY2005", NameValidity.VALID != memo.validSystemNameFormat("CY2005", 'L'));
-//        JUnitAppender.assertErrorMessage("invalid type character in CMRI system name: CY2005");
+        JUnitAppender.assertErrorMessage("invalid type character in CMRI system name: CY2005");
 
         Assert.assertTrue("invalid format - CY2B5", NameValidity.VALID != memo.validSystemNameFormat("CY2B5", 'L'));
-//        JUnitAppender.assertErrorMessage("invalid type character in CMRI system name: CY2B5");
+        JUnitAppender.assertErrorMessage("invalid type character in CMRI system name: CY2B5");
 
         Assert.assertTrue("valid format - CL22001", NameValidity.VALID == memo.validSystemNameFormat("CL22001", 'L'));
         Assert.assertTrue("valid format - CL22B1", NameValidity.VALID == memo.validSystemNameFormat("CL22B1", 'L'));
@@ -258,15 +267,15 @@ public class SerialAddressTest {
         // create a new turnout, controlled by two output bits
         jmri.TurnoutManager tMgr = jmri.InstanceManager.turnoutManagerInstance();
         jmri.Turnout t1 = tMgr.newTurnout("CT18034", "userT34");
-        t1.setNumberControlBits(2);
+        t1.setNumberOutputBits(2);
         // check that turnout was created correctly
         Assert.assertEquals("create CT18034 check 1", "CT18034", t1.getSystemName());
-        Assert.assertEquals("create CT18034 check 2", 2, t1.getNumberControlBits());
+        Assert.assertEquals("create CT18034 check 2", 2, t1.getNumberOutputBits());
         // create a new turnout, controlled by one output bit
         jmri.Turnout t2 = tMgr.newTurnout("CT18032", "userT32");
         // check that turnout was created correctly
         Assert.assertEquals("create CT18032 check 1", "CT18032", t2.getSystemName());
-        Assert.assertEquals("create CT18032 check 2", 1, t2.getNumberControlBits());
+        Assert.assertEquals("create CT18032 check 2", 1, t2.getNumberOutputBits());
         // create two new lights
         jmri.LightManager lMgr = jmri.InstanceManager.lightManagerInstance();
         jmri.Light lgt1 = lMgr.newLight("CL18036", "userL36");

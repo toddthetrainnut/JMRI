@@ -22,9 +22,6 @@ public class DnDTableExportHandler extends TransferHandler {
 
     @Override
     public Transferable createTransferable(JComponent c) {
-        if (!(c instanceof JTable)) {
-            return null;
-        }
         JTable table = (JTable) c;
         int col = table.getSelectedColumn();
         int row = table.getSelectedRow();
@@ -34,7 +31,9 @@ public class DnDTableExportHandler extends TransferHandler {
         row = table.convertRowIndexToModel(row);
         col = table.convertColumnIndexToModel(col);
         if (log.isDebugEnabled()) {
-            log.debug("TransferHandler.createTransferable: from ({}, {}) for \"{}\"", row, col, table.getModel().getValueAt(row, col));
+            log.debug("TransferHandler.createTransferable: from ("
+                    + row + ", " + col + ") for \""
+                    + table.getModel().getValueAt(row, col) + "\"");
         }
         Object obj = table.getModel().getValueAt(row, col);
         if (obj instanceof String) {

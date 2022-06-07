@@ -177,16 +177,13 @@ public class SerialTrafficController extends AbstractMRNodeTrafficController imp
      */
     @Override
     protected synchronized AbstractMRMessage pollMessage() {
-        log.trace("pollMessage starts");
         // ensure validity of call
         if (getNumNodes() <= 0) {
-            log.trace("pollMessage ends with zero nodes");
             return null;
         }
 
         // If total network polling not enabled, exit
         if (!getPollNetwork()) {
-            log.trace("pollMessage ends with getPollNetwork disabled");
             return null;
         }
 
@@ -204,7 +201,6 @@ public class SerialTrafficController extends AbstractMRNodeTrafficController imp
             // m.setTimeout( getInitTimeout() );  //c2
             n.setPollStatus(SerialNode.POLLSTATUS_INIT); //c2
 
-            log.trace("pollMessage provides Init message");
             return m;
         }
         // send Output packet if needed
@@ -217,7 +213,6 @@ public class SerialTrafficController extends AbstractMRNodeTrafficController imp
 
             // reset poll pointer update, so next increment will poll from here
             curSerialNodeIndex = previousPollPointer;
-            log.trace("pollMessage provides Transmit message");
             return m;
         }
 
@@ -229,7 +224,6 @@ public class SerialTrafficController extends AbstractMRNodeTrafficController imp
 
         if (!n.getPollingEnabled()) {
             n.setPollStatus(SerialNode.POLLSTATUS_IDLE);
-            log.trace("pollMessage ends with getPollingEnabled disabled");
             return null;
         } else if (getNode(curSerialNodeIndex).getSensorsActive()) {
             if (n.getPollStatus() != SerialNode.POLLSTATUS_POLLING) {
@@ -239,11 +233,9 @@ public class SerialTrafficController extends AbstractMRNodeTrafficController imp
             // Some sensors are active for this node, issue poll
             SerialMessage m = SerialMessage.getPoll(
                     getNode(curSerialNodeIndex).getNodeAddress());
-            log.trace("pollMessage ends with poll message");
             return m;
         } else {
             // no Sensors (inputs) are active for this node
-            log.trace("pollMessage ends with no sensors active");
             return null;
         }
     }

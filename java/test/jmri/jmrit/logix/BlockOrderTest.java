@@ -3,14 +3,14 @@ package jmri.jmrit.logix;
 import jmri.InstanceManager;
 import jmri.SignalHead;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class BlockOrderTest {
 
@@ -19,8 +19,7 @@ public class BlockOrderTest {
     @Test
     public void testCTor() {
         BlockOrder t = new BlockOrder(new OBlock("OB1", "Test"));
-        assertThat(t).withFailMessage("exists").isNotNull();
-        assertThat(t.toString().startsWith("BlockOrder: Block")).withFailMessage("toString").isTrue();
+        Assert.assertNotNull("exists",t);
     }
 
     /* for the sake of code coverage */
@@ -28,16 +27,16 @@ public class BlockOrderTest {
     public void testGettersAndSetters() {
         OBlock b = _blkMgr.provideOBlock("OB1");
         BlockOrder bo = new BlockOrder(b, "foo", "foo", "foo");
-        assertThat(bo).withFailMessage("exists").isNotNull();
+        Assert.assertNotNull("exists", bo);
         bo.setEntryName("entryP");
-        assertThat(bo.getEntryName()).withFailMessage("Portal name").isEqualTo("entryP");
+        Assert.assertEquals("Portal name", "entryP", bo.getEntryName());
         bo.setExitName("exitP");
-        assertThat(bo.getExitName()).withFailMessage("Portal name").isEqualTo("exitP");
+        Assert.assertEquals("Portal name", "exitP", bo.getExitName());
         bo.setPathName("Path");
-        assertThat(bo.getPathName()).withFailMessage("Path name").isEqualTo("Path");
+        Assert.assertEquals("Path name", "Path", bo.getPathName());
         OBlock bb = _blkMgr.provideOBlock("OB2");
         bo.setBlock(bb);
-        assertThat(bo.getBlock()).withFailMessage("Block bb").isEqualTo(bb);
+        Assert.assertEquals("Block bb", bb, bo.getBlock());
     }
 
     /* tests OBlocks more than BlockOrders,
@@ -50,27 +49,28 @@ public class BlockOrderTest {
         Portal portal = portalMgr.providePortal("foop");
         portal.setToBlock(block, true);
         SignalHead sh = new jmri.implementation.VirtualSignalHead("IH1", "sig1"); 
-        assertThat(sh).withFailMessage("signal").isNotNull();
+        Assert.assertNotNull("signal", sh);
         sh.setAppearance(SignalHead.YELLOW);
         OPath p = new OPath(block, "path");
         portal.setProtectSignal(sh, 20, block);
         block.addPath(p);
         block.addPortal(portal);
         BlockOrder bo = new BlockOrder(block, "path", "foop", null);
-        assertThat(bo.getPath()).withFailMessage("OPath").isEqualTo(p);
-        assertThat(bo.getEntryPortal()).withFailMessage("Entry portal").isEqualTo(portal);
-        assertThat(bo.getExitPortal()).withFailMessage("Exit portal").isNull();
-        assertThat(bo.getSignal()).withFailMessage("signal").isEqualTo(sh);
-        assertThat(bo.getPermissibleEntranceSpeed()).withFailMessage("Entrance speedType").isEqualTo("Medium");
-        assertThat(bo.getEntranceSpace()).isEqualTo(20.0f);
+        Assert.assertEquals("OPath", p, bo.getPath());
+        Assert.assertEquals("Entry portal", portal, bo.getEntryPortal());
+        Assert.assertNull("Exit portal", bo.getExitPortal());
+        Assert.assertEquals("signal", sh, bo.getSignal());
+        Assert.assertEquals("Entrance speedType", "Medium", bo.getPermissibleEntranceSpeed());
+        Assert.assertEquals(20, bo.getEntranceSpace(), 0);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();        _blkMgr = new OBlockManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

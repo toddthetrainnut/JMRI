@@ -124,7 +124,7 @@ public class SignalMastRepeater {
 
     void updateStatus(@Nonnull SignalMast mastFrom, @Nonnull SignalMast mastTo) {
         if (log.isDebugEnabled()) {
-            log.debug("Updating from mast {}:{} to mast {}", mastFrom.getDisplayName(), mastFrom.getAspect(), mastTo.getDisplayName());
+            log.debug("Updating from mast " + mastFrom.getDisplayName() + ":" + mastFrom.getAspect() + " to mast " + mastTo.getDisplayName());
         }
         if (mastFrom.getAspect() != null) {
             mastTo.setAspect(mastFrom.getAspect());

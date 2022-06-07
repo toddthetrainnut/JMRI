@@ -1,6 +1,5 @@
 package jmri.jmrit.jython;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.FileReader;
 import javax.script.ScriptEngine;
@@ -20,22 +19,20 @@ public class JynstrumentFactory {
 
     private static final String instanceName = "jynstrumentObjectInstance";
 
-    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Should crash if missing ScriptEngine dependencies are not present")
     public static Jynstrument createInstrument(String path, Object context) {
         String className = validate(path);
         if (className == null) {
             // Try containing directory
             File f = new File(path);
-            String parentPath = f.getParent();
-            className = validate(parentPath);
+            path = f.getParent();
+            className = validate(path);
             if (className == null) {
-                log.error("Invalid Jynstrument, neither {} or {} are usable", path, parentPath);
+                log.error("Invalid instrument");
                 return null;
             }
-            path = parentPath;
         }
         String jyFile = path + File.separator + className + ".py";
-        ScriptEngine engine = JmriScriptEngineManager.getDefault().getEngine(JmriScriptEngineManager.JYTHON);
+        ScriptEngine engine = JmriScriptEngineManager.getDefault().getEngine(JmriScriptEngineManager.PYTHON);
         Jynstrument jyns;
         try {
             FileReader fr = new FileReader(jyFile);
@@ -48,13 +45,13 @@ public class JynstrumentFactory {
                 fr.close();
             }
         } catch (java.io.IOException | javax.script.ScriptException ex) {
-            log.error("Exception while creating Jynstrument", ex);
+            log.error("Exception while creating Jynstrument: " + ex);
             return null;
         }
         jyns.setClassName(className);
         jyns.setContext(context);
         if (!jyns.validateContext()) {  // check validity of this Jynstrument for that extended context
-            log.error("Invalid context for Jynstrument, host is {} and {} kind of host is expected", context.getClass(), jyns.getExpectedContextClassName());
+            log.error("Invalid context for Jynstrument, host is " + context.getClass() + " and " + jyns.getExpectedContextClassName() + " kind of host is expected");
             return null;
         }
         jyns.setJythonFile(jyFile);
@@ -67,15 +64,11 @@ public class JynstrumentFactory {
     // validate Jynstrument path, return className
     private static String validate(String path) {
         if (path == null) {
-            log.error("Path is null");
             return null;
         }
         if (path.length() - 4 < 0) {
-            log.error("File name too short (should at least end with .jyn) (got {})", path);
+            log.error("File name too short");
             return null;
-        }
-        if (path.endsWith(File.separator)) {
-            path = path.substring(0, path.length()-File.separator.length());
         }
         File f = new File(path);
 
@@ -84,8 +77,8 @@ public class JynstrumentFactory {
             log.debug("Not a directory, trying parent");
             return null;
         }
-        if (! path.toLowerCase().endsWith(".jyn")) {
-            log.debug("Not an instrument (folder name not ending with .jyn) (got {})", path);
+        if (path.substring(path.length() - 4).compareToIgnoreCase(".jyn") != 0) {
+            log.debug("Not an instrument");
             return null;
         }
 
@@ -96,22 +89,15 @@ public class JynstrumentFactory {
             log.error("Didn't find any files in {}", f);
             return className;
         }
-
+        
         String assumedClassName = f.getName().substring(0, f.getName().length() - 4);
-        // Try to find best candidate
-        for (String c : children) {
-            if ((c).compareToIgnoreCase(assumedClassName + ".py") == 0) {
+        for (int i = 0; i < children.length; i++) {
+            if ((children[i]).compareToIgnoreCase(assumedClassName + ".py") == 0) {
                 return assumedClassName; // got exact match for folder name
+            } else if (children[i].substring(children[i].length() - 3).compareToIgnoreCase(".py") == 0) {
+                className = children[i].substring(0, children[i].length() - 3); // else take whatever comes
             }
         }
-        // If not, use first python file we can find
-        log.warn("Coulnd't find best candidate ({}), reverting to first one", assumedClassName + ".py");
-        for (String c : children) {
-            if (c.substring(c.length() - 3).compareToIgnoreCase(".py") == 0) {
-                className = c.substring(0, c.length() - 3); // else take whatever comes
-            }
-        }
-        log.warn("Using {}", className);
         return className;
     }
 

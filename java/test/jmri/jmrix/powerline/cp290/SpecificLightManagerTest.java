@@ -1,9 +1,10 @@
 package jmri.jmrix.powerline.cp290;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for SpecificLightManager class.
@@ -20,7 +21,7 @@ public class SpecificLightManagerTest {
       Assert.assertNotNull("SpecificLightManager constructor",new SpecificLightManager(new SpecificTrafficController(memo)));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
@@ -28,11 +29,9 @@ public class SpecificLightManagerTest {
         memo = new SpecificSystemConnectionMemo();
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
         memo = null;
    }
 

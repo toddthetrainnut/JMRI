@@ -1,41 +1,31 @@
 package jmri.jmrix.dccpp.swing;
 
-import jmri.jmrix.dccpp.DCCppSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import java.awt.GraphicsEnvironment;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ConfigBaseStationActionTest {
 
-    private DCCppSystemConnectionMemo _memo;
-
     @Test
     public void testCTor() {
-        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        ConfigBaseStationFrame action = new ConfigBaseStationFrame(_memo);
-        Assert.assertNotNull("exists", action);
+        ConfigBaseStationAction t = new ConfigBaseStationAction("Test","Test");
+        Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        jmri.jmrix.dccpp.DCCppInterfaceScaffold t = new jmri.jmrix.dccpp.DCCppInterfaceScaffold(new jmri.jmrix.dccpp.DCCppCommandStation());
-        _memo = new jmri.jmrix.dccpp.DCCppSystemConnectionMemo(t);
-
-        jmri.InstanceManager.store(_memo, jmri.jmrix.dccpp.DCCppSystemConnectionMemo.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly         
         JUnitUtil.tearDown();
     }
 

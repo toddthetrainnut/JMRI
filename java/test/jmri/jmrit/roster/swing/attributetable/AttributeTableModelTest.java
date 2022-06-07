@@ -1,17 +1,19 @@
 package jmri.jmrit.roster.swing.attributetable;
 
+import jmri.InstanceManager;
 import jmri.jmrit.roster.Roster;
 import jmri.jmrit.roster.RosterEntry;
 import jmri.util.JUnitUtil;
-
 import org.jdom2.Element;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the roster.swing.attributetable.AttributeTableModel class.
  *
- * @author Bob Jacobsen Copyright (C) 2009
+ * @author	Bob Jacobsen Copyright (C) 2009
  */
 public class AttributeTableModelTest {
 
@@ -58,12 +60,15 @@ public class AttributeTableModelTest {
     static int NENTRIES = 3;
     static int NKEYS = 4;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
+
+        // Create empty test instance
+        InstanceManager.reset(Roster.class);
+        InstanceManager.setDefault(Roster.class, new Roster());
 
         // first entry
         Element e;
@@ -149,7 +154,7 @@ public class AttributeTableModelTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,72 +1,72 @@
 package jmri.jmrix.jmriclient;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * JMRIClientSystemConnectionMemoTest.java
- * <p>
- * Test for the jmri.jmrix.jmriclient.JMRIClientSystemConnectionMemo class
  *
- * @author Bob Jacobsen
+ * Description:	tests for the
+ * jmri.jmrix.jmriclient.JMRIClientSystemConnectionMemo class
+ *
+ * @author	Bob Jacobsen
  */
-public class JMRIClientSystemConnectionMemoTest extends SystemConnectionMemoTestBase<JMRIClientSystemConnectionMemo> {
+public class JMRIClientSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
+
+    private JMRIClientTrafficControlScaffold jcins;
+    private JMRIClientSystemConnectionMemo memo;
 
     @Override
     @Test
-    public void testProvidesConsistManager() {
-        Assert.assertFalse("Provides ConsistManager", scm.provides(jmri.ConsistManager.class));
+    public void testProvidesConsistManager(){
+       Assert.assertFalse("Provides ConsistManager",scm.provides(jmri.ConsistManager.class));
     }
 
     @Test
-    public void testDefaultCtor() {
-        JMRIClientSystemConnectionMemo memo = new JMRIClientSystemConnectionMemo();
-        Assert.assertNotNull("Default Ctor", memo);
-        memo.getJMRIClientTrafficController().terminateThreads();
-        memo.dispose();
+    public void testDefaultCtor(){
+       Assert.assertNotNull("Default Ctor",new JMRIClientSystemConnectionMemo());
     }
 
     @Test
-    public void testSetTrafficController() {
-        // cleanup traffic controller from setup
-        scm.getJMRIClientTrafficController().terminateThreads();
-        JMRIClientTrafficControlScaffold jcins = new JMRIClientTrafficControlScaffold();
-        scm.setJMRIClientTrafficController(jcins);
-        Assert.assertEquals("scm after set", jcins, scm.getJMRIClientTrafficController());
+    public void testSetTrafficController(){
+        jcins = new JMRIClientTrafficControlScaffold();
+        memo.setJMRIClientTrafficController(jcins);
+        Assert.assertEquals("memo after set",jcins,memo.getJMRIClientTrafficController());
     }
 
     @Test
-    public void testConfigureManagers() {
-        scm.configureManagers();
-        Assert.assertNotNull("Power Manager set", scm.getPowerManager());
-        Assert.assertNotNull("Turnout Manager set", scm.getTurnoutManager());
-        Assert.assertNotNull("Sensor Manager set", scm.getSensorManager());
-        Assert.assertNotNull("Light Manager set", scm.getLightManager());
-        Assert.assertNotNull("Reporter Manager set", scm.getReporterManager());
+    public void testConfigureManagers(){
+        memo.configureManagers();
+        Assert.assertNotNull("Power Manager set",memo.getPowerManager());
+        Assert.assertNotNull("Turnout Manager set",memo.getTurnoutManager());
+        Assert.assertNotNull("Sensor Manager set",memo.getSensorManager());
+        Assert.assertNotNull("Light Manager set",memo.getLightManager());
+        Assert.assertNotNull("Reporter Manager set",memo.getReporterManager());
     }
 
     @Test
     public void testGetAndSetTransmitPrefix() {
-        Assert.assertEquals("default transmit prefix", scm.getSystemPrefix(), scm.getTransmitPrefix());
-        scm.setTransmitPrefix("F1");
-        Assert.assertEquals("Transmit Prefix", "F1", scm.getTransmitPrefix());
+       Assert.assertEquals("default transmit prefix",memo.getSystemPrefix(),memo.getTransmitPrefix());
+       memo.setTransmitPrefix("F1");
+       Assert.assertEquals("Transmit Prefix","F1",memo.getTransmitPrefix());
     }
 
+
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        scm = new JMRIClientSystemConnectionMemo(new JMRIClientTrafficControlScaffold());
+        jcins = new JMRIClientTrafficControlScaffold();
+        scm = memo = new JMRIClientSystemConnectionMemo(jcins);
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
-        scm.getJMRIClientTrafficController().terminateThreads();
-        scm.dispose();
         JUnitUtil.tearDown();
     }
 

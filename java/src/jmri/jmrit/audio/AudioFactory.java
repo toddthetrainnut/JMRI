@@ -44,12 +44,6 @@ public interface AudioFactory {
     public void cleanup();
 
     /**
-     * Determine if this AudioFactory is initialised
-     * @return true if initialised
-     */
-    public boolean isInitialised();
-
-    /**
      * Provide a specific new AudioBuffer object.
      *
      * @param systemName for this object instance

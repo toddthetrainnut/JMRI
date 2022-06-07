@@ -1,9 +1,7 @@
 package jmri.jmrit.display;
 
 import java.awt.GraphicsEnvironment;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Test simple functioning of LightIcon
@@ -18,8 +16,7 @@ public class LightIconTest extends PositionableTestBase {
         Assert.assertNotNull("LightIcon Constructor", p);
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         super.setUp();
         if (!GraphicsEnvironment.isHeadless()) {
@@ -28,8 +25,7 @@ public class LightIconTest extends PositionableTestBase {
         }
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         super.tearDown();
     }

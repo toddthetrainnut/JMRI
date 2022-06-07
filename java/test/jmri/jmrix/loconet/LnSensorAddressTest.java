@@ -1,16 +1,17 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Tests for the jmri.jmrix.loconet.LnSensorAddress class.
  *
- * @author Bob Jacobsen Copyright 2001, 2002
+ * @author	Bob Jacobsen Copyright 2001, 2002
  */
 public class LnSensorAddressTest {
 
@@ -93,19 +94,21 @@ public class LnSensorAddressTest {
         LnSensorAddress a;
 
         a = new LnSensorAddress(0x15, 0x60, "L"); // LS044
-        log.debug("0x15, 0x60 shows as {} {} {}", a.getNumericAddress(), a.getDS54Address(), a.getBDL16Address());
+        log.debug("0x15, 0x60 shows as " + a.getNumericAddress() + " "
+                + a.getDS54Address() + " " + a.getBDL16Address());
         Assert.assertTrue(a.getNumericAddress().equals("LS44"));
         Assert.assertTrue(a.getDS54Address().equals("LS21A"));
         Assert.assertTrue(a.getBDL16Address().equals("LS2C3"));
 
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

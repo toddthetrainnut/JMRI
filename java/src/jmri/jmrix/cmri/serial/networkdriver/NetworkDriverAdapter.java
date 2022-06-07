@@ -26,13 +26,10 @@ public class NetworkDriverAdapter extends SerialNetworkPortAdapter {
     public void configure() {
         // connect to the traffic controller
         SerialTrafficController tc = new SerialTrafficController();
-        getSystemConnectionMemo().setTrafficController(tc);
-
         tc.connectPort(this);
+        getSystemConnectionMemo().setTrafficController(tc);
 
         getSystemConnectionMemo().configureManagers();
     }
-
-    // private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(NetworkDriverAdapter.class);
 
 }

@@ -4,7 +4,8 @@ import java.beans.PropertyChangeListener;
 import jmri.JmriException;
 import jmri.PowerManager;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Abstract base class for PowerManager tests in specific jmrix. packages.
@@ -13,13 +14,13 @@ import org.junit.jupiter.api.*;
  * Instead, this forms the base for test classes, including providing some
  * common tests.
  *
- * @author Bob Jacobsen Copyright 2007
- * @author Bob Jacobsen Copyright (C) 2017
+ * @author	Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright (C) 2017
  */
 public abstract class AbstractPowerManagerTestBase {
 
     // required setup routine, must set p to an appropriate value.
-    @BeforeEach
+    @Before
     abstract public void setUp();
 
     // service routines to simulate receiving on, off from interface
@@ -29,9 +30,9 @@ public abstract class AbstractPowerManagerTestBase {
 
     protected abstract void hearIdle();
 
-    protected abstract void sendOnReply();  // get a reply to On command from layout
+    protected abstract void sendOnReply();	  // get a reply to On command from layout
 
-    protected abstract void sendOffReply(); // get a reply to Off command from layout
+    protected abstract void sendOffReply();   // get a reply to Off command from layout
     
     protected abstract void sendIdleReply();
 
@@ -45,7 +46,7 @@ public abstract class AbstractPowerManagerTestBase {
 
     protected abstract boolean outboundIdleOK(int index);
 
-    protected PowerManager p = null; // holds objects under test
+    protected PowerManager p = null;	// holds objects under test
 
     static protected boolean listenerResult = false;
 

@@ -15,7 +15,7 @@ public class OpenLcbComponentFactory extends jmri.jmrix.swing.ComponentFactory {
         this.memo = memo;
     }
 
-    final CanSystemConnectionMemo memo;
+    CanSystemConnectionMemo memo;
 
     /**
      * Provide a menu with all items attached to this system connection

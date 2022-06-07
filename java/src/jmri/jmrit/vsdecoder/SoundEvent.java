@@ -1,5 +1,21 @@
 package jmri.jmrit.vsdecoder;
 
+/*
+ * <hr>
+ * This file is part of JMRI.
+ * <p>
+ * JMRI is free software; you can redistribute it and/or modify it under 
+ * the terms of version 2 of the GNU General Public License as published 
+ * by the Free Software Foundation. See the "COPYING" file for a copy
+ * of this license.
+ * <p>
+ * JMRI is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
+ * for more details.
+ *
+ * @author   Mark Underwood Copyright (C) 2011
+ */
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -10,24 +26,6 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Process Sound Events.
- *
- * <hr>
- * This file is part of JMRI.
- * <p>
- * JMRI is free software; you can redistribute it and/or modify it under
- * the terms of version 2 of the GNU General Public License as published
- * by the Free Software Foundation. See the "COPYING" file for a copy
- * of this license.
- * <p>
- * JMRI is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
- *
- * @author Mark Underwood Copyright (C) 2011
- */
 public class SoundEvent implements PropertyChangeListener {
 
     public enum ButtonType {
@@ -65,8 +63,8 @@ public class SoundEvent implements PropertyChangeListener {
     public SoundEvent(String n, String bl) {
         name = n;
         button_label = bl;
-        trigger_list = new HashMap<>();
-        button_trigger_list = new HashMap<>();
+        trigger_list = new HashMap<String, Trigger>();
+        button_trigger_list = new HashMap<String, ButtonTrigger>();
         button = null;
     }
 
@@ -75,7 +73,7 @@ public class SoundEvent implements PropertyChangeListener {
     }
 
     public String getName() {
-        return name;
+        return (name);
     }
 
     public void setEventName(String n) {
@@ -83,26 +81,26 @@ public class SoundEvent implements PropertyChangeListener {
     }
 
     public String getEventName() {
-        return event_name;
+        return (event_name);
     }
 
     public ButtonType getButtonType() {
-        return buttontype;
+        return (buttontype);
     }
 
     public boolean hasButton() {
         if ((buttontype == ButtonType.NONE) || (buttontype == ButtonType.ENGINE) || (button == null)) {
-            return false;
+            return (false);
         } else {
-            return true;
+            return (true);
         }
     }
 
     public boolean hasEnginePane() {
         if ((buttontype == ButtonType.ENGINE) && (engine_pane != null)) {
-            return true;
+            return (true);
         } else {
-            return false;
+            return (false);
         }
     }
 
@@ -112,17 +110,17 @@ public class SoundEvent implements PropertyChangeListener {
 
     public JComponent getButton() {
         if ((buttontype == ButtonType.NONE) || (buttontype == ButtonType.ENGINE)) {
-            return null;
+            return (null);
         } else {
-            return button;
+            return (button);
         }
     }
 
     public EnginePane getEnginePane() {
         if (buttontype == ButtonType.ENGINE) {
-            return engine_pane;
+            return (engine_pane);
         } else {
-            return null;
+            return (null);
         }
     }
 
@@ -135,7 +133,7 @@ public class SoundEvent implements PropertyChangeListener {
     }
 
     public String getButtonLabel() {
-        return button.getText();
+        return (button.getText());
     }
 
     public void addTrigger(String s, Trigger t) {
@@ -151,7 +149,7 @@ public class SoundEvent implements PropertyChangeListener {
     }
 
     public VSDSound getSound() {
-        return my_sound;
+        return (my_sound);
     }
 
     public void setParent(VSDecoder v) {
@@ -189,9 +187,9 @@ public class SoundEvent implements PropertyChangeListener {
          this.getButton().addMouseListener(bt);
          // Just send the trigger a click.
          }
-         return bt; // cast OK since we just instantiated it up above.
+         return(bt);  // cast OK since we just instantiated it up above.
          */
-        return null; // cast OK since we just instantiated it up above.
+        return (null);  // cast OK since we just instantiated it up above.
     }
 
     public Element getXml() {
@@ -202,7 +200,7 @@ public class SoundEvent implements PropertyChangeListener {
             me.addContent(t.getXml());
         }
 
-        return me;
+        return (me);
     }
 
     public void setXml(Element el) {
@@ -249,12 +247,12 @@ public class SoundEvent implements PropertyChangeListener {
                 break;
         }
 
-        log.debug("Building trigger {}", t.getName());
+        log.debug("Building trigger " + t.getName());
         t.setXml(te);
         trigger_list.put(te.getAttributeValue("name"), t);
-        //log.debug("target name: {}, sound: {}", t.getTargetName(), parent.getSound(t.getTargetName()));
+        //log.debug("target name " + t.getTargetName() + " sound " + parent.getSound(t.getTargetName()));
         t.setTarget(parent.getSound(t.getTargetName()));
-        //log.debug("target: {}", t.getTarget());
+        //log.debug("target " + t.getTarget());
 
         if (t.getTarget() == null) {
             // If the target is missing, set up a do-nothing operation.
@@ -318,7 +316,7 @@ public class SoundEvent implements PropertyChangeListener {
                 break;
             case NOTCH:
                 //log.debug("NOTCH");
-                log.debug("making callback t {} target {}", t, t.getTarget());
+                log.debug("making callback t " + t + " target " + t.getTarget());
                 t.setCallback(new TriggerListener() {
                     @Override
                     public void takeAction(int i) {
@@ -337,7 +335,7 @@ public class SoundEvent implements PropertyChangeListener {
                 break;
             case CHANGE:
                 //log.debug("CHANGE");
-                log.debug("making callback t {} target {}", t, t.getTarget());
+                log.debug("making callback t " + t + " target " + t.getTarget());
                 t.setCallback(new TriggerListener() {
                     @Override
                     public void takeAction() {
@@ -355,7 +353,6 @@ public class SoundEvent implements PropertyChangeListener {
                 });
                 break;
             case NOTHING:
-            case STOP_AT_ZERO:
                 // Used for when the target sound is missing.
                 //log.debug("NOTHING");
                 t.setCallback(new TriggerListener() {

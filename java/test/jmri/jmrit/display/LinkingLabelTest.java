@@ -6,11 +6,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import jmri.InstanceManager;
 import jmri.jmrit.catalog.NamedIcon;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
+ * LinkingLabelTest.java
+ * <p>
+ * Description:
  *
  * @author Bob Jacobsen
  */
@@ -20,7 +21,7 @@ public class LinkingLabelTest extends PositionableTestBase {
 
     @Override
     @Test
-    public void testShow() throws Positionable.DuplicateIdException {
+    public void testShow() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         JFrame jf = new jmri.util.JmriJFrame("LinkingLabel Target Panel");
@@ -42,7 +43,7 @@ public class LinkingLabelTest extends PositionableTestBase {
         to.setDisplayLevel(jmri.jmrit.display.Editor.LABELS);
         editor.putItem(to);
 
-        InstanceManager.getDefault(EditorManager.class).add(editor);
+        InstanceManager.getDefault(PanelMenu.class).addEditorPanel(editor);
         editor.setLocation(150, 150);
 
         editor.setTitle();
@@ -66,8 +67,8 @@ public class LinkingLabelTest extends PositionableTestBase {
         Assert.assertEquals("URL after set", "bar", l.getURL());
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         super.setUp();
         if (!GraphicsEnvironment.isHeadless()) {
@@ -79,7 +80,7 @@ public class LinkingLabelTest extends PositionableTestBase {
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         to = null;
         super.tearDown();

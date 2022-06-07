@@ -1,8 +1,6 @@
 package apps.startup;
 
-import jmri.util.startup.StartupModelFactory;
-import jmri.util.startup.StartupModel;
-import jmri.util.startup.StartupActionsManager;
+import apps.StartupActionsManager;
 import java.awt.Component;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -14,7 +12,7 @@ import jmri.InstanceManager;
 
 /**
  *
- * @author Randall Wood
+ * @author rhwood
  */
 class StartupModelCellEditor extends DefaultCellEditor {
 

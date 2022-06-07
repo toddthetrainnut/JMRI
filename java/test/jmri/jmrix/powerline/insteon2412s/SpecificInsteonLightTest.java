@@ -1,9 +1,10 @@
 package jmri.jmrix.powerline.insteon2412s;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for SpecificLight class.
@@ -20,7 +21,7 @@ public class SpecificInsteonLightTest {
       Assert.assertNotNull("SpecificLight constructor",new SpecificInsteonLight("PLA2",tc));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
@@ -32,11 +33,9 @@ public class SpecificInsteonLightTest {
         memo.setSerialAddress(new jmri.jmrix.powerline.SerialAddress(memo));
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
         tc = null;
    }
 

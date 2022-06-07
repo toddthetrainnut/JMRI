@@ -1,17 +1,32 @@
 package jmri.jmrix.can.cbus;
 
 import jmri.jmrix.can.CanSystemConnectionMemo;
+import jmri.jmrix.can.CanMessage;
+import jmri.jmrix.can.cbus.CbusConstants;
+import jmri.jmrix.can.cbus.CbusMessage;
+import jmri.jmrix.can.TrafficController;
 
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
 
-public class CbusEvent extends CbusEventDataElements {
+public class CbusEvent {
     
     private int _nn;
     private int _en;
     protected EvState _state;
     protected String _name;
-    private final CanSystemConnectionMemo _memo;
+    
+    /**
+     * Enum of the event state.
+     * <p>
+     * Events generally have on, off or unknown status.
+     * <p>
+     * They can also be asked to request their current status via the network,
+     * or toggled to the opposite state that it is currently at.
+     */
+    public enum EvState{
+        ON, OFF, UNKNOWN, REQUEST, TOGGLE;
+    }
     
     /**
      * Create a new event
@@ -22,30 +37,10 @@ public class CbusEvent extends CbusEventDataElements {
      * @param en Event Number
      */
     public CbusEvent( int nn, int en){
-        super();
         this._nn = nn;
         this._en = en;
         this._state = EvState.UNKNOWN;
         this._name = "";
-        this._memo = null;
-    }
-    
-    /**
-     * Create a new event by Connection
-     * <p>
-     * New events have an unknown on or off status
-     *
-     * @param memo System Connection
-     * @param nn Node Number
-     * @param en Event Number
-     */
-    public CbusEvent( CanSystemConnectionMemo memo, int nn, int en){
-        super();
-        this._nn = nn;
-        this._en = en;
-        this._state = EvState.UNKNOWN;
-        this._name = "";
-        this._memo = memo;
     }
 
     /**
@@ -132,7 +127,7 @@ public class CbusEvent extends CbusEventDataElements {
      * @return Node Name
      */
     public String getNodeName() {
-        return new CbusNameService(_memo).getNodeName( getNn() );
+        return new CbusNameService().getNodeName( getNn() );
     }
     
     /**
@@ -144,23 +139,10 @@ public class CbusEvent extends CbusEventDataElements {
      * @return true on match, else false
      */
     public boolean matches(int nn, int en) {
-        return (nn == _nn) && (en == _en);
-    }
-    
-    /** 
-     * {@inheritDoc} 
-     * <p>
-     * Custom method to compare Node Number and Event Number.
-     */
-    @Override
-    public boolean equals(Object o) {
-        return ((o instanceof CbusEvent) && matches(((CbusEvent) o).getNn(),((CbusEvent) o).getEn()));
-    }
-    
-    /** {@inheritDoc} */
-    @Override
-    public int hashCode() {
-        return java.util.Objects.hash(getEn(), getNn());
+        if ( (nn == _nn) && (en == _en) ) {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -202,12 +184,8 @@ public class CbusEvent extends CbusEventDataElements {
      * @param state The enum state requested to be sent, ie ON, OFF, REQUEST, TOGGLE
      */
     public void sendEvent(EvState state) {
-        CanSystemConnectionMemo memo;
-        if (_memo==null) {
-            memo = jmri.InstanceManager.getDefault(CanSystemConnectionMemo.class);
-        } else {
-            memo = _memo;
-        }
+        CanSystemConnectionMemo memo = jmri.InstanceManager.getDefault(CanSystemConnectionMemo.class);
+        TrafficController _tc = memo.getTrafficController();
         if ( state == EvState.TOGGLE ) {
             if ( _state == EvState.OFF )  {
                 state =EvState.ON;
@@ -217,10 +195,33 @@ public class CbusEvent extends CbusEventDataElements {
             }
         }
         _state = state;
-        
-        jmri.util.ThreadingUtil.runOnLayout( () -> {
-            memo.getTrafficController().sendCanMessage(getCanMessage(memo.getTrafficController().getCanid(),_nn,_en,_state), null);
-        } );
+        CanMessage m = new CanMessage(_tc.getCanid());
+        CbusMessage.setPri(m, CbusConstants.DEFAULT_DYNAMIC_PRIORITY * 4 + CbusConstants.DEFAULT_MINOR_PRIORITY);
+        m.setNumDataElements(5);
+        if (state==EvState.ON) {
+            if (_nn > 0) {
+                m.setElement(0, CbusConstants.CBUS_ACON);
+            } else {
+                m.setElement(0, CbusConstants.CBUS_ASON);
+            }
+        } else if (state==EvState.OFF) {
+            if (_nn > 0) {
+                m.setElement(0, CbusConstants.CBUS_ACOF);
+            } else {
+                m.setElement(0, CbusConstants.CBUS_ASOF);
+            }
+        } else if (state==EvState.REQUEST) {
+            if (_nn > 0) {
+                m.setElement(0, CbusConstants.CBUS_AREQ);
+            } else {
+                m.setElement(0, CbusConstants.CBUS_ASRQ);
+            }
+        }
+        m.setElement(1, _nn >> 8);
+        m.setElement(2, _nn & 0xff);
+        m.setElement(3, _en >> 8);
+        m.setElement(4, _en & 0xff);
+        jmri.util.ThreadingUtil.runOnLayout( () -> { _tc.sendCanMessage(m, null); } );
     }
     
     /**
@@ -232,16 +233,22 @@ public class CbusEvent extends CbusEventDataElements {
     public String toString() {
         StringBuilder addevbuf = new StringBuilder(50);
         if ( _nn > 0 ) {
-            addevbuf.append (Bundle.getMessage("OPC_NN")).append (":");
-            addevbuf.append (_nn).append (" ");
+            addevbuf.append (Bundle.getMessage("OPC_NN"));
+            addevbuf.append (":");
+            addevbuf.append (_nn);
+            addevbuf.append (" ");
             if ( !getNodeName().isEmpty() ) {
-                addevbuf.append (getNodeName()).append (" ");
+                addevbuf.append ( getNodeName() );
+                addevbuf.append (" ");
             }
         }
-        addevbuf.append (Bundle.getMessage("OPC_EN")).append (":");
-        addevbuf.append (_en).append (" ");
+        addevbuf.append (Bundle.getMessage("OPC_EN"));
+        addevbuf.append (":");
+        addevbuf.append (_en);
+        addevbuf.append (" ");
         if ( !getName().isEmpty() ) {
-            addevbuf.append ( getName() ).append (" ");
+            addevbuf.append ( getName() );
+            addevbuf.append (" ");
         }
         return addevbuf.toString();
     }

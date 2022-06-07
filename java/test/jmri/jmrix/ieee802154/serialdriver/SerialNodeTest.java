@@ -1,18 +1,19 @@
 package jmri.jmrix.ieee802154.serialdriver;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
  * SerialNodeTest.java
  *
- * Test for the jmri.jmrix.ieee802154.serialdriver.SerialNode
+ * Description:	tests for the jmri.jmrix.ieee802154.serialdriver.SerialNode
  * class
  *
- * @author Paul Bender
+ * @author	Paul Bender
  */
 public class SerialNodeTest {
 
@@ -70,12 +71,13 @@ public class SerialNodeTest {
 
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,9 +1,10 @@
 package jmri.jmrix;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for AbstractMRNodeTrafficController.
@@ -22,7 +23,7 @@ public class AbstractMRNodeTrafficControllerTest extends AbstractMRTrafficContro
         Assert.assertEquals("NumNodes at start",0,((AbstractMRNodeTrafficController)tc).getNumNodes());
     }
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp(); 
@@ -48,13 +49,11 @@ public class AbstractMRNodeTrafficControllerTest extends AbstractMRTrafficContro
         };
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown(){
        tc = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
- 
+        JUnitUtil.tearDown(); 
     }
 
 }

@@ -3,14 +3,12 @@ package jmri.jmrit.display;
 import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
- * Test simple functioning of IconAdder.
+ * Test simple functioning of IconAdder
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class IconAdderTest {
 
@@ -82,16 +80,17 @@ public class IconAdderTest {
         parentFrame.dispose();
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
         jmri.InstanceManager.store(new jmri.jmrit.catalog.DefaultCatalogTreeManager(), jmri.CatalogTreeManager.class);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }
+
 
 }

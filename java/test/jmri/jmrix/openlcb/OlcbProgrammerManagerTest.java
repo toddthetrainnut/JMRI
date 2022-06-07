@@ -1,14 +1,15 @@
 package jmri.jmrix.openlcb;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * OlcbProgrammerManagerTest.java
  *
- * Test for the jmri.jmrix.openlcb.OlcbProgrammerManager class
+ * Description: tests for the jmri.jmrix.openlcb.OlcbProgrammerManager class
  *
  * @author Bob Jacobsen
  */
@@ -21,12 +22,12 @@ public class OlcbProgrammerManagerTest {
         Assert.assertNotNull(s);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

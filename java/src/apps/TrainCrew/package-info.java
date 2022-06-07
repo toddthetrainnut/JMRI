@@ -6,6 +6,4 @@
  * and
  * <a href="https://github.com/ekapus/TrainCrew">https://github.com/ekapus/TrainCrew</a>.
  */
-// include empty DefaultAnnotation to avoid excessive recompilation
-@edu.umd.cs.findbugs.annotations.DefaultAnnotation(value={})
 package apps.TrainCrew;

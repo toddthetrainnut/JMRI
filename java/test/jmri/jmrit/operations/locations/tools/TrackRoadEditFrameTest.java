@@ -1,11 +1,6 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.Test;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.locations.Location;
@@ -15,6 +10,9 @@ import jmri.jmrit.operations.rollingstock.cars.CarRoads;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
@@ -38,7 +36,6 @@ public class TrackRoadEditFrameTest extends OperationsTestCase {
         Assert.assertTrue(t.isVisible());
 
         JUnitUtil.dispose(t);
-
     }
 
     @Test
@@ -59,26 +56,25 @@ public class TrackRoadEditFrameTest extends OperationsTestCase {
         Assert.assertTrue(tlef.isVisible());
 
         JemmyUtil.enterClickAndLeave(tlef.roadNameInclude);
-        JemmyUtil.enterClickAndLeaveThreadSafe(tlef.saveTrackButton);
+        JemmyUtil.enterClickAndLeave(tlef.saveTrackButton);
+
         // error dialog window show appear
         JemmyUtil.pressDialogButton(tlef, Bundle.getMessage("ErrorNoRoads"), Bundle.getMessage("ButtonOK"));
-        JemmyUtil.waitFor(tlef);
-        
+
         // only road "AA" is to be accepted
         JemmyUtil.enterClickAndLeave(tlef.addRoadButton);
         JemmyUtil.enterClickAndLeave(tlef.saveTrackButton);
 
-        Assert.assertTrue(track.isRoadNameAccepted("AA"));
+        Assert.assertTrue(track.acceptsRoadName("AA"));
 
         for (String roadName : InstanceManager.getDefault(CarRoads.class).getNames()) {
             if (roadName.equals("AA")) {
                 continue; // the only road name accepted by this track
             }
-            Assert.assertFalse("confirm road name not accepted", track.isRoadNameAccepted(roadName));
+            Assert.assertFalse("confirm road name not accepted", track.acceptsRoadName(roadName));
         }
 
         JUnitUtil.dispose(tlef);
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(TrackRoadEditFrameTest.class);

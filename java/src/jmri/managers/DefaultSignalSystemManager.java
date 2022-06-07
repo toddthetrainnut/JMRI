@@ -7,18 +7,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import jmri.NamedBean;
 import jmri.SignalSystem;
 import jmri.SignalSystemManager;
 import jmri.implementation.DefaultSignalSystem;
 import jmri.jmrit.XmlFile;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.util.FileUtil;
-
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.slf4j.Logger;
@@ -36,8 +30,8 @@ import org.slf4j.LoggerFactory;
 public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
         implements SignalSystemManager {
 
-    public DefaultSignalSystemManager(InternalSystemConnectionMemo memo) {
-        super(memo);
+    public DefaultSignalSystemManager() {
+        super();
 
         // load when created, which will generally
         // be the first time referenced
@@ -57,39 +51,49 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
     }
 
     @Override
+    public String getSystemPrefix() {
+        return "I";
+    }
+
+    @Override
     public char typeLetter() {
         return 'F';
     }
 
-    /**
-     * {@inheritDoc}
-     * @param name to search, by UserName then SystemName.
-     */
-    @CheckForNull
     @Override
     public SignalSystem getSystem(String name) {
         SignalSystem t = getByUserName(name);
-        return ( t!=null ? t : getBySystemName(name));
+        if (t != null) {
+            return t;
+        }
+
+        return getBySystemName(name);
     }
 
-    final void load() {
+    @Override
+    public SignalSystem getBySystemName(String key) {
+        return _tsys.get(key);
+    }
+
+    @Override
+    public SignalSystem getByUserName(String key) {
+        return _tuser.get(key);
+    }
+
+    void load() {
         List<String> list = getListOfNames();
         for (int i = 0; i < list.size(); i++) {
-            try {
-                SignalSystem s = makeBean(list.get(i));
-                register(s);
-            }
-            catch (IllegalArgumentException ex){} // error already logged
+            SignalSystem s = makeBean(list.get(i));
+            register(s);
         }
     }
 
-    @Nonnull
-    protected List<String> getListOfNames() {
-        List<String> retval = new ArrayList<>();
+    List<String> getListOfNames() {
+        List<String> retval = new ArrayList<String>();
         // first locate the signal system directory
         // and get names of systems
         File signalDir = null;
-        // First get the default pre-configured signalling systems
+        //First get the default pre-configured signalling systems
         try {
             signalDir = new File(FileUtil.findURL("xml/signals", FileUtil.Location.INSTALLED).toURI());
         } catch (URISyntaxException | NullPointerException ex) {
@@ -103,14 +107,14 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
                         // check that there's an aspects.xml file
                         File aspects = new File(file.getPath() + File.separator + "aspects.xml");
                         if (aspects.exists()) {
-                            log.debug("found system: {}", file.getName());
+                            log.debug("found system: " + file.getName());
                             retval.add(file.getName());
                         }
                     }
                 }
             }
         }
-        // Now get the user defined systems.
+        //Now get the user defined systems.
         try {
             URL dir = FileUtil.findURL("signals", FileUtil.Location.USER, "resources", "xml");
             if (dir == null) {
@@ -134,9 +138,8 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
                     if (file.isDirectory()) {
                         // check that there's an aspects.xml file
                         File aspects = new File(file.getPath() + File.separator + "aspects.xml");
-                        log.trace("checking for {}", aspects);
                         if ((aspects.exists()) && (!retval.contains(file.getName()))) {
-                            log.debug("found user system: {}", file.getName());
+                            log.debug("found system: " + file.getName());
                             retval.add(file.getName());
                         }
                     }
@@ -146,29 +149,39 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
         return retval;
     }
 
-    @Nonnull
-    protected SignalSystem makeBean(String name) throws IllegalArgumentException {
+    SignalSystem makeBean(String name) {
 
-        URL path;
-        XmlFile xf;
-
-        // First check to see if the bean is in the user directory resources/signals/, then xml/signals
-        path = FileUtil.findURL("signals/" + name + "/aspects.xml", FileUtil.Location.USER, "resources", "xml");
+        //First check to see if the bean is in the default system directory
+        URL path = FileUtil.findURL("xml/signals/" + name + "/aspects.xml", FileUtil.Location.INSTALLED);
         log.debug("load from {}", path);
+        XmlFile xf = new AspectFile();
         if (path != null) {
-            xf = new AspectFile();
             try {
-                log.debug(" successful");
                 Element root = xf.rootFromURL(path);
                 DefaultSignalSystem s = new DefaultSignalSystem(name);
                 loadBean(s, root);
                 return s;
             } catch (IOException | JDOMException e) {
-                log.error("Could not parse aspect file \"{}\" due to", path, e);
+                log.error("Could not parse aspect file \"{}\" due to: {}", path, e);
             }
         }
 
-        throw new IllegalArgumentException("Unable to parse aspect file "+path);
+        //if the file doesn't exist or fails the load from the default location then try the user directory
+        path = FileUtil.findURL("signals/" + name + "/aspects.xml", FileUtil.Location.USER, "xml", "resources");
+        log.debug("load from {}", path);
+        if (path != null) {
+            xf = new AspectFile();
+            try {
+                Element root = xf.rootFromURL(path);
+                DefaultSignalSystem s = new DefaultSignalSystem(name);
+                loadBean(s, root);
+                return s;
+            } catch (IOException | JDOMException e) {
+                log.error("Could not parse aspect file \"{}\" due to: {}", path, e);
+            }
+        }
+
+        return null;
     }
 
     void loadBean(DefaultSignalSystem s, Element root) {
@@ -177,7 +190,7 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
         // set user name from system name element
         s.setUserName(root.getChild("name").getText());
 
-        // find all aspects, include them by name,
+        // find all aspects, include them by name, 
         // add all other sub-elements as key/value pairs
         for (int i = 0; i < l.size(); i++) {
             String name = l.get(i).getChild("name").getText();
@@ -206,23 +219,23 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
                 try {
                     Class<?> cl;
                     Constructor<?> ctor;
-
+                    
                     // create key string
                     String key = e.getChild("key").getText();
-
+                    
                     // check for non-String key.  Warn&proceed if found.
                     // Pre-JMRI 4.3, keys in NamedBean parameters could be Objects
                     // constructed from Strings, similar to the value code below.
                     if (! (
                         e.getChild("key").getAttributeValue("class") == null
-                        || e.getChild("key").getAttributeValue("class").isEmpty()
+                        || e.getChild("key").getAttributeValue("class").equals("")
                         || e.getChild("key").getAttributeValue("class").equals("java.lang.String")
                         )) {
-
-                        log.warn("SignalSystem {} property key of invalid non-String type {} not supported",
+                        
+                        log.warn("SignalSystem {} property key of invalid non-String type {} not supported", 
                             s.getSystemName(), e.getChild("key").getAttributeValue("class"));
                     }
-
+                    
                     // create value object
                     Object value = null;
                     if (e.getChild("value") != null) {
@@ -233,7 +246,7 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
 
                     // store
                     s.setProperty(key, value);
-                } catch (ClassNotFoundException
+                } catch (ClassNotFoundException 
                             | NoSuchMethodException | InstantiationException
                             | IllegalAccessException | java.lang.reflect.InvocationTargetException ex) {
                     log.error("Error loading properties", ex);
@@ -243,7 +256,11 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
     }
 
     void loadProperties(NamedBean t, Element elem) {
-        // do nothing
+        Element p = elem.getChild("properties");
+        if (p == null) {
+            return;
+        }
+
     }
 
     /**
@@ -255,14 +272,6 @@ public class DefaultSignalSystemManager extends AbstractManager<SignalSystem>
     @Override
     public String getBeanTypeHandled(boolean plural) {
         return Bundle.getMessage(plural ? "BeanNameSignalSystems" : "BeanNameSignalSystem");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Class<SignalSystem> getNamedBeanClass() {
-        return SignalSystem.class;
     }
 
     private final static Logger log = LoggerFactory.getLogger(DefaultSignalSystemManager.class);

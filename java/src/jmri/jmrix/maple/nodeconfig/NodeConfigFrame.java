@@ -74,8 +74,7 @@ public class NodeConfigFrame extends jmri.util.JmriJFrame {
     private MapleSystemConnectionMemo _memo = null;
 
     /**
-     * Constructor method.
-     * @param memo system connection.
+     * Constructor method
      */
     public NodeConfigFrame(MapleSystemConnectionMemo memo) {
         super();

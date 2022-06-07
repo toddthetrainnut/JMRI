@@ -1,13 +1,14 @@
 package jmri.jmrix.mrc;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class MrcProgrammerManagerTest {
 
@@ -17,16 +18,17 @@ public class MrcProgrammerManagerTest {
         MrcInterfaceScaffold tc = new MrcInterfaceScaffold();
         memo.setMrcTrafficController(tc);
         jmri.InstanceManager.store(memo, MrcSystemConnectionMemo.class);
-        MrcProgrammerManager t = new MrcProgrammerManager(new MrcProgrammer(memo),memo);
+        MrcProgrammerManager t = new MrcProgrammerManager(new MrcProgrammer(tc),memo);
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

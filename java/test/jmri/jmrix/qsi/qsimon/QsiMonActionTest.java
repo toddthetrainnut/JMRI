@@ -4,13 +4,14 @@ import jmri.jmrix.qsi.QsiSystemConnectionMemo;
 import jmri.jmrix.qsi.QsiTrafficControlScaffold;
 import jmri.jmrix.qsi.QsiTrafficController;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class QsiMonActionTest {
 
@@ -22,12 +23,13 @@ public class QsiMonActionTest {
         Assert.assertNotNull("exists", t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

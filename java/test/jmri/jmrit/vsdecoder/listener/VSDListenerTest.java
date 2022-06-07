@@ -1,15 +1,15 @@
 package jmri.jmrit.vsdecoder.listener;
 
-import jmri.*;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of VSDListener
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class VSDListenerTest {
 
@@ -17,22 +17,16 @@ public class VSDListenerTest {
     public void testCtor() {
         VSDListener s = new VSDListener();
         Assert.assertNotNull("exists", s);
-    
-        // this created an audio manager, clean that up
-        InstanceManager.getDefault(jmri.AudioManager.class).cleanup();
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
-    public void tearDown() {
-        // this created an audio manager, clean that up
-        InstanceManager.getDefault(jmri.AudioManager.class).cleanup();
-
-        jmri.util.JUnitAppender.suppressErrorMessage("Unhandled audio format type 0");
+    @After
+    public void tearDown() {        
+        jmri.util.JUnitAppender.suppressWarnMessage("Initialised Null audio system - no sounds will be available.");
         JUnitUtil.tearDown();
     }
 }

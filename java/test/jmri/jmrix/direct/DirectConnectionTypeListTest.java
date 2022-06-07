@@ -1,11 +1,10 @@
 package jmri.jmrix.direct;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2018
+ * @author Paul Bender Copyright (C) 2018	
  */
 public class DirectConnectionTypeListTest {
 
@@ -15,12 +14,13 @@ public class DirectConnectionTypeListTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         jmri.util.JUnitUtil.tearDown();
     }

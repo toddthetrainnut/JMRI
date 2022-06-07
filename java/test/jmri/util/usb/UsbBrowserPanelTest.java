@@ -1,30 +1,32 @@
 package jmri.util.usb;
 
+import javax.usb.UsbDevice;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
-import javax.usb.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class UsbBrowserPanelTest {
 
-    private UsbHubScaffold hub;
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
 
     @Test
     public void testCTor() {
-
+        UsbDevice mockDevice = Mockito.mock(UsbDevice.class);
         UsbBrowserPanel t = new UsbBrowserPanel(){
            @Override
            protected UsbTreeNode getRootNode() {
-              UsbTreeNode retval = new UsbTreeNode(hub);
+              UsbTreeNode retval = new UsbTreeNode(mockDevice);
               retval.setUsbDevice(null);
               return retval;
            }
@@ -32,55 +34,17 @@ public class UsbBrowserPanelTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        hub = new UsbHubScaffold();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        hub = null;
         JUnitUtil.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(UsbBrowserPanelTest.class);
-
-    class UsbHubScaffold extends UsbDeviceScaffold implements UsbHub {
-
-        public UsbHubScaffold() {
-            super("jmri","testhub");
-        }
-
-        @Override
-        public boolean isUsbHub() {
-            return true;
-        }
-
-        @Override
-        public byte getNumberOfPorts() {
-            return 0;
-        }
-
-        @Override
-        public List getUsbPorts() {
-            return null;
-        }
-
-        @Override
-        public UsbPort getUsbPort(byte b) {
-            return null;
-        }
-
-        @Override
-        public List getAttachedUsbDevices() {
-            return new ArrayList<UsbDevice>();
-        }
-
-        @Override
-        public boolean isRootUsbHub() {
-            return true;
-        }
-    }
 
 }

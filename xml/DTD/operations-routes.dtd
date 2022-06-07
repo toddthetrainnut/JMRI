@@ -1,4 +1,5 @@
 <!-- Defines XML documenting a route roster -->
+<!-- $Id$ -->
 
 <!-- This DTD is part of JMRI. Copyright 2001, 2003, 2007, 2008.                  -->
 <!--                                                                        -->
@@ -34,10 +35,8 @@
 <!ATTLIST location departTime		CDATA #IMPLIED> 
 <!ATTLIST location wait				CDATA #IMPLIED>
 <!ATTLIST location grade			CDATA #IMPLIED> 
-<!ATTLIST location order			CDATA #IMPLIED> 
 <!ATTLIST location trainIconX		CDATA #IMPLIED> 
 <!ATTLIST location trainIconY		CDATA #IMPLIED> 
 <!ATTLIST location comment			CDATA #IMPLIED>
 <!ATTLIST location randomControl	CDATA #IMPLIED>
-<!ATTLIST location commentColor		CDATA #IMPLIED>
 

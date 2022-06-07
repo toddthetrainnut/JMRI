@@ -10,9 +10,18 @@ import jmri.InstanceManager;
 import jmri.configurexml.AbstractXmlAdapter;
 import jmri.configurexml.XmlAdapter;
 import jmri.jmrit.dispatcher.DispatcherFrame;
-import jmri.jmrit.display.EditorManager;
+import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.layoutEditor.*;
+import jmri.jmrit.display.layoutEditor.LayoutEditor;
+import jmri.jmrit.display.layoutEditor.LayoutShape;
+import jmri.jmrit.display.layoutEditor.LayoutSlip;
+import jmri.jmrit.display.layoutEditor.LayoutTrack;
+import jmri.jmrit.display.layoutEditor.LayoutTrackDrawingOptions;
+import jmri.jmrit.display.layoutEditor.LayoutTurnout;
+import jmri.jmrit.display.layoutEditor.LayoutTurntable;
+import jmri.jmrit.display.layoutEditor.LevelXing;
+import jmri.jmrit.display.layoutEditor.PositionablePoint;
+import jmri.jmrit.display.layoutEditor.TrackSegment;
 import jmri.util.ColorUtil;
 import org.jdom2.*;
 import org.slf4j.Logger;
@@ -32,7 +41,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
     }
 
     /**
-     * Default implementation for storing the contents of a LayoutEditor.
+     * Default implementation for storing the contents of a LayoutEditor
      *
      * @param o Object to store, of type LayoutEditor
      * @return Element containing the complete info
@@ -45,11 +54,11 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
 
         panel.setAttribute("class", getClass().getName());
         panel.setAttribute("name", p.getLayoutName());
-        if (InstanceManager.getDefault(jmri.util.gui.GuiLafPreferencesManager.class).isEditorUseOldLocSize()) {
-            panel.setAttribute("x", "" + p.gContext.getUpperLeftX());
-            panel.setAttribute("y", "" + p.gContext.getUpperLeftY());
-            panel.setAttribute("windowheight", "" + p.gContext.getWindowHeight());
-            panel.setAttribute("windowwidth", "" + p.gContext.getWindowWidth());
+        if (InstanceManager.getDefault(apps.gui.GuiLafPreferencesManager.class).isEditorUseOldLocSize()) {
+            panel.setAttribute("x", "" + p.getUpperLeftX());
+            panel.setAttribute("y", "" + p.getUpperLeftY());
+            panel.setAttribute("windowheight", "" + p.getWindowHeight());
+            panel.setAttribute("windowwidth", "" + p.getWindowWidth());
         } else {
             // Use real location and size
             java.awt.Point loc = p.getLocation();
@@ -60,8 +69,8 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             panel.setAttribute("windowheight", "" + size.height);
             panel.setAttribute("windowwidth", "" + size.width);
         }
-        panel.setAttribute("panelheight", "" + p.gContext.getLayoutHeight());
-        panel.setAttribute("panelwidth", "" + p.gContext.getLayoutWidth());
+        panel.setAttribute("panelheight", "" + p.getLayoutHeight());
+        panel.setAttribute("panelwidth", "" + p.getLayoutWidth());
         panel.setAttribute("sliders", "" + (p.getScroll() ? "yes" : "no")); // deprecated
         panel.setAttribute("scrollable", "" + p.getScrollable());
         panel.setAttribute("editable", "" + (p.isEditable() ? "yes" : "no"));
@@ -76,10 +85,10 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
         panel.setAttribute("turnoutcircles", "" + (p.getTurnoutCircles() ? "yes" : "no"));
         panel.setAttribute("tooltipsnotedit", "" + (p.getTooltipsNotEdit() ? "yes" : "no"));
         panel.setAttribute("tooltipsinedit", "" + (p.getTooltipsInEdit() ? "yes" : "no"));
-        panel.setAttribute("mainlinetrackwidth", "" + p.gContext.getMainlineBlockWidth());  //saves wrong value for backwards compatability with pre-LayoutTrackDrawingOptions
-        panel.setAttribute("xscale", Float.toString((float) p.gContext.getXScale()));
-        panel.setAttribute("yscale", Float.toString((float) p.gContext.getYScale()));
-        panel.setAttribute("sidetrackwidth", "" + p.gContext.getSidelineBlockWidth());  //saves wrong value for backwards compatability with pre-LayoutTrackDrawingOptions
+        panel.setAttribute("mainlinetrackwidth", "" + p.getMainlineTrackWidth());
+        panel.setAttribute("xscale", Float.toString((float) p.getXScale()));
+        panel.setAttribute("yscale", Float.toString((float) p.getYScale()));
+        panel.setAttribute("sidetrackwidth", "" + p.getSidelineTrackWidth());
         panel.setAttribute("defaulttrackcolor", p.getDefaultTrackColor());
         panel.setAttribute("defaultoccupiedtrackcolor", p.getDefaultOccupiedTrackColor());
         panel.setAttribute("defaultalternativetrackcolor", p.getDefaultAlternativeTrackColor());
@@ -109,8 +118,8 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             panel.setAttribute("greenBackground", "" + p.getBackgroundColor().getGreen());
             panel.setAttribute("blueBackground", "" + p.getBackgroundColor().getBlue());
         }
-        panel.setAttribute("gridSize", "" + p.gContext.getGridSize());
-        panel.setAttribute("gridSize2nd", "" + p.gContext.getGridSize2nd());
+        panel.setAttribute("gridSize", "" + p.getGridSize());
+        panel.setAttribute("gridSize2nd", "" + p.getGridSize2nd());
 
         p.resetDirty();
         panel.setAttribute("openDispatcher", p.getOpenDispatcherOnLoad() ? "yes" : "no");
@@ -124,7 +133,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
                 panel.addContent(e);
             }
         } catch (Exception e) {
-            log.error("Error storing contents element: ", e);
+            log.error("Error storing contents element: " + e);
         }
 
         // note: moving zoom attribute into per-window user preference
@@ -141,7 +150,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
                         panel.addContent(e);
                     }
                 } catch (Exception e) {
-                    log.error("Error storing contents element: ", e);
+                    log.error("Error storing contents element: " + e);
                 }
             } else {
                 log.warn("Null entry found when storing panel contents.");
@@ -152,47 +161,64 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
         List<LayoutTrack> layoutTracks = p.getLayoutTracks();
         num = layoutTracks.size();
         if (log.isDebugEnabled()) {
-            log.debug("N LayoutTrack elements: {}", num);
+            log.debug("N LayoutTrack elements: " + num);
         }
 
+        // Because some people (like me) like to edit their panel.xml files
+        // directly we're going to group the layout tracks by class before
+        // storing them. Note: No other order is effected; They should exist
+        // in the saved file in the order that they were created (ether at
+        // panel file load time or later by the users in the editor).
+        List<LayoutTrack> orderedList = layoutTracks.stream() // next line excludes LayoutSlips
+                .filter(item -> ((item instanceof LayoutTurnout) && !(item instanceof LayoutSlip)))
+                .map(item -> (LayoutTurnout) item)
+                .collect(Collectors.toList());
+        orderedList.addAll(layoutTracks.stream()
+                .filter(item -> item instanceof TrackSegment)
+                .map(item -> (TrackSegment) item)
+                .collect(Collectors.toList()));
+        orderedList.addAll(layoutTracks.stream()
+                .filter(item -> item instanceof PositionablePoint)
+                .map(item -> (PositionablePoint) item)
+                .collect(Collectors.toList()));
+        orderedList.addAll(layoutTracks.stream()
+                .filter(item -> item instanceof LevelXing)
+                .map(item -> (LevelXing) item)
+                .collect(Collectors.toList()));
+        orderedList.addAll(layoutTracks.stream()
+                .filter(item -> item instanceof LayoutSlip)
+                .map(item -> (LayoutSlip) item)
+                .collect(Collectors.toList()));
+        orderedList.addAll(layoutTracks.stream()
+                .filter(item -> item instanceof LayoutTurntable)
+                .map(item -> (LayoutTurntable) item)
+                .collect(Collectors.toList()));
 
-
-        // Previous write order was
-        //   LayoutTurnout) && !(item instanceof LayoutSlip)
-        //   TrackSegment
-        //   PositionablePoint
-        //   LevelXing
-        //   LayoutSlip
-        //   LayoutTurntable
-
-        // write order specified for compatibility
-        for (LayoutTrackView lv : p.getLayoutTurnoutViews()) {
-            if (! (lv instanceof LayoutSlipView) )
-                storeOne(panel, lv);
+        for (LayoutTrack lt : orderedList) {
+            try {
+                Element e = jmri.configurexml.ConfigXmlManager.elementFromObject(lt);
+                if (e != null) {
+                    panel.addContent(e);
+                }
+            } catch (Exception e) {
+                log.error("Error storing layoutturnout element: " + e);
+            }
         }
-        for (LayoutTrackView lv : p.getTrackSegmentViews())         {storeOne(panel, lv); }
-        for (LayoutTrackView lv : p.getPositionablePointViews())    {storeOne(panel, lv); }
-        for (LayoutTrackView lv : p.getLevelXingViews())            {storeOne(panel, lv); }
-        for (LayoutTrackView lv : p.getLayoutSlipViews())           {storeOne(panel, lv); }
-        for (LayoutTrackView lv : p.getLayoutTurntableViews())      {storeOne(panel, lv); }
 
         // include Layout Shapes
-        for (LayoutShape ls : p.getLayoutShapes()) {storeOne(panel, ls); }
+        for (LayoutShape ls : p.getLayoutShapes()) {
+            try {
+                Element e = jmri.configurexml.ConfigXmlManager.elementFromObject(ls);
+                if (e != null) {
+                    panel.addContent(e);
+                }
+            } catch (Exception e) {
+                log.error("Error storing layout shape element: " + e);
+            }
+        }
 
         return panel;
     }   // store
-
-
-    private void storeOne(Element panel, Object item) {
-        try {
-            Element e = jmri.configurexml.ConfigXmlManager.elementFromObject(item);
-            if (e != null) {
-                panel.addContent(e);
-            }
-        } catch (Exception ex) {
-            log.error("Error storing layout item: {}", item, ex);
-        }
-    }
 
     @Override
     public void load(Element element, Object o) {
@@ -207,10 +233,6 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
      */
     @Override
     public boolean load(Element shared, Element perNode) {
-        if (java.awt.GraphicsEnvironment.isHeadless()) {
-            return true;
-        }
-
         boolean result = true;
         Attribute a;
         // find coordinates
@@ -270,7 +292,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 xScale = (Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert xscale attribute to float - {}", a.getValue());
+                log.error("failed to convert xscale attribute to float - " + a.getValue());
                 result = false;
             }
         }
@@ -278,7 +300,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 yScale = (Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert yscale attribute to float - {}", a.getValue());
+                log.error("failed to convert yscale attribute to float - " + a.getValue());
                 result = false;
             }
         }
@@ -288,7 +310,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
         if ((a = shared.getAttribute("name")) != null) {
             name = a.getValue();
         }
-        if (InstanceManager.getDefault(EditorManager.class).contains(name)) {
+        if (InstanceManager.getDefault(PanelMenu.class).isPanelNameUsed(name)) {
             JFrame frame = new JFrame("DialogDemo");
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             log.warn("File contains a panel with the same name ({}) as an existing panel", name);
@@ -302,7 +324,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
         }
 
         // If available, override location and size with machine dependent values
-        if (!InstanceManager.getDefault(jmri.util.gui.GuiLafPreferencesManager.class).isEditorUseOldLocSize()) {
+        if (!InstanceManager.getDefault(apps.gui.GuiLafPreferencesManager.class).isEditorUseOldLocSize()) {
             jmri.UserPreferencesManager prefsMgr = InstanceManager.getNullableDefault(jmri.UserPreferencesManager.class);
             if (prefsMgr != null) {
                 String windowFrameRef = "jmri.jmrit.display.layoutEditor.LayoutEditor:" + name;
@@ -323,13 +345,13 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
 
         LayoutEditor panel = new LayoutEditor(name);
         panel.setLayoutName(name);
-        InstanceManager.getDefault(EditorManager.class).add(panel);
+        InstanceManager.getDefault(PanelMenu.class).addEditorPanel(panel);
 
         // create the objects
-        panel.gContext.setMainlineTrackWidth(mainlinetrackwidth);
-        panel.gContext.setSidelineTrackWidth(sidetrackwidth);
-        panel.gContext.setXScale(xScale);
-        panel.gContext.setYScale(yScale);
+        panel.setMainlineTrackWidth(mainlinetrackwidth);
+        panel.setSidelineTrackWidth(sidetrackwidth);
+        panel.setXScale(xScale);
+        panel.setYScale(yScale);
 
         String color = ColorUtil.ColorDarkGray;
         try {
@@ -405,7 +427,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setTurnoutBX(Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert turnoutbx to float - {}", a.getValue());
+                log.error("failed to convert turnoutbx to float - " + a.getValue());
                 result = false;
             }
         }
@@ -414,7 +436,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setTurnoutCX(Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert turnoutcx to float - {}", a.getValue());
+                log.error("failed to convert turnoutcx to float - " + a.getValue());
                 result = false;
             }
         }
@@ -423,7 +445,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setTurnoutWid(Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert turnoutwid to float - {}", a.getValue());
+                log.error("failed to convert turnoutwid to float - " + a.getValue());
                 result = false;
             }
         }
@@ -432,7 +454,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setXOverLong(Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert xoverlong to float - {}", a.getValue());
+                log.error("failed to convert xoverlong to float - " + a.getValue());
                 result = false;
             }
         }
@@ -440,7 +462,7 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setXOverHWid(Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert xoverhwid to float - {}", a.getValue());
+                log.error("failed to convert xoverhwid to float - " + a.getValue());
                 result = false;
             }
         }
@@ -448,16 +470,16 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setXOverShort(Float.parseFloat(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert xovershort to float - {}", a.getValue());
+                log.error("failed to convert xovershort to float - " + a.getValue());
                 result = false;
             }
         }
         // grid size parameter
         if ((a = shared.getAttribute("gridSize")) != null) {
             try {
-                panel.gContext.setGridSize(Integer.parseInt(a.getValue()));
+                panel.setGridSize(Integer.parseInt(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert gridSize to int - {}", a.getValue());
+                log.error("failed to convert gridSize to int - " + a.getValue());
                 result = false;
             }
         }
@@ -465,9 +487,9 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
         // second grid size parameter
         if ((a = shared.getAttribute("gridSize2nd")) != null) {
             try {
-                panel.gContext.setGridSize2nd(Integer.parseInt(a.getValue()));
+                panel.setGridSize2nd(Integer.parseInt(a.getValue()));
             } catch (NumberFormatException e) {
-                log.error("failed to convert gridSize2nd to int - {}", a.getValue());
+                log.error("failed to convert gridSize2nd to int - " + a.getValue());
                 result = false;
             }
         }
@@ -558,8 +580,8 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setDefaultTrackColor(ColorUtil.stringToColor(a.getValue()));
             } catch (IllegalArgumentException e) {
-                panel.setDefaultTrackColor(Color.darkGray);
-                log.error("Invalid defaulttrackcolor {}; using 'darkGray'", a.getValue());
+                panel.setDefaultTrackColor(Color.BLACK);
+                log.error("Invalid color {}; using black", a.getValue());
             }
         }
         // set default occupied track color
@@ -567,8 +589,8 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setDefaultOccupiedTrackColor(ColorUtil.stringToColor(a.getValue()));
             } catch (IllegalArgumentException e) {
-                panel.setDefaultOccupiedTrackColor(Color.red);
-                log.error("Invalid defaultoccupiedtrackcolor {}; using 'red'", a.getValue());
+                panel.setDefaultOccupiedTrackColor(Color.BLACK);
+                log.error("Invalid color {}; using black", a.getValue());
             }
         }
         // set default alternative track color
@@ -576,8 +598,8 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
             try {
                 panel.setDefaultAlternativeTrackColor(ColorUtil.stringToColor(a.getValue()));
             } catch (IllegalArgumentException e) {
-                panel.setDefaultAlternativeTrackColor(Color.white);
-                log.error("Invalid defaultalternativetrackcolor {}; using 'white'", a.getValue());
+                panel.setDefaultAlternativeTrackColor(Color.BLACK);
+                log.error("Invalid color {}; using black", a.getValue());
             }
         }
         try {
@@ -615,21 +637,17 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
                 String id = "<null>";
                 try {
                     id = item.getAttribute("name").getValue();
-                    log.debug("Load {} for [{}] via {}", id, panel.getName(), adapterName);
+                    log.debug("Load " + id + " for [" + panel.getName() + "] via " + adapterName);
                 } catch (NullPointerException e) {
-                    log.debug("Load layout object for [{}] via {}", panel.getName(), adapterName);
-                    log.debug("Load layout object for [{}] via {}", panel.getName(), adapterName);
+                    log.debug("Load layout object for [" + panel.getName() + "] via " + adapterName);
                 } catch (RuntimeException e) {
                     throw e;
                 } catch (Exception e) {
                 }
             }
             try {
-                // get the class name, including migrations
-                adapterName = jmri.configurexml.ConfigXmlManager.currentClassName(adapterName);
-                // get the adapter object
                 XmlAdapter adapter = (XmlAdapter) Class.forName(adapterName).getDeclaredConstructor().newInstance();
-                // and load with it
+                // and do it
                 adapter.load(item, panel);
                 if (!panel.loadOK()) {
                     result = false;
@@ -719,5 +737,5 @@ public class LayoutEditorXml extends AbstractXmlAdapter {
     public int loadOrder() {
         return jmri.Manager.PANELFILES;
     }
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LayoutEditorXml.class);
+    private final static Logger log = LoggerFactory.getLogger(LayoutEditorXml.class);
 }

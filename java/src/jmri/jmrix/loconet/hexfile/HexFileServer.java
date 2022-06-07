@@ -50,7 +50,7 @@ public class HexFileServer {
 
         // do the common manager config
         port.getSystemConnectionMemo().configureCommandStation(LnCommandStationType.COMMAND_STATION_DCS100, // full featured by default
-                false, false, false, false);
+                false, false, false);
         port.getSystemConnectionMemo().configureManagers();
 
         // Install a debug programmer, replacing the existing LocoNet one
@@ -80,25 +80,22 @@ public class HexFileServer {
                     failedThrottleRequest(a, "LocoAddress " + a + " is not a DccLocoAddress");
                     return;
                 }
+                connectedAddresses++;
                 DccLocoAddress address = (DccLocoAddress) a;
                 //create some testing situations
-                if (connectedAddresses >= 5) {
-                    log.warn("SLOT MAX of 5 reached, Current={}", connectedAddresses);
-                    failedThrottleRequest(address, "SLOT MAX of 5 reached");
+                if (connectedAddresses > 5) {
+                    log.warn("SLOT MAX of 5 exceeded");
+                    failedThrottleRequest(address, "SLOT MAX of 5 exceeded");
                     return;
                 }
                 // otherwise, continue with setup
                 super.requestThrottleSetup(a, control);
-                connectedAddresses++;
             }
 
             @Override
             public boolean disposeThrottle(DccThrottle t, jmri.ThrottleListener l) {
-                if (super.disposeThrottle(t, l)) {
-                    connectedAddresses--;
-                    return true;
-                }
-                return false;
+                connectedAddresses--;
+                return super.disposeThrottle(t, l);
             }    
         };
 

@@ -11,7 +11,7 @@ import jmri.jmrix.JmrixConfigPane;
 /**
  * A JLabel that listens to a system connection and reports its status
  *
- * @author Randall Wood
+ * @author rhwood
  */
 public final class ConnectionLabel extends JLabel implements PropertyChangeListener {
 

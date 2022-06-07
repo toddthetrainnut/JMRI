@@ -21,7 +21,6 @@ public class GlobalRosterEntryComboBox extends RosterEntryComboBox {
     /**
      * Create a combo box with all roster entries in an arbitrary Roster.
      *
-     * @param roster roster to use.
      */
     public GlobalRosterEntryComboBox(Roster roster) {
         super(roster, Roster.ALLENTRIES, null, null, null, null, null, null, null);
@@ -30,13 +29,7 @@ public class GlobalRosterEntryComboBox extends RosterEntryComboBox {
     /**
      * Create a combo box with roster entries in the default Roster matching the
      * specified attributes.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.     *
+     *
      */
     public GlobalRosterEntryComboBox(String roadName,
             String roadNumber,
@@ -60,14 +53,6 @@ public class GlobalRosterEntryComboBox extends RosterEntryComboBox {
      * Create a combo box with roster entries in an arbitrary Roster matching
      * the specified attributes.
      *
-     * @param roster roster to use.
-     * @param roadName road name.
-     * @param roadNumber road number.
-     * @param dccAddress dcc address.
-     * @param mfg manufacturer.
-     * @param decoderMfgID decoder manufacturer.
-     * @param decoderVersionID decoder version id.
-     * @param id roster id.
      */
     public GlobalRosterEntryComboBox(Roster roster,
             String roadName,

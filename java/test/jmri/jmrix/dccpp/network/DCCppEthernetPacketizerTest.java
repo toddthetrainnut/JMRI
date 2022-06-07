@@ -1,7 +1,8 @@
 package jmri.jmrix.dccpp.network;
 
 import jmri.util.JUnitUtil;
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * <p>
@@ -12,7 +13,8 @@ import org.junit.jupiter.api.*;
  */
 public class DCCppEthernetPacketizerTest extends jmri.jmrix.dccpp.DCCppPacketizerTest {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -23,7 +25,7 @@ public class DCCppEthernetPacketizerTest extends jmri.jmrix.dccpp.DCCppPacketize
         };
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         tc.terminateThreads();

@@ -1,27 +1,25 @@
 package jmri.jmrit.beantable;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class BeanTableFrameTest extends jmri.util.JmriJFrameTestBase {
 
-    @BeforeEach
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new BeanTableFrame();
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new BeanTableFrame();
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         super.tearDown();

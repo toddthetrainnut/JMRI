@@ -1,9 +1,10 @@
 package jmri.jmrix.zimo;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for Mx1MessageException class.
@@ -23,14 +24,14 @@ public class Mx1MessageExceptionTest {
       Assert.assertNotNull("Mx1MessageException string constructor",new Mx1MessageException("test exception"));
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         JUnitUtil.tearDown();
    }

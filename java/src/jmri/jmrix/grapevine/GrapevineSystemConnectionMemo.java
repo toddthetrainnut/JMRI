@@ -1,14 +1,12 @@
 package jmri.jmrix.grapevine;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
 import javax.annotation.Nonnull;
-
-import jmri.*;
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
-import jmri.jmrix.DefaultSystemConnectionMemo;
-import jmri.util.NamedBeanComparator;
-
+import jmri.InstanceManager;
+import jmri.LightManager;
+import jmri.TurnoutManager;
+import jmri.SensorManager;
+import jmri.jmrix.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Randall Wood randall.h.wood@alexandriasoftware.com
  */
-public class GrapevineSystemConnectionMemo extends DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class GrapevineSystemConnectionMemo extends SystemConnectionMemo {
 
     public GrapevineSystemConnectionMemo() {
         this("G", Bundle.getMessage("MenuSystem"));
@@ -27,7 +25,8 @@ public class GrapevineSystemConnectionMemo extends DefaultSystemConnectionMemo i
     public GrapevineSystemConnectionMemo(@Nonnull String prefix, @Nonnull String name) {
         super(prefix, name);
 
-        InstanceManager.store(this, GrapevineSystemConnectionMemo.class);
+        register(); // registers general type
+        InstanceManager.store(this, GrapevineSystemConnectionMemo.class); // also register as specific type
 
         // create and register the ComponentFactory for the GUI (menu)
         InstanceManager.store(cf = new jmri.jmrix.grapevine.swing.GrapevineComponentFactory(this),
@@ -51,7 +50,6 @@ public class GrapevineSystemConnectionMemo extends DefaultSystemConnectionMemo i
 
     /**
      * Get the traffic controller instance associated with this connection memo.
-     * @return traffic controller, one is provided if null.
      */
     public SerialTrafficController getTrafficController(){
         if (tc == null) {
@@ -71,11 +69,6 @@ public class GrapevineSystemConnectionMemo extends DefaultSystemConnectionMemo i
         return ResourceBundle.getBundle("jmri.jmrix.grapevine.GrapevineActionListBundle");
     }
 
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
-    }
-
     /**
     * Configure the common managers for Grapevine connections. This puts the
     * common manager config in one place.
@@ -89,57 +82,90 @@ public class GrapevineSystemConnectionMemo extends DefaultSystemConnectionMemo i
 
         setSensorManager(new SerialSensorManager(this));
         InstanceManager.setSensorManager(getSensorManager());
-
-        register();
     }
 
     /**
      * Provide access to the SensorManager for this particular connection.
      * <p>
      * NOTE: SensorManager defaults to NULL
-     * @return sensor manager.
      */
     public SensorManager getSensorManager() {
-        log.debug("getSensorManager {}", get(SensorManager.class) != null ? "OK": "returned NULL");
-        return get(SensorManager.class);
+        log.debug(sensorManager != null ? "getSensorManager OK": "getSensorManager returned NULL");
+        return sensorManager;
     }
 
     public void setSensorManager(SerialSensorManager s) {
-        store(s,SensorManager.class);
+        sensorManager = s;
         getTrafficController().setSensorManager(s);
     }
+
+    private SensorManager sensorManager = null;
 
     /**
      * Provide access to the TurnoutManager for this particular connection.
      * <p>
      * NOTE: TurnoutManager defaults to NULL
-     * @return turnout manager.
      */
     public TurnoutManager getTurnoutManager() {
-        log.debug("getTurnoutManager {}", get(TurnoutManager.class) != null ? "OK": "returned NULL");
-        return get(TurnoutManager.class);
+        log.debug(turnoutManager != null ? "getTurnoutManager OK": "getTurnoutManager returned NULL");
+        return turnoutManager;
     }
 
     public void setTurnoutManager(SerialTurnoutManager t) {
-        store(t,TurnoutManager.class);
+        turnoutManager = t;
         // not accessible, needed?
     }
+
+    private TurnoutManager turnoutManager = null;
 
     /**
      * Provide access to the LightManager for this particular connection.
      * <p>
      * NOTE: LightManager defaults to NULL
-     * @return light manager.
      */
     public LightManager getLightManager() {
-        log.debug("getLightManager {}", get(LightManager.class) != null ? "OK": "returned NULL");
-        return get(LightManager.class);
+        log.debug(lightManager != null ? "getLightManager OK": "getLightManager returned NULL");
+        return lightManager;
 
     }
 
     public void setLightManager(SerialLightManager l) {
-        store(l,LightManager.class);
+        lightManager = l;
         // not accessible, needed?
+    }
+
+    private LightManager lightManager = null;
+
+    @Override
+    public boolean provides(Class<?> type) {
+        if (getDisabled()) {
+            return false;
+        } else if (type.equals(jmri.SensorManager.class)) {
+            return true;
+        } else if (type.equals(jmri.TurnoutManager.class)) {
+            return true;
+        } else if (type.equals(jmri.LightManager.class)) {
+            return true;
+        }
+        return super.provides(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.SensorManager.class)) {
+            return (T) getSensorManager();
+        }
+        if (T.equals(jmri.TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        if (T.equals(jmri.LightManager.class)) {
+            return (T) getLightManager();
+        }
+        return super.get(T);
     }
 
     @Override

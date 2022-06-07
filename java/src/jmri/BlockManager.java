@@ -1,22 +1,19 @@
 package jmri;
 
 import java.beans.PropertyChangeEvent;
-import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-
-import jmri.implementation.AbstractShutDownTask;
 import jmri.implementation.SignalSpeedMap;
-import jmri.jmrit.display.layoutEditor.BlockValueFile;
 import jmri.jmrit.roster.RosterEntry;
 import jmri.managers.AbstractManager;
 
 /**
- * Basic implementation of a BlockManager.
+ * Basic Implementation of a BlockManager.
  * <p>
  * Note that this does not enforce any particular system naming convention.
  * <p>
@@ -39,31 +36,16 @@ import jmri.managers.AbstractManager;
 public class BlockManager extends AbstractManager<Block> implements ProvidingManager<Block>, InstanceManagerAutoDefault {
 
     private final String powerManagerChangeName;
-    public final ShutDownTask shutDownTask = new AbstractShutDownTask("Writing Blocks") {
-        @Override
-        public void run() {
-            try {
-                new BlockValueFile().writeBlockValues();
-            } catch (IOException ex) {
-                log.error("Exception writing blocks", ex);
-            }
-        }
-    };
 
     public BlockManager() {
         super();
         InstanceManager.getDefault(SensorManager.class).addVetoableChangeListener(this);
         InstanceManager.getDefault(ReporterManager.class).addVetoableChangeListener(this);
-        InstanceManager.getList(PowerManager.class).forEach(pm -> pm.addPropertyChangeListener(this));
+        InstanceManager.getList(PowerManager.class).forEach((pm) -> {
+            pm.addPropertyChangeListener(this);
+        });
         powerManagerChangeName = InstanceManager.getListPropertyName(PowerManager.class);
         InstanceManager.addPropertyChangeListener(this);
-        InstanceManager.getDefault(ShutDownManager.class).register(shutDownTask);
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        InstanceManager.getDefault(ShutDownManager.class).deregister(shutDownTask);
     }
 
     @Override
@@ -74,13 +56,15 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
 
     @Override
     @CheckReturnValue
-    public char typeLetter() {
-        return 'B';
+    @Nonnull
+    public String getSystemPrefix() {
+        return "I";
     }
 
     @Override
-    public Class<Block> getNamedBeanClass() {
-        return Block.class;
+    @CheckReturnValue
+    public char typeLetter() {
+        return 'B';
     }
 
     private boolean saveBlockPath = true;
@@ -95,7 +79,7 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
     }
 
     /**
-     * Create a new Block, only if it does not exist.
+     * Method to create a new Block only if it does not exist
      *
      * @param systemName the system name
      * @param userName   the user name
@@ -118,31 +102,44 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
         }
         // Block does not exist, create a new Block
         r = new Block(systemName, userName);
-
-        // Keep track of the last created auto system name
-        updateAutoNumber(systemName);
-
         // save in the maps
         register(r);
+        /*The following keeps track of the last created auto system name.
+         currently we do not reuse numbers, although there is nothing to stop the
+         user from manually recreating them*/
+        if (systemName.startsWith("IB:AUTO:")) {
+            try {
+                int autoNumber = Integer.parseInt(systemName.substring(8));
+                if (autoNumber > lastAutoBlockRef) {
+                    lastAutoBlockRef = autoNumber;
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Auto generated SystemName {} is not in the correct format", systemName);
+            }
+        }
         try {
             r.setBlockSpeed("Global"); // NOI18N
         } catch (JmriException ex) {
-            log.error("Unexpected exception {}", ex.getMessage());
+            log.error("{}", ex.getMessage());
         }
         return r;
     }
 
     /**
-     * Create a new Block using an automatically incrementing system
+     * Method to create a new Block using an automatically incrementing system
      * name.
      *
-     * @param userName the user name for the new Block
+     * @param userName the user name for the new block
      * @return null if a Block with the same systemName or userName already
      *         exists, or if there is trouble creating a new Block.
      */
     @CheckForNull
     public Block createNewBlock(@Nonnull String userName) {
-        return createNewBlock(getAutoSystemName(), userName);
+        int nextAutoBlockRef = lastAutoBlockRef + 1;
+        StringBuilder b = new StringBuilder("IB:AUTO:");
+        String nextNumber = paddedNumber.format(nextAutoBlockRef);
+        b.append(nextNumber);
+        return createNewBlock(b.toString(), userName);
     }
 
     /**
@@ -153,21 +150,19 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
      *
      * @param name the system name or the user name for the block
      * @return a new or existing Block
-     * @throws IllegalArgumentException if cannot create block or no name supplied; never returns null
+     * @throws IllegalArgumentException if cannot create block; never returns
+     *                                  null
      */
     @Nonnull
     public Block provideBlock(@Nonnull String name) {
-        if (name.isEmpty()) {
-            throw new IllegalArgumentException("Could not create block, no name supplied");
-        }
         Block b = getBlock(name);
         if (b != null) {
             return b;
         }
-        if (name.startsWith(getSystemNamePrefix())) {
+        if (name.startsWith(getSystemPrefix() + typeLetter())) {
             b = createNewBlock(name, null);
         } else {
-            b = createNewBlock(name);
+            b = createNewBlock(makeSystemName(name), null);
         }
         if (b == null) {
             throw new IllegalArgumentException("Could not create block \"" + name + "\"");
@@ -175,8 +170,12 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
         return b;
     }
 
+    DecimalFormat paddedNumber = new DecimalFormat("0000");
+
+    int lastAutoBlockRef = 0;
+
     /**
-     * Get an existing Block. First looks up assuming that name is a
+     * Method to get an existing Block. First looks up assuming that name is a
      * User Name. If this fails looks up assuming that name is a System Name. If
      * both fail, returns null.
      *
@@ -195,6 +194,18 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
 
     @CheckReturnValue
     @CheckForNull
+    public Block getBySystemName(@Nonnull String key) {
+        return _tsys.get(key);
+    }
+
+    @CheckReturnValue
+    @CheckForNull
+    public Block getByUserName(@Nonnull String key) {
+        return _tuser.get(key);
+    }
+
+    @CheckReturnValue
+    @CheckForNull
     public Block getByDisplayName(@Nonnull String key) {
         // First try to find it in the user list.
         // If that fails, look it up in the system list
@@ -206,7 +217,7 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
         return (retv);
     }
 
-    private String defaultSpeed = "Normal";
+    String defaultSpeed = "Normal";
 
     /**
      * @param speed the speed
@@ -245,7 +256,7 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
     }
 
     /**
-     * Get a list of blocks which the supplied roster entry appears to be
+     * Returns a list of blocks which the supplied roster entry appears to be
      * occupying. A block is assumed to contain this roster entry if its value
      * is the RosterEntry itself, or a string with the entry's id or dcc
      * address.
@@ -255,18 +266,20 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
      */
     @CheckReturnValue
     @Nonnull
-    public List<Block> getBlocksOccupiedByRosterEntry(@Nonnull BasicRosterEntry re) {
+    public List<Block> getBlocksOccupiedByRosterEntry(@Nonnull RosterEntry re) {
         List<Block> blockList = new ArrayList<>();
-        getNamedBeanSet().stream().forEach(b -> {
-            if (b != null) {
-                Object obj = b.getValue();
-                if ((obj instanceof BasicRosterEntry && obj == re) ||
-                        obj.toString().equals(re.getId()) ||
-                        obj.toString().equals(re.getDccAddress())) {
+
+        getNamedBeanSet().stream().forEach((b) -> {
+            Object obj;
+            if (b!= null && (obj = b.getValue()) != null) {
+                if (obj instanceof RosterEntry && obj == re) {
+                    blockList.add(b);
+                } else if (obj.toString().equals(re.getId()) || obj.toString().equals(re.getDccAddress())) {
                     blockList.add(b);
                 }
             }
         });
+
         return blockList;
     }
 
@@ -293,7 +306,7 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
                 if (pm.getPower() == jmri.PowerManager.ON) {
                     lastTimeLayoutPowerOn = Instant.now();
                 }
-            } catch (NoSuchMethodError xe) {
+            } catch (JmriException | NoSuchMethodError xe) {
                 // do nothing
             }
         }
@@ -311,7 +324,7 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
     }
 
     /**
-     * Get the amount of time since the layout was last powered up,
+     * Returns the amount of time since the layout was last powered up,
      * in milliseconds. If the layout has not been powered up as far as
      * JMRI knows it returns a very long time indeed.
      *
@@ -325,11 +338,9 @@ public class BlockManager extends AbstractManager<Block> implements ProvidingMan
     }
 
     @Override
-    @Nonnull
-    public Block provide(@Nonnull String name) {
+    public Block provide(String name) throws IllegalArgumentException {
         return provideBlock(name);
     }
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BlockManager.class);
-
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BlockManager.class);
 }

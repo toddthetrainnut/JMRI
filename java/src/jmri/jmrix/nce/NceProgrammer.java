@@ -2,7 +2,6 @@ package jmri.jmrix.nce;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nonnull;
 
 import jmri.ProgrammingMode;
@@ -30,9 +29,9 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
         }
     }
 
-    /**
+    /** 
      * {@inheritDoc}
-     * <p>
+     *
      * NCE programming modes available depend on settings
      */
     @Override
@@ -77,7 +76,7 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
         return ret;
     }
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     @Override
@@ -87,7 +86,7 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
                 && tc.getUsbSystem() != NceTrafficController.USB_SYSTEM_NONE);
     }
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     @Override
@@ -104,8 +103,7 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
                 && ((tc != null)
                 && ((tc.getCommandOptions() == NceTrafficController.OPTION_1999)
                 || (tc.getCommandOptions() == NceTrafficController.OPTION_2004)
-                || (tc.getCommandOptions() == NceTrafficController.OPTION_2006)))
-                && (!tc.isPwrProVer060203orLater()));
+                || (tc.getCommandOptions() == NceTrafficController.OPTION_2006))));
     }
 
     // members for handling the programmer interface
@@ -117,23 +115,19 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
     int _val; // remember the value being read/written for confirmative reply
     int _cv; // remember the cv being read/written
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     @Override
     public synchronized void writeCV(String CVname, int val, jmri.ProgListener p) throws jmri.ProgrammerException {
         final int CV = Integer.parseInt(CVname);
         if (log.isDebugEnabled()) {
-            log.debug("writeCV {} listens {}", CV, p);
+            log.debug("writeCV " + CV + " listens " + p);
         }
         useProgrammer(p);
         // prevent writing Prog Track mode CV > 256 on PowerPro 2007C and earlier
         if (!getCanWrite(CV)) {
-            log.error("Write {} CV {} unsupported by NCE EPROM revision {}", getMode(), CV, tc.getPwrProVersHexText());
-            progState = NOTPROGRAMMING;
-            cleanup();
-            notifyProgListenerEnd(_val, jmri.ProgListener.NotImplemented);
-            return;
+            throw new jmri.ProgrammerException("CV number not supported");
         }
         _progRead = false;
         // set state
@@ -153,7 +147,7 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
         }
     }
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     @Override
@@ -161,14 +155,14 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
         readCV(CV, p);
     }
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     @Override
     public synchronized void readCV(String CVname, jmri.ProgListener p) throws jmri.ProgrammerException {
         final int CV = Integer.parseInt(CVname);
         if (log.isDebugEnabled()) {
-            log.debug("readCV {} listens {}", CV, p);
+            log.debug("readCV " + CV + " listens " + p);
         }
         useProgrammer(p);
         _progRead = true;
@@ -196,7 +190,7 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
         // test for only one!
         if (_usingProgrammer != null && _usingProgrammer != p) {
             if (log.isInfoEnabled()) {
-                log.info("programmer already in use by {}", _usingProgrammer);
+                log.info("programmer already in use by " + _usingProgrammer);
             }
             throw new jmri.ProgrammerException("programmer in use");
         } else {
@@ -229,15 +223,15 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
         }
     }
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     @Override
     public void message(NceMessage m) {
-        log.error("message received unexpectedly: {}", m.toString());
+        log.error("message received unexpectedly: " + m.toString());
     }
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     @Override
@@ -256,8 +250,8 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
             progState = NOTPROGRAMMING;
             // check for errors
             if ((m.match("NO FEEDBACK DETECTED") >= 0)
-                    || (m.isBinary() && !_progRead && (m.getElement(0) != NceMessage.NCE_OKAY))
-                    || (m.isBinary() && _progRead && (m.getElement(1) != NceMessage.NCE_OKAY))) {
+                    || (m.isBinary() && !_progRead && (m.getElement(0) != '!'))
+                    || (m.isBinary() && _progRead && (m.getElement(1) != '!'))) {
                 if (log.isDebugEnabled()) {
                     log.debug("handle NO FEEDBACK DETECTED");
                 }
@@ -287,9 +281,9 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
         }
     }
 
-    /**
+    /** 
      * {@inheritDoc}
-     * <p>
+     *
      * Internal routine to handle a timeout
      */
     @Override
@@ -314,7 +308,7 @@ public class NceProgrammer extends AbstractProgrammer implements NceListener {
     // internal method to notify of the final result
     protected void notifyProgListenerEnd(int value, int status) {
         if (log.isDebugEnabled()) {
-            log.debug("notifyProgListenerEnd value {} status {}", value, status);
+            log.debug("notifyProgListenerEnd value " + value + " status " + status);
         }
         // the programmingOpReply handler might send an immediate reply, so
         // clear the current listener _first_

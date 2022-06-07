@@ -1,16 +1,12 @@
 package jmri.jmrix.loconet;
 
 import jmri.DccLocoAddress;
-import jmri.InstanceManager;
-import jmri.jmrit.consisttool.ConsistPreferencesManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2016,2017
+ * @author	Paul Bender Copyright (C) 2016,2017
  */
 
 public class LocoNetConsistTest extends jmri.implementation.AbstractConsistTestBase {
@@ -107,13 +103,11 @@ public class LocoNetConsistTest extends jmri.implementation.AbstractConsistTestB
         Assert.assertFalse("Direction in CS Consist", c.getLocoDirection(B));
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
-        InstanceManager.setDefault(ConsistPreferencesManager.class,new ConsistPreferencesManager());
         // prepare an interface
         lnis = new LocoNetInterfaceScaffold();
         slotmanager = new SlotManager(lnis);
@@ -144,7 +138,7 @@ public class LocoNetConsistTest extends jmri.implementation.AbstractConsistTestB
 
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         ltm.dispose();

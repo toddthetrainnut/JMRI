@@ -16,7 +16,6 @@ public class LnStreamConnectionConfig extends jmri.jmrix.AbstractStreamConnectio
     /**
      * Ctor for an object being created during load process; Swing init is
      * deferred.
-     * @param p stream port controller.
      */
     public LnStreamConnectionConfig(jmri.jmrix.AbstractStreamPortController p) {
         super(p);

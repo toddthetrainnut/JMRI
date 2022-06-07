@@ -1,19 +1,18 @@
 package jmri.jmrit.operations.setup;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-
 import jmri.jmrit.operations.OperationsTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ResetActionTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
-        ResetAction t = new ResetAction();
+        ResetAction t = new ResetAction("Test");
         Assert.assertNotNull("exists",t);
     }
 

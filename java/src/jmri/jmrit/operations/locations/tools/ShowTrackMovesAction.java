@@ -1,9 +1,7 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import jmri.jmrit.operations.setup.Setup;
 
 /**
@@ -17,6 +15,7 @@ public class ShowTrackMovesAction extends AbstractAction {
     public ShowTrackMovesAction() {
         super(Bundle.getMessage("MenuItemShowTrackMoves"));
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {

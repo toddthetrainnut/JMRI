@@ -2,12 +2,8 @@ package jmri.jmrit.display.controlPanelEditor.shape.configurexml;
 
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
-
-import jmri.configurexml.JmriConfigureXmlException;
 import jmri.jmrit.display.Editor;
-import jmri.jmrit.display.Positionable;
 import jmri.jmrit.display.controlPanelEditor.shape.PositionablePolygon;
-
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,11 +65,9 @@ public class PositionablePolygonXml extends PositionableShapeXml {
      *
      * @param element Top level Element to unpack.
      * @param o       Editor as an Object
-     * @throws JmriConfigureXmlException when a error prevents creating the objects as as
-     *                   required by the input XML
      */
     @Override
-    public void load(Element element, Object o) throws JmriConfigureXmlException {
+    public void load(Element element, Object o) {
         // create the objects
         Editor ed = (Editor) o;
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
@@ -81,7 +75,8 @@ public class PositionablePolygonXml extends PositionableShapeXml {
 
         float[] coord = new float[6];
         java.util.List<Element> list = elem.getChildren("vertex");
-        for (Element e : list) {
+        for (int j = 0; j < list.size(); j++) {
+            Element e = list.get(j);
             int type = getInt(e, "type");
             for (int i = 0; i < coord.length; i++) {
                 coord[i] = getFloat(e, "idx" + i);
@@ -109,11 +104,7 @@ public class PositionablePolygonXml extends PositionableShapeXml {
         }
         PositionablePolygon ps = new PositionablePolygon(ed, path);
         // get object class and determine editor being used
-        try {
-            ed.putItem(ps);
-        } catch (Positionable.DuplicateIdException e) {
-            throw new JmriConfigureXmlException("Positionable id is not unique", e);
-        }
+        ed.putItem(ps);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(ps, Editor.MARKERS, element);
     }

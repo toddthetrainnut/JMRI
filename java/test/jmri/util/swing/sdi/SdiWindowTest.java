@@ -1,22 +1,21 @@
 package jmri.util.swing.sdi;
 
 import java.awt.GraphicsEnvironment;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
-
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.swing.ButtonTestAction;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Invokes complete set of tests in the jmri.util.swing.sdi tree
  *
- * @author Bob Jacobsen Copyright 2010
+ * @author	Bob Jacobsen Copyright 2010
  */
 public class SdiWindowTest {
 
@@ -34,13 +33,14 @@ public class SdiWindowTest {
         JUnitUtil.dispose(f2);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

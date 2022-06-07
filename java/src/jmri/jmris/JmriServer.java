@@ -7,7 +7,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import jmri.InstanceManager;
 import jmri.ShutDownTask;
 import jmri.util.zeroconf.ZeroConfService;
@@ -74,7 +73,7 @@ public class JmriServer {
     public void start() {
         /* Start the server thread */
         if (this.listenThread == null) {
-            this.listenThread = jmri.util.ThreadingUtil.newThread(new NewClientListener(connectSocket));
+            this.listenThread = new Thread(new NewClientListener(connectSocket));
             this.listenThread.start();
             this.advertise();
         }
@@ -168,7 +167,7 @@ public class JmriServer {
         }
 
         public void start() {
-            clientThread = jmri.util.ThreadingUtil.newThread(this);
+            clientThread = new Thread(this);
             clientThread.start();
         }
 

@@ -1,14 +1,15 @@
 package jmri.jmrit.display.layoutEditor.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * LayoutEditorXmlTest.java
  *
- * Test for the LayoutEditorXml class
+ * Description: tests for the LayoutEditorXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class LayoutEditorXmlTest {
       Assert.assertNotNull("LayoutEditorXml constructor",new LayoutEditorXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -79,6 +79,6 @@ public class XNetPacketizer extends XNetTrafficController {
         }
     }
 
-    private static final Logger log = LoggerFactory.getLogger(XNetPacketizer.class);
+    private final static Logger log = LoggerFactory.getLogger(XNetPacketizer.class);
 
 }

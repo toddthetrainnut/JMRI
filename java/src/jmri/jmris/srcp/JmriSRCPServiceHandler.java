@@ -1,7 +1,5 @@
 package jmri.jmris.srcp;
 
-import jmri.InstanceManager;
-
 /**
  * This class provides access to the service handlers for individual object
  * types which can be passed to a parser visitor object.
@@ -17,7 +15,7 @@ public class JmriSRCPServiceHandler extends jmri.jmris.ServiceHandler {
 
     public JmriSRCPServiceHandler(int port) {
         super();
-        _session_number = port + (InstanceManager.getDefault(jmri.Timebase.class).getTime().getTime());
+        _session_number = port + (jmri.InstanceManager.getDefault(jmri.Timebase.class).getTime().getTime());
     }
 
     public long getSessionNumber() {

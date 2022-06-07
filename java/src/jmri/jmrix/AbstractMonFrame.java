@@ -18,6 +18,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import jmri.util.FileUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.swing.TextAreaFIFO;
@@ -47,7 +49,7 @@ public abstract class AbstractMonFrame extends JmriJFrame {
     @OverridingMethodsMustInvokeSuper
     @Override
     public void dispose() {
-        if (p!=null) {
+        if(p!=null) {
            p.setSimplePreferenceState(timeStampCheck, timeCheckBox.isSelected());
            p.setSimplePreferenceState(rawDataCheck, rawCheckBox.isSelected());
            p.setSimplePreferenceState(alwaysOnTopCheck, alwaysOnTopCheckBox.isSelected());
@@ -83,7 +85,7 @@ public abstract class AbstractMonFrame extends JmriJFrame {
     AbstractMonFrame self;
 
     // to find and remember the log file
-    public final javax.swing.JFileChooser logFileChooser = new JFileChooser(FileUtil.getUserFilesPath());
+    final javax.swing.JFileChooser logFileChooser = new JFileChooser(FileUtil.getUserFilesPath());
 
     public AbstractMonFrame() {
         super();
@@ -341,7 +343,7 @@ public abstract class AbstractMonFrame extends JmriJFrame {
             try {
                 logStream = new PrintStream(new FileOutputStream(logFileChooser.getSelectedFile()));
             } catch (java.io.FileNotFoundException ex) {
-                log.error("exception", ex);
+                log.error("exception " + ex);
             }
         }
     }
@@ -381,11 +383,9 @@ public abstract class AbstractMonFrame extends JmriJFrame {
         return linesBuffer.toString();
     }
 
-    /**
-     * Get access to the main text area.
-     * This is intended for use in e.g. scripting
-     * to extend the behaviour of the window.
-     * @return the text area.
+    /** 
+     * Get access to the main text area. This is intended
+     * for use in e.g. scripting to extend the behavior of the window.
      */
     public final synchronized JTextArea getTextArea() {
         return monTextPane;

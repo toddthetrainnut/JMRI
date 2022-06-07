@@ -2,27 +2,36 @@ package jmri.jmrit.operations.rollingstock.cars;
 
 import java.text.MessageFormat;
 import java.util.List;
-
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumnModel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsFrame;
 import jmri.jmrit.operations.OperationsXml;
 import jmri.jmrit.operations.locations.schedules.ScheduleManager;
 import jmri.jmrit.operations.locations.tools.ModifyLocationsAction;
-import jmri.jmrit.operations.rollingstock.cars.tools.PrintCarLoadsAction;
 import jmri.jmrit.operations.rollingstock.cars.tools.ResetCheckboxesCarsTableAction;
 import jmri.jmrit.operations.rollingstock.cars.tools.ShowCheckboxesCarsTableAction;
 import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.jmrit.operations.trains.tools.TrainsByCarTypeAction;
 import jmri.swing.JTablePersistenceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Frame for adding and editing the car roster for operations.
@@ -56,8 +65,6 @@ public class CarsTableFrame extends OperationsFrame implements TableModelListene
     JRadioButton sortByDestination = new JRadioButton(Bundle.getMessage("Destination"));
     JRadioButton sortByFinalDestination = new JRadioButton(Bundle.getMessage("FD"));
     JRadioButton sortByRwe = new JRadioButton(Bundle.getMessage("RWE"));
-    JRadioButton sortByRwl = new JRadioButton(Bundle.getMessage("RWL"));
-    JRadioButton sortByDivision = new JRadioButton(Bundle.getMessage("Division"));
     JRadioButton sortByTrain = new JRadioButton(Bundle.getMessage("Train"));
     JRadioButton sortByMoves = new JRadioButton(Bundle.getMessage("Moves"));
     JRadioButton sortByBuilt = new JRadioButton(Bundle.getMessage("Built"));
@@ -116,8 +123,6 @@ public class CarsTableFrame extends OperationsFrame implements TableModelListene
         destp.add(sortByDestination);
         destp.add(sortByFinalDestination);
         destp.add(sortByRwe);
-        destp.add(sortByRwl);
-        destp.add(sortByDivision);
         cp1.add(destp);
         cp1.add(sortByTrain);
 
@@ -173,7 +178,6 @@ public class CarsTableFrame extends OperationsFrame implements TableModelListene
         // some tool tips
         sortByFinalDestination.setToolTipText(Bundle.getMessage("FinalDestination"));
         sortByRwe.setToolTipText(Bundle.getMessage("ReturnWhenEmpty"));
-        sortByRwl.setToolTipText(Bundle.getMessage("ReturnWhenLoaded"));
         sortByPickup.setToolTipText(Bundle.getMessage("TipPickup"));
         sortByLast.setToolTipText(Bundle.getMessage("TipLastMoved"));
 
@@ -198,8 +202,6 @@ public class CarsTableFrame extends OperationsFrame implements TableModelListene
         addRadioButtonAction(sortByDestination);
         addRadioButtonAction(sortByFinalDestination);
         addRadioButtonAction(sortByRwe);
-        addRadioButtonAction(sortByRwl);
-        addRadioButtonAction(sortByDivision);
         addRadioButtonAction(sortByTrain);
         addRadioButtonAction(sortByMoves);
         addRadioButtonAction(sortByBuilt);
@@ -220,8 +222,6 @@ public class CarsTableFrame extends OperationsFrame implements TableModelListene
         group.add(sortByDestination);
         group.add(sortByFinalDestination);
         group.add(sortByRwe);
-        group.add(sortByRwl);
-        group.add(sortByDivision);
         group.add(sortByTrain);
         group.add(sortByMoves);
         group.add(sortByBuilt);
@@ -252,8 +252,6 @@ public class CarsTableFrame extends OperationsFrame implements TableModelListene
         toolMenu.add(new ResetCheckboxesCarsTableAction(carsTableModel));
         toolMenu.add(new ModifyLocationsAction());
         toolMenu.add(new TrainsByCarTypeAction());
-        toolMenu.add(new PrintCarLoadsAction(true));
-        toolMenu.add(new PrintCarLoadsAction(false));
         toolMenu.add(new CarsSetFrameAction(carsTable));
         menuBar.add(toolMenu);
         menuBar.add(new jmri.jmrit.operations.OperationsMenu());
@@ -302,12 +300,6 @@ public class CarsTableFrame extends OperationsFrame implements TableModelListene
         }
         if (ae.getSource() == sortByRwe) {
             carsTableModel.setSort(carsTableModel.SORTBY_RWE);
-        }
-        if (ae.getSource() == sortByRwl) {
-            carsTableModel.setSort(carsTableModel.SORTBY_RWL);
-        }
-        if (ae.getSource() == sortByDivision) {
-            carsTableModel.setSort(carsTableModel.SORTBY_DIVISION);
         }
         if (ae.getSource() == sortByTrain) {
             carsTableModel.setSort(carsTableModel.SORTBY_TRAIN);

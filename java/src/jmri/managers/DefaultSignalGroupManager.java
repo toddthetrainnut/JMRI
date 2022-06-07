@@ -2,19 +2,17 @@ package jmri.managers;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import jmri.Manager;
 import jmri.SignalGroup;
 import jmri.SignalGroupManager;
 import jmri.implementation.DefaultSignalGroup;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.util.FileUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +26,8 @@ import org.slf4j.LoggerFactory;
 public class DefaultSignalGroupManager extends AbstractManager<SignalGroup>
         implements SignalGroupManager {
 
-    public DefaultSignalGroupManager(InternalSystemConnectionMemo memo) {
-        super(memo);
+    public DefaultSignalGroupManager() {
+        super();
 
         // load when created, which will generally
         // be the first time referenced
@@ -42,14 +40,17 @@ public class DefaultSignalGroupManager extends AbstractManager<SignalGroup>
     }
 
     @Override
+    public String getSystemPrefix() {
+        return "I";
+    }
+
+    @Override
     public char typeLetter() {
         return 'G'; // according to JMRI: Names and Naming
     }
 
-    /** {@inheritDoc} */
-    @CheckForNull
     @Override
-    public SignalGroup getSignalGroup(@Nonnull String name) {
+    public SignalGroup getSignalGroup(String name) {
         SignalGroup t = getByUserName(name);
         if (t != null) {
             return t;
@@ -58,36 +59,29 @@ public class DefaultSignalGroupManager extends AbstractManager<SignalGroup>
         return getBySystemName(name);
     }
 
-    /** {@inheritDoc} */
-    @CheckForNull
     @Override
-    public SignalGroup getBySystemName(@Nonnull String key) {
+    public SignalGroup getBySystemName(String key) {
         return _tsys.get(key);
     }
 
-    /** {@inheritDoc} */
-    @CheckForNull
     @Override
-    public SignalGroup getByUserName(@Nonnull String key) {
+    public SignalGroup getByUserName(String key) {
         return _tuser.get(key);
     }
 
     /**
      * {@inheritDoc}
      *
-     * Keep autostring in line with {@link #newSignalGroupWithUserName(String)},
+     * Keep autostring in line with {@link #newSignalGroup(String)},
      * {@link #getSystemPrefix()} and {@link #typeLetter()}
      */
     @Override
-    @Nonnull
-    public SignalGroup provideSignalGroup(@Nonnull String systemName, String userName) throws IllegalArgumentException {
+    public SignalGroup provideSignalGroup(String systemName, String userName) {
         log.debug("provideGroup({})", systemName);
         SignalGroup r;
-        if ( userName!=null ) {
-            r = getByUserName(userName);
-            if (r != null) {
-                return r;
-            }
+        r = getByUserName(systemName);
+        if (r != null) {
+            return r;
         }
         r = getBySystemName(systemName);
         if (r != null) {
@@ -97,13 +91,34 @@ public class DefaultSignalGroupManager extends AbstractManager<SignalGroup>
         r = new DefaultSignalGroup(systemName, userName);
         // save in the maps
         register(r);
-
-        // Keep track of the last created auto system name
-        updateAutoNumber(systemName);
-
+        /* The following keeps track of the last created auto system name.
+         Currently we do not reuse numbers, although there is nothing to stop the
+         user from manually recreating them. */
+        if (systemName.startsWith("IG:AUTO:")) {
+            try {
+                int autoNumber = Integer.parseInt(systemName.substring(8));
+                if (autoNumber > lastAutoGroupRef) {
+                    lastAutoGroupRef = autoNumber;
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Auto generated SystemName {} is not in the correct format", systemName);
+            }
+        }
         return r;
     }
 
+    /**
+     * {@inheritDoc}
+     * @deprecated 4.15.2 use newSignaGroupWithUserName
+     */
+    @Nonnull
+    @Override
+    @Deprecated //  4.15.2 use newSignaGroupWithUserName
+    public SignalGroup newSignalGroup(@Nonnull String userName) {
+        jmri.util.Log4JUtil.deprecationWarning(log, "newSignalGroup");
+        return newSignaGroupWithUserName(userName);
+    }
+    
     /**
      * {@inheritDoc}
      *
@@ -112,12 +127,21 @@ public class DefaultSignalGroupManager extends AbstractManager<SignalGroup>
      */
     @Nonnull
     @Override
-    public SignalGroup newSignalGroupWithUserName(@Nonnull String userName) {
-        return provideSignalGroup(getAutoSystemName(), userName);
+    public SignalGroup newSignaGroupWithUserName(String userName) {
+        int nextAutoGroupRef = lastAutoGroupRef + 1;
+        StringBuilder b = new StringBuilder("IG:AUTO:");
+        String nextNumber = paddedNumber.format(nextAutoGroupRef);
+        b.append(nextNumber);
+        log.debug("SignalGroupManager - new autogroup with sName: {}", b);
+        return provideSignalGroup(b.toString(), userName);
     }
 
+    DecimalFormat paddedNumber = new DecimalFormat("0000");
+
+    int lastAutoGroupRef = 0;
+
     List<String> getListOfNames() {
-        List<String> retval = new ArrayList<>();
+        List<String> retval = new ArrayList<String>();
         // first locate the signal system directory
         // and get names of systems
         File signalDir;
@@ -144,23 +168,23 @@ public class DefaultSignalGroupManager extends AbstractManager<SignalGroup>
         return retval;
     }
 
+    static DefaultSignalGroupManager _instance = null;
+
+    static public DefaultSignalGroupManager instance() {
+        if (_instance == null) {
+            _instance = new DefaultSignalGroupManager();
+        }
+        return (_instance);
+    }
+
     @Override
     public void deleteSignalGroup(SignalGroup s) {
         deregister(s);
     }
 
     @Override
-    @Nonnull
     public String getBeanTypeHandled(boolean plural) {
         return Bundle.getMessage(plural ? "BeanNameSignalGroups" : "BeanNameSignalGroup");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Class<SignalGroup> getNamedBeanClass() {
-        return SignalGroup.class;
     }
 
     private final static Logger log = LoggerFactory.getLogger(DefaultSignalGroupManager.class);

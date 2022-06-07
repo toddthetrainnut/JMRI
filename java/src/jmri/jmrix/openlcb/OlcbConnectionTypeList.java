@@ -3,8 +3,6 @@ package jmri.jmrix.openlcb;
 import jmri.jmrix.ConnectionTypeList;
 import org.openide.util.lookup.ServiceProvider;
 
-import javax.annotation.Nonnull;
-
 /**
  * Returns a list of valid Connection Types
  *
@@ -18,7 +16,6 @@ public class OlcbConnectionTypeList implements jmri.jmrix.ConnectionTypeList {
     public static final String OPENLCB = "OpenLCB";
     public static final String LCC = "LCC";
 
-    @Nonnull
     @Override
     public String[] getAvailableProtocolClasses() {
 
@@ -37,7 +34,6 @@ public class OlcbConnectionTypeList implements jmri.jmrix.ConnectionTypeList {
         };
     }
 
-    @Nonnull
     @Override
     public String[] getManufacturers() {
         return new String[]{OPENLCB, LCC};

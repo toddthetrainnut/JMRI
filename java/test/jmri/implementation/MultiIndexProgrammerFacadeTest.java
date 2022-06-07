@@ -4,15 +4,17 @@ import jmri.ProgListener;
 import jmri.Programmer;
 import jmri.progdebugger.ProgDebugger;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Test the MultiIndexProgrammerFacade class.
  *
- * @author Bob Jacobsen Copyright 2013
+ * @author	Bob Jacobsen Copyright 2013
  * 
  */
 public class MultiIndexProgrammerFacadeTest {
@@ -28,7 +30,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -53,7 +55,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -78,7 +80,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -109,7 +111,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -139,7 +141,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -170,7 +172,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -222,7 +224,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -255,7 +257,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -288,7 +290,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -318,7 +320,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -348,7 +350,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -380,7 +382,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -429,7 +431,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -478,7 +480,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -538,7 +540,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -598,7 +600,7 @@ public class MultiIndexProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -645,12 +647,12 @@ public class MultiIndexProgrammerFacadeTest {
         replied = false;
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
         jmri.util.JUnitUtil.tearDown();
     }

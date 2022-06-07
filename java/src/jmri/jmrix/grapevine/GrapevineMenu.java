@@ -1,5 +1,6 @@
 package jmri.jmrix.grapevine;
 
+import java.util.ResourceBundle;
 import javax.swing.JMenu;
 
 /**

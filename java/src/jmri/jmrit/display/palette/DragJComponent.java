@@ -13,8 +13,6 @@ import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.slf4j.Logger;
@@ -39,16 +37,18 @@ import org.slf4j.LoggerFactory;
 public abstract class DragJComponent extends JPanel implements DragGestureListener, DragSourceListener, Transferable {
 
     DataFlavor _dataFlavor;
-    JComponent _component;
 
     public DragJComponent(DataFlavor flavor,  JComponent comp) {
         super();
-        _component = comp;
+        String borderName = ItemPalette.convertText("dragToPanel");
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
-                Bundle.getMessage("dragToPanel")));
+                borderName));
         // guestimate border is about 5 pixels thick. plus some margin
         add(comp);
-        setPreferredSize();
+        Dimension dim = comp.getPreferredSize();
+        int width = Math.max(100, dim.width + 20);
+        int height = Math.max(65, dim.height + 20);
+        setPreferredSize(new java.awt.Dimension(width, height));
         setToolTipText(Bundle.getMessage("ToolTipDragIcon"));
         DragSource dragSource = DragSource.getDefaultDragSource();
         dragSource.createDefaultDragGestureRecognizer(this,
@@ -56,23 +56,6 @@ public abstract class DragJComponent extends JPanel implements DragGestureListen
         _dataFlavor = flavor;
     }
 
-    @Override
-    public void invalidate() {
-        setPreferredSize();
-        super.invalidate();
-    }
-
-    protected void setPreferredSize() {
-        Dimension dim = _component.getSize();
-        int width = Math.max(100, dim.width + 30);
-        int height = Math.max(65, dim.height + 35);
-        setPreferredSize(new java.awt.Dimension(width, height));
-    }
-
-    protected JComponent getThing() {
-        return _component;
-    }
-        
     protected boolean okToDrag() {
         return true;
     }
@@ -102,18 +85,22 @@ public abstract class DragJComponent extends JPanel implements DragGestureListen
 
     @Override
     public void dragEnter(DragSourceDragEvent e) {
+        //if (log.isDebugEnabled()) log.debug("DragJLabel.DragSourceDragEvent ");
     }
 
     @Override
     public void dragExit(DragSourceEvent e) {
+        //if (log.isDebugEnabled()) log.debug("DragJLabel.dragExit ");
     }
 
     @Override
     public void dragOver(DragSourceDragEvent e) {
+        //if (log.isDebugEnabled()) log.debug("DragJLabel.dragOver ");
     }
 
     @Override
     public void dropActionChanged(DragSourceDragEvent e) {
+        //if (log.isDebugEnabled()) log.debug("DragJLabel.dropActionChanged ");
     }
 
     /**
@@ -121,11 +108,13 @@ public abstract class DragJComponent extends JPanel implements DragGestureListen
      */
     @Override
     public DataFlavor[] getTransferDataFlavors() {
+        //if (log.isDebugEnabled()) log.debug("DragJLabel.getTransferDataFlavors ");
         return new DataFlavor[]{_dataFlavor, DataFlavor.stringFlavor};
     }
 
     @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {
+        //if (log.isDebugEnabled()) log.debug("DragJLabel.isDataFlavorSupported ");
         return _dataFlavor.equals(flavor);
     }
 

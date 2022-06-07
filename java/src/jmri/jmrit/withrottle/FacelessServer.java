@@ -1,6 +1,7 @@
 package jmri.jmrit.withrottle;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import jmri.InstanceManager;
@@ -47,7 +48,7 @@ public class FacelessServer implements DeviceListener, DeviceManager, ZeroConfSe
         try { //Create socket on available port
             socket = new ServerSocket(socketPort);
         } catch (IOException e1) {
-            log.error("New ServerSocket({}) Failed during listen()", socketPort);
+            log.error("New ServerSocket Failed during listen()");
             return;
         }
 
@@ -67,7 +68,7 @@ public class FacelessServer implements DeviceListener, DeviceManager, ZeroConfSe
                 device = new DeviceServer(socket.accept(), this);  //blocks here until a connection is made
 
                 String threadName = "DeviceServer-" + threadNumber++;  // NOI18N
-                Thread t = jmri.util.ThreadingUtil.newThread(device, threadName);
+                Thread t = new Thread(device, threadName);
                 for (DeviceListener dl : deviceListenerList) {
                     device.addDeviceListener(dl);
                 }
@@ -231,8 +232,17 @@ public class FacelessServer implements DeviceListener, DeviceManager, ZeroConfSe
         deviceList.clear();
     }
 
+    private jmri.implementation.AbstractShutDownTask task = null;
+
     private void setShutDownTask() {
-        jmri.InstanceManager.getDefault(jmri.ShutDownManager.class).register(this::disableServer);
+        task = new jmri.implementation.AbstractShutDownTask("WiThrottle Server ShutdownTask") {
+            @Override
+            public boolean execute() {
+                disableServer();
+                return true;
+            }
+        };
+        jmri.InstanceManager.getDefault(jmri.ShutDownManager.class).register(task);
     }
 
     @Override

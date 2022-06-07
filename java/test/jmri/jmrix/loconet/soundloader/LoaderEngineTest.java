@@ -2,14 +2,15 @@ package jmri.jmrix.loconet.soundloader;
 
 import jmri.jmrix.loconet.LocoNetMessage;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
  * Tests for the jmri.jmrix.loconet.soundloader.LoaderEngine class.
  *
- * @author Bob Jacobsen Copyright 2001, 2002, 2006
+ * @author	Bob Jacobsen Copyright 2001, 2002, 2006
  */
 public class LoaderEngineTest {
 
@@ -113,12 +114,12 @@ public class LoaderEngineTest {
         Assert.assertEquals("end", null, m);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

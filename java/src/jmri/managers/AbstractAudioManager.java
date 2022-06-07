@@ -1,11 +1,12 @@
 package jmri.managers;
 
-import java.util.Objects;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.Objects;
+
 import jmri.Audio;
 import jmri.AudioException;
 import jmri.AudioManager;
-import jmri.SystemConnectionMemo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,15 +23,12 @@ import org.slf4j.LoggerFactory;
  * JMRI is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * <p>
  *
  * @author Matthew Harris copyright (c) 2009
  */
 public abstract class AbstractAudioManager extends AbstractManager<Audio>
         implements AudioManager {
-
-    public AbstractAudioManager(SystemConnectionMemo memo) {
-        super(memo);
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -40,11 +38,10 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
 
     /** {@inheritDoc} */
     @Override
-    @Nonnull
     public Audio provideAudio(@Nonnull String name) throws AudioException {
-        Audio a = getAudio(name);
-        if (a != null) {
-            return a;
+        Audio t = getAudio(name);
+        if (t != null) {
+            return t;
         }
         if (name.startsWith(getSystemPrefix() + typeLetter())) {
             return newAudio(name, null);
@@ -56,9 +53,9 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
     /** {@inheritDoc} */
     @Override
     public Audio getAudio(@Nonnull String name) {
-        Audio a = getByUserName(name);
-        if (a != null) {
-            return a;
+        Audio t = getByUserName(name);
+        if (t != null) {
+            return t;
         }
 
         return getBySystemName(name);
@@ -72,7 +69,7 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
 
     /** {@inheritDoc} */
     @Override
-    public Audio getByUserName(@Nonnull String key) {
+    public Audio getByUserName(String key) {
         //return key==null?null:_tuser.get(key);
         if (key == null) {
             return (null);
@@ -86,9 +83,8 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
 
     /** {@inheritDoc} */
     @Override
-    @Nonnull
     public Audio newAudio(@Nonnull String systemName, String userName) throws AudioException {
-        Objects.requireNonNull(systemName, "SystemName cannot be null. UserName was " + (userName == null ? "null" : userName));  // NOI18N
+        Objects.requireNonNull(systemName, "SystemName cannot be null. UserName was "+ ((userName == null) ? "null" : userName));  // NOI18N
 
         log.debug("new Audio: {}; {}", systemName, userName); // NOI18N
  
@@ -96,7 +92,10 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
         if ((!systemName.startsWith("" + getSystemPrefix() + typeLetter() + Audio.BUFFER))
                 && (!systemName.startsWith("" + getSystemPrefix() + typeLetter() + Audio.SOURCE))
                 && (!systemName.startsWith("" + getSystemPrefix() + typeLetter() + Audio.LISTENER))) {
-            log.error("Invalid system name for Audio: {} needed either {}{}" + Audio.BUFFER + " or {}{}" + Audio.SOURCE + " or {}{}" + Audio.LISTENER, systemName, getSystemPrefix(), typeLetter(), getSystemPrefix(), typeLetter(), getSystemPrefix(), typeLetter());        // NOI18N
+            log.error("Invalid system name for Audio: " + systemName
+                    + " needed either " + getSystemPrefix() + typeLetter() + Audio.BUFFER // NOI18N
+                    + " or " + getSystemPrefix() + typeLetter() + Audio.SOURCE // NOI18N
+                    + " or " + getSystemPrefix() + typeLetter() + Audio.LISTENER);        // NOI18N
             throw new AudioException("Invalid system name for Audio: " + systemName
                     + " needed either " + getSystemPrefix() + typeLetter() + Audio.BUFFER
                     + " or " + getSystemPrefix() + typeLetter() + Audio.SOURCE
@@ -107,8 +106,7 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
         Audio s;
         if ((userName != null) && ((s = getByUserName(userName)) != null)) {
             if (getBySystemName(systemName) != s) {
-                log.error("inconsistent user ({}) and system name ({}) results; userName related to ({})",
-                        userName, systemName, s.getSystemName());
+                log.error("inconsistent user (" + userName + ") and system name (" + systemName + ") results; userName related to (" + s.getSystemName() + ")");
             }
             log.debug("Found existing Audio ({}). Returning existing (1).", s.getSystemName());  // NOI18N
             return s;
@@ -117,7 +115,8 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
             if ((s.getUserName() == null) && (userName != null)) {
                 s.setUserName(userName);
             } else if (userName != null) {
-                log.warn("Found audio via system name ({}) with non-null user name ({})", systemName, userName); // NOI18N
+                log.warn("Found audio via system name (" + systemName
+                        + ") with non-null user name (" + userName + ")"); // NOI18N
             }
             log.debug("Found existing Audio ({}). Returning existing (2).", s.getSystemName());
             return s;
@@ -140,7 +139,7 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
 
     /**
      * Internal method to invoke the factory, after all the logic for returning
-     * an existing Audio has been invoked.
+     * an existing method has been invoked.
      *
      * @param systemName Audio object system name (for example IAS1, IAB4)
      * @param userName   Audio object user name
@@ -156,14 +155,5 @@ public abstract class AbstractAudioManager extends AbstractManager<Audio>
         return Bundle.getMessage(plural ? "BeanNameAudios" : "BeanNameAudio");  // NOI18N
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Class<Audio> getNamedBeanClass() {
-        return Audio.class;
-    }
-
     private static final Logger log = LoggerFactory.getLogger(AbstractAudioManager.class);
-
 }

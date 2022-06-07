@@ -1,16 +1,12 @@
 package jmri.managers;
 
-import jmri.InstanceManager;
-import jmri.jmrix.internal.InternalSystemConnectionMemo;
 import jmri.util.JUnitAppender;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class DefaultMemoryManagerTest extends AbstractProvidingManagerTestBase<jmri.MemoryManager,jmri.Memory> {
 
@@ -22,7 +18,7 @@ public class DefaultMemoryManagerTest extends AbstractProvidingManagerTestBase<j
         } catch (IllegalArgumentException e) {
             // nothing to do
         }
-        JUnitAppender.assertErrorMessage("Invalid system name for Memory: System name \"" + l.getSystemNamePrefix() + "\" is missing suffix.");
+        JUnitAppender.assertErrorMessage("Invalid system name for memory: \"IM\" but needed IM followed by a suffix");
     }
 
     @Test
@@ -33,7 +29,7 @@ public class DefaultMemoryManagerTest extends AbstractProvidingManagerTestBase<j
         } catch (IllegalArgumentException e) {
             // nothing to do
         }
-        JUnitAppender.assertErrorMessage("Invalid system name for Memory: System name must start with \"" + l.getSystemNamePrefix() + "\".");
+        JUnitAppender.assertErrorMessage("Invalid system name for Memory: \"\" needed non-empty suffix to follow IM");
     }
 
     @Test
@@ -42,24 +38,14 @@ public class DefaultMemoryManagerTest extends AbstractProvidingManagerTestBase<j
         Assert.assertNotNull("iM created",im);
         Assert.assertEquals("correct system name","IMiM",im.getSystemName());
     }
-    
-    // No manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithNoPrefixNotASystemName() {}
-    
-    // No manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithPrefixNotASystemName() {}
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
-        l = new DefaultMemoryManager(InstanceManager.getDefault(InternalSystemConnectionMemo.class));
+        l = new DefaultMemoryManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

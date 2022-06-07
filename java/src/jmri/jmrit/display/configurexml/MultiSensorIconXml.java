@@ -1,11 +1,9 @@
 package jmri.jmrit.display.configurexml;
 
 import java.util.List;
-
-import jmri.configurexml.JmriConfigureXmlException;
 import jmri.jmrit.catalog.NamedIcon;
-import jmri.jmrit.display.*;
-
+import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.MultiSensorIcon;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -57,11 +55,9 @@ public class MultiSensorIconXml extends PositionableLabelXml {
      *
      * @param element Top level Element to unpack.
      * @param o       an Editor an Object
-     * @throws JmriConfigureXmlException when a error prevents creating the objects as as
-     *                   required by the input XML
      */
     @Override
-    public void load(Element element, Object o) throws JmriConfigureXmlException {
+    public void load(Element element, Object o) {
         Editor pe = (Editor) o;
         MultiSensorIcon l = new MultiSensorIcon(pe);
         // create the objects
@@ -100,8 +96,9 @@ public class MultiSensorIconXml extends PositionableLabelXml {
 
         // get the icon pairs & load
         List<Element> items = element.getChildren();
-        for (Element item : items) {
+        for (int i = 0; i < items.size(); i++) {
             // get the class, hence the adapter object to do loading
+            Element item = items.get(i);
             if (item.getAttribute("sensor") != null) {
                 String sensor = item.getAttribute("sensor").getValue();
                 if (item.getAttribute("url") != null) {
@@ -110,7 +107,7 @@ public class MultiSensorIconXml extends PositionableLabelXml {
                     if (icon == null) {
                         icon = pe.loadFailed("MultiSensor \"" + l.getNameString() + "\" ", name);
                         if (icon == null) {
-                            log.error("MultiSensor \"{}\" removed for url= {}", l.getNameString(), name);
+                            log.error("MultiSensor \"" + l.getNameString() + "\" removed for url= " + name);
                             return;
                         }
                     }
@@ -141,7 +138,7 @@ public class MultiSensorIconXml extends PositionableLabelXml {
                     if (icon == null) {
                         icon = pe.loadFailed("MultiSensor \"" + l.getNameString(), name);
                         if (icon == null) {
-                            log.info("MultiSensor \"{} removed for url= {}", l.getNameString(), name);
+                            log.info("MultiSensor \"" + l.getNameString() + " removed for url= " + name);
                             return;
                         }
                     }
@@ -153,11 +150,7 @@ public class MultiSensorIconXml extends PositionableLabelXml {
                 l.addEntry(sensor, icon);
             }
         }
-        try {
-            pe.putItem(l);
-        } catch (Positionable.DuplicateIdException e) {
-            throw new JmriConfigureXmlException("Positionable id is not unique", e);
-        }
+        pe.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.SENSORS, element);
     }
@@ -172,17 +165,17 @@ public class MultiSensorIconXml extends PositionableLabelXml {
                 if (icon == null) {
                     icon = ed.loadFailed(msg, iconName);
                     if (icon == null) {
-                        log.info("{} removed for url= {}", msg, iconName);
+                        log.info(msg + " removed for url= " + iconName);
                     }
                 } else {
                     icon.setRotation(rotation, l);
                 }
             } else {
-                log.warn("did not locate {} for Multisensor icon file", state);
+                log.warn("did not locate " + state + " for Multisensor icon file");
             }
         }
         if (icon == null) {
-            log.info("MultiSensor Icon \"{}\": icon \"{}\" removed", l.getNameString(), state);
+            log.info("MultiSensor Icon \"" + l.getNameString() + "\": icon \"" + state + "\" removed");
         }
         return icon;
     }

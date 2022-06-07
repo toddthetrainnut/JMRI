@@ -1,14 +1,15 @@
 package jmri.jmrit.withrottle;
 
 import jmri.util.JUnitUtil;
-
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of FacelessServer
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
 public class FacelessServerTest {
 
@@ -24,7 +25,7 @@ public class FacelessServerTest {
         Assert.assertNotNull("exists", panel.getDeviceList() );
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         panel = new FacelessServer(){
@@ -34,7 +35,7 @@ public class FacelessServerTest {
         };
     }
     
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         try {
           panel.disableServer();
@@ -43,7 +44,6 @@ public class FacelessServerTest {
           // not all tests fully configure the server, so an
           // NPE here is ok.
         }
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 }

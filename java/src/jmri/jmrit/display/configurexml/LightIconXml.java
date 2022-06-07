@@ -1,11 +1,8 @@
 package jmri.jmrit.display.configurexml;
 
-import jmri.configurexml.JmriConfigureXmlException;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.LightIcon;
-import jmri.jmrit.display.Positionable;
-
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +51,9 @@ public class LightIconXml extends PositionableLabelXml {
      *
      * @param element Top level Element to unpack.
      * @param o       Editor as an Object
-     * @throws JmriConfigureXmlException when a error prevents creating the objects as as
-     *                   required by the input XML
      */
     @Override
-    public void load(Element element, Object o) throws JmriConfigureXmlException {
+    public void load(Element element, Object o) {
         // create the objects
         Editor p = (Editor) o;
 
@@ -77,45 +72,40 @@ public class LightIconXml extends PositionableLabelXml {
         Element icons = element.getChild("icons");
         if (icons == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Main element of Light {}has no icons", name);
+                log.debug("Main element of Light " + name + "has no icons");
             }
         } else {
             NamedIcon icon = loadIcon(l, "on", icons, "LightIcon \"" + name + "\": icon \"on\" ", p);
             if (icon != null) {
                 l.setOnIcon(icon);
             } else {
-                log.info("LightIcon \"{}\": icon \"on\" removed", name);
+                log.info("LightIcon \"" + name + "\": icon \"on\" removed");
                 return;
             }
             icon = loadIcon(l, "off", icons, "LightIcon \"" + name + "\": icon \"off\" ", p);
             if (icon != null) {
                 l.setOffIcon(icon);
             } else {
-                log.info("LightIcon \"{}\": icon \"off\" removed", name);
+                log.info("LightIcon \"" + name + "\": icon \"off\" removed");
                 return;
             }
             icon = loadIcon(l, "unknown", icons, "LightIcon \"" + name + "\": icon \"unknown\" ", p);
             if (icon != null) {
                 l.setUnknownIcon(icon);
             } else {
-                log.info("LightIcon \"{}\": icon \"unknown\" removed", name);
+                log.info("LightIcon \"" + name + "\": icon \"unknown\" removed");
                 return;
             }
             icon = loadIcon(l, "inconsistent", icons, "LightIcon \"" + name + "\": icon \"inconsistent\" ", p);
             if (icon != null) {
                 l.setInconsistentIcon(icon);
             } else {
-                log.info("LightIcon \"{}\": icon \"inconsistent\" removed", name);
+                log.info("LightIcon \"" + name + "\": icon \"inconsistent\" removed");
                 return;
             }
         }
 
-        try {
-            p.putItem(l);
-        } catch (Positionable.DuplicateIdException e) {
-            // This should never happen
-            log.error("Editor.putItem() with null id has thrown DuplicateIdException", e);
-        }
+        p.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.LIGHTS, element);
     }

@@ -11,11 +11,13 @@ import jmri.CabSignal;
 import jmri.CabSignalListListener;
 import jmri.CabSignalManager;
 import jmri.LocoAddress;
+import jmri.DccLocoAddress;
+import jmri.implementation.DefaultCabSignal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract implementation of the {@link jmri.CabSignalManager} interface.
+ * abstract implementation of the {@link jmri.CabSignalManager} interface.
  *
  * <hr>
  * This file is part of JMRI.
@@ -32,15 +34,15 @@ import org.slf4j.LoggerFactory;
  */
 abstract public class AbstractCabSignalManager implements CabSignalManager {
 
-    protected HashMap<LocoAddress, CabSignal> signalList;
+    protected HashMap<LocoAddress,CabSignal> signalList;
     protected ArrayList<CabSignalListListener> listListeners;
 
     // keep a list of listeners for block objects.
-    private ArrayList<PropertyChangeListener> mBlockListeners;
+    private ArrayList<PropertyChangeListener> mBlockListeners; 
     private boolean blockInit = false;
 
     public AbstractCabSignalManager(){
-         signalList = new HashMap<LocoAddress, CabSignal>();
+         signalList = new HashMap<LocoAddress,CabSignal>();
          listListeners = new ArrayList<CabSignalListListener>();
          mBlockListeners = new ArrayList<PropertyChangeListener>();
     }
@@ -52,16 +54,15 @@ abstract public class AbstractCabSignalManager implements CabSignalManager {
      * @param address the cab signal for the address
      * @return an existing or new cab signal
      */
-    @Override
     public CabSignal getCabSignal(LocoAddress address){
         if(!blockInit) {
            initBlocks();
         }
         if(!signalList.containsKey(address)){
-           signalList.put(address, createCabSignal(address));
+           signalList.put(address,createCabSignal(address));
            notifyCabSignalListChanged();
         }
-        return signalList.get(address);
+        return signalList.get(address); 
     }
 
     /**
@@ -77,7 +78,6 @@ abstract public class AbstractCabSignalManager implements CabSignalManager {
      *
      * @param address the address associated with the cab signal
      */
-    @Override
     public void delCabSignal(LocoAddress address){
        if(signalList.containsKey(address)){
           signalList.remove(address);
@@ -90,8 +90,7 @@ abstract public class AbstractCabSignalManager implements CabSignalManager {
      *
      * @return list of cab signal addresses
      */
-    @Override
-    public Set<LocoAddress> getCabSignalList(){
+    public Set getCabSignalList(){
        return signalList.keySet();
     }
 
@@ -100,7 +99,6 @@ abstract public class AbstractCabSignalManager implements CabSignalManager {
      *
      * @return array of cab signals
      */
-    @Override
     public CabSignal[] getCabSignalArray(){
        return signalList.values().toArray(new CabSignal[1]);
     }
@@ -110,7 +108,6 @@ abstract public class AbstractCabSignalManager implements CabSignalManager {
      *
      * @param listener a CabSignal List Listener object.
      */
-    @Override
     public void addCabSignalListListener(CabSignalListListener listener){
        if(!listListeners.contains(listener)){
           listListeners.add(listener);
@@ -122,7 +119,6 @@ abstract public class AbstractCabSignalManager implements CabSignalManager {
      *
      * @param listener a CabSignal List Listener object.
      */
-    @Override
     public void removeCabSignalListListener(CabSignalListListener listener){
        if(listListeners.contains(listener)){
           listListeners.remove(listener);
@@ -133,44 +129,43 @@ abstract public class AbstractCabSignalManager implements CabSignalManager {
      * Notify the registered CabSignalListListener objects that the CabSignalList
      * has changed.
      */
-    @Override
     public void notifyCabSignalListChanged(){
        for(CabSignalListListener l : listListeners){
            l.notifyCabSignalListChanged();
        }
     }
 
-    // Adds changelistener to blocks
+    // Adds changelistener to blocks	
     private void initBlocks(){
-        blockInit = true;
-        BlockManager bmgr = jmri.InstanceManager.getDefault(jmri.BlockManager.class);
-        Set<Block> blockSet = bmgr.getNamedBeanSet();
-        for (Block b : blockSet) {
-            PropertyChangeListener listener = (PropertyChangeEvent e) -> {
-                handleBlockChange(e);
-            };
-            b.addPropertyChangeListener(listener);
-            mBlockListeners.add(listener);
-        }
+        blockInit = true;	
+        BlockManager bmgr = jmri.InstanceManager.getDefault(jmri.BlockManager.class);	
+        Set<Block> blockSet = bmgr.getNamedBeanSet();	
+        for (Block b : blockSet) {	
+            PropertyChangeListener listener = (PropertyChangeEvent e) -> {	
+                handleBlockChange(e);	
+            };	
+            b.addPropertyChangeListener(listener);	
+            mBlockListeners.add(listener);	
+        }	
     }
 
     /**
      * Handle tasks when block contents change.
      * @param e propChgEvent
      */
-  private void handleBlockChange(PropertyChangeEvent e) {
-        log.debug("property {} new value {} old value {}",e.getPropertyName(), e.getNewValue(), e.getOldValue());
-        if (e.getPropertyName().equals("value")){
-           if(e.getOldValue() == null && e.getNewValue() != null){
-              for(CabSignal c : signalList.values()){
-                 if(c.getBlock() == null){
+  private void handleBlockChange(PropertyChangeEvent e) {	
+        log.debug("property {} new value {} old value {}",e.getPropertyName(),e.getNewValue(),e.getOldValue());
+        if (e.getPropertyName().equals("value")){	
+           if(e.getOldValue()==null && e.getNewValue()!=null){
+              for(CabSignal c: signalList.values()){
+                 if(c.getBlock()==null){
                     c.setBlock(); // cause this cab signal to look for a block.
                  }
-              }
+              } 
            }
+           return;	
         }
    }
 
     private final static Logger log = LoggerFactory.getLogger(AbstractCabSignalManager.class);
-
 }

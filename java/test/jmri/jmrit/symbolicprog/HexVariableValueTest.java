@@ -1,17 +1,18 @@
 package jmri.jmrit.symbolicprog;
 
 import java.util.HashMap;
-
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the HexVariableValue class
  *
- * @author Bob Jacobsen Copyright 2001
+ * @author	Bob Jacobsen Copyright 2001
  */
 public class HexVariableValueTest extends AbstractVariableValueTestBase {
 
@@ -81,14 +82,12 @@ public class HexVariableValueTest extends AbstractVariableValueTestBase {
         Assert.assertEquals("cv value", (1+15*3+3*3*20), cv.getValue());                
     }
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() {
         super.setUp();
     }
     
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         super.tearDown();
     }

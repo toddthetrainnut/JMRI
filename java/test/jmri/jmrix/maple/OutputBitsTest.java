@@ -2,8 +2,9 @@ package jmri.jmrix.maple;
 
 import jmri.jmrix.AbstractMRMessage;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 
 /**
@@ -54,19 +55,17 @@ public class OutputBitsTest {
 
     private OutputBits obit;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
         SerialTrafficControlScaffold tc = new SerialTrafficControlScaffold();
         obit = new OutputBits(tc);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         obit = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
-
     }
 
 }

@@ -39,7 +39,8 @@ public class NceAIU {
     public void markChanges(int bits) {
         if (bits != lastAIUValue) {
             if (log.isDebugEnabled()) {
-                log.debug("sensor array change from {} to {}", Integer.toHexString(lastAIUValue), Integer.toHexString(bits));
+                log.debug("sensor array change from " + Integer.toHexString(lastAIUValue)
+                        + " to " + Integer.toHexString(bits));
             }
             lastAIUValue = bits;
             for (int i = 0; i < 14; i++) {
@@ -70,12 +71,12 @@ public class NceAIU {
                 if (newState == Sensor.INACTIVE) {
                     newStateStr = "Inactive";
                 }
-                log.debug("setting sensor {}: {}", sensorArray[offset].getSystemName(), newStateStr);
+                log.debug("setting sensor " + sensorArray[offset].getSystemName() + ": " + newStateStr);
             }
             try {
                 sensorArray[offset].setKnownState(newState);
             } catch (JmriException e) {
-                log.error("exception in sensorChange", e);
+                log.error("exception in sensorChange: " + e);
             }
         }
     }

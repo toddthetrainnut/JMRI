@@ -1,22 +1,22 @@
 package jmri.jmrit.ussctc;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * Tests for CodeLine class in the jmri.jmrit.ussctc package
  *
- * @author Bob Jacobsen Copyright 2007
+ * @author	Bob Jacobsen Copyright 2007
  */
 public class CodeLineTest {
 
     @Test
     public void testConstruction() {
-        new CodeLine("Code Indication Start", "Code Send Start", "IT101", "IT102", "IT103", "IT104");
+        new CodeLine("Code Sequencer Start", "IT101", "IT102", "IT103", "IT104");
     }
         
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -26,7 +26,7 @@ public class CodeLineTest {
         JUnitUtil.initInternalSensorManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

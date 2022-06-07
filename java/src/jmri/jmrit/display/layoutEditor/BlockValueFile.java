@@ -45,6 +45,7 @@ public class BlockValueFile extends XmlFile {
     // operational variables
     private BlockManager blockManager = null;
     private final static String defaultFileName = FileUtil.getUserFilesPath() + "blockvalues.xml";
+    private Document doc = null;
     private Element root = null;
 
     /**
@@ -56,12 +57,10 @@ public class BlockValueFile extends XmlFile {
      * @throws JDOMException on rootFromName if all methods fail
      * @throws IOException   if an I/O error occurs while reading a file
      */
+    @SuppressWarnings("deprecation") // needs careful unwinding for Set operations
     public void readBlockValues() throws JDOMException, IOException {
         log.debug("entered readBlockValues");
-        List<String> blocks = new ArrayList<>(blockManager.getNamedBeanSet().size());
-        blockManager.getNamedBeanSet().forEach(bean -> {
-            blocks.add(bean.getSystemName());
-        });
+        List<String> blocks = blockManager.getSystemNameList();
         // check if file exists
         if (checkFile(defaultFileName)) {
             // file is present,
@@ -76,7 +75,11 @@ public class BlockValueFile extends XmlFile {
                     // blocks with values to be occupied
                     boolean allPoweredUp = true;
                     for (PowerManager pm : jmri.InstanceManager.getList(PowerManager.class)) {
-                        if (pm.getPower() != jmri.PowerManager.ON) {
+                        try {
+                            if (pm.getPower() != jmri.PowerManager.ON) {
+                                allPoweredUp = false;
+                            }
+                        } catch (JmriException e) {
                             allPoweredUp = false;
                         }
                     }
@@ -88,12 +91,14 @@ public class BlockValueFile extends XmlFile {
                         passes.add(0, "check");
                     }
                     for (String pass : passes) {
-                        for (Element bl : blockList) {
-                            if (bl.getAttribute("systemname") == null) {
-                                log.warn("unexpected null in systemName {} {}", bl, bl.getAttributes());
+                        for (int i = 0; i < blockList.size(); i++) {
+                            if ((blockList.get(i)).getAttribute("systemname") == null) {
+                                log.warn("unexpected null in systemName "
+                                        + blockList.get(i) + " "
+                                        + blockList.get(i).getAttributes());
                                 break;
                             }
-                            String sysName = bl.getAttribute("systemname").getValue();
+                            String sysName = blockList.get(i).getAttribute("systemname").getValue();
                             // get Block - ignore entry if block not found
                             Block b = blockManager.getBySystemName(sysName);
                             if (b != null) {
@@ -101,14 +106,13 @@ public class BlockValueFile extends XmlFile {
                                 if (pass.equals("check") && b.getState() != Block.OCCUPIED) {
                                     // we have a recorded value for an empty block, the blockvalues file
                                     // must be out of date, bail out before we set any values
-                                    log.error("block {} is not occupied but has a saved value, not setting saved block values",
-                                            b.getDisplayName());
+                                    log.error("block {} is not occupied but has a saved value, not setting saved block values", b.getDisplayName());
                                     return;
                                 }
                                 if (pass.equals("set")) {
-                                    Object v = bl.getAttribute("value").getValue();
-                                    if (bl.getAttribute("valueClass") != null) {
-                                        if (bl.getAttribute("valueClass").getValue().equals("jmri.jmrit.roster.RosterEntry")) {
+                                    Object v = blockList.get(i).getAttribute("value").getValue();
+                                    if (blockList.get(i).getAttribute("valueClass") != null) {
+                                        if (blockList.get(i).getAttribute("valueClass").getValue().equals("jmri.jmrit.roster.RosterEntry")) {
                                             RosterEntry re = Roster.getDefault().getEntryForId(((String) v));
                                             if (re != null) {
                                                 v = re;
@@ -120,7 +124,7 @@ public class BlockValueFile extends XmlFile {
                                 if (pass.equals("set")) {
                                     // set direction if there is one
                                     int dd = Path.NONE;
-                                    Attribute a = bl.getAttribute("dir");
+                                    Attribute a = blockList.get(i).getAttribute("dir");
                                     if (a != null) {
                                         try {
                                             dd = a.getIntValue();
@@ -146,12 +150,14 @@ public class BlockValueFile extends XmlFile {
      *
      * @throws IOException
      */
+    @SuppressWarnings("deprecation") // needs careful unwinding for Set operations & generics
     public void writeBlockValues() throws IOException {
         log.debug("entered writeBlockValues");
-        if (blockManager.getNamedBeanSet().size() > 0) {
+        List<String> blocks = blockManager.getSystemNameList();
+        if (blocks.size() > 0) {
             // there are blocks defined, create root element
             root = new Element("block_values");
-            Document doc = newDocument(root, dtdLocation + "block-values.dtd");
+            doc = newDocument(root, dtdLocation + "block-values.dtd");
             boolean valuesFound = false;
 
             // add XSLT processing instruction
@@ -164,14 +170,15 @@ public class BlockValueFile extends XmlFile {
 
             // save block values in xml format
             Element values = new Element("blockvalues");
-            
-            for (Block b : blockManager.getNamedBeanSet()) {
+            for (int i = 0; i < blocks.size(); i++) {
+                String sname = blocks.get(i);
+                Block b = blockManager.getBySystemName(sname);
                 if (b != null) {
                     Object o = b.getValue();
                     if (o != null) {
                         // block has value, save it
                         Element val = new Element("block");
-                        val.setAttribute("systemname", b.getSystemName());
+                        val.setAttribute("systemname", sname);
                         if (o instanceof RosterEntry) {
                             val.setAttribute("value", ((BasicRosterEntry) o).getId());
                             val.setAttribute("valueClass", "jmri.jmrit.roster.RosterEntry");
@@ -186,7 +193,7 @@ public class BlockValueFile extends XmlFile {
                         valuesFound = true;
                     }
                 } else {
-                    log.error("Block null in blockManager.getNamedBeanSet()");
+                    log.error("Block " + sname + " was not found.");
                 }
             }
             root.addContent(values);
@@ -205,7 +212,7 @@ public class BlockValueFile extends XmlFile {
                     // write content to file
                     writeXML(findFile(defaultFileName), doc);
                 } catch (IOException ioe) {
-                    log.error("While writing block value file ", ioe);
+                    log.error("IO Exception " + ioe);
                     throw (ioe);
                 }
             }
@@ -213,6 +220,6 @@ public class BlockValueFile extends XmlFile {
     }
 
     // initialize logging
-    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BlockValueFile.class);
+    private final static Logger log = LoggerFactory.getLogger(BlockValueFile.class);
 
 }

@@ -1,13 +1,12 @@
 package jmri.jmrit.operations.setup;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-
 import jmri.jmrit.operations.OperationsTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class PrintOptionPanelTest extends OperationsTestCase {
 
@@ -34,7 +33,6 @@ public class PrintOptionPanelTest extends OperationsTestCase {
         Assert.assertTrue(p.printValidCheckBox.isSelected());
         Assert.assertFalse(p.sortByTrackCheckBox.isSelected());
         Assert.assertFalse(p.printHeadersCheckBox.isSelected());
-        Assert.assertTrue(p.printPageHeaderCheckBox.isSelected());
         Assert.assertFalse(p.truncateCheckBox.isSelected());
         Assert.assertFalse(p.departureTimeCheckBox.isSelected());
         Assert.assertTrue(p.trackSummaryCheckBox.isSelected());

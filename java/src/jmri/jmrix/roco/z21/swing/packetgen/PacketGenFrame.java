@@ -6,7 +6,7 @@ import jmri.jmrix.roco.z21.Z21TrafficController;
 /**
  * Frame for user input of XpressNet messages.
  *
- * @author Bob Jacobsen Copyright (C) 2001,2002
+ * @author	Bob Jacobsen Copyright (C) 2001,2002
  */
 public class PacketGenFrame extends jmri.jmrix.swing.AbstractPacketGenFrame {
 
@@ -36,7 +36,8 @@ public class PacketGenFrame extends jmri.jmrix.swing.AbstractPacketGenFrame {
         if (s.equals("")) {
             return null; // message cannot be empty
         }
-        return new Z21Message(s);
+        Z21Message m = new Z21Message(s);
+        return m;
     }
 
     // connect to the TrafficController

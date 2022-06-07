@@ -16,7 +16,7 @@ import purejavacomm.SerialPort;
 import purejavacomm.UnsupportedCommOperationException;
 
 /**
- * Provide access to Powerline devices via a serial com port.
+ * Provide access to Powerline devices via a serial comm port.
  * Derived from the Oaktree code.
  *
  * @author Bob Jacobsen Copyright (C) 2006, 2007, 2008
@@ -61,7 +61,8 @@ public class SpecificDriverAdapter extends SerialPortController {
             // set timeout; framing should work before this anyway
             try {
                 activeSerialPort.enableReceiveTimeout(10);
-                log.debug("Serial timeout was observed as: {} {}", activeSerialPort.getReceiveTimeout(), activeSerialPort.isReceiveTimeoutEnabled());
+                log.debug("Serial timeout was observed as: " + activeSerialPort.getReceiveTimeout()
+                        + " " + activeSerialPort.isReceiveTimeoutEnabled());
             } catch (Exception et) {
                 log.info("failed to set serial timeout: ", et);
             }
@@ -75,7 +76,14 @@ public class SpecificDriverAdapter extends SerialPortController {
             // report status?
             if (log.isInfoEnabled()) {
                 // report now
-                log.info("{} port opened at {} baud with DTR: {} RTS: {} DSR: {} CTS: {}  CD: {}", portName, activeSerialPort.getBaudRate(), activeSerialPort.isDTR(), activeSerialPort.isRTS(), activeSerialPort.isDSR(), activeSerialPort.isCTS(), activeSerialPort.isCD());
+                log.info(portName + " port opened at "
+                        + activeSerialPort.getBaudRate() + " baud with"
+                        + " DTR: " + activeSerialPort.isDTR()
+                        + " RTS: " + activeSerialPort.isRTS()
+                        + " DSR: " + activeSerialPort.isDSR()
+                        + " CTS: " + activeSerialPort.isCTS()
+                        + "  CD: " + activeSerialPort.isCD()
+                );
             }
             if (log.isDebugEnabled()) {
                 // report additional status
@@ -170,7 +178,7 @@ public class SpecificDriverAdapter extends SerialPortController {
      */
     protected void setSerialPort() throws UnsupportedCommOperationException {
         // find the baud rate value, configure comm options
-        int baud = currentBaudNumber(mBaudRate);
+        int baud = 600;  // default, but also defaulted in the initial value of selectedSpeed
 
         activeSerialPort.setSerialPortParams(baud, SerialPort.DATABITS_8,
                 SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
@@ -182,11 +190,7 @@ public class SpecificDriverAdapter extends SerialPortController {
 
     protected String[] validSpeeds = new String[]{Bundle.getMessage("BaudAutomatic")};
     protected int[] validSpeedValues = new int[]{600};
-
-    @Override
-    public int defaultBaudIndex() {
-        return 0;
-    }
+    protected String selectedSpeed = validSpeeds[0];
 
     private final static Logger log = LoggerFactory.getLogger(SpecificDriverAdapter.class);
 

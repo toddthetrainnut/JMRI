@@ -1,15 +1,10 @@
 package jmri.jmrix;
 
 import java.util.List;
-
-import jmri.*;
+import jmri.ProgListener;
+import jmri.ProgrammingMode;
 import jmri.util.JUnitUtil;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.jupiter.api.*;
-
-import javax.annotation.Nonnull;
+import org.junit.*;
 
 /**
  * JUnit tests for the AbstractProgrammer class
@@ -18,7 +13,7 @@ import javax.annotation.Nonnull;
  *
  * @author Bob Jacobsen
  */
-public class AbstractProgrammerTest extends ProgrammerTestBase {
+public class AbstractProgrammerTest extends jmri.ProgrammerTestBase {
 
     @Test
     public void testDefaultViaBestMode() {
@@ -48,7 +43,7 @@ public class AbstractProgrammerTest extends ProgrammerTestBase {
                     abstractprogrammer.registerFromCV(cv1 = 7));
             Assert.assertEquals("test CV 8", 8,
                     abstractprogrammer.registerFromCV(cv1 = 8));
-        } catch (ProgrammerException e) {
+        } catch (Exception e) {
             Assert.fail("unexpected exception while cv = " + cv1);
         }
 
@@ -60,23 +55,22 @@ public class AbstractProgrammerTest extends ProgrammerTestBase {
             try {
                 abstractprogrammer.registerFromCV(cv1); // should assert
                 Assert.fail("did not throw as expected for cv = " + cv1);
-            } catch (ProgrammerException e) {
+            } catch (Exception e) {
                 jmri.util.JUnitAppender.assertWarnMessage("Unhandled register from cv:  "+cv1);
             }
         }
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
 
         programmer = new AbstractProgrammer() {
 
-            @Nonnull
             @Override
             public List<ProgrammingMode> getSupportedModes() {
-                java.util.ArrayList<ProgrammingMode> retval = new java.util.ArrayList<>();
+                java.util.ArrayList<ProgrammingMode> retval = new java.util.ArrayList<ProgrammingMode>();
                 
                 retval.add(ProgrammingMode.DIRECTMODE);
                 retval.add(ProgrammingMode.PAGEMODE);
@@ -102,8 +96,7 @@ public class AbstractProgrammerTest extends ProgrammerTestBase {
         };
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         programmer = null;
         JUnitUtil.tearDown();

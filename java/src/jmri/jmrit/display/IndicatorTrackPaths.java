@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import jmri.Sensor;
 import jmri.jmrit.display.controlPanelEditor.shape.LocoLabel;
 import jmri.jmrit.logix.OBlock;
-import jmri.util.ThreadingUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +17,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright (c) 2012
  */
-public class IndicatorTrackPaths {
+class IndicatorTrackPaths {
 
     protected ArrayList<String> _paths;      // list of paths that this icon displays
     private boolean _showTrain;         // this track icon should display _loco when occupied
@@ -59,7 +57,7 @@ public class IndicatorTrackPaths {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("addPath \"{}\" #paths= {}", path, _paths.size());
+            log.debug("addPath \"" + path + "\" #paths= " + _paths.size());
         }
     }
 
@@ -80,7 +78,7 @@ public class IndicatorTrackPaths {
         return _showTrain;
     }
 
-    synchronized protected String getStatus(OBlock block, int state) {
+    protected String getStatus(OBlock block, int state) {
         String pathName = block.getAllocatedPathName();
         String status;
         removeLocoIcon();
@@ -110,25 +108,14 @@ public class IndicatorTrackPaths {
         return status;
     }
 
-    public void removeLocoIcon() {
+    private void removeLocoIcon() {
         if (_loco != null) {
             _loco.remove();
             _loco = null;
         }
     }
 
-    /**
-     * @param block OBlock occupied by train
-     * @param pt    position of track icon
-     * @param size  size of track icon
-     * @param ed    editor
-     * LocoLabel ctor causes editor to draw a graphic. Must be done on GUI
-     * Called from IndicatorTrackIcon.setStatus and IndicatorTurnoutIcon.setStatus
-     * Each wraps this method with ThreadingUtil.runOnLayoutEventually, so there is
-     * a time lag for when track icon changes and display of the change.
-     */
-    @jmri.InvokeOnLayoutThread
-    synchronized protected void setLocoIcon(OBlock block, Point pt, Dimension size, Editor ed) {
+    protected void setLocoIcon(OBlock block, Point pt, Dimension size, Editor ed) {
         if (!_showTrain) {
             removeLocoIcon();
             return;
@@ -138,24 +125,11 @@ public class IndicatorTrackPaths {
             removeLocoIcon();
             return;
         }
-        if ((block.getState() & (OBlock.OCCUPIED | OBlock.RUNNING)) == 0) {
-            // during delay of runOnLayoutEventually, state has changed
-            // don't paint loco icon 
-            return;
-        }
-        if (_loco != null || pt == null) {
+        if (_loco != null) {
             return;
         }
         trainName = trainName.trim();
-        try {
-            _loco = new LocoLabel(ed);
-        } catch (Exception e) {
-            jmri.jmrit.logix.Warrant w = block.getWarrant();
-            log.error("Exception in setLocoIcon() in thread {} {} for block \"{}\", train \"{}\" \"{}\". state= {} at pt({}, {})",
-                    Thread.currentThread().getName(), Thread.currentThread().getId(), block.getDisplayName(), trainName,
-                    (w!=null? w.getDisplayName(): "no warrant"), block.getState(), pt.x, pt.y);
-            return;
-        }
+        _loco = new LocoLabel(ed);
         Font font = block.getMarkerFont();
         if (font == null) {
             font = ed.getFont();
@@ -174,12 +148,7 @@ public class IndicatorTrackPaths {
         pt.x = pt.x + (size.width - _loco.maxWidth()) / 2;
         pt.y = pt.y + (size.height - _loco.maxHeight()) / 2;
         _loco.setLocation(pt);
-        try {
-            ed.putItem(_loco);
-        } catch (Positionable.DuplicateIdException e) {
-            // This should never happen
-            log.error("Editor.putItem() with null id has thrown DuplicateIdException", e);
-        }
+        ed.putItem(_loco);
     }
 
     /*

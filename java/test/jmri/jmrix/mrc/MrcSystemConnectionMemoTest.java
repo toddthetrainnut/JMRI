@@ -1,32 +1,29 @@
 package jmri.jmrix.mrc;
 
-import jmri.jmrix.SystemConnectionMemoTestBase;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Test simple functioning of MrcMonPanel
  *
- * @author Paul Bender Copyright (C) 2016
+ * @author	Paul Bender Copyright (C) 2016
  */
-public class MrcSystemConnectionMemoTest extends SystemConnectionMemoTestBase<MrcSystemConnectionMemo> {
+public class MrcSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
-    @BeforeEach
-    @Override
+    jmri.jmrix.mrc.MrcSystemConnectionMemo memo = null;
+
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.initDefaultUserMessagePreferences();
-        scm = new jmri.jmrix.mrc.MrcSystemConnectionMemo();
+        scm = memo = new jmri.jmrix.mrc.MrcSystemConnectionMemo();
         jmri.jmrix.mrc.MrcInterfaceScaffold tc = new jmri.jmrix.mrc.MrcInterfaceScaffold();
-        scm.setMrcTrafficController(tc);
-        jmri.InstanceManager.store(scm, MrcSystemConnectionMemo.class);
-        scm.configureManagers();
+        memo.setMrcTrafficController(tc);
+        jmri.InstanceManager.store(memo, jmri.jmrix.mrc.MrcSystemConnectionMemo.class);
+        memo.configureManagers();
     }
 
-    @AfterEach
-    @Override
-    public void tearDown() {
-        JUnitUtil.tearDown();
-    }
+    @After
+    public void tearDown() {        JUnitUtil.tearDown();    }
 }

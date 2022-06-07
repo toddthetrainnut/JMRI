@@ -2,7 +2,6 @@ package jmri.jmrit.beantable.signalmast;
 
 import java.util.HashMap;
 import java.util.Vector;
-import javax.annotation.Nonnull;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
@@ -70,9 +69,11 @@ public class SignalMastTableDataModel extends BeanTableDataModel<SignalMast> {
             case VALUECOL:
                 return RowComboBoxPanel.class; // Use a JPanel containing a custom Aspect ComboBox
             case EDITMASTCOL:
+                return JButton.class;
             case EDITLOGICCOL:
                 return JButton.class;
             case LITCOL:
+                return Boolean.class;
             case HELDCOL:
                 return Boolean.class;
             default:
@@ -101,8 +102,11 @@ public class SignalMastTableDataModel extends BeanTableDataModel<SignalMast> {
     public boolean isCellEditable(int row, int col) {
         switch (col) {
             case LITCOL:
+                return true;
             case EDITLOGICCOL:
+                return true;
             case EDITMASTCOL:
+                return true;
             case HELDCOL:
                 return true;
             default:
@@ -116,12 +120,12 @@ public class SignalMastTableDataModel extends BeanTableDataModel<SignalMast> {
     }
 
     @Override
-    protected SignalMast getBySystemName(@Nonnull String name) {
+    protected SignalMast getBySystemName(String name) {
         return InstanceManager.getDefault(jmri.SignalMastManager.class).getBySystemName(name);
     }
 
     @Override
-    protected SignalMast getByUserName(@Nonnull String name) {
+    protected SignalMast getByUserName(String name) {
         return InstanceManager.getDefault(jmri.SignalMastManager.class).getByUserName(name);
     }
 
@@ -213,17 +217,46 @@ public class SignalMastTableDataModel extends BeanTableDataModel<SignalMast> {
     }
 
     void editLogic(int row, int col) {
-        SwingUtilities.invokeLater(() -> {
-            SignallingSourceAction action = new SignallingSourceAction(Bundle.getMessage("TitleSignalMastLogicTable"), getBySystemName(sysNameList.get(row)));
-            action.actionPerformed(null);
-        });
+        class WindowMaker implements Runnable {
+
+            int row;
+
+            WindowMaker(int r) {
+                row = r;
+            }
+
+            @Override
+            public void run() {
+                SignallingSourceAction action = new SignallingSourceAction(Bundle.getMessage("TitleSignalMastLogicTable"), getBySystemName(sysNameList.get(row)));
+                action.actionPerformed(null);
+            }
+        }
+        WindowMaker t = new WindowMaker(row);
+        javax.swing.SwingUtilities.invokeLater(t);
     }
 
     void editMast(int row, int col) {
-        SwingUtilities.invokeLater(() -> {
-            AddSignalMastJFrame editFrame = new jmri.jmrit.beantable.signalmast.AddSignalMastJFrame(getBySystemName(sysNameList.get(row)));
-            editFrame.setVisible(true);
-        });
+        class WindowMaker implements Runnable {
+
+            int row;
+
+            WindowMaker(int r) {
+                row = r;
+            }
+
+            @Override
+            public void run() {
+                AddSignalMastJFrame editFrame = new jmri.jmrit.beantable.signalmast.AddSignalMastJFrame(getBySystemName(sysNameList.get(row)));
+                editFrame.setVisible(true);
+            }
+        }
+        WindowMaker t = new WindowMaker(row);
+        javax.swing.SwingUtilities.invokeLater(t);
+    }
+
+    @Override
+    protected String getBeanType() {
+        return Bundle.getMessage("BeanNameSignalMast");
     }
 
     /**

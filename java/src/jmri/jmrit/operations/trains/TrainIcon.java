@@ -5,15 +5,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.text.MessageFormat;
 import java.util.List;
-
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jmri.InstanceManager;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.LocoIcon;
@@ -23,6 +18,8 @@ import jmri.jmrit.operations.routes.Route;
 import jmri.jmrit.operations.routes.RouteLocation;
 import jmri.jmrit.operations.trains.tools.ShowCarsInTrainAction;
 import jmri.jmrit.throttle.ThrottleFrameManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An icon that displays the position of a train icon on a panel.
@@ -53,7 +50,7 @@ public class TrainIcon extends LocoIcon {
     public boolean showPopUp(JPopupMenu popup) {
         if (_train != null) {
             // first action is either "Move" or "Terminate" train
-            String actionText = (_train.getCurrentRouteLocation() == _train.getTrainTerminatesRouteLocation())
+            String actionText = (_train.getCurrentLocation() == _train.getTrainTerminatesRouteLocation())
                     ? Bundle.getMessage("Terminate") : Bundle.getMessage("Move");
             popup.add(new AbstractAction(actionText) {
                 @Override
@@ -62,8 +59,8 @@ public class TrainIcon extends LocoIcon {
                 }
             });
             popup.add(makeTrainRouteMenu());
-            popup.add(new TrainConductorAction(_train));
-            popup.add(new ShowCarsInTrainAction(_train));
+            popup.add(new TrainConductorAction(Bundle.getMessage("TitleTrainConductor"), _train));
+            popup.add(new ShowCarsInTrainAction(Bundle.getMessage("MenuItemShowCarsInTrain"), _train));
             if (!isEditable()) {
                 popup.add(new AbstractAction(Bundle.getMessage("SetX&Y")) {
                     @Override
@@ -131,7 +128,7 @@ public class TrainIcon extends LocoIcon {
             int pickupCars = 0;
             int dropCars = 0;
             String current = "     ";
-            if (_train.getCurrentRouteLocation() == rl) {
+            if (_train.getCurrentLocation() == rl) {
                 current = "-> "; // NOI18N
             }
             for (Car car : carList) {
@@ -191,14 +188,14 @@ public class TrainIcon extends LocoIcon {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            log.debug("Route location selected {}", _rl.getName());
+            log.debug("Route location selected " + _rl.getName());
             Route route = _train.getRoute();
             List<RouteLocation> routeList = route.getLocationsBySequenceList();
             // determine where the train is in the route
             for (int r = 0; r < routeList.size(); r++) {
                 RouteLocation rl = routeList.get(r);
-                if (_train.getCurrentRouteLocation() == rl) {
-                    log.debug("Train is at location {}", rl.getName());
+                if (_train.getCurrentLocation() == rl) {
+                    log.debug("Train is at location " + rl.getName());
                     // Is train at this route location?
                     if (rl == _rl) {
                         break;
@@ -213,7 +210,7 @@ public class TrainIcon extends LocoIcon {
                                     .getMessage("MoveTrainTo"), new Object[]{_rl.getName()}), MessageFormat.format(
                                     Bundle.getMessage("MoveTrain"), new Object[]{_train.getIconName()}),
                                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                                while (_train.getCurrentRouteLocation() != _rl) {
+                                while (_train.getCurrentLocation() != _rl) {
                                     _train.move();
                                 }
                             }
@@ -233,14 +230,14 @@ public class TrainIcon extends LocoIcon {
      */
     @Override
     public void doMouseDragged(MouseEvent event) {
-        log.debug("Mouse dragged, X={} Y={}", getX(), getY());
+        log.debug("Mouse dragged, X=" + getX() + " Y=" + getY());
         if (_train != null) {
-            RouteLocation next = _train.getNextRouteLocation(_train.getCurrentRouteLocation());
+            RouteLocation next = _train.getNextLocation(_train.getCurrentLocation());
             if (next != null) {
                 Point nextPoint = next.getTrainIconCoordinates();
-                log.debug("Next location ({}), X={} Y={}", next.getName(), nextPoint.x, nextPoint.y);
+                log.debug("Next location (" + next.getName() + "), X=" + nextPoint.x + " Y=" + nextPoint.y);
                 if (Math.abs(getX() - nextPoint.x) < next.getTrainIconRangeX() && Math.abs(getY() - nextPoint.y) < next.getTrainIconRangeY()) {
-                    log.debug("Train icon ({}) within range of ({})", _train.getName(), next.getName());
+                    log.debug("Train icon (" + _train.getName() + ") within range of (" + next.getName() + ")");
                     if (JOptionPane.showConfirmDialog(null, MessageFormat.format(Bundle.getMessage("MoveTrainTo"),
                             new Object[]{next.getName()}), MessageFormat.format(Bundle.getMessage("MoveTrain"),
                             new Object[]{_train.getIconName()}), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {

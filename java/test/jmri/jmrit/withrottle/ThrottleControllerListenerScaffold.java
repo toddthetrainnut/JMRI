@@ -5,6 +5,7 @@ package jmri.jmrit.withrottle;
  * 
  * @author Paul Bender Copyright (C) 2018
  */
+import java.util.EventListener;
 import jmri.DccLocoAddress;
 
 public class ThrottleControllerListenerScaffold implements ThrottleControllerListener {
@@ -12,7 +13,6 @@ public class ThrottleControllerListenerScaffold implements ThrottleControllerLis
     private boolean addressFound = false;
     private boolean addressReleased = false;
 
-    @Override
     public void notifyControllerAddressFound(ThrottleController TC){
         addressFound = true;
     }
@@ -21,7 +21,6 @@ public class ThrottleControllerListenerScaffold implements ThrottleControllerLis
        return addressFound;
     }
 
-    @Override
     public void notifyControllerAddressReleased(ThrottleController TC){
         addressReleased = true;
     }
@@ -30,7 +29,6 @@ public class ThrottleControllerListenerScaffold implements ThrottleControllerLis
        return addressReleased;
     }
     
-    @Override
     public void notifyControllerAddressDeclined(ThrottleController tc, DccLocoAddress address, String reason){
         jmri.InstanceManager.throttleManagerInstance().cancelThrottleRequest(address, tc);
     }

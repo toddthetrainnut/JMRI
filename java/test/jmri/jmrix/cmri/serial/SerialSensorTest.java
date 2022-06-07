@@ -3,8 +3,10 @@ package jmri.jmrix.cmri.serial;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import jmri.Sensor;
 import jmri.util.JUnitUtil;
@@ -12,7 +14,7 @@ import jmri.util.NamedBeanComparator;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SerialSensorTest extends jmri.implementation.AbstractSensorTestBase {
 
@@ -23,10 +25,10 @@ public class SerialSensorTest extends jmri.implementation.AbstractSensorTestBase
     public int numListeners() {return 0;}
 
     @Override
-    public void checkActiveMsgSent() {}
+    public void checkOnMsgSent() {}
 
     @Override
-    public void checkInactiveMsgSent() {}
+    public void checkOffMsgSent() {}
 
     @Override
     public void checkStatusRequestMsgSent() {}
@@ -96,8 +98,8 @@ public class SerialSensorTest extends jmri.implementation.AbstractSensorTestBase
         Assert.assertEquals("CS3B4", it.next().getSystemName());
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         // prepare an interface
@@ -108,14 +110,12 @@ public class SerialSensorTest extends jmri.implementation.AbstractSensorTestBase
         t = new SerialSensor("CS4");
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
+        JUnitUtil.tearDown();
         if (tcis != null) tcis.terminateThreads();
         tcis = null;
         memo = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
-        JUnitUtil.tearDown();
     }
 
 }

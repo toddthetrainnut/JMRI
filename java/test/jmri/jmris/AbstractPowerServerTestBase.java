@@ -1,13 +1,11 @@
 package jmri.jmris;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Base set of tests for descendants of the jmri.jmris.AbstractPowerServer class
+ * Base set of tests for decendents of the jmri.jmris.AbstractPowerServer class
  *
  * @author Paul Bender Copyright (C) 2018
  */
@@ -17,7 +15,7 @@ abstract public class AbstractPowerServerTestBase {
 
     @Test
     public void testCtor() {
-        assertThat(ps).isNotNull();
+        Assert.assertNotNull(ps);
     }
 
     // test sending an error message.
@@ -51,17 +49,24 @@ abstract public class AbstractPowerServerTestBase {
     // test the property change sequence for an ON property change.
     @Test
     public void testPropertyChangeOnStatus() {
-         Throwable thrown = catchThrowable( () -> jmri.InstanceManager.getDefault(jmri.PowerManager.class).setPower(jmri.PowerManager.ON));
-         checkPowerOnSent();
-         assertThat(thrown).withFailMessage("Exception setting Status").isNull();
+        try {
+            jmri.InstanceManager.getDefault(jmri.PowerManager.class)
+                            .setPower(jmri.PowerManager.ON);
+            checkPowerOnSent();
+        } catch (jmri.JmriException je){
+            Assert.fail("Exception setting Status");
+        }
     }
 
     // test the property change sequence for an OFF property change.
     @Test
     public void testPropertyChangeOffStatus() {
-        Throwable thrown = catchThrowable( () -> jmri.InstanceManager.getDefault(jmri.PowerManager.class).setPower(jmri.PowerManager.OFF));
-        assertThat(thrown).withFailMessage("Exception setting Status").isNull();
-        checkPowerOffSent();
+        try {
+            jmri.InstanceManager.getDefault(jmri.PowerManager.class).setPower(jmri.PowerManager.OFF);
+            checkPowerOffSent();
+        } catch (jmri.JmriException je){
+            Assert.fail("Exception setting Status");
+        }
     }
 
     /**
@@ -85,7 +90,7 @@ abstract public class AbstractPowerServerTestBase {
      * Setup ps and a power manager instance;
      *
      */
-    @BeforeEach
+    @Before
     abstract public void setUp(); 
 
 }

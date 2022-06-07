@@ -1,14 +1,15 @@
 package apps.configurexml;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * CreateButtonModelXmlTest.java
  *
- * Test for the CreateButtonModelXml class
+ * Description: tests for the CreateButtonModelXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class CreateButtonModelXmlTest {
       Assert.assertNotNull("CreateButtonModelXml constructor",new CreateButtonModelXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

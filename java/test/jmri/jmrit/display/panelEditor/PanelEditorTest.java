@@ -4,10 +4,11 @@ import java.awt.GraphicsEnvironment;
 
 import jmri.jmrit.display.AbstractEditorTestBase;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -29,8 +30,8 @@ public class PanelEditorTest extends AbstractEditorTestBase<PanelEditor> {
         Assert.assertNotNull("exists", e);
     }
 
-    @BeforeEach
-    @Override
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
@@ -39,16 +40,13 @@ public class PanelEditorTest extends AbstractEditorTestBase<PanelEditor> {
         }
     }
 
-    @AfterEach
-    @Override
+    @After
     public void tearDown() {
         if (e != null) {
             JUnitUtil.dispose(e.getTargetFrame());
             JUnitUtil.dispose(e);
             e = null;
         }
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

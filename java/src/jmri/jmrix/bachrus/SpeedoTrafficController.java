@@ -78,7 +78,7 @@ public class SpeedoTrafficController implements SpeedoInterface, SerialPortEvent
                     client.reply(r);
                 }
             } catch (Exception e) {
-                log.warn("notify: During dispatch to {} Exception", client, e);
+                log.warn("notify: During dispatch to " + client + "\nException " + e);
             }
         }
 
@@ -96,7 +96,6 @@ public class SpeedoTrafficController implements SpeedoInterface, SerialPortEvent
 
     /**
      * Make connection to existing PortController object.
-     * @param p speedo port controller.
      */
     public void connectPort(SpeedoPortController p) {
         istream = p.getInputStream();
@@ -108,9 +107,8 @@ public class SpeedoTrafficController implements SpeedoInterface, SerialPortEvent
     }
 
     /**
-     * Break connection to existing SpeedoPortController object.
-     * Once broken, attempts to send via "message" member will fail.
-     * @param p speedo port controller.
+     * Break connection to existing SpeedoPortController object. Once broken,
+     * attempts to send via "message" member will fail.
      */
     public void disconnectPort(SpeedoPortController p) {
         istream = null;
@@ -119,6 +117,18 @@ public class SpeedoTrafficController implements SpeedoInterface, SerialPortEvent
             log.warn("disconnectPort: disconnect called from non-connected LnPortController");
         }
         controller = null;
+    }
+
+    /**
+     * Get the SpeedoTrafficController instance to use.
+     *
+     * @return The registered SpeedoTrafficController instance for general use,
+     *         if need be creating one.
+     * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
+     */
+    @Deprecated
+    static public SpeedoTrafficController instance() {
+        return null;
     }
 
     // data members to hold the streams
@@ -176,7 +186,7 @@ public class SpeedoTrafficController implements SpeedoInterface, SerialPortEvent
                         this.reply.setElement(i, char1);
 
                     } catch (Exception e) {
-                        log.debug("Exception handling reply cause {}", e.getCause(), e);
+                        log.debug("{} Exception handling reply cause {}",e,e.getCause());
                     }
                     if (endReply(this.reply)) {
                         sendreply();

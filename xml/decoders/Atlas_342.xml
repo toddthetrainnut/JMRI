@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../XSLT/decoder.xsl"?>
 <!-- Copyright (C) JMRI 2001, 2005, 2007, 2-009, 2010 All rights reserved -->
+<!-- $Id$ -->
 <!--                                                                        -->
 <!-- JMRI is free software; you can redistribute it and/or modify it under  -->
 <!-- the terms of version 2 of the GNU General Public License as published  -->
@@ -12,7 +13,6 @@
 <!-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  -->
 <!-- for more details.                                                      -->
 <decoder-config xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://jmri.org/xml/schema/decoder.xsd">
-  <version author="Bob Jacobsen" version="4" lastUpdated="20190727"/> <!-- xinclude for CV19 -->
   <version author="Peter Ulvestad" version="3" lastUpdated="20130501"/>
   <version author="Peter Ulvestad" version="2" lastUpdated="20091028"/>
   <version author="Michael Mosher" version="1" lastUpdated="20030706"/>
@@ -52,7 +52,7 @@
         <label xml:lang="de">Bremszeit (0-255)</label>
         <comment>Range 1-255</comment>
       </variable>
-      <variable CV="7" item="Decoder Version" readOnly="yes">
+      <variable CV="7" readOnly="yes" item="Decoder Version">
         <decVal/>
         <label>Version ID</label>
         <label xml:lang="it">Versione Decoder: </label>
@@ -68,9 +68,21 @@
         <comment>Atlas - 127</comment>
         <comment xml:lang="it">Atlas - 127</comment>
       </variable>
-
-      <xi:include href="http://jmri.org/xml/decoders/nmra/consistAddrDirection.xml"/>
-
+      <variable CV="19" mask="XVVVVVVV" item="Consist Address">
+        <decVal/>
+        <label>Consist Address</label>
+      </variable>
+      <variable item="Consist Direction" CV="19" mask="VXXXXXXX">
+        <enumVal>
+          <enumChoice choice="Normal">
+            <choice>Normal</choice>
+          </enumChoice>
+          <enumChoice choice="Reversed">
+            <choice>Reversed</choice>
+          </enumChoice>
+        </enumVal>
+        <label>Consist Direction</label>
+      </variable>
       <xi:include href="http://jmri.org/xml/decoders/nmra/cv29direction.xml"/>
       <xi:include href="http://jmri.org/xml/decoders/nmra/cv29speedSteps.xml"/>
       <xi:include href="http://jmri.org/xml/decoders/nmra/cv29analog.xml"/>

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import jmri.DccLocoAddress;
 import jmri.JmriException;
 import jmri.Sensor;
 import org.slf4j.Logger;
@@ -52,90 +53,160 @@ public class DefaultRailCom extends DefaultIdTag implements jmri.RailCom {
 
     @Override
     public void setOrientation(int type) {
-        setProperty("orientation", type);
+        setProperty("orientation",Integer.valueOf(type));
     }
 
     @Override
     public int getOrientation() {
         Integer t = (Integer)getProperty("orientation");
-        return ( t != null ? t : Sensor.UNKNOWN );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return Sensor.UNKNOWN;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    @Override
+    public String getAddressTypeAsString() {
+        switch (addressTypeInt) {
+            case SHORT_ADDRESS:
+                return "Short";
+            case LONG_ADDRESS:
+                return "Long";
+            case CONSIST_ADDRESS:
+                return "Consist";
+            default:
+                return "No Address";
+        }
+    }
+
+    int addressTypeInt = 0;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    @Override
+    public void setAddressType(int type) {
+        addressTypeInt = type;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    @Override
+    public int getAddressType() {
+        return addressTypeInt;
     }
 
     @Override
     public void setActualSpeed(int type) {
-        setProperty("actualspeed", type);
+        setProperty("actualspeed",Integer.valueOf(type));
     }
 
     @Override
     public int getActualSpeed() {
         Integer t = (Integer)getProperty("actualspeed");
-        return ( t != null ? t : -1 );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return -1;
+        }
     }
 
     @Override
     public void setActualLoad(int type) {
-        setProperty("actualload", type);
+        setProperty("actualload",Integer.valueOf(type));
     }
 
     @Override
     public int getActualLoad() {
         Integer t = (Integer)getProperty("actualload");
-        return ( t != null ? t : -1 );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return -1;
+        }
     }
 
     @Override
     public void setActualTemperature(int type) {
-        setProperty("actualtemperature", type);
+        setProperty("actualtemperature",Integer.valueOf(type));
     }
 
     @Override
     public int getActualTemperature() {
         Integer t = (Integer)getProperty("actualtemperature");
-        return ( t != null ? t : -1 );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return -1;
+        }
     }
 
     @Override
     public void setWaterLevel(int type) {
-        setProperty("waterlevel", type);
+        setProperty("waterlevel",Integer.valueOf(type));
     }
 
     @Override
     public int getWaterLevel() {
         Integer t = (Integer)getProperty("waterlevel");
-        return ( t != null ? t : -1 );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return -1;
+        }
     }
 
     @Override
     public void setFuelLevel(int type) {
-        setProperty("fuellevel", type);
+        setProperty("fuellevel",Integer.valueOf(type));
     }
 
     @Override
     public int getFuelLevel() {
         Integer t = (Integer)getProperty("fuellevel");
-        return ( t != null ? t : -1 );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return -1;
+        }
     }
 
     @Override
     public void setLocation(int type) {
-        setProperty("location", type);
+        setProperty("location",Integer.valueOf(type));
     }
 
     @Override
     public int getLocation() {
         Integer t = (Integer)getProperty("location");
-        return ( t != null ? t : -1 );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return -1;
+        }
     }
 
     @Override
     public void setRoutingNo(int type) {
-        setProperty("routing", type);
+        setProperty("routing",Integer.valueOf(type));
     }
 
     @Override
     public int getRoutingNo() {
         Integer t = (Integer)getProperty("routing");
-        return ( t != null ? t : -1 );
+        if(t != null ){
+           return t.intValue();
+        } else {
+          return -1;
+        }
     }
 
     private int expectedCV = -1;
@@ -202,43 +273,45 @@ public class DefaultRailCom extends DefaultIdTag implements jmri.RailCom {
 
     @Override
     public String toReportString() {
-        StringBuilder sb = new StringBuilder(200);
+        String comment;
         switch (getOrientation()) {
             case ORIENTA:
-                sb.append("Orientation A ");
+                comment = "Orientation A ";
                 break;
             case ORIENTB:
-                sb.append( "Orientation B ");
+                comment = "Orientation B ";
                 break;
             case UNKNOWN:
+                comment = "Unknown Orientation ";
+                break;
             default:
-                sb.append( "Unknown Orientation ");
+                comment = "Unknown Orientation ";
                 break;
         }
-        sb.append("Address ").append(getLocoAddress()).append(" ");
+        comment = comment + "Address " + getLocoAddress() + " ";
 
         if (getWaterLevel() != -1) {
-            sb.append("Water ").append(getWaterLevel()).append(" ");
+            comment = comment + "Water " + getWaterLevel() + " ";
         }
         if (getFuelLevel() != -1) {
-            sb.append("Fuel ").append(getFuelLevel()).append(" ");
+            comment = comment + "Fuel " + getFuelLevel() + " ";
         }
         if ((getLocation() != -1)) {
-            sb.append("Location : ").append(getLocation()).append(" ");
+            comment = comment + "Location : " + getLocation() + " ";
         }
         if ((getRoutingNo() != -1)) {
-            sb.append("Routing No : ").append(getRoutingNo()).append(" ");
+            comment = comment + "Routing No : " + getRoutingNo() + " ";
         }
         if ((getActualTemperature() != -1)) {
-            sb.append("Temperature : ").append(getActualTemperature()).append(" ");
+            comment = comment + "Temperature : " + getActualTemperature() + " ";
         }
         if ((getActualLoad() != -1)) {
-            sb.append("Load : ").append(getActualLoad()).append(" ");
+            comment = comment + "Load : " + getActualLoad() + " ";
         }
         if ((getActualSpeed() != -1)) {
-            sb.append("Speed : ").append(getActualSpeed()).append(" ");
+            comment = comment + "Speed : " + getActualSpeed();
         }
-        return sb.toString();
+        return comment;
     }
 
     private final static Logger log = LoggerFactory.getLogger(DefaultRailCom.class);

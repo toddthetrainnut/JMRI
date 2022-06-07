@@ -1,17 +1,15 @@
 package jmri.jmrix.rfid.merg.concentrator;
 
-import jmri.jmrix.rfid.RfidSystemConnectionMemo;
 import jmri.util.JUnitUtil;
 import jmri.util.junit.annotations.*;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * ConcentratorReporterManagerTest.java
- * <p>
- * Test for the ConcentratorReporterManager class
  *
- * @author Paul Bender Copyright (C) 2012,2016
+ * Description:	tests for the ConcentratorReporterManager class
+ *
+ * @author	Paul Bender Copyright (C) 2012,2016
  */
 public class ConcentratorReporterManagerTest extends jmri.managers.AbstractReporterMgrTestBase {
 
@@ -21,15 +19,12 @@ public class ConcentratorReporterManagerTest extends jmri.managers.AbstractRepor
     }
 
     @Override
-    protected int maxN() {
-        return 1;
-    }
-
+    protected int maxN() { return 1; }
+    
     @Override
     protected String getNameToTest1() {
         return "A";
     }
-
     @Override
     protected String getNameToTest2() {
         return "C";
@@ -41,48 +36,32 @@ public class ConcentratorReporterManagerTest extends jmri.managers.AbstractRepor
     public void testReporterProvideByNumber() {
     }
 
-    // No test for manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithNoPrefixNotASystemName() {}
-
-    // No test for manager-specific system name validation at present
-    @Test
-    @Override
-    public void testMakeSystemNameWithPrefixNotASystemName() {}
-
     ConcentratorTrafficController tc = null;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        RfidSystemConnectionMemo memo = new RfidSystemConnectionMemo();
-        tc = new ConcentratorTrafficController(memo, "A-H") {
-            @Override
-            public void sendInitString() {
-            }
+        tc = new ConcentratorTrafficController(new ConcentratorSystemConnectionMemo(),"A-H"){
+           @Override
+           public void sendInitString(){
+           }
         };
-        memo.setRfidTrafficController(tc);
-        memo.setSystemPrefix("R");
-        l = new ConcentratorReporterManager(tc.getAdapterMemo()) {
+        l = new ConcentratorReporterManager(tc,"R"){
             @Override
-            public void message(jmri.jmrix.rfid.RfidMessage m) {
-            }
+            public void message(jmri.jmrix.rfid.RfidMessage m){}
 
             @Override
-            public synchronized void reply(jmri.jmrix.rfid.RfidReply m) {
-            }
+            public void reply(jmri.jmrix.rfid.RfidReply m){}
 
         };
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        tc.terminateThreads();
         tc = null;
         JUnitUtil.tearDown();
-
     }
 
 }

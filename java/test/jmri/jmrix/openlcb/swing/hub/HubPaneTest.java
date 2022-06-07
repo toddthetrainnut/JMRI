@@ -1,13 +1,11 @@
 package jmri.jmrix.openlcb.swing.hub;
 
-import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
-
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import jmri.jmrix.can.TestTrafficController;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Bob Jacobsen Copyright 2013
@@ -20,37 +18,27 @@ public class HubPaneTest {
 
     @Test
     public void testCtor() {
-        assertThat(hub).withFailMessage("hub pane creation").isNotNull();
+        hub = new HubPane();
+        Assert.assertNotNull("Connection memo object non-null", memo);
         // this next step takes 30 seconds of clock time, so has been commented out
         //hub.initContext(memo);
     }
 
-    @BeforeAll
-    static public void checkSeparate() {
-       // this test is run separately because it leaves a lot of threads behind
-        org.junit.Assume.assumeFalse("Ignoring intermittent test", Boolean.getBoolean("jmri.skipTestsRequiringSeparateRunning"));
-    }
-
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
 
         memo  = new jmri.jmrix.openlcb.OlcbSystemConnectionMemo();
-        tc = new TestTrafficController();
+        TestTrafficController tc = new TestTrafficController();
         memo.setTrafficController(tc);
-        jmri.InstanceManager.setDefault(CanSystemConnectionMemo.class,memo);
-        hub = new HubPane();
+
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         hub.stopHubThread();
-        hub = null;
-        memo.dispose();
-        memo = null;
-        tc.terminateThreads();
-        tc = null;
         JUnitUtil.tearDown();
     }
 }

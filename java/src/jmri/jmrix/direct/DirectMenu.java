@@ -1,5 +1,6 @@
 package jmri.jmrix.direct;
 
+import java.util.ResourceBundle;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 

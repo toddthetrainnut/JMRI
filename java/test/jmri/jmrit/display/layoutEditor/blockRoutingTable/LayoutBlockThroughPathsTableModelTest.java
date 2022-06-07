@@ -2,13 +2,14 @@ package jmri.jmrit.display.layoutEditor.blockRoutingTable;
 
 import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class LayoutBlockThroughPathsTableModelTest {
 
@@ -19,14 +20,15 @@ public class LayoutBlockThroughPathsTableModelTest {
         Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }
-    // private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LayoutBlockThroughPathsTableModelTest.class);
+    // private final static Logger log = LoggerFactory.getLogger(LayoutBlockThroughPathsTableModelTest.class);
 }

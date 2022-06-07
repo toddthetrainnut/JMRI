@@ -87,23 +87,13 @@ abstract public class AbstractMRMessage extends AbstractMessage {
     // accessors to the bulk data
 
     // state info
-    private int mNeededMode;
+    int mNeededMode;
 
-    /**
-     * Set a needed mode.
-     * Final so that it can be called in constructors.
-     * @param pMode required mode value.
-     */
-    final public void setNeededMode(int pMode) {
+    public void setNeededMode(int pMode) {
         mNeededMode = pMode;
     }
 
-    /**
-     * Get needed mode.
-     * Final so that it can be called in constructors.
-     * @return mNeededMode required mode value.
-     */
-    final public int getNeededMode() {
+    public int getNeededMode() {
         return mNeededMode;
     }
 
@@ -115,30 +105,19 @@ abstract public class AbstractMRMessage extends AbstractMessage {
      * <p>
      * If this returns false, the transmit queue will immediately go on to
      * transmit the next message (if any).
-     * @return true by default in Abstract MR message.
      */
     public boolean replyExpected() {
         return true;
     }
 
     // mode accessors
-    private boolean _isBinary;
+    boolean _isBinary;
 
-    /**
-     * Get if is binary.
-     * Final so that it can be called in constructors.
-     * @return true if binary, else false.
-     */
-    final public boolean isBinary() {
+    public boolean isBinary() {
         return _isBinary;
     }
 
-    /**
-     * Set if Binary.
-     * final so that it can be called in constructors.
-     * @param b true if binary, else false.
-     */
-    final public void setBinary(boolean b) {
+    public void setBinary(boolean b) {
         _isBinary = b;
     }
 
@@ -153,24 +132,13 @@ abstract public class AbstractMRMessage extends AbstractMessage {
      */
     static protected final int SHORT_TIMEOUT = 2000;
     static protected final int LONG_TIMEOUT = 60000;  // e.g. for programming options
-    
-    private int mTimeout;  // in milliseconds
+    int mTimeout;  // in milliseconds
 
-    /**
-     * Set Timeout.
-     * Final so that it can be called in constructors.
-     * @param t timeout value.
-     */
-    final public void setTimeout(int t) {
+    public void setTimeout(int t) {
         mTimeout = t;
     }
 
-    /**
-     * Get Timeout.
-     * Final so that it can be called in constructors.
-     * @return timeout value.
-     */
-    final public int getTimeout() {
+    public int getTimeout() {
         return mTimeout;
     }
 
@@ -178,21 +146,11 @@ abstract public class AbstractMRMessage extends AbstractMessage {
      isn't ready for them. */
     private int mRetries = 0; // number of retries, default = 0;
 
-    /**
-     * Set number of retries.
-     * Final so that it can be called in constructors
-     * @param i number of retries, actual value to set, not an increment.
-     */
-    final public void setRetries(int i) {
+    public void setRetries(int i) {
         mRetries = i;
     }
 
-    /**
-     * Get number of retries.
-     * final so that it can be called in constructors
-     * @return number of retries count.
-     */
-    final public int getRetries() {
+    public int getRetries() {
         return mRetries;
     }
 
@@ -212,34 +170,22 @@ abstract public class AbstractMRMessage extends AbstractMessage {
         setElement(offset + 2, s.charAt(2));
     }
 
-    /**
-     * Put an int value into the message as 
-     * two ASCII upper-case hex characters.
-     * @param val value to convert.
-     * @param offset offset in message.
-     */
     public void addIntAsTwoHex(int val, int offset) {
         String s = ("" + Integer.toHexString(val)).toUpperCase();
         if (s.length() < 2) {
             s = "0" + s;  // handle one digit
         }
         if (s.length() > 2) {
-            log.error("can't add as two hex digits: {}", s);
+            log.error("can't add as two hex digits: " + s);
         }
         setElement(offset, s.charAt(0));
         setElement(offset + 1, s.charAt(1));
     }
 
-    /**
-     * Put an int value into the message as 
-     * three ASCII upper-case hex characters.
-     * @param val value to convert.
-     * @param offset offset in message.
-     */
     public void addIntAsThreeHex(int val, int offset) {
         String s = ("" + Integer.toHexString(val)).toUpperCase();
         if (s.length() > 3) {
-            log.error("can't add as three hex digits: {}", s);
+            log.error("can't add as three hex digits: " + s);
         }
         if (s.length() != 3) {
             s = "0" + s;
@@ -252,16 +198,10 @@ abstract public class AbstractMRMessage extends AbstractMessage {
         setElement(offset + 2, s.charAt(2));
     }
 
-    /**
-     * Put an int value into the message as 
-     * four ASCII upper-case hex characters.
-     * @param val value to convert.
-     * @param offset offset in message.
-     */
     public void addIntAsFourHex(int val, int offset) {
         String s = ("" + Integer.toHexString(val)).toUpperCase();
         if (s.length() > 4) {
-            log.error("can't add as three hex digits: {}", s);
+            log.error("can't add as three hex digits: " + s);
         }
         if (s.length() != 4) {
             s = "0" + s;

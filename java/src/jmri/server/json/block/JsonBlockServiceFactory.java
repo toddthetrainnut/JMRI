@@ -18,17 +18,17 @@ public class JsonBlockServiceFactory implements JsonServiceFactory<JsonBlockHttp
 
 
     @Override
-    public String[] getTypes(String version) {
+    public String[] getTypes() {
         return new String[]{BLOCK, BLOCKS};
     }
 
     @Override
-    public JsonBlockSocketService getSocketService(JsonConnection connection, String version) {
+    public JsonBlockSocketService getSocketService(JsonConnection connection) {
         return new JsonBlockSocketService(connection);
     }
 
     @Override
-    public JsonBlockHttpService getHttpService(ObjectMapper mapper, String version) {
+    public JsonBlockHttpService getHttpService(ObjectMapper mapper) {
         return new JsonBlockHttpService(mapper);
     }
 

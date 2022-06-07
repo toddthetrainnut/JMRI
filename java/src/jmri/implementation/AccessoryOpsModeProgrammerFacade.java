@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
  * @see jmri.implementation.ProgrammerFacadeSelector
  *
  * @author Bob Jacobsen Copyright (C) 2014
- * @author Andrew Crosland Copyright (C) 2021
  */
 // @ToDo("transform to annotations requires e.g. http://alchemy.grimoire.ca/m2/sites/ca.grimoire/todo-annotations/")
 // @ToDo("get address from underlyng programmer (which might require adding a new subclass structure to Programmer)")
@@ -189,14 +188,9 @@ public class AccessoryOpsModeProgrammerFacade extends AbstractProgrammerFacade i
 
     @Override
     public synchronized void readCV(String cv, jmri.ProgListener p) throws jmri.ProgrammerException {
-        readCV(cv, p, 0);
-    }
-
-    @Override
-    public synchronized void readCV(String cv, jmri.ProgListener p, int startVal) throws jmri.ProgrammerException {
         useProgrammer(p);
         state = ProgState.PROGRAMMING;
-        prog.readCV(cv, this, startVal);
+        prog.readCV(cv, this);
     }
 
     @Override
@@ -220,7 +214,7 @@ public class AccessoryOpsModeProgrammerFacade extends AbstractProgrammerFacade i
         log.debug("useProgrammer entry: _usingProgrammer is {}", _usingProgrammer);
         if (_usingProgrammer != null && _usingProgrammer != p) {
             if (log.isInfoEnabled()) {
-                log.info("programmer already in use by {}", _usingProgrammer);
+                log.info("programmer already in use by " + _usingProgrammer);
             }
             throw new jmri.ProgrammerException("programmer in use");
         } else {
@@ -268,7 +262,7 @@ public class AccessoryOpsModeProgrammerFacade extends AbstractProgrammerFacade i
                 temp.programmingOpReply(value, status);
                 break;
             default:
-                log.error("Unexpected state on reply: {}", state);
+                log.error("Unexpected state on reply: " + state);
                 // clean up as much as possible
                 _usingProgrammer = null;
                 state = ProgState.NOTPROGRAMMING;

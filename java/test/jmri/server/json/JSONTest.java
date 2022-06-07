@@ -1,15 +1,12 @@
 package jmri.server.json;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -17,12 +14,12 @@ import org.junit.jupiter.api.*;
  */
 public class JSONTest {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }
@@ -34,7 +31,7 @@ public class JSONTest {
             constructor = JSON.class.getDeclaredConstructor();
             constructor.setAccessible(true);
             constructor.newInstance();
-            fail("Instance of JSON created");
+            Assert.fail("Instance of JSON created");
         } catch (InvocationTargetException ex) {
             // because the constructor throws UnsupportedOperationException, and
             // that is thrown by newInstance() into an InvocationTargetException
@@ -45,12 +42,6 @@ public class JSONTest {
                 throw ex;
             }
         }
-    }
-    
-    @Test
-    public void testJsonVersions() {
-        assertArrayEquals("JSON protocol versions", new String[]{"v5"}, JSON.VERSIONS.toArray());
-        assertEquals("JSON protocol version is v5", JSON.JSON_PROTOCOL_VERSION, JSON.V5_PROTOCOL_VERSION);
     }
 
 }

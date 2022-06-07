@@ -1,21 +1,19 @@
 package jmri.jmrit.operations.trains.tools;
 
 import java.awt.GraphicsEnvironment;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
-import org.junit.Assume;
-
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.TrainManager;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class ShowCarsInTrainFrameTest extends OperationsTestCase {
 
@@ -45,9 +43,6 @@ public class ShowCarsInTrainFrameTest extends OperationsTestCase {
         Assert.assertTrue(train.build());
         
         JUnitUtil.dispose(t);
-        
-        JUnitOperationsUtil.checkOperationsShutDownTask();
-
     }
 
     // private final static Logger log = LoggerFactory.getLogger(ShowCarsInTrainFrameTest.class);

@@ -2,9 +2,7 @@ package jmri.jmrit.operations.locations.tools;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
-
 import jmri.jmrit.operations.locations.LocationEditFrame;
 
 /**
@@ -20,7 +18,7 @@ public class TrackCopyAction extends AbstractAction {
     }
     
     public TrackCopyAction(LocationEditFrame lef) {
-        this();
+        super(Bundle.getMessage("MenuItemCopyTrack"));
         _lef = lef;
     }
 

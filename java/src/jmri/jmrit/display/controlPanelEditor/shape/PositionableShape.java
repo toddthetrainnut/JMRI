@@ -96,12 +96,20 @@ public abstract class PositionableShape extends PositionableJComponent implement
     }
 
     public void setWidth(int w) {
-        _width = Math.max(w, SIZE);
+        if (w > SIZE) {
+            _width = w;
+        } else {
+            _width = SIZE;
+        }
         invalidateShape();
     }
 
     public void setHeight(int h) {
-        _height = Math.max(h, SIZE);
+        if (h > SIZE) {
+            _height = h;
+        } else {
+            _height = SIZE;
+        }
         invalidateShape();
     }
 
@@ -389,7 +397,9 @@ public abstract class PositionableShape extends PositionableJComponent implement
             Sensor sensor = sensorManager.get().getSensor(pName);
             Optional<NamedBeanHandleManager> nbhm = InstanceManager.getOptionalDefault(NamedBeanHandleManager.class);
             if (sensor != null) {
-                nbhm.ifPresent(namedBeanHandleManager -> _controlSensor = namedBeanHandleManager.getNamedBeanHandle(pName, sensor));
+                if (nbhm.isPresent()) {
+                    _controlSensor = nbhm.get().getNamedBeanHandle(pName, sensor);
+                }
             } else {
                 msg = Bundle.getMessage("badSensorName", pName); // NOI18N
             }

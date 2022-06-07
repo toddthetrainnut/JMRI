@@ -1,10 +1,12 @@
 package jmri.jmrix.roco.z21;
 
+import jmri.jmrix.lenz.LenzCommandStation;
+import jmri.jmrix.lenz.XNetSystemConnectionMemo;
 import jmri.jmrix.lenz.XNetPortControllerScaffold;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
 
 /**
  * <p>
@@ -16,12 +18,13 @@ import org.junit.jupiter.api.*;
  */
 public class Z21XNetPacketizerTest extends jmri.jmrix.lenz.XNetPacketizerTest {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        RocoZ21CommandStation lcs = new RocoZ21CommandStation();
-        tc = new Z21XNetPacketizer(lcs) {
+        LenzCommandStation lcs = new LenzCommandStation();
+        tc= new Z21XNetPacketizer(lcs) {
             @Override
             protected void handleTimeout(jmri.jmrix.AbstractMRMessage msg, jmri.jmrix.AbstractMRListener l) {
             }
@@ -33,7 +36,7 @@ public class Z21XNetPacketizerTest extends jmri.jmrix.lenz.XNetPacketizerTest {
         }
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         tc.terminateThreads();

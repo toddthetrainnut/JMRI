@@ -2,7 +2,7 @@ package jmri.beans;
 
 import java.beans.PropertyChangeListener;
 import javax.annotation.Nonnull;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 /**
  * A set of methods that would need to be implemented to ensure the implementing
@@ -11,15 +11,14 @@ import javax.annotation.CheckForNull;
  * property change listening is thorough, if not complete. Developers of classes
  * implementing this interface still need to ensure that
  * {@link java.beans.PropertyChangeEvent}s are fired when properties are set.
- * <p>
- * {@link ArbitraryBean}, {@link Bean}, {@link ConstrainedBean},
- * {@link PropertyChangeSupport}, and {@link VetoableChangeSupport} all provide
- * complete implementations of this interface.
- * <p>
+ *
+ * {@link jmri.beans.ArbitraryBean}, {@link jmri.beans.Bean}, and
+ * {@link jmri.beans.ConstrainedBean} all provide complete implementations of
+ * this interface.
+ *
  * This interface defines all public methods of
  * {@link java.beans.PropertyChangeSupport} except the methods to fire
- * PropertyChangeEvents so that a consumer of an implementing class can be sure
- * that it can listen for a property change.
+ * PropertyChangeEvents.
  *
  * @author Randall Wood
  */
@@ -30,7 +29,7 @@ public interface PropertyChangeProvider {
      *
      * @param listener The PropertyChangeListener to be added
      */
-    public void addPropertyChangeListener(@CheckForNull PropertyChangeListener listener);
+    public void addPropertyChangeListener(@Nullable PropertyChangeListener listener);
 
     /**
      * Add a {@link java.beans.PropertyChangeListener} for a specific property.
@@ -38,8 +37,7 @@ public interface PropertyChangeProvider {
      * @param propertyName The name of the property to listen on.
      * @param listener     The PropertyChangeListener to be added
      */
-    public void addPropertyChangeListener(@CheckForNull String propertyName,
-            @CheckForNull PropertyChangeListener listener);
+    public void addPropertyChangeListener(@Nullable String propertyName, @Nullable PropertyChangeListener listener);
 
     /**
      * Get all {@link java.beans.PropertyChangeListener}s currently attached to
@@ -54,18 +52,18 @@ public interface PropertyChangeProvider {
      * Get all {@link java.beans.PropertyChangeListener}s currently listening to
      * changes to the specified property.
      *
-     * @param propertyName the name of the property of interest
-     * @return an array of PropertyChangeListeners
+     * @param propertyName The name of the property of interest
+     * @return An array of PropertyChangeListeners.
      */
     @Nonnull
-    public PropertyChangeListener[] getPropertyChangeListeners(@CheckForNull String propertyName);
+    public PropertyChangeListener[] getPropertyChangeListeners(@Nullable String propertyName);
 
     /**
      * Remove the specified listener from this object.
      *
      * @param listener The {@link java.beans.PropertyChangeListener} to remove.
      */
-    public void removePropertyChangeListener(@CheckForNull PropertyChangeListener listener);
+    public void removePropertyChangeListener(@Nullable PropertyChangeListener listener);
 
     /**
      * Remove the specified listener of the specified property from this object.
@@ -74,7 +72,6 @@ public interface PropertyChangeProvider {
      * @param listener     The {@link java.beans.PropertyChangeListener} to
      *                     remove.
      */
-    public void removePropertyChangeListener(@CheckForNull String propertyName,
-            @CheckForNull PropertyChangeListener listener);
+    public void removePropertyChangeListener(@Nullable String propertyName, @Nullable PropertyChangeListener listener);
 
 }

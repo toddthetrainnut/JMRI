@@ -1,8 +1,8 @@
 package jmri.jmrix.dccpp.serial;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * <p>
@@ -13,7 +13,8 @@ import org.junit.jupiter.api.*;
  */
 public class SerialDCCppPacketizerTest extends jmri.jmrix.dccpp.DCCppPacketizerTest {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -24,7 +25,7 @@ public class SerialDCCppPacketizerTest extends jmri.jmrix.dccpp.DCCppPacketizerT
         };
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         tc.terminateThreads();

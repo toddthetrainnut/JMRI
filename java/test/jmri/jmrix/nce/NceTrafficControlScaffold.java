@@ -1,14 +1,13 @@
 package jmri.jmrix.nce;
 
 import java.util.Vector;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Stands in for the NceTrafficController class.
  *
- * @author Bob Jacobsen
+ * @author	Bob Jacobsen
  */
 public class NceTrafficControlScaffold extends NceTrafficController {
 
@@ -29,7 +28,7 @@ public class NceTrafficControlScaffold extends NceTrafficController {
     @Override
     public void sendNceMessage(NceMessage m, NceListener reply) {
         if (log.isDebugEnabled()) {
-            log.debug("sendNceMessage [{}]", m);
+            log.debug("sendNceMessage [" + m + "]");
         }
         // save a copy
         outbound.addElement(m);
@@ -40,13 +39,11 @@ public class NceTrafficControlScaffold extends NceTrafficController {
     // test control member functions
     /**
      * forward a message to the listeners, e.g. test receipt
-     * @param m NceMessage
-     * @param l NceListener
      */
     protected void sendTestMessage(NceMessage m, NceListener l) {
         // forward a test message to NceListeners
         if (log.isDebugEnabled()) {
-            log.debug("sendTestMessage    [{}]", m);
+            log.debug("sendTestMessage    [" + m + "]");
         }
         notifyMessage(m, l);
         return;
@@ -71,7 +68,6 @@ public class NceTrafficControlScaffold extends NceTrafficController {
      *
      * @return the name of the port
      */
-    @Override
     public String getPortName() {
         return jmri.jmrix.JmrixConfigPane.NONE_SELECTED; 
     }

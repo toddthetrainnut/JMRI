@@ -1,5 +1,6 @@
 package jmri.jmrix.oaktree;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.DataInputStream;
 import jmri.jmrix.AbstractMRListener;
 import jmri.jmrix.AbstractMRMessage;
@@ -57,8 +58,7 @@ public class SerialTrafficController extends AbstractMRNodeTrafficController imp
     }
 
     /**
-     * Set up for initialization of a Serial node.
-     * @param node node to initialize.
+     * Set up for initialization of a Serial node
      */
     public void initializeSerialNode(SerialNode node) {
         synchronized (this) {

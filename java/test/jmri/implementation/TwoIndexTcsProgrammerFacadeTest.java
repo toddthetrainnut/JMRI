@@ -4,17 +4,18 @@ import jmri.ProgListener;
 import jmri.Programmer;
 import jmri.progdebugger.ProgDebugger;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Bob Jacobsen Copyright 2014
+ * @author	Bob Jacobsen Copyright 2014
  * 
  */
- @Timeout(60)
 public class TwoIndexTcsProgrammerFacadeTest {
 
     int readValue = -2;
@@ -28,7 +29,7 @@ public class TwoIndexTcsProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -53,7 +54,7 @@ public class TwoIndexTcsProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -93,7 +94,7 @@ public class TwoIndexTcsProgrammerFacadeTest {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value={} status={}", value, status);
+                log.debug("callback value=" + value + " status=" + status);
                 replied = true;
                 readValue = value;
             }
@@ -143,12 +144,12 @@ public class TwoIndexTcsProgrammerFacadeTest {
         replied = false;
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown(){
         jmri.util.JUnitUtil.tearDown();
     }

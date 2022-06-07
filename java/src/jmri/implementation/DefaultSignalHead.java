@@ -74,6 +74,7 @@ public abstract class DefaultSignalHead extends AbstractSignalHead {
             // notify listeners, if any
             firePropertyChange("Lit", oldLit, newLit);
         }
+
     }
 
     /**
@@ -117,14 +118,10 @@ public abstract class DefaultSignalHead extends AbstractSignalHead {
 
     javax.swing.Timer timer = null;
     /**
-     * On or off time of flashing signal.
-     * Public so that it can be overridden by 
-     * scripting (before first use)
+     * On or off time of flashing signal
      */
-    public int delay = masterDelay;
+    int delay = 750;
 
-    public static int masterDelay = 750;
-    
     /**
      * Start the timer that controls flashing.
      */
@@ -167,46 +164,24 @@ public abstract class DefaultSignalHead extends AbstractSignalHead {
         GREEN,
         FLASHRED,
         FLASHYELLOW,
-        FLASHGREEN,
-    }; // No int for Lunar
+        FLASHGREEN,}; // No int for Lunar
+    final static private String[] VALID_STATE_NAMES = new String[]{
+        Bundle.getMessage("SignalHeadStateDark"),
+        Bundle.getMessage("SignalHeadStateRed"),
+        Bundle.getMessage("SignalHeadStateYellow"),
+        Bundle.getMessage("SignalHeadStateGreen"),
+        Bundle.getMessage("SignalHeadStateFlashingRed"),
+        Bundle.getMessage("SignalHeadStateFlashingYellow"),
+        Bundle.getMessage("SignalHeadStateFlashingGreen"),}; // Lunar not included
 
-    final static private String[] VALID_STATE_KEYS = new String[]{
-        "SignalHeadStateDark",
-        "SignalHeadStateRed",
-        "SignalHeadStateYellow",
-        "SignalHeadStateGreen",
-        "SignalHeadStateFlashingRed",
-        "SignalHeadStateFlashingYellow",
-        "SignalHeadStateFlashingGreen",
-    }; // Lunar not included
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int[] getValidStates() {
         return Arrays.copyOf(VALID_STATES, VALID_STATES.length);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String[] getValidStateKeys() {
-        return Arrays.copyOf(VALID_STATE_KEYS, VALID_STATE_KEYS.length);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String[] getValidStateNames() {
-        String[] stateNames = new String[VALID_STATE_KEYS.length];
-        int i = 0;
-        for (String stateKey : VALID_STATE_KEYS) {
-            stateNames[i++] = Bundle.getMessage(stateKey);
-        }
-        return stateNames;
+        return Arrays.copyOf(VALID_STATE_NAMES, VALID_STATE_NAMES.length);
     }
 
     @Override

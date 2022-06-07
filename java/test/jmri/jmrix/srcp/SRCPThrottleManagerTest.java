@@ -1,43 +1,35 @@
 package jmri.jmrix.srcp;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
- * Test for the jmri.jmrix.srcp.SRCPThrottleManager class
+ * SRCPThrottleManagerTest.java
  *
- * @author Bob Jacobsen
- * @author Paul Bender Copyright (C) 2016
+ * Description:	tests for the jmri.jmrix.srcp.SRCPThrottleManager class
+ *
+ * @author	Bob Jacobsen
+ * @author      Paul Bender Copyright (C) 2016	
  */
 public class SRCPThrottleManagerTest extends jmri.managers.AbstractThrottleManagerTestBase {
 
-    private SRCPBusConnectionMemo memo;
-    private SRCPTrafficController tc;
-
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
-        tc = new SRCPTrafficController() {
+        SRCPBusConnectionMemo sm = new SRCPBusConnectionMemo(new SRCPTrafficController() {
             @Override
             public void sendSRCPMessage(SRCPMessage m, SRCPListener reply) {
-            } // prevent sending actual message when creating a throttle
-        };
-        memo = new SRCPBusConnectionMemo(tc, "A", 1);
-        tm = new SRCPThrottleManager(memo);
+            }
+        }, "A", 1);
+
+        tm = new SRCPThrottleManager(sm);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        tm.dispose();
-        tm = null;
-        memo.dispose();
-        memo = null;
-        tc.terminateThreads();
-        tc = null;
-
         JUnitUtil.tearDown();
     }
-
 }

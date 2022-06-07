@@ -1,20 +1,20 @@
 package jmri.jmrix.srcp.parser;
 
 import java.io.StringReader;
-
 import jmri.jmrix.srcp.SRCPSystemConnectionMemo;
 import jmri.jmrix.srcp.SRCPTrafficController;
 import jmri.jmrix.srcp.SRCPListener;
 import jmri.jmrix.srcp.SRCPMessage;
 import jmri.jmrix.srcp.SRCPReply;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class SRCPClientVisitorTest {
 
@@ -609,7 +609,8 @@ public class SRCPClientVisitorTest {
         e.jjtAccept(v, memo);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         SRCPTrafficController et = new SRCPTrafficController() {
@@ -621,9 +622,8 @@ public class SRCPClientVisitorTest {
         memo = new SRCPSystemConnectionMemo("D", "SRCP", et);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

@@ -3,12 +3,26 @@ package jmri.jmrix.can.cbus.swing.nodeconfig;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultFormatter;
 import jmri.jmrix.can.cbus.node.CbusNode;
-import jmri.jmrix.can.cbus.node.CbusNodeTimerManager;
+import jmri.jmrix.can.cbus.node.CbusNodeConstants;
+import jmri.jmrix.can.cbus.node.CbusNodeTableDataModel;
 import jmri.util.ThreadingUtil;
 
 import org.slf4j.Logger;
@@ -18,206 +32,216 @@ import org.slf4j.LoggerFactory;
  *
  * @author Steve Young Copyright (C) 2019
  */
-public class CbusNodeSetupPane extends CbusNodeConfigTab {
+public class CbusNodeSetupPane extends JPanel {
     
+    private JScrollPane eventScroll;
+    private CbusNodeTableDataModel nodeModel = null;
+    private int _nodeNum;
+    private CbusNode nodeOfInterest;
     private ActionListener setNameListener;
     private ActionListener removeListener;
-    private ActionListener setCanIdListener;
-    private ActionListener selfEnumerateListener;
-    private ActionListener clearAllEventsListener;
     private jmri.util.swing.BusyDialog busy_dialog;
     
-    private JButton setNameButton;
-    private JButton removeNodeButton;
-    private JButton selfCanEnumerateButton;
-    private JButton setCanIdButton;
-    private JButton clearAllEventsButton;
-    private JTextField textFieldName;
-    
+
     /**
      * Create a new instance of CbusNodeSetupPane.
-     * @param main the main NodeConfigToolPane this is a pane of.
      */
     protected CbusNodeSetupPane( NodeConfigToolPane main ) {
-        super(main);
-        getInitPane();
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getTitle(){
-        return "Node Setup";
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void changedNode(CbusNode newNode){
-        
-        textFieldName.setText( nodeOfInterest.getUserName() );
-        validate();
-        repaint();
+        super();
 
+        
+      //  mainpane = main;
     }
-    
-    private void getInitPane() {
-    
-        
-        JPanel evPane = new JPanel();
-        evPane.setLayout(new BoxLayout(evPane, BoxLayout.Y_AXIS));
-        
-        initListeners();
 
-        JPanel nodeEventsPanel = new JPanel();
-        nodeEventsPanel.setBorder(BorderFactory.createTitledBorder(
-                  BorderFactory.createEtchedBorder(), Bundle.getMessage("EventCol")));
-        clearAllEventsButton = new JButton("Clear All Events");
-        clearAllEventsButton.addActionListener(clearAllEventsListener);
-        nodeEventsPanel.add(clearAllEventsButton);
+    public void initComponents(int node) {
         
-        evPane.add(getNamePanel());
-        evPane.add(getCanIdPanel());
-        evPane.add(nodeEventsPanel);
-        evPane.add(getRemovePanel());
+        if (eventScroll != null ){ 
+            eventScroll.setVisible(false);
+        }
+        eventScroll = null;
+        
+        _nodeNum = node;
 
-        JScrollPane eventScroll = new JScrollPane(evPane);
+        try {
+            nodeModel = jmri.InstanceManager.getDefault(CbusNodeTableDataModel.class);
+        } catch (NullPointerException e) {
+            log.error("Unable to get Node Table from Instance Manager");
+        }
         
-        add(eventScroll, BorderLayout.CENTER);
-    
-    }
-    
-    private JPanel getNamePanel() {
-    
-        JPanel namePanel = new JPanel();
-        namePanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), ("JMRI Node User Name" ) ) );
-        setNameButton = new JButton("Set Module User Name");
-        textFieldName = new JTextField(20);
         
-        namePanel.add(textFieldName);
-        namePanel.add(setNameButton);
-        setNameButton.addActionListener(setNameListener);
-        return namePanel;
-    }
-    
-    private JPanel getCanIdPanel() {
-        
-        JPanel canIdPanel = new JPanel();
-        canIdPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), ( "CAN ID")));
-        selfCanEnumerateButton = new JButton("CAN ID Self Enumeration");
-        selfCanEnumerateButton.addActionListener(selfEnumerateListener);
-        setCanIdButton = new JButton("Force set CAN ID");
-        setCanIdButton.addActionListener(setCanIdListener);
-        canIdPanel.add(selfCanEnumerateButton);
-        canIdPanel.add(setCanIdButton);
-        
-        return canIdPanel;
-    }
-    
-    private JPanel getRemovePanel() {
-        JPanel removePanel = new JPanel();
-        removePanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), ("Node Manager")));
-        removeNodeButton = new JButton("Remove from Table");
-        removePanel.add(removeNodeButton);
-        removeNodeButton.addActionListener(removeListener);
-        return removePanel;
-    }
-    
-    private void initListeners() {   
-        
-        setNameListener = ae -> {
-            nodeOfInterest.setUserName(textFieldName.getText());
-            changedNode(nodeOfInterest);
-        };
-        
-        removeListener = ae -> {
-            JCheckBox checkbox = new JCheckBox(("Remove node xml File"));
-            int oldRow = Math.max(0, getNodeRow()-1);
-            int option = JOptionPane.showOptionDialog(null, 
-                new Object[]{("Remove Node from Manager?"), checkbox}, 
-                "Please Confirm", 
-                JOptionPane.OK_CANCEL_OPTION, 
-                JOptionPane.QUESTION_MESSAGE, null, null, null);
-            if (option == JOptionPane.OK_OPTION) { getMainPane().getNodeModel().
-                removeRow( getMainPane().getNodeModel().getNodeRowFromNodeNum(nodeOfInterest.getNodeNumber())
-                ,checkbox.isSelected() );
-                if (getMainPane().nodeTable.getRowCount() > 0 ) {
-                    getMainPane().nodeTable.getSelectionModel().setSelectionInterval(oldRow,oldRow);
-                    getMainPane().tabbedPane.setSelectedIndex(0);
-                }
+        try {
+
+            // Pane to hold Event
+            JPanel evPane = new JPanel();
+            evPane.setLayout(new BoxLayout(evPane, BoxLayout.Y_AXIS));
+            JLabel header;
+            nodeOfInterest = nodeModel.getNodeByNodeNum(_nodeNum);
+            
+            header = new JLabel("<html><h2>" 
+                + CbusNodeConstants.getManu(nodeOfInterest.getParameter(1)) 
+                + " " 
+                + nodeOfInterest.getNodeTypeName()
+                + "<p>" +
+                CbusNodeConstants.getModuleTypeExtra(nodeOfInterest.getParameter(1),nodeOfInterest.getParameter(3))
+                + "</p></html>");
+
+            JPanel headerPanel = new JPanel();
+            JPanel namePanel = new JPanel();
+            JPanel canIdPanel = new JPanel();
+            JPanel nodeEventsPanel = new JPanel();
+            JPanel removePanel = new JPanel();
+            
+            nodeEventsPanel.setBorder(BorderFactory.createTitledBorder(
+                      BorderFactory.createEtchedBorder(), Bundle.getMessage("EventCol")));
+            JButton clearAllEventsButton = new JButton("Clear All Events");
+            
+            nodeEventsPanel.add(clearAllEventsButton);
+            
+            headerPanel.add(header);
+            
+            namePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), ("JMRI Node User Name : " 
+                
+                + nodeOfInterest.getNodeNumberName() ) ) );
+            JButton setNameButton = new JButton("Set Module Name");
+            JTextField textFieldName = new JTextField(20);
+            textFieldName.setText( nodeOfInterest.getUserName() );
+            namePanel.add(textFieldName);
+            namePanel.add(setNameButton);
+      
+            removePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), ("Node Manager")));
+            JButton removeNodeButton = new JButton("Remove from Table");
+            removePanel.add(removeNodeButton);
+            
+            String canIdText;
+            
+            if ( nodeOfInterest.getNodeCanId() > 0 ){
+                canIdText = "Current CAN ID : " + nodeOfInterest.getNodeCanId();
+            } else {
+                canIdText = "CAN ID";
             }
-        };
-        
-        selfEnumerateListener = ae -> {
-            // start busy
-            busy_dialog = new jmri.util.swing.BusyDialog(null, "CAN ID", false);
-            busy_dialog.start();
-            // CbusNode will pick the outgoing message up, start timer and show dialogue on error / timeout
-            nodeOfInterest.send.eNUM(nodeOfInterest.getNodeNumber());
-            // cancel the busy
-            ThreadingUtil.runOnGUIDelayed(() -> {
-                changedNode(nodeOfInterest); // refresh pane with new CAN ID
-                busy_dialog.finish();
-                busy_dialog=null;
-            },CbusNodeTimerManager.SINGLE_MESSAGE_TIMEOUT_TIME );
-        };
-        
-        setCanIdListener = ae -> {
-            newCanIdDialogue();
-        };
-        
-
-        clearAllEventsListener = ae -> {
-            int option = JOptionPane.showOptionDialog(null, 
-                "Delete All Events from Node?", 
-                "Please Confirm", 
-                JOptionPane.OK_CANCEL_OPTION, 
-                JOptionPane.QUESTION_MESSAGE, null, null, null);
-            if (option == JOptionPane.OK_OPTION) {
-
-                // check for existing nodes in learn mode
-                if ( getMainPane().getNodeModel().getAnyNodeInLearnMode() > -1 ) {
-                    log.warn("Cancelling action, node {} is already in learn mode",getMainPane().getNodeModel().getAnyNodeInLearnMode());
+            
+            
+            canIdPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), ( canIdText)));
+            JButton selfCanEnumerateButton = new JButton("CAN ID Self Enumeration");
+            JButton setCanIdButton = new JButton("Force set CAN ID");
+            
+            canIdPanel.add(selfCanEnumerateButton);
+            canIdPanel.add(setCanIdButton);
+            
+            evPane.add(headerPanel);
+            evPane.add(namePanel);
+            
+            evPane.add(canIdPanel);
+            evPane.add(nodeEventsPanel);
+            evPane.add(removePanel);
+            
+            setLayout(new BorderLayout() );
+            
+            eventScroll = new JScrollPane(evPane);
+            
+            this.add(eventScroll);
+            
+            
+            validate();
+            repaint();
+            
+            setNameListener = ae -> {
+                nodeModel.setValueAt( textFieldName.getText() , 
+                    nodeModel.getNodeRowFromNodeNum(_nodeNum), 
+                    CbusNodeTableDataModel.NODE_USER_NAME_COLUMN );
+                initComponents(_nodeNum);
+            };
+            setNameButton.addActionListener(setNameListener);
+            
+            removeListener = ae -> {
+                int option = JOptionPane.showOptionDialog(null, 
+                    "Remove Node from Manager?", 
+                    "Please Confirm", 
+                    JOptionPane.OK_CANCEL_OPTION, 
+                    JOptionPane.QUESTION_MESSAGE, null, null, null);
+                if (option == JOptionPane.CANCEL_OPTION) {
                     return;
+                } else if (option == JOptionPane.OK_OPTION) {
+                    nodeModel.removeRow( nodeModel.getNodeRowFromNodeNum(_nodeNum) );
                 }
-
+            };
+            removeNodeButton.addActionListener(removeListener);
+            
+            ActionListener selfEnumerateListener = ae -> {
                 // start busy
-                busy_dialog = new jmri.util.swing.BusyDialog(null, "Clear All Events", false);
+                busy_dialog = new jmri.util.swing.BusyDialog(null, "CAN ID", false);
                 busy_dialog.start();
-
-                // node enter learn mode
-                nodeOfInterest.send.nodeEnterLearnEvMode( nodeOfInterest.getNodeNumber() ); // no response expected but we add a mini delay for other traffic
-
-                ThreadingUtil.runOnLayoutDelayed( () -> {
-                    nodeOfInterest.send.nNCLR(nodeOfInterest.getNodeNumber());// no response expected
-                }, 150 );
-
-                ThreadingUtil.runOnLayoutDelayed(() -> {
-                    // node exit learn mode
-                    nodeOfInterest.send.nodeExitLearnEvMode( nodeOfInterest.getNodeNumber() ); // no response expected
-                }, CbusNodeTimerManager.SINGLE_MESSAGE_TIMEOUT_TIME );
-
-                ThreadingUtil.runOnGUIDelayed(() -> {
-
-                    // stop 
+                // CbusNode will pick the outgoing message up, start timer and show dialogue on error / timeout
+                nodeOfInterest.send.eNUM(_nodeNum);
+                // cancel the busy
+                ThreadingUtil.runOnGUIDelayed( () -> {
+                    initComponents(_nodeNum); // refresh pane with new CAN ID
                     busy_dialog.finish();
                     busy_dialog=null;
+                },CbusNode.SINGLE_MESSAGE_TIMEOUT_TIME );
+            };
+            selfCanEnumerateButton.addActionListener(selfEnumerateListener);
+            
+            ActionListener setCanIdListener = ae -> {
+                newCanIdDialogue();
+            };
+            setCanIdButton.addActionListener(setCanIdListener);
 
-                    // query new num events which should be 0
-                    // RQEVN
-                    nodeOfInterest.send.rQEVN( nodeOfInterest.getNodeNumber() );
-
-                }, ( CbusNodeTimerManager.SINGLE_MESSAGE_TIMEOUT_TIME + 150 ) );
-
-            }
-        };
+            ActionListener clearAllEventsListener = ae -> {
+                int option = JOptionPane.showOptionDialog(null, 
+                    "Delete All Events from Node?", 
+                    "Please Confirm", 
+                    JOptionPane.OK_CANCEL_OPTION, 
+                    JOptionPane.QUESTION_MESSAGE, null, null, null);
+                if (option == JOptionPane.CANCEL_OPTION) {
+                    return;
+                } else if (option == JOptionPane.OK_OPTION) {
+                    
+                    // check for existing nodes in learn mode
+                    if ( nodeModel.getAnyNodeInLearnMode() > -1 ) {
+                        log.warn("Cancelling action, node {} is already in learn mode",nodeModel.getAnyNodeInLearnMode());
+                        return;
+                    }
+                    
+                    // start busy
+                    busy_dialog = new jmri.util.swing.BusyDialog(null, "Clear All Events", false);
+                    busy_dialog.start();
+                    
+                    // node enter learn mode
+                    nodeOfInterest.send.nodeEnterLearnEvMode( _nodeNum ); // no response expected but we add a mini delay for other traffic
+                    
+                    ThreadingUtil.runOnLayoutDelayed( () -> {
+                        nodeOfInterest.send.nNCLR(_nodeNum);// no response expected
+                    }, 150 );
+                    
+                    ThreadingUtil.runOnLayoutDelayed( () -> {
+                        // node exit learn mode
+                        nodeOfInterest.send.nodeExitLearnEvMode( _nodeNum ); // no response expected
+                    }, CbusNode.SINGLE_MESSAGE_TIMEOUT_TIME );
+                    
+                    ThreadingUtil.runOnGUIDelayed( () -> {
+                    
+                        // stop 
+                        busy_dialog.finish();
+                        busy_dialog=null;
+                    
+                        // query new num events which should be 0
+                        // RQEVN
+                        nodeOfInterest.send.rQEVN( _nodeNum );
+                    
+                    }, ( CbusNode.SINGLE_MESSAGE_TIMEOUT_TIME + 150 ) );
+                    
+                }
+            };
+            clearAllEventsButton.addActionListener(clearAllEventsListener);
         
-        
+        }
+        catch( NullPointerException e ) {
+            // on startup no node selected which will cause this
+        }
     }
     
     private boolean CANID_DIALOGUE_OPEN = false;
@@ -253,16 +277,19 @@ public class CbusNodeSetupPane extends CbusNodeConfigTab {
         DefaultFormatter rqformatter = (DefaultFormatter) rqfield.getFormatter();
         rqformatter.setCommitsOnValidEdit(true);
         rqfield.setBackground(Color.white);
-        rqnnSpinner.addChangeListener((ChangeEvent e) -> {
-            int newval = (Integer) rqnnSpinner.getValue();
-            log.debug("new canid selected value {}",newval);
-            updateSpinnerFeedback(newval);
+        rqnnSpinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int newval = (Integer) rqnnSpinner.getValue();
+                log.debug("new canid selected value {}",newval);
+                updateSpinnerFeedback(newval);
+            }
         });
         
         bottomrqNNpane.add(rqNNspinnerlabel);
         bottomrqNNpane.add(rqnnSpinner);
         
-        rqNNpane.add(bottomrqNNpane, BorderLayout.CENTER);
+        rqNNpane.add(bottomrqNNpane, BorderLayout.PAGE_END);
         
         // forces a value between 1-99
         updateSpinnerFeedback( Math.min(99,(Math.max(1,nodeOfInterest.getNodeCanId()))) );
@@ -282,27 +309,27 @@ public class CbusNodeSetupPane extends CbusNodeConfigTab {
             busy_dialog.start();
             // CbusNode will pick the outgoing message up, start timer and show dialogue on error / timeout
             
-            nodeOfInterest.send.cANID(nodeOfInterest.getNodeNumber(), newval);
+            nodeOfInterest.send.cANID(_nodeNum, newval);
             
             // cancel the busy
-            ThreadingUtil.runOnGUIDelayed(() -> {
-                changedNode(nodeOfInterest); // refresh pane with new CAN ID
+            ThreadingUtil.runOnGUIDelayed( () -> {
+                initComponents(_nodeNum); // refresh pane with new CAN ID
                 busy_dialog.finish();
                 busy_dialog=null;
                 CANID_DIALOGUE_OPEN=false;
                 
-            },CbusNodeTimerManager.SINGLE_MESSAGE_TIMEOUT_TIME );            
+            },CbusNode.SINGLE_MESSAGE_TIMEOUT_TIME );            
         }
     }
     
     private void updateSpinnerFeedback( int newval ) {
-        if ( getMainPane().getNodeModel().getNodeNameFromCanId(newval).isEmpty() ) {
+        if ( nodeModel.getNodeNameFromCanId(newval).isEmpty() ) {
             rqfield.setBackground(Color.white);
             rqNNspinnerlabel.setText("");
         }
         else {
             rqfield.setBackground(Color.yellow);
-            rqNNspinnerlabel.setText("In Use by " + getMainPane().getNodeModel().getNodeNameFromCanId(newval) );
+            rqNNspinnerlabel.setText("In Use by " + nodeModel.getNodeNameFromCanId(newval) );
         }
     }
     

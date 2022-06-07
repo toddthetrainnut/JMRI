@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="../XSLT/decoder.xsl"?>
 <!-- Copyright (C) JMRI 2002, 2005, 2006, 2007, 2008 All rights reserved -->
+<!-- $Id$ -->
 <!--                                                                        -->
 <!-- JMRI is free software; you can redistribute it and/or modify it under  -->
 <!-- the terms of version 2 of the GNU General Public License as published  -->
@@ -12,8 +13,6 @@
 <!-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  -->
 <!-- for more details.                                                      -->
 <decoder-config xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://jmri.org/xml/schema/decoder.xsd">
-  <version author="Ronald Kuhn" version="3" lastUpdated="20211201"/> <!-- Correction of "Choice_LigthX.xml" -->
-  <version author="Bob Jacobsen" version="2" lastUpdated="20190727"/> <!-- xinclude for CV19 -->
   <version author="Mark Waters mark16w-jmri@yahoo.co.uk" version="1.02" lastUpdated="20090626"/>
   <version author="Nigel Cliffe ncliffe@btinternet.com and Mark Waters mark16w-jmri@yahoo.co.uk" version="1.01" lastUpdated="20090222"/>
   <!-- 
@@ -91,7 +90,7 @@
         <label xml:lang="de">Mittengeschwindigkeit</label>
         <comment xml:lang="it">Valori 0-252</comment>
       </variable>
-      <variable CV="7" item="Decoder Version" readOnly="yes">
+      <variable CV="7" readOnly="yes" item="Decoder Version">
         <decVal/>
         <label>Decoder Version No</label>
         <label xml:lang="it">Versione Decoder: </label>
@@ -190,9 +189,15 @@
         <label>Analog operation with accel/decel from CV3/4</label>
         <label xml:lang="it">Operatività in Analogico con accell/decell. da CV 3/4</label>
       </variable>
-
-      <xi:include href="http://jmri.org/xml/decoders/nmra/consistAddr.xml"/>
-
+      <variable CV="19" default="0" item="Consist Address" comment="Allows permanent storage of consist address. Range 0-127">
+        <decVal/>
+        <label>Consist Address</label>
+        <label xml:lang="it">Indirizzo Consist</label>
+        <label xml:lang="fr">Addresse UM</label>
+        <label xml:lang="de">Verbundadresse</label>
+        <comment>Allows permanent storage of consist address. Range 0-127</comment>
+        <comment xml:lang="it">Valori ammessi 0-127</comment>
+      </variable>
       <variable item="Consist Address Active For F1" CV="21" mask="XXXXXXXV">
          <xi:include href="http://jmri.org/xml/decoders/parts/enum-LocoAddrConsistAddr.xml"/>
         <label>Consist Address Active For F1</label>
@@ -1081,13 +1086,11 @@
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn-1_0.xml"/>
         <label>Dim Front Light</label>
         <label xml:lang="it">Smorzamento Luci Frontali</label>
-        <label xml:lang="cs">Stmívání Přední světla</label>
       </variable>
       <variable item="Dim Rear Light" CV="114" mask="XXXXXXVX" default="0">
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn-1_0.xml"/>
         <label>Dim Rear Light</label>
         <label xml:lang="it">Smorzamento Luci posteriori</label>
-        <label xml:lang="cs">Stmívání Zadní světla</label>
       </variable>
       <variable item="Dim function output 1" CV="114" mask="XXXXXVXX" default="0">
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn-1_0.xml"/>
@@ -1127,13 +1130,11 @@
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
         <label>Flash front light</label>
         <label xml:lang="it">Flash Luci frontali</label>
-        <label xml:lang="cs">Blikání Přední světla</label>
       </variable>
       <variable item="Flash rear light" CV="118" mask="XXXXXXVX" default="0">
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
         <label>Flash rear light</label>
         <label xml:lang="it">Flash Luci posteriori</label>
-        <label xml:lang="cs">Blikání Zadní světla</label>
       </variable>
       <variable item="Flash function output 1" CV="118" mask="XXXXXVXX" default="0">
        <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
@@ -1169,13 +1170,11 @@
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
         <label>F6 dims front light</label>
         <label xml:lang="it">F6 smorza luci frontali</label>
-        <label xml:lang="cs">F6 Stmívání Přední světla</label>
       </variable>
       <variable item="F6 dims rear light" CV="119" mask="XXXXXXVX" default="0">
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
         <label>F6 dims rear light</label>
         <label xml:lang="it">F6 smorza luci posteriori</label>
-        <label xml:lang="cs">F6 Stmívání Zadní světla</label>
       </variable>
       <variable item="F6 dims function output 1" CV="119" mask="XXXXXVXX" default="0">
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
@@ -1206,13 +1205,11 @@
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
         <label>F7 dims front light</label>
         <label xml:lang="it">F7 smorza luci frontali</label>
-        <label xml:lang="cs">F7 Stmívání Přední světla</label>
       </variable>
       <variable item="F7 dims rear light" CV="120" mask="XXXXXXVX" default="0">
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
         <label>F7 dims rear light</label>
         <label xml:lang="it">F7 smorza luci posteriori</label>
-        <label xml:lang="cs">F7 Stmívání Zadní světla</label>
       </variable>
       <variable item="F7 dims function output 1" CV="120" mask="XXXXXVXX" default="0">
         <xi:include href="http://jmri.org/xml/decoders/parts/enum-OffOn.xml"/>
@@ -1332,32 +1329,29 @@
       </variable>
       <variable CV="125" mask="VVVVVVXX" item="Output 1 effect generated">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light3.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth3.xml"/>
         </enumVal>
         <label>Front light effect generated</label>
-        <label xml:lang="cs">Přední světla generovaný efekt</label>
       </variable>
       <variable CV="125" mask="XXXXXXVV" item="Output 1 behavior">
        <xi:include href="http://jmri.org/xml/decoders/parts/enum-both_frw_rev.xml"/>
         <label>Front light behavior</label>
-        <label xml:lang="cs">Chování Přední světla</label>
       </variable>
       <variable CV="126" mask="VVVVVVXX" item="Output 2 effect generated">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light3.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth3.xml"/>
         </enumVal>
         <label>Rear light effect generated</label>
-        <label xml:lang="cs">Zadní světla generovaný efekt</label>
       </variable>
       <variable CV="126" mask="XXXXXXVV" item="Output 2 behavior">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light3.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth3.xml"/>
         </enumVal>
         <label>Function output 1 effect generated</label>
       </variable>
@@ -1367,9 +1361,9 @@
       </variable>
       <variable CV="128" mask="VVVVVVXX" item="Output 4 effect generated">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light3.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth3.xml"/>
         </enumVal>
         <label>Function output 2 effect generated</label>
       </variable>
@@ -1379,9 +1373,9 @@
       </variable>
       <variable CV="129" mask="VVVVVVXX" item="Output 5 effect generated">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light3.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth3.xml"/>
         </enumVal>
         <label>Function output 3 effect generated</label>
       </variable>
@@ -1391,9 +1385,9 @@
       </variable>
       <variable CV="130" mask="VVVVVVXX" item="Output 6 effect generated">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light1.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light2.xml"/>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light3.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth1.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth2.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth3.xml"/>
         </enumVal>
         <label>Function output 4 effect generated</label>
       </variable>
@@ -1480,7 +1474,7 @@
       </variable>
       <variable item="Distance controlled stopping" CV="140" default="0">
         <enumVal>
-          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Light6.xml"/>
+          <xi:include href="http://jmri.org/xml/decoders/zimo/Choice-Ligth6.xml"/>
         </enumVal>
         <label>Distance controlled stopping</label>
         <label xml:lang="it">Fermata controllata da distanza</label>

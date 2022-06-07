@@ -1,12 +1,12 @@
 package apps;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -27,17 +27,16 @@ public class AppsLaunchFrameTest {
         JUnitUtil.dispose(t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
         JUnitUtil.initConnectionConfigManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterEditorManagerShutdownTask();
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

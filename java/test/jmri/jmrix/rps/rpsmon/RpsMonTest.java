@@ -1,16 +1,14 @@
 package jmri.jmrix.rps.rpsmon;
 
 import java.awt.GraphicsEnvironment;
-
 import javax.swing.JFrame;
-
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import org.netbeans.jemmy.operators.JFrameOperator;
-
 import jmri.jmrix.rps.RpsSystemConnectionMemo;
 
 /**
@@ -32,7 +30,7 @@ public class RpsMonTest {
         f.dispose();
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -42,9 +40,8 @@ public class RpsMonTest {
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 }

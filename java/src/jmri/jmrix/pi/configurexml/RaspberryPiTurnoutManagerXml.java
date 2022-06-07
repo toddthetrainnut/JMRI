@@ -21,7 +21,12 @@ public class RaspberryPiTurnoutManagerXml extends jmri.managers.configurexml.Abs
 
     @Override
     public void setStoreElementClass(Element turnouts) {
-        turnouts.setAttribute("class", "jmri.jmrix.pi.configurexml.RaspberryPiTurnoutManagerXml");
+        turnouts.setAttribute("class","jmri.jmrix.pi.configurexml.RaspberryPiTurnoutManagerXml");
+    }
+
+    @Override
+    public void load(Element element, Object o) {
+        log.error("Invalid method called");
     }
 
     @Override
@@ -30,6 +35,6 @@ public class RaspberryPiTurnoutManagerXml extends jmri.managers.configurexml.Abs
         return loadTurnouts(shared, perNode);
     }
 
-//    private final static Logger log = LoggerFactory.getLogger(RaspberryPiTurnoutManagerXml.class);
+    private final static Logger log = LoggerFactory.getLogger(RaspberryPiTurnoutManagerXml.class);
 
 }

@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * not be the very next message after a query is sent, due to slot manager
  * traffic. Add Pi-SPROG version decoding.
  *
- * @author Andrew Crosland Copyright (C) 2012, 2016
+ * @author	Andrew Crosland Copyright (C) 2012, 2016
  */
 public class SprogVersionQuery implements SprogListener {
 
@@ -43,7 +43,7 @@ public class SprogVersionQuery implements SprogListener {
 
     public SprogVersionQuery(SprogSystemConnectionMemo memo) {
         if (log.isDebugEnabled()) {
-            log.debug("setting instance: {}", this);
+            log.debug("setting instance: " + this);
         }
         _memo = memo;
         tc = _memo.getSprogTrafficController();
@@ -62,17 +62,9 @@ public class SprogVersionQuery implements SprogListener {
         }
     }
 
-    /**
-     * Remove a SprogVersionListener.
-     * Stops Timer ( if running ), when no further Listeners are present.
-     * @param l the Listener to remove.
-     */
     public synchronized void removeSprogVersionListener(SprogVersionListener l) {
         if (versionListeners.contains(l)) {
             versionListeners.removeElement(l);
-        }
-        if (versionListeners.size() == 0 ) {
-            stopTimer();
         }
     }
 
@@ -81,18 +73,26 @@ public class SprogVersionQuery implements SprogListener {
         return (Vector<SprogVersionListener>) versionListeners.clone();
     }
 
+    /**
+     * Return the SprogVersionQuery instance to use.
+     *
+     * @return The registered SprogVersionQuery instance for general use, if
+     *         need be creating one.
+     * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
+     */
+    @Deprecated
+    static public SprogVersionQuery instance() {
+        return null;
+    }
+
     synchronized public void requestVersion(SprogVersionListener l) {
         SprogMessage m;
         if (log.isDebugEnabled()) {
-            log.debug("SprogVersion requested by {}", l.toString());
+            log.debug("SprogVersion requested by " + l.toString());
         }
         if (state == QueryState.DONE) {
             // Reply immediately
-            try {
-                l.notifyVersion(ver);
-            } catch (jmri.ProgrammerException e) {
-                log.error("Programmer Exception in non-programming context", e);
-            }
+            l.notifyVersion(ver);
             return;
         }
         // Remember this listener
@@ -118,14 +118,10 @@ public class SprogVersionQuery implements SprogListener {
         ver = v;
         for (SprogVersionListener listener : getCopyOfListeners()) {
             try {
-                try {
-                    listener.notifyVersion(ver);
-                } catch (jmri.ProgrammerException e) {
-                    log.error("Programmer Exception in non-programming context", e);
-                }
+                listener.notifyVersion(ver);
                 versionListeners.remove(listener);
             } catch (Exception e) {
-                log.warn("notify: During dispatch to {}", listener, e);
+                log.warn("notify: During dispatch to " + listener + "\nException " + e);
             }
         }
     }
@@ -173,7 +169,7 @@ public class SprogVersionQuery implements SprogListener {
                     String[] splits = replyString.split("\n");
                     splits = splits[1].split(" ");
                     int index = 1;
-                    log.debug("Elements in version reply: {}", splits.length);
+                    log.debug("Elements in version reply: " + splits.length);
                     log.debug("First element: <{}>", splits[0]);
                     if (splits[0].contains("Pi-SPROG")) {
                         log.debug("Found a Pi-SPROG {}", splits[index]);
@@ -308,7 +304,7 @@ public class SprogVersionQuery implements SprogListener {
     }
 
     /**
-     * Internal routine to handle timer starts and restarts.
+     * Internal routine to handle timer starts {@literal &} restarts.
      * 
      * @param delay timer delay
      */

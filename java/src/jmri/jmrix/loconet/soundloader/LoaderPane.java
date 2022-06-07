@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -105,7 +106,7 @@ public class LoaderPane extends jmri.jmrix.loconet.swing.LnPanel {
             JPanel p = new JPanel();
             p.setLayout(new FlowLayout());
 
-            loadButton = new JButton(Bundle.getMessage("ButtonDownload"));
+            loadButton = new JButton(Bundle.getMessage("ButtonLoad"));
             loadButton.setEnabled(false);
             loadButton.setToolTipText(Bundle.getMessage("TipLoadDisabled"));
             p.add(loadButton);

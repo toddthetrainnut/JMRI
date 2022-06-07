@@ -68,7 +68,9 @@ public class ComboCheckBox extends JCheckBox {
     void originalPropertyChanged(java.beans.PropertyChangeEvent e) {
         // update this color from original state
         if (e.getPropertyName().equals("State")) {
-            log.debug("State change seen");
+            if (log.isDebugEnabled()) {
+                log.debug("State change seen");
+            }
             setBackground(_var._value.getBackground());
             setOpaque(true);
         }

@@ -2,10 +2,8 @@ package jmri.jmrix.lenz.liusbserver.configurexml;
 
 import jmri.util.JUnitUtil;
 import jmri.util.JUnitAppender;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 import org.jdom2.Element;
-
 import jmri.jmrix.lenz.liusbserver.ConnectionConfig;
 
 /**
@@ -15,7 +13,8 @@ import jmri.jmrix.lenz.liusbserver.ConnectionConfig;
  */
 public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractNetworkConnectionConfigXmlTestBase {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -23,7 +22,7 @@ public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractNet
         cc = new ConnectionConfig();
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         xmlAdapter = null;
@@ -32,7 +31,6 @@ public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractNet
     }
 
     @Test
-    @Override
     public void getInstanceTest() {
        super.getInstanceTest();
        JUnitAppender.assertErrorMessageStartsWith("Error opening network connection:");

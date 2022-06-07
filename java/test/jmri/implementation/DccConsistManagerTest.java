@@ -1,16 +1,17 @@
 package jmri.implementation;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class DccConsistManagerTest extends jmri.implementation.AbstractConsistManagerTestBase  {
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
@@ -18,7 +19,7 @@ public class DccConsistManagerTest extends jmri.implementation.AbstractConsistMa
         cm = new DccConsistManager(jmri.InstanceManager.getNullableDefault(jmri.AddressedProgrammerManager.class));
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
         JUnitUtil.tearDown();

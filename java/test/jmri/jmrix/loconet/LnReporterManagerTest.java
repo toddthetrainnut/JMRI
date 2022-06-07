@@ -1,8 +1,8 @@
 package jmri.jmrix.loconet;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Tests for the LnReporterManager class
@@ -18,15 +18,16 @@ public class LnReporterManagerTest extends jmri.managers.AbstractReporterMgrTest
 
     private LnTrafficController tc = null;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
-        tc = new LocoNetInterfaceScaffold(new LocoNetSystemConnectionMemo());
-        l = new LnReporterManager(tc.getSystemConnectionMemo());
+        tc = new LocoNetInterfaceScaffold();
+        l = new LnReporterManager(tc,"L");
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         tc = null;
         JUnitUtil.tearDown();

@@ -2,19 +2,20 @@ package jmri.jmrit;
 
 import java.io.File;
 import java.io.IOException;
-
 import jmri.util.FileUtil;
 import jmri.util.JUnitAppender;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Test simple functioning of MemoryContents
  *
- * @author Bob Jacobsen Copyright (C) 2008
+ * @author	Bob Jacobsen Copyright (C) 2008
  * @suthor B. Milhaupt Copyright (C) 2014
  */
 public class MemoryContentsTest {
@@ -209,7 +210,7 @@ public class MemoryContentsTest {
 
         // attempt to delete the file if debug logging is not enabled.
         if (log.isDebugEnabled()) {
-            log.debug("Path to written hex file is: {}", filename);
+            log.debug("Path to written hex file is: " + filename);
         } else {
             MemoryContentsTestWrite_24AddrFile.delete();
         }
@@ -835,12 +836,12 @@ public class MemoryContentsTest {
         }
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         jmri.util.JUnitUtil.tearDown();
 

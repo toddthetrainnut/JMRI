@@ -28,22 +28,11 @@ import jmri.util.FileUtil;
  */
 public class DefaultIdTagManagerXml extends XmlFile {
 
-    private final IdTagManager manager;
+    private IdTagManager manager;
 
     public DefaultIdTagManagerXml(IdTagManager tagMan, String baseFileName){
          manager = tagMan;
          IDTAG_BASE_FILENAME = baseFileName;
-    }
-
-    public void store() throws java.io.IOException {
-        log.debug("Storing...");
-        log.debug("Using file: {}", getDefaultIdTagFileName());
-        createFile(getDefaultIdTagFileName(), true);
-        try {
-            writeFile(getDefaultIdTagFileName());
-        } catch (FileNotFoundException ex) {
-            log.error("File not found while writing IdTag file, may not be complete", ex);
-        }
     }
 
     public void load() {
@@ -51,8 +40,19 @@ public class DefaultIdTagManagerXml extends XmlFile {
         try {
             readFile(getDefaultIdTagFileName());
         } catch (JDOMException | IOException ex) {
-            log.error("Exception during IdTag file reading", ex);
+            log.error("Exception during IdTag file reading: {}", (Object) ex);
         }
+    }
+
+    public void store() throws java.io.IOException {
+            log.debug("Storing...");
+            log.debug("Using file: {}", getDefaultIdTagFileName());
+            createFile(getDefaultIdTagFileName(), true);
+            try {
+                writeFile(getDefaultIdTagFileName());
+            } catch (FileNotFoundException ex) {
+                log.error("File not found while writing IdTag file, may not be complete: {}", (Object) ex);
+            }
     }
 
     private File createFile(String fileName, boolean backup) {
@@ -78,7 +78,7 @@ public class DefaultIdTagManagerXml extends XmlFile {
               file = new File(fileName);
            }
        } catch (java.io.IOException ex) {
-          log.error("Exception while creating IdTag file, may not be complete", (Object) ex);
+          log.error("Exception while creating IdTag file, may not be complete: {}", (Object) ex);
        }
        return file;
    }
@@ -139,7 +139,8 @@ public class DefaultIdTagManagerXml extends XmlFile {
       if (root.getChild("configuration") != null) { // NOI18N
           List<Element> l = root.getChild("configuration").getChildren(); // NOI18N
           log.debug("readFile sees {} configurations", l.size());
-          for (Element e : l) {
+          for (int i = 0; i < l.size(); i++) {
+              Element e = l.get(i);
               log.debug("Configuration {} value {}", e.getName(), e.getValue());
               if (e.getName().equals("storeState")) { // NOI18N
                   manager.setStateStored(e.getValue().equals("yes")); // NOI18N
@@ -154,7 +155,8 @@ public class DefaultIdTagManagerXml extends XmlFile {
       if (root.getChild("idtags") != null) { // NOI18N
           List<Element> l = root.getChild("idtags").getChildren("idtag"); // NOI18N
           log.debug("readFile sees {} idtags", l.size());
-          for (Element e : l) {
+          for (int i = 0; i < l.size(); i++) {
+              Element e = l.get(i);
               String systemName = e.getChild("systemName").getText(); // NOI18N
               IdTag t = manager.provideIdTag(systemName);
               t.load(e);

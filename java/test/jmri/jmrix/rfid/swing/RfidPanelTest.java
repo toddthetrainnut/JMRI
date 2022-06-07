@@ -1,12 +1,13 @@
 package jmri.jmrix.rfid.swing;
 
 import java.awt.GraphicsEnvironment;
-
+import jmri.jmrix.rfid.RfidSystemConnectionMemo;
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for RfidPanel class.
@@ -27,7 +28,7 @@ public class RfidPanelTest {
      });
    }
 
-   @BeforeEach
+   @Before
    public void setUp() {
         JUnitUtil.setUp();
 
@@ -35,7 +36,7 @@ public class RfidPanelTest {
         // memo = new RfidSystemConnectionMemo();
    }
 
-   @AfterEach
+   @After
    public void tearDown(){
         // memo=null;
         JUnitUtil.tearDown();

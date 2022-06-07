@@ -1,14 +1,23 @@
 package jmri.jmrit.logix;
 
 import java.awt.GraphicsEnvironment;
+import java.io.File;
 
+import jmri.ConfigureManager;
+import jmri.InstanceManager;
+import jmri.Sensor;
+import jmri.SensorManager;
+import jmri.jmrit.display.controlPanelEditor.ControlPanelEditor;
 import jmri.util.JUnitUtil;
+import jmri.util.junit.rules.RetryRule;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.netbeans.jemmy.operators.JFrameOperator;
 
 /**
  *
@@ -20,20 +29,20 @@ public class WarrantTableFrameTest {
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         WarrantTableFrame t = WarrantTableFrame.getDefault();
-        assertThat(t).withFailMessage("exists").isNotNull();
+        Assert.assertNotNull("exists", t);
         JUnitUtil.dispose(t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetInstanceManager();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

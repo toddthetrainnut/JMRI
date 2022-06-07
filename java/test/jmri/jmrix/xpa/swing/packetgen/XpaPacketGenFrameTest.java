@@ -1,10 +1,8 @@
 package jmri.jmrix.xpa.swing.packetgen;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  * @author Paul Bender Copyright(C) 2016
@@ -13,23 +11,23 @@ public class XpaPacketGenFrameTest extends jmri.util.JmriJFrameTestBase {
 
     private jmri.jmrix.xpa.XpaSystemConnectionMemo memo = null;
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     @Override
     public void setUp() {
         JUnitUtil.setUp();
 
         memo = new jmri.jmrix.xpa.XpaSystemConnectionMemo();
         jmri.InstanceManager.setDefault(jmri.jmrix.xpa.XpaSystemConnectionMemo.class,memo);
-        if (!GraphicsEnvironment.isHeadless()) {
-            frame = new XpaPacketGenFrame(memo);
-        }
+        if(!GraphicsEnvironment.isHeadless()){
+           frame = new XpaPacketGenFrame(memo);
+	}
     }
 
-    @AfterEach
+    @After
     @Override
     public void tearDown() {
-        memo = null;
-        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+	memo = null;
         super.tearDown();
     }
 }

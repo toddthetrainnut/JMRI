@@ -1,14 +1,15 @@
 package jmri.jmrit.display.controlPanelEditor.shape.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * PositionableRoundRectXmlTest.java
  *
- * Test for the PositionableRoundRectXml class
+ * Description: tests for the PositionableRoundRectXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class PositionableRoundRectXmlTest {
       Assert.assertNotNull("PositionableRoundRectXml constructor",new PositionableRoundRectXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

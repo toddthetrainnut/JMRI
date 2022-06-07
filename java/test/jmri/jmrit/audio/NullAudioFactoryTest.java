@@ -1,14 +1,15 @@
 package jmri.jmrit.audio;
 
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test simple functioning of NullAudioFactory
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author	Paul Bender Copyright (C) 2017
  */
 public class NullAudioFactoryTest {
 
@@ -18,11 +19,11 @@ public class NullAudioFactoryTest {
         Assert.assertNotNull("exists", l);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {        JUnitUtil.tearDown();    }
 }

@@ -1,18 +1,14 @@
 package jmri.jmrix.sprog;
 
-import java.util.Comparator;
 import java.util.ResourceBundle;
-
-import jmri.*;
-import jmri.jmrix.ConfiguringSystemConnectionMemo;
-import jmri.jmrix.DefaultSystemConnectionMemo;
+import jmri.GlobalProgrammerManager;
+import jmri.InstanceManager;
+import jmri.ThrottleManager;
+import jmri.TurnoutManager;
 import jmri.jmrix.sprog.SprogConstants.SprogMode;
 import jmri.jmrix.sprog.update.SprogType;
 import jmri.jmrix.sprog.update.SprogVersion;
 import jmri.jmrix.sprog.update.SprogVersionQuery;
-import jmri.jmrix.swing.ComponentFactory;
-import jmri.util.NamedBeanComparator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +21,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (C) 2010
  */
-public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo implements ConfiguringSystemConnectionMemo {
+public class SprogSystemConnectionMemo extends jmri.jmrix.SystemConnectionMemo {
 
     public SprogSystemConnectionMemo(SprogTrafficController st, SprogMode sm) {
         super(st.getController().getSystemConnectionMemo().getSystemPrefix(), SprogConnectionTypeList.SPROG);
@@ -33,24 +29,32 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
             log.debug("SprogSystemConnectionMemo, prefix='{}'", st.getController().getSystemConnectionMemo().getSystemPrefix());
         }
         this.st = st;
-        init(sm, new SprogType(SprogType.UNKNOWN));
+        sprogMode = sm;  // static
+        sprogVersion = new SprogVersion(new SprogType(SprogType.UNKNOWN));
+        register();
+        InstanceManager.store(this, SprogSystemConnectionMemo.class); // also register as specific type
+        InstanceManager.store(cf = new jmri.jmrix.sprog.swing.SprogComponentFactory(this),
+                jmri.jmrix.swing.ComponentFactory.class);
     }
 
     public SprogSystemConnectionMemo(SprogMode sm) {
-        this(sm, new SprogType(SprogType.UNKNOWN));
+        super("S", SprogConnectionTypeList.SPROG); // default to S
+        sprogMode = sm;  // static
+        sprogVersion = new SprogVersion(new SprogType(SprogType.UNKNOWN));
+        register();
+        InstanceManager.store(this, SprogSystemConnectionMemo.class); // also register as specific type
+        InstanceManager.store(cf = new jmri.jmrix.sprog.swing.SprogComponentFactory(this),
+                jmri.jmrix.swing.ComponentFactory.class);
     }
 
     public SprogSystemConnectionMemo(SprogMode sm, SprogType type) {
         super("S", SprogConnectionTypeList.SPROG); // default to S
-        init(sm, type);
-    }
-
-    private void init(SprogMode sm, SprogType type) {
         sprogMode = sm;  // static
         sprogVersion = new SprogVersion(type);
-        cf = new jmri.jmrix.sprog.swing.SprogComponentFactory(this);
-        InstanceManager.store(this, SprogSystemConnectionMemo.class);
-        InstanceManager.store(cf, ComponentFactory.class);
+        register();
+        InstanceManager.store(this, SprogSystemConnectionMemo.class); // also register as specific type
+        InstanceManager.store(cf = new jmri.jmrix.sprog.swing.SprogComponentFactory(this),
+                jmri.jmrix.swing.ComponentFactory.class);
     }
 
     public SprogSystemConnectionMemo() {
@@ -74,7 +78,7 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
     public SprogMode getSprogMode() {
         return sprogMode;
     }
-    private SprogMode sprogMode;
+    private SprogMode sprogMode;// = SprogMode.SERVICE;
 
     /**
      * Return the SPROG version object for this connection.
@@ -105,7 +109,7 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
         return sprogVersion.sprogType;
     }
 
-    ComponentFactory cf = null;
+    jmri.jmrix.swing.ComponentFactory cf = null;
 
     /**
      * Provide access to the TrafficController for this particular connection.
@@ -121,39 +125,25 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
     }
 
     private SprogTrafficController st;
+    private SprogCommandStation commandStation;
 
     private Thread slotThread;
 
     public Thread getSlotThread() {
         return slotThread;
     }
-
-    private int numSlots = SprogConstants.DEFAULT_MAX_SLOTS;
-
-    /**
-     * Get the number of command station slots
-     *
-     * @return The number fo slots
-     */
-    public int getNumSlots() {
-        return numSlots;
-    }
-
+    
     /**
      * Configure the programming manager and "command station" objects.
      */
     public void configureCommandStation() {
-        if(classObjectMap.containsKey(CommandStation.class)) {
-            return;
-        }
         log.debug("start command station queuing thread");
-        SprogCommandStation commandStation = new jmri.jmrix.sprog.SprogCommandStation(st);
+        commandStation = new jmri.jmrix.sprog.SprogCommandStation(st);
         commandStation.setSystemConnectionMemo(this);
         jmri.InstanceManager.store(commandStation, jmri.CommandStation.class);
-        store(commandStation, jmri.CommandStation.class);
         switch (sprogMode) {
             case OPS:
-                slotThread = jmri.util.ThreadingUtil.newThread(commandStation);
+                slotThread = new Thread(commandStation);
                 slotThread.setName("SPROG slot thread");
                 slotThread.setPriority(Thread.MAX_PRIORITY-2);
                 slotThread.start();
@@ -166,24 +156,33 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
         }
     }
 
-    public void configureCommandStation(int slots) {
-        numSlots = slots;
-        this.configureCommandStation();
-    }
-
     /**
      * Get the command station object associated with this connection.
-     *
-     * @return the command station
      */
     public SprogCommandStation getCommandStation() {
-        return get(CommandStation.class);
+        return commandStation;
     }
 
     @Override
     public boolean provides(Class<?> type) {
         if (getDisabled()) {
             return false;
+        }
+        if (type.equals(jmri.GlobalProgrammerManager.class)) {
+            return getProgrammerManager().isGlobalProgrammerAvailable();
+        }
+        if (type.equals(jmri.AddressedProgrammerManager.class)) {
+            return getProgrammerManager().isAddressedModePossible();
+        }
+        if (type.equals(jmri.PowerManager.class)) {
+            return true;
+        }
+        if (type.equals(jmri.ThrottleManager.class)) {
+            log.debug("SPROG provides throttle. sprogMode: {}", sprogMode);
+            return true;
+        }
+        if (type.equals(jmri.TurnoutManager.class)) {
+            return true;
         }
         if ((type.equals(jmri.CommandStation.class))) {
             if (sprogMode == null) {
@@ -202,77 +201,116 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
         return super.provides(type);
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<?> T) {
+        if (getDisabled()) {
+            return null;
+        }
+        if (T.equals(jmri.GlobalProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+        if (T.equals(jmri.AddressedProgrammerManager.class)) {
+            return (T) getProgrammerManager();
+        }
+        if (T.equals(jmri.PowerManager.class)) {
+            return (T) getPowerManager();
+        }
+        if (T.equals(jmri.ThrottleManager.class)) {
+            return (T) getThrottleManager();
+        }
+        if (T.equals(jmri.TurnoutManager.class)) {
+            return (T) getTurnoutManager();
+        }
+        if (T.equals(jmri.CommandStation.class)) {
+            return (T) getCommandStation();
+        }
+        return super.get(T);
+    }
+
     /**
      * Configure the common managers for Sprog connections.
+     * <p>
+     * This puts the common manager config in one place. This method is static
+     * so that it can be referenced from classes that don't inherit, including
+     * hexfile.HexFileFrame and locormi.LnMessageClient.
      */
     public void configureManagers() {
 
-        configureCommandStation();
-
         if (getProgrammerManager().isAddressedModePossible()) {
-            jmri.InstanceManager.store(getProgrammerManager(), AddressedProgrammerManager.class);
-            store(getProgrammerManager(), AddressedProgrammerManager.class);
+            jmri.InstanceManager.store(getProgrammerManager(), jmri.AddressedProgrammerManager.class);
         }
         if (getProgrammerManager().isGlobalProgrammerAvailable()) {
             InstanceManager.store(getProgrammerManager(), GlobalProgrammerManager.class);
-            store(getProgrammerManager(), GlobalProgrammerManager.class);
         }
 
-        PowerManager powerManager = new jmri.jmrix.sprog.SprogPowerManager(this);
-        jmri.InstanceManager.store(powerManager, PowerManager.class);
-        store(powerManager, PowerManager.class);
+        powerManager = new jmri.jmrix.sprog.SprogPowerManager(this);
+        jmri.InstanceManager.store(powerManager, jmri.PowerManager.class);
 
-        TurnoutManager sprogTurnoutManager = new SprogTurnoutManager(this);
+        sprogTurnoutManager = new jmri.jmrix.sprog.SprogTurnoutManager(this);
         jmri.InstanceManager.setTurnoutManager(sprogTurnoutManager);
-        store(sprogTurnoutManager,TurnoutManager.class);
 
         switch (sprogMode) {
             case OPS:
-                ThrottleManager sprogCSThrottleManager = new jmri.jmrix.sprog.SprogCSThrottleManager(this);
+                sprogCSThrottleManager = new jmri.jmrix.sprog.SprogCSThrottleManager(this);
                 jmri.InstanceManager.setThrottleManager(sprogCSThrottleManager);
-                store(sprogCSThrottleManager,ThrottleManager.class);
                 break;
             case SERVICE:
-                ThrottleManager sprogThrottleManager = new jmri.jmrix.sprog.SprogThrottleManager(this);
+                sprogThrottleManager = new jmri.jmrix.sprog.SprogThrottleManager(this);
                 jmri.InstanceManager.setThrottleManager(sprogThrottleManager);
-                store(sprogThrottleManager,ThrottleManager.class);
                 break;
             default:
                 log.warn("Unhandled programming mode: {}", sprogMode);
                 break;
         }
-        register();
     }
 
-    public SprogProgrammerManager getProgrammerManager() {
+    private SprogProgrammerManager programmerManager;
+    private SprogCSThrottleManager sprogCSThrottleManager;
+    private SprogThrottleManager sprogThrottleManager;
+    private SprogTurnoutManager sprogTurnoutManager;
+    private SprogPowerManager powerManager;
 
-        return (SprogProgrammerManager) classObjectMap.computeIfAbsent(SprogProgrammerManager.class, (Class<?> c) -> new SprogProgrammerManager(new SprogProgrammer(this), sprogMode, this));
+    public SprogProgrammerManager getProgrammerManager() {
+        if (programmerManager == null) {
+            programmerManager = new SprogProgrammerManager(new SprogProgrammer(this), sprogMode, this);
+        }
+        return programmerManager;
     }
 
     public void setProgrammerManager(SprogProgrammerManager p) {
-        store(p,SprogProgrammerManager.class);
+        programmerManager = p;
     }
 
     public SprogPowerManager getPowerManager() {
-        return get(PowerManager.class);
+        return powerManager;
     }
 
     public ThrottleManager getThrottleManager() {
-        return get(ThrottleManager.class);
+        if (sprogMode == null) {
+            log.error("Sprog Mode not set");
+            return null;
+        }
+        switch (sprogMode) {
+            case OPS:
+                return sprogCSThrottleManager;
+            case SERVICE:
+                return sprogThrottleManager;
+            default:
+                log.warn("Unhandled programming mode: {}", sprogMode);
+                break;
+        }
+        return null;
     }
 
     public TurnoutManager getTurnoutManager() {
-        return get(TurnoutManager.class);
+        return sprogTurnoutManager;
     }
 
     @Override
     protected ResourceBundle getActionModelResourceBundle() {
-        return ResourceBundle.getBundle("jmri.jmrix.sprog.SprogActionListBundle");
-    }
-
-    @Override
-    public <B extends NamedBean> Comparator<B> getNamedBeanComparator(Class<B> type) {
-        return new NamedBeanComparator<>();
+        //No actions that can be loaded at startup
+        return null;
     }
 
     @Override
@@ -288,7 +326,7 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
     private SprogVersionQuery svq = null;
 
     /**
-     * @return a SprogVersionQuery object for this connection
+     * Return an SprogVersionQuery object for this connection.
      */
     public SprogVersionQuery getSprogVersionQuery() {
         if (svq == null) {
@@ -297,6 +335,6 @@ public class SprogSystemConnectionMemo extends DefaultSystemConnectionMemo imple
         return svq;
     }
 
-    private static final Logger log = LoggerFactory.getLogger(SprogSystemConnectionMemo.class);
+    private final static Logger log = LoggerFactory.getLogger(SprogSystemConnectionMemo.class);
 
 }

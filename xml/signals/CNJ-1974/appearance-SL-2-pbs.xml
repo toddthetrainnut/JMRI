@@ -23,14 +23,7 @@
         <date>2018-08-10</date>
         <authorinitials>JJC</authorinitials>
         <revremark>Initial version</revremark>
-    </revision>
-    <revision>
-        <revnumber>1.1</revnumber>
-        <date>2019-12-30</date>
-        <authorinitials>BM</authorinitials>
-        <revremark>Remove ourAspect values which cannot be displayed by this mast type</revremark>
-     </revision>    
-
+    </revision>    
   </revhistory>
 
   <aspecttable>CNJ 1974</aspecttable>
@@ -110,16 +103,20 @@
     <aspectMapping>
       <advancedAspect>Clear</advancedAspect>
       <ourAspect>Clear</ourAspect>
+      <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Advance Approach Medium</advancedAspect>
       <ourAspect>Clear</ourAspect>
+      <ourAspect>Medium Clear</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Approach Limited</advancedAspect>
       <ourAspect>Clear</ourAspect>
+      <ourAspect>Medium Clear</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
@@ -144,12 +141,13 @@
 
     <aspectMapping>
       <advancedAspect>Approach Medium</advancedAspect>
-      <ourAspect>Advance Approach Medium</ourAspect>
+      <ourAspect>Approach Medium</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Advance Approach</advancedAspect>
       <ourAspect>Clear</ourAspect>
+      <ourAspect>Medium Clear</ourAspect>
       <ourAspect>Approach Medium</ourAspect>
     </aspectMapping>
 
@@ -157,60 +155,73 @@
       <advancedAspect>Medium Clear</advancedAspect>
       <ourAspect>Approach Medium</ourAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Medium Approach Medium</advancedAspect>
       <ourAspect>Approach Medium</ourAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Medium Approach Slow</advancedAspect>
       <ourAspect>Approach Medium</ourAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Approach Slow</advancedAspect>
-      <ourAspect>Approach</ourAspect>
       <ourAspect>Approach Medium</ourAspect>
+      <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Approach</advancedAspect>
-      <ourAspect>Advance Approach</ourAspect>
+      <ourAspect>Approach Medium</ourAspect>
+      <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Medium Approach</advancedAspect>
+      <ourAspect>Advance Approach</ourAspect>
       <ourAspect>Approach Medium</ourAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Slow Clear</advancedAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
      <aspectMapping>
       <advancedAspect>Slow Approach</advancedAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
    <aspectMapping>
       <advancedAspect>Restricting</advancedAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Stop and Proceed</advancedAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
     <aspectMapping>
       <advancedAspect>Stop</advancedAspect>
       <ourAspect>Approach</ourAspect>
+      <ourAspect>Stop and Proceed</ourAspect>
     </aspectMapping>
 
   </aspectMappings>

@@ -1,46 +1,38 @@
 package jmri.jmrit.vsdecoder.swing;
 
 import java.awt.GraphicsEnvironment;
-
 import javax.swing.JPanel;
-
-import jmri.*;
 import jmri.jmrit.vsdecoder.VSDConfig;
-import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class VSDConfigDialogTest {
 
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        VSDConfigDialog t = new VSDConfigDialog(new JPanel(), "test", new VSDConfig(), false, false);
-        Assert.assertNotNull("exists", t);
-
-        // this created an audio manager, clean that up
-        InstanceManager.getDefault(jmri.AudioManager.class).cleanup();
+        VSDConfigDialog t = new VSDConfigDialog(new JPanel(),"test",new VSDConfig());
+        Assert.assertNotNull("exists",t);
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-        JUnitUtil.initRosterConfigManager();
+        jmri.util.JUnitUtil.setUp();
+        jmri.util.JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.removeMatchingThreads("VSDecoderManagerThread");
-        JUnitUtil.resetWindows(false,false);
-        JUnitUtil.clearShutDownManager();
-        JUnitUtil.tearDown();
+        jmri.util.JUnitAppender.suppressWarnMessage("Initialised Null audio system - no sounds will be available.");
+        jmri.util.JUnitUtil.tearDown();
     }
 
 }

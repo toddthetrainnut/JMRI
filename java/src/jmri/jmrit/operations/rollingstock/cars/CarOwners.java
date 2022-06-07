@@ -1,10 +1,9 @@
 package jmri.jmrit.operations.rollingstock.cars;
 
-import org.jdom2.Element;
-
 import jmri.InstanceManager;
 import jmri.InstanceManagerAutoDefault;
 import jmri.jmrit.operations.rollingstock.RollingStockAttribute;
+import org.jdom2.Element;
 
 /**
  * Represents the owner names that cars can have.
@@ -17,6 +16,18 @@ public class CarOwners extends RollingStockAttribute implements InstanceManagerA
     public static final String CAROWNERS_CHANGED_PROPERTY = "CarOwners Length"; // NOI18N
 
     public CarOwners() {
+    }
+
+    /**
+     * Get the default instance of this class.
+     *
+     * @return the default instance of this class
+     * @deprecated since 4.9.2; use
+     * {@link jmri.InstanceManager#getDefault(java.lang.Class)} instead
+     */
+    @Deprecated
+    public static synchronized CarOwners instance() {
+        return InstanceManager.getDefault(CarOwners.class);
     }
 
     @Override
@@ -39,7 +50,7 @@ public class CarOwners extends RollingStockAttribute implements InstanceManagerA
     public void replaceName(String oldName, String newName) {
         super.addName(newName);
         setDirtyAndFirePropertyChange(CAROWNERS_NAME_CHANGED_PROPERTY, oldName, newName);
-        super.deleteName(oldName);
+        super.deleteName(newName);
     }
 
     /**
@@ -50,7 +61,7 @@ public class CarOwners extends RollingStockAttribute implements InstanceManagerA
      *
      */
     public void store(Element root) {
-        store(root, Xml.OWNERS, Xml.OWNER);
+        store(root, Xml.OWNERS, Xml.OWNER, Xml.CAR_OWNERS);
     }
 
     public void load(Element root) {

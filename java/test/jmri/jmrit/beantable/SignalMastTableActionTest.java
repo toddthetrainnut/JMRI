@@ -1,17 +1,14 @@
 package jmri.jmrit.beantable;
 
-import jmri.SignalMast;
 import jmri.util.JUnitUtil;
 import jmri.util.junit.annotations.*;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.*;
 
 /**
  *
  * @author Paul Bender Copyright (C) 2017
  */
-public class SignalMastTableActionTest extends AbstractTableActionBase<SignalMast> {
+public class SignalMastTableActionTest extends AbstractTableActionBase {
 
     @Test
     public void testCTor() {
@@ -45,21 +42,20 @@ public class SignalMastTableActionTest extends AbstractTableActionBase<SignalMas
     }
 
     @Test
-    @Disabled("Signal Mast create frame does not have a hardware address")
+    @Ignore("Signal Mast create frame does not have a hardware address")
     @ToDo("Re-write parent class test to use the right name")
-    @Override
     public void testAddThroughDialog() {
     }
 
     @Test
-    @Disabled("Signal Mast create frame does not have a hardware address")
+    @Ignore("Signal Mast create frame does not have a hardware address")
     @ToDo("Re-write parent class test to use the right name")
-    @Override
     public void testEditButton() {
     }
 
+    // The minimal setup for log4J
     @Override
-    @BeforeEach
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         jmri.util.JUnitUtil.resetProfileManager();
@@ -68,7 +64,7 @@ public class SignalMastTableActionTest extends AbstractTableActionBase<SignalMas
     }
 
     @Override
-    @AfterEach
+    @After
     public void tearDown() {
         a = null;
         JUnitUtil.tearDown();

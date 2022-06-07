@@ -1,14 +1,15 @@
 package jmri.jmrit.roster.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * RosterConfigPaneXmlTest.java
  *
- * Test for the RosterConfigPaneXml class
+ * Description: tests for the RosterConfigPaneXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class RosterConfigPaneXmlTest {
       Assert.assertNotNull("RosterConfigPaneXml constructor",new RosterConfigPaneXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

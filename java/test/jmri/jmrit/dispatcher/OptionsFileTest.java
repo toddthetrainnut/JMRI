@@ -1,17 +1,17 @@
 package jmri.jmrit.dispatcher;
 
 import java.awt.GraphicsEnvironment;
-
 import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
-
-import org.junit.jupiter.api.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 public class OptionsFileTest {
 
@@ -23,9 +23,9 @@ public class OptionsFileTest {
 
     @Test
     public void testSetOptionsFileNameAndRead() {
-        // The Dispatcher functionality is tightly coupled to the Dispatcher
-        // Frame.  As a result, we have can currently only test reading the
-        // options file by creating a DispatcherFrame object.  A future
+        // The Dispatcher functionality is tightly coupled to the Dispatcher 
+        // Frame.  As a result, we have can currently only test reading the 
+        // options file by creating a DispatcherFrame object.  A future 
         // enhancement shold probably break this coupling.
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         OptionsFile.setDefaultFileName("java/test/jmri/jmrit/dispatcher/dispatcheroptions.xml");  // exist?
@@ -41,16 +41,15 @@ public class OptionsFileTest {
 
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
         JUnitUtil.resetProfileManager();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        JUnitUtil.deregisterBlockManagerShutdownTask();
-        JUnitUtil.deregisterEditorManagerShutdownTask();
         JUnitUtil.tearDown();
     }
 

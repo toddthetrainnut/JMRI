@@ -9,7 +9,6 @@ import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.annotation.concurrent.GuardedBy;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -79,7 +78,7 @@ public abstract class AbstractMonPane extends JmriPanel {
     protected JToggleButton freezeButton = new JToggleButton();
     protected JScrollPane jScrollPane1 = new JScrollPane();
     protected TextAreaFIFO monTextPane = new TextAreaFIFO(MAX_LINES);
-    protected JToggleButton startLogButton = new JToggleButton();
+    protected JButton startLogButton = new JButton();
     protected JButton stopLogButton = new JButton();
     protected JCheckBox rawCheckBox = new JCheckBox();
     protected JCheckBox timeCheckBox = new JCheckBox();
@@ -246,7 +245,7 @@ public abstract class AbstractMonPane extends JmriPanel {
         alwaysOnTopCheckBox.setSelected(pm.getSimplePreferenceState(alwaysOnTopCheck));
         Component ancestor = getTopLevelAncestor();
         if (ancestor instanceof JmriJFrame) {
-            ((JmriJFrame) ancestor).setAlwaysOnTop(alwaysOnTopCheckBox.isSelected());
+            ((JmriJFrame) getTopLevelAncestor()).setAlwaysOnTop(alwaysOnTopCheckBox.isSelected());
         } else {
             // this pane isn't yet part of a frame,
             // which can be normal, but
@@ -299,12 +298,10 @@ public abstract class AbstractMonPane extends JmriPanel {
         pane1.add(alwaysOnTopCheckBox);
         pane1.add(autoScrollCheckBox);
         paneA.add(pane1);
-        addCustomControlPanes(paneA);
 
         JPanel pane2 = new JPanel();
         pane2.setLayout(new BoxLayout(pane2, BoxLayout.X_AXIS));
         pane2.add(filterLabel);
-        filterLabel.setLabelFor(filterField);
         pane2.add(filterField);
         pane2.add(openFileChooserButton);
         pane2.add(startLogButton);
@@ -355,13 +352,6 @@ public abstract class AbstractMonPane extends JmriPanel {
 
     }
 
-    /**
-     * Expand the display with additional options specific to the hardware.
-     * @param parent a Panel (with vertical BoxLayout); overrides should add a new Panel with horizontal BoxLayout to hold the additional options.
-     */
-    protected void addCustomControlPanes(JPanel parent) {
-    }
-
     private int timerCount = 0;
     private javax.swing.Timer timer;
 
@@ -381,32 +371,32 @@ public abstract class AbstractMonPane extends JmriPanel {
     }
         
     /**
-     * Log an Message derived message.
+     *  Log an Message derived message.
      *
-     * @param message message object to log.
+     *  @param message message object to log.
      */
-    public void logMessage(Message message) {
-        logMessage("", "", message);
+    public void logMessage(Message message){
+	    logMessage("","",message);
     }
 
     /**
-     * Log an Message derived message.
+     *  Log an Message derived message.
      *
-     * @param messagePrefix text to prefix the message with.
-     * @param message       message object to log.
+     *  @param messagePrefix text to prefix the message with.
+     *  @param message message object to log.
      */
-    public void logMessage(String messagePrefix, Message message) {
-        logMessage(messagePrefix, "", message);
+    public void logMessage(String messagePrefix,Message message){
+	    logMessage(messagePrefix,"",message);
     }
 
     /**
-     * Log an Message derived message with a prefixed label.
+     *  Log an Message derived message with a prefixed label.
      *
-     * @param messagePrefix text to prefix the message with.
-     * @param rawPrefix     label to add to the start of the message.
-     * @param message       message object to log.
+     *  @param messagePrefix text to prefix the message with.
+     *  @param rawPrefix label to add to the start of the message.
+     *  @param message message object to log.
      */
-    public void logMessage(String messagePrefix, String rawPrefix, Message message){
+    public void logMessage(String messagePrefix,String rawPrefix,Message message){
         // display the raw data if requested  
         StringBuilder raw = new StringBuilder(rawPrefix);
         if (rawCheckBox.isSelected()) {
@@ -414,7 +404,7 @@ public abstract class AbstractMonPane extends JmriPanel {
         }
 
         // display the decoded data
-        String text = message.toMonitorString();
+        String text=message.toMonitorString();
         nextLine(messagePrefix + " " + text + "\n", raw.toString());
     }
 
@@ -452,8 +442,8 @@ public abstract class AbstractMonPane extends JmriPanel {
         }
 
         // if requested, log to a file.
-        synchronized (this) {
-            if (logStream != null) {
+        if (logStream != null) {
+            synchronized (logStream) {
                 String logLine = sb.toString();
                 if (!newline.equals("\n")) { // NOI18N
                     // have to massage the line-ends
@@ -510,9 +500,7 @@ public abstract class AbstractMonPane extends JmriPanel {
 
             for (String s : filters) {
                 if (s.equals(checkRaw)) {
-                    synchronized (this) {
-                        linesBuffer.setLength(0);
-                    }
+                    linesBuffer.setLength(0);
                     return true;
                 }
             }
@@ -546,8 +534,10 @@ public abstract class AbstractMonPane extends JmriPanel {
 
     public synchronized void clearButtonActionPerformed(java.awt.event.ActionEvent e) {
         // clear the monitoring history
-        linesBuffer.setLength(0);
-        monTextPane.setText("");
+        synchronized (linesBuffer) {
+            linesBuffer.setLength(0);
+            monTextPane.setText("");
+        }
     }
 
     public String getFilePathAndName() {
@@ -593,19 +583,18 @@ public abstract class AbstractMonPane extends JmriPanel {
                                 Bundle.getMessage("ErrorPossibleCauseCannotOpenForWrite"))),
                         Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
             }
-        } else {
-            startLogButton.setSelected(true); // keep toggle on
         }
     }
 
     public synchronized void stopLogButtonActionPerformed(java.awt.event.ActionEvent e) {
         // stop logging by removing the stream
         if (logStream != null) {
-            logStream.flush();
-            logStream.close();
+            synchronized (logStream) {
+                logStream.flush();
+                logStream.close();
+            }
             logStream = null;
         }
-        startLogButton.setSelected(false);
     }
 
     public void openFileChooserButtonActionPerformed(java.awt.event.ActionEvent e) {
@@ -614,14 +603,12 @@ public abstract class AbstractMonPane extends JmriPanel {
 
         // handle selection or cancel
         if (retVal == JFileChooser.APPROVE_OPTION) {
-            synchronized (this) {
-                boolean loggingNow = (logStream != null);
-                stopLogButtonActionPerformed(e);  // stop before changing file
-                //File file = logFileChooser.getSelectedFile();
-                // if we were currently logging, start the new file
-                if (loggingNow) {
-                    startLogButtonActionPerformed(e);
-                }
+            boolean loggingNow = (logStream != null);
+            stopLogButtonActionPerformed(e);  // stop before changing file
+            //File file = logFileChooser.getSelectedFile();
+            // if we were currently logging, start the new file
+            if (loggingNow) {
+                startLogButtonActionPerformed(e);
             }
         }
     }
@@ -652,13 +639,11 @@ public abstract class AbstractMonPane extends JmriPanel {
         filterField.setText(text);
     }
 
-    @GuardedBy("this")
     private volatile PrintStream logStream = null;
 
     // to get a time string
-    private final DateFormat df = new SimpleDateFormat("HH:mm:ss.SSS");
+    private DateFormat df = new SimpleDateFormat("HH:mm:ss.SSS");
 
-    @GuardedBy("this")
     protected StringBuffer linesBuffer = new StringBuffer();
     private static final int MAX_LINES = 500;
 

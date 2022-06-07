@@ -1,9 +1,7 @@
 package jmri.jmrix.ieee802154.xbee;
 
-import java.util.Locale;
-import javax.annotation.Nonnull;
+import javax.annotation.*;
 import jmri.Light;
-import jmri.NamedBean;
 import jmri.managers.AbstractLightManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,33 +14,30 @@ import org.slf4j.LoggerFactory;
  */
 public class XBeeLightManager extends AbstractLightManager {
 
+    protected String prefix = null;
+
     protected XBeeTrafficController tc = null;
 
-    public XBeeLightManager(XBeeConnectionMemo memo) {
-        super(memo);
-        tc = (XBeeTrafficController) memo.getTrafficController();
+    public XBeeLightManager(XBeeTrafficController controller, String prefix) {
+        tc = controller;
+        this.prefix = prefix;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Nonnull
-    public XBeeConnectionMemo getMemo() {
-        return (XBeeConnectionMemo) memo;
+    public String getSystemPrefix() {
+        return prefix;
     }
 
     // Multiple additions currently works partially, but not for all possible cases;
     // for now, return 'false'.
     @Override
-    public boolean allowMultipleAdditions(@Nonnull String systemName) {
+    public boolean allowMultipleAdditions(String systemName) {
         return false;
     }
 
     @Override
-    @Nonnull
-    protected Light createNewLight(@Nonnull String systemName, String userName) throws IllegalArgumentException {
-        XBeeNode curNode;
+    public Light createNewLight(String systemName, String userName) {
+        XBeeNode curNode = null;
         String name = addressFromSystemName(systemName);
         if ((curNode = (XBeeNode) tc.getNodeFromName(name)) == null) {
             if ((curNode = (XBeeNode) tc.getNodeFromAddress(name)) == null) {
@@ -51,41 +46,31 @@ public class XBeeLightManager extends AbstractLightManager {
                 } catch (java.lang.NumberFormatException nfe) {
                     // if there was a number format exception, we couldn't
                     // find the node.
-                    throw new IllegalArgumentException("failed to find node to create Light: " + systemName);
+                    curNode = null;
+                    log.debug("failed to create light {}", systemName);
+                    return null;
                 }
             }
         }
         int pin = pinFromSystemName(systemName);
         if (!curNode.getPinAssigned(pin)) {
-            log.debug("Adding sensor to pin {}", pin);
+            log.debug("Adding sensor to pin " + pin);
             curNode.setPinBean(pin, new XBeeLight(systemName, userName, tc));
             return (XBeeLight) curNode.getPinBean(pin);
         } else {
-            throw new IllegalArgumentException("failed to create Light: " + systemName);
+            log.debug("failed to create light {}", systemName);
+            return null;
         }
     }
 
     /**
-     * {@inheritDoc}
+     * Public method to validate system name format.
+     *
+     * @param systemName Xbee id format with pins to be checked
+     * @return 'true' if system name has a valid format, else returns 'false'
      */
     @Override
-    @Nonnull
-    public String validateSystemNameFormat(@Nonnull String name, @Nonnull Locale locale) {
-        super.validateSystemNameFormat(name, locale);
-        int pin = pinFromSystemName(name);
-        if (pin < 0 || pin > 7) {
-            throw new NamedBean.BadSystemNameException(
-                    Bundle.getMessage(Locale.ENGLISH, "SystemNameInvalidPin", name),
-                    Bundle.getMessage(locale, "SystemNameInvalidPin", name));
-        }
-        return name;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NameValidity validSystemNameFormat(@Nonnull String systemName) {
+    public NameValidity validSystemNameFormat(String systemName) {
         if (tc.getNodeFromName(addressFromSystemName(systemName)) == null
                 && tc.getNodeFromAddress(addressFromSystemName(systemName)) == null) {
             try {
@@ -97,7 +82,7 @@ public class XBeeLightManager extends AbstractLightManager {
                 }
             } catch (java.lang.NumberFormatException nfe) {
                 // if there was a number format exception, we couldn't find the node.
-                log.error("Unable to convert {} into the Xbee node and pin format of nn:xx", systemName);
+                log.error("Unable to convert " + systemName + " into the Xbee node and pin format of nn:xx");
                 return NameValidity.INVALID;
             }
 
@@ -107,7 +92,7 @@ public class XBeeLightManager extends AbstractLightManager {
         }
     }
 
-    private String addressFromSystemName(@Nonnull String systemName) {
+    private String addressFromSystemName(String systemName) {
         String encoderAddress;
 
         if (systemName.contains(":")) {
@@ -125,7 +110,7 @@ public class XBeeLightManager extends AbstractLightManager {
         return encoderAddress;
     }
 
-    private int pinFromSystemName(@Nonnull String systemName) {
+    private int pinFromSystemName(String systemName) {
         int input = 0;
         int iName = 0;
 
@@ -159,15 +144,15 @@ public class XBeeLightManager extends AbstractLightManager {
      * Abstract Light class
      */
     @Override
-    public boolean validSystemNameConfig(@Nonnull String systemName) {
+    public boolean validSystemNameConfig(String systemName) {
         return (true);
     }
 
     @Override
-    public void deregister(@Nonnull jmri.Light l) {
-        super.deregister(l);
+    public void deregister(jmri.Light s) {
+        super.deregister(s);
         // remove the specified sensor from the associated XBee pin.
-        String systemName = l.getSystemName();
+        String systemName = s.getSystemName();
         String name = addressFromSystemName(systemName);
         int pin = pinFromSystemName(systemName);
         XBeeNode curNode;
@@ -183,10 +168,10 @@ public class XBeeLightManager extends AbstractLightManager {
             }
         }
         if (curNode != null) {
-            if (curNode.removePinBean(pin, l)) {
-                log.debug("Removing sensor from pin {}", pin);
+            if (curNode.removePinBean(pin, s)) {
+                log.debug("Removing sensor from pin " + pin);
             } else {
-                log.debug("Failed to removing sensor from pin {}", pin);
+                log.debug("Failed to removing sensor from pin " + pin);
             }
         }
 
@@ -197,7 +182,7 @@ public class XBeeLightManager extends AbstractLightManager {
      */
     @Override
     public String getEntryToolTip() {
-        return Bundle.getMessage("AddEntryToolTip");
+        return Bundle.getMessage("AddOutputEntryToolTip");
     }
 
     private final static Logger log = LoggerFactory.getLogger(XBeeLightManager.class);

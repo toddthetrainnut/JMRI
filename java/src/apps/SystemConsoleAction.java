@@ -1,6 +1,5 @@
 package apps;
 
-import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import javax.swing.Icon;
 import jmri.util.swing.JmriPanel;
@@ -37,10 +36,8 @@ public class SystemConsoleAction extends jmri.util.swing.JmriAbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(!GraphicsEnvironment.isHeadless()) {
-           // Show system console
-           SystemConsole.getConsole().setVisible(true);
-        }
+        // Show system console
+        SystemConsole.getConsole().setVisible(true);
     }
 
     // never invoked, because we overrode actionPerformed above

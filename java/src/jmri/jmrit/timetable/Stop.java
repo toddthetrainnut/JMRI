@@ -1,5 +1,7 @@
 package jmri.jmrit.timetable;
 
+import jmri.jmrit.timetable.swing.*;
+
 /**
  * Define the content of a Stop record.
  *
@@ -13,9 +15,9 @@ public class Stop {
      * @param seq The next stop sequence number.
      * @throws IllegalArgumentException STOP_ADD_FAIL
      */
-    public Stop(int trainId, int seq) {
+    public Stop(int trainId, int seq) throws IllegalArgumentException {
         if (_dm.getTrain(trainId) == null) {
-            throw new IllegalArgumentException(TimeTableDataManager.STOP_ADD_FAIL);
+            throw new IllegalArgumentException(_dm.STOP_ADD_FAIL);
         }
         _stopId = _dm.getNextId("Stop");  // NOI18N
         _trainId = trainId;
@@ -62,7 +64,7 @@ public class Stop {
         return _stationId;
     }
 
-    public void setStationId(int newStationId) {
+    public void setStationId(int newStationId) throws IllegalArgumentException {
         int oldDStationId = _stationId;
         _stationId = newStationId;
 
@@ -87,9 +89,9 @@ public class Stop {
         return _duration;
     }
 
-    public void setDuration(int newDuration) {
+    public void setDuration(int newDuration) throws IllegalArgumentException {
         if (newDuration < 0) {
-            throw new IllegalArgumentException(TimeTableDataManager.STOP_DURATION_LT_0);
+            throw new IllegalArgumentException(_dm.STOP_DURATION_LT_0);
         }
         int oldDuration = _duration;
         _duration = newDuration;
@@ -107,9 +109,9 @@ public class Stop {
         return _nextSpeed;
     }
 
-    public void setNextSpeed(int newNextSpeed) {
+    public void setNextSpeed(int newNextSpeed) throws IllegalArgumentException {
         if (newNextSpeed < 0) {
-            throw new IllegalArgumentException(TimeTableDataManager.NEXT_SPEED_LT_0);
+            throw new IllegalArgumentException(_dm.NEXT_SPEED_LT_0);
         }
         int oldNextSpeed = _nextSpeed;
         _nextSpeed = newNextSpeed;
@@ -143,10 +145,10 @@ public class Stop {
         return _stagingTrack;
     }
 
-    public void setStagingTrack(int newStagingTrack) {
+    public void setStagingTrack(int newStagingTrack) throws IllegalArgumentException {
         Station station = _dm.getStation(_stationId);
         if (newStagingTrack < 0 || newStagingTrack > station.getStaging()) {
-            throw new IllegalArgumentException(TimeTableDataManager.STAGING_RANGE);
+            throw new IllegalArgumentException(_dm.STAGING_RANGE);
         }
 
         _stagingTrack = newStagingTrack;

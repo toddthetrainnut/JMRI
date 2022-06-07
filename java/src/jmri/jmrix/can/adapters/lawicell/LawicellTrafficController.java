@@ -36,7 +36,6 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
 
     /**
      * Forward a CanReply to all registered CanInterface listeners.
-     * {@inheritDoc}
      */
     @Override
     protected void forwardReply(AbstractMRListener client, AbstractMRReply r) {
@@ -62,7 +61,6 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
 
     /**
      * Forward a preformatted message to the actual interface.
-     * {@inheritDoc}
      */
     @Override
     public void sendCanMessage(CanMessage m, CanListener reply) {
@@ -72,7 +70,6 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
 
     /**
      * Forward a preformatted reply to the actual interface.
-     * {@inheritDoc}
      */
     @Override
     public void sendCanReply(CanReply r, CanListener reply) {
@@ -88,6 +85,7 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
      */
     @Override
     protected void addTrailerToOutput(byte[] msg, int offset, AbstractMRMessage m) {
+        return;
     }
 
     /**
@@ -111,8 +109,7 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
     }
 
     /**
-     * Make a CanReply from a Lawicell-specific reply.
-     * {@inheritDoc}
+     * Make a CanReply from a system-specific reply
      */
     @Override
     public CanReply decodeFromHardware(AbstractMRReply m) {
@@ -129,8 +126,7 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
     }
 
     /**
-     * Encode a CanMessage into Lawicell format for the hardware.
-     * {@inheritDoc}
+     * Encode a CanMessage for the hardware
      */
     @Override
     public AbstractMRMessage encodeForHardware(CanMessage m) {
@@ -147,13 +143,15 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
         return reply;
     }
 
-    /**
-     * Normal Lawicell replies will end with CR; errors are BELL.
-     * {@inheritDoc}
+    /*
+     * Normal Lawicall replies will end with CR; errors are BELL
      */
     @Override
     protected boolean endOfMessage(AbstractMRReply r) {
-        return endNormalReply(r);
+        if (endNormalReply(r)) {
+            return true;
+        }
+        return false;
     }
 
     boolean endNormalReply(AbstractMRReply r) {
@@ -162,7 +160,10 @@ public class LawicellTrafficController extends jmri.jmrix.can.TrafficController 
         if (r.getElement(num) == 0x0D) {
             return true;
         }
-        return r.getElement(num) == 0x07;
+        if (r.getElement(num) == 0x07) {
+            return true;
+        }
+        return false;
     }
 
     private int gcState;

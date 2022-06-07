@@ -1,27 +1,22 @@
 package jmri.jmrix;
 
+import jmri.util.JUnitUtil;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Base tests for messages implementing the jmri.jmrix.Message interface.
  *
- * @author Paul Bender Copyright (C) 2017
+ * @author Paul Bender Copyright (C) 2017	
  */
 abstract public class AbstractMessageTestBase {
 
     protected AbstractMessage m = null; // set in setUp
 
-    @BeforeEach
-    public void setUp() { // minimum needed, usually overridden
-        jmri.util.JUnitUtil.setUp();
-    }
+    @Before
+    abstract public void setUp();
 
-    @AfterEach
-    public void tearDown() { // minimum needed, usually overridden
-        jmri.util.JUnitUtil.tearDown();
-    }
-    
     @Test
     public void testCtor() {
         Assert.assertNotNull("exists",m);

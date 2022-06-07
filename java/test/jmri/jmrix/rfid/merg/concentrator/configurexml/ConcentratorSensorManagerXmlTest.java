@@ -1,14 +1,15 @@
 package jmri.jmrix.rfid.merg.concentrator.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * ConcentratorSensorManagerXmlTest.java
  *
- * Test for the ConcentratorSensorManagerXml class
+ * Description: tests for the ConcentratorSensorManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class ConcentratorSensorManagerXmlTest {
       Assert.assertNotNull("ConcentratorSensorManagerXml constructor",new ConcentratorSensorManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }

@@ -1,14 +1,15 @@
 package jmri.jmrix.rfid.generic.standalone.configurexml;
 
 import jmri.util.JUnitUtil;
-
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * StandaloneReporterManagerXmlTest.java
  *
- * Test for the StandaloneReporterManagerXml class
+ * Description: tests for the StandaloneReporterManagerXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -19,12 +20,13 @@ public class StandaloneReporterManagerXmlTest {
       Assert.assertNotNull("StandaloneReporterManagerXml constructor",new StandaloneReporterManagerXml());
     }
 
-    @BeforeEach
+    // The minimal setup for log4J
+    @Before
     public void setUp() {
         JUnitUtil.setUp();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         JUnitUtil.tearDown();
     }
