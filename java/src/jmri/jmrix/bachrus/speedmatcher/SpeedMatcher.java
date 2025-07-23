@@ -7,6 +7,7 @@ import javax.swing.JButton;
 import javax.swing.Timer;
 
 import jmri.*;
+import jmri.jmrix.bachrus.Speed;
 
 /**
  * Abstract class defining the basic operations of a speed matcher. All speed
@@ -436,7 +437,8 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Instance Variables">
-
+    protected final Speed.Unit speedUnit;
+    
     protected int attempt = 0;
     protected float speedMatchError = 0;
     protected int speedMatcherValueDelta;
@@ -448,6 +450,7 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
 
     protected int stepDuration = 0;
     protected float currentSpeedKPH = 0;
+    protected String targetSpeed = "";
 
     protected DccLocoAddress dccLocoAddress;
 
@@ -475,6 +478,7 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
         this.dccLocoAddress = config.dccLocoAddress;
         this.powerManager = config.powerManager;
 
+        this.speedUnit = config.speedUnit;
         this.trimReverseSpeed = config.trimReverseSpeed;
 
         this.warmUpForwardSeconds = config.warmUpForwardSeconds;
@@ -767,7 +771,21 @@ public abstract class SpeedMatcher implements ThrottleListener, ProgListener {
      */
     protected synchronized void writeSpeedTableStep(SpeedTableStep step, int value) {
         programmerState = ProgrammerState.WRITE_SPEED_TABLE_STEP;
-        statusLabel.setText(Bundle.getMessage("ProgSetCV", step.getCV() + " (Speed Step " + String.valueOf(step.getSpeedStep()) + ")", value));
+        statusLabel.setText(Bundle.getMessage("ProgInitSpeedCV", step.getCV(), step.getSpeedStep(), value));
+        startOpsModeWrite(step.getCV(), value);
+    }
+    
+    /**
+     * Starts writing a Speed Table Step CV (CV 67-94) using the ops mode
+     * programmer. Also includes target speed in the status label.
+     *
+     * @param step  the SpeedTableStep to set
+     * @param value speed table step value (0-255 inclusive)
+     * @param targetSpeed string target speed (e.g. "56.6 mph")
+     */
+    protected synchronized void writeSpeedTableStep(SpeedTableStep step, int value, String targetSpeed) {
+        programmerState = ProgrammerState.WRITE_SPEED_TABLE_STEP;
+        statusLabel.setText(Bundle.getMessage("ProgSetSpeedCV", step.getCV(), step.getSpeedStep(), value, targetSpeed));
         startOpsModeWrite(step.getCV(), value);
     }
 

@@ -471,13 +471,15 @@ public class SpeedStepScaleSpeedTableSpeedMatcher extends SpeedStepScaleSpeedMat
     private void speedMatchSpeedStepInner(int maxCVValue, int minCVValue, SpeedMatcherState nextState, boolean forceNextState) {
         if (stepDuration == 0) {
             speedStepTargetSpeedKPH = getSpeedStepScaleSpeedInKPH(speedMatchSpeedTableStep.getSpeedStep());
-
+            targetSpeed = this.speedUnit == Speed.Unit.KPH 
+                ? Bundle.getMessage("Speed", String.valueOf(speedStepTargetSpeedKPH), Bundle.getMessage("SpeedMatchKPHLabel")) 
+                : Bundle.getMessage("Speed", String.valueOf(Speed.kphToMph(speedStepTargetSpeedKPH)), Bundle.getMessage("SpeedMatchMPHLabel"));
             statusLabel.setText(Bundle.getMessage("StatSettingSpeed", speedMatchSpeedTableStep.getCV() + " (Speed Step " + String.valueOf(speedMatchSpeedTableStep.getSpeedStep()) + ")"));
             logger.info("Setting CV {} (speed step {}) to {} KPH ({} MPH)", speedMatchSpeedTableStep.getCV(), speedMatchSpeedTableStep.getSpeedStep(), String.valueOf(speedStepTargetSpeedKPH), String.valueOf(Speed.kphToMph(speedStepTargetSpeedKPH)));
 
             setThrottle(true, speedMatchSpeedTableStep.getSpeedStep());
 
-            writeSpeedTableStep(speedMatchSpeedTableStep, speedMatchCVValue);
+            writeSpeedTableStep(speedMatchSpeedTableStep, speedMatchCVValue, targetSpeed);
 
             setSpeedMatchStateTimerDuration(speedMatchSpeedTableStep == SpeedTableStep.STEP1 ? 15000: 8000);
             stepDuration = 1;
@@ -515,7 +517,7 @@ public class SpeedStepScaleSpeedTableSpeedMatcher extends SpeedStepScaleSpeedMat
                 }
 
                 lastSpeedMatchCVValue = speedMatchCVValue;
-                writeSpeedTableStep(speedMatchSpeedTableStep, speedMatchCVValue);
+                writeSpeedTableStep(speedMatchSpeedTableStep, speedMatchCVValue, targetSpeed);
             }
         }
     }

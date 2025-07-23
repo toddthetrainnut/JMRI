@@ -583,6 +583,9 @@ public class BasicESUTableSpeedMatcher extends BasicSpeedMatcher {
      */
     private void speedMatchSpeedTableStep(SpeedTableStep speedStep, float targetSpeedKPH, int maxCVValue, int minCVValue, SpeedMatcherState nextState) {
         if (stepDuration == 0) {
+            targetSpeed = this.speedUnit == Speed.Unit.KPH 
+                ? Bundle.getMessage("Speed", String.valueOf(targetSpeedKPH), Bundle.getMessage("SpeedMatchKPHLabel")) 
+                : Bundle.getMessage("Speed", String.valueOf(Speed.kphToMph(targetSpeedKPH)), Bundle.getMessage("SpeedMatchMPHLabel"));
             statusLabel.setText(Bundle.getMessage("StatSettingSpeed", speedStep.getCV() + " (Speed Step " + String.valueOf(speedStep.getSpeedStep()) + ")"));
             logger.info("Setting CV {} (speed step {}) to {} KPH ({} MPH)", speedStep.getCV(), speedStep.getSpeedStep(), String.valueOf(targetSpeedKPH), String.valueOf(Speed.kphToMph(targetSpeedKPH)));
             setThrottle(true, speedStep.getSpeedStep());
@@ -604,7 +607,7 @@ public class BasicESUTableSpeedMatcher extends BasicSpeedMatcher {
                 }
 
                 lastSpeedMatchCVValue = speedMatchCVValue;
-                writeSpeedTableStep(speedStep, speedMatchCVValue);
+                writeSpeedTableStep(speedStep, speedMatchCVValue, targetSpeed);
             }
         }
     }

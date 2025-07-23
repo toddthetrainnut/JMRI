@@ -27,7 +27,7 @@ public abstract class BasicSpeedMatcher extends SpeedMatcher {
     public BasicSpeedMatcher(BasicSpeedMatcherConfig config) {
         super(config);
 
-        if (config.speedUnit == Speed.Unit.MPH) {
+        if (this.speedUnit == Speed.Unit.MPH) {
             this.targetStartSpeedKPH = Speed.mphToKph(config.targetStartSpeed);
             this.targetTopSpeedKPH = Speed.mphToKph(config.targetTopSpeed);
         } else {

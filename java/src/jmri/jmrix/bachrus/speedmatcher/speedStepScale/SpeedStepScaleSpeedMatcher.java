@@ -18,7 +18,6 @@ public abstract class SpeedStepScaleSpeedMatcher extends SpeedMatcher {
     //<editor-fold defaultstate="collapsed" desc="Instance Variables">
     protected final SpeedTableStepSpeed targetMaxSpeedStep;
     protected final float targetMaxSpeedKPH;
-    protected final Speed.Unit speedUnit;
     protected final JLabel actualMaxSpeedField;
 
     protected float measuredMaxSpeedKPH = 0;
@@ -35,7 +34,6 @@ public abstract class SpeedStepScaleSpeedMatcher extends SpeedMatcher {
         super(config);
 
         this.actualMaxSpeedField = config.actualMaxSpeedField;
-        this.speedUnit = config.speedUnit;
 
         this.targetMaxSpeedStep = config.targetMaxSpeedStep;
         this.targetMaxSpeedKPH = config.speedUnit == Speed.Unit.MPH ? Speed.mphToKph(this.targetMaxSpeedStep.getSpeed()) : this.targetMaxSpeedStep.getSpeed();
